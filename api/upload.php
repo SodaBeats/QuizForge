@@ -27,7 +27,7 @@ if (!file_exists($uploadDir)) {
 
 //validate file
 $allowedExtensions = ['docx','doc'];
-$fileExtension = strtolower(papthinfo($_FILES['name'], PATHINFO_EXTENSION));
+$fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
 if(!in_array($fileExtension, $allowedExtensions)){
   echo json_encode(['success'=>false, 'error'=>'Only docx files are allowed']);
@@ -94,12 +94,12 @@ try{
     }
 
     //save to database
-    $stmt = pdo->prepare("
+    $stmt = $pdo->prepare("
       INSERT INTO uploaded_files (filename, file_path, extracted_text, created_at)
       VALUES (?, ?, ?, NOW())
     ");
     $stmt->execute([
-      $fileName,
+      $file['name'],
       $uploadPath,
       $extractedText
     ]);
@@ -111,7 +111,8 @@ try{
       'success'=>true,
       'fileId'=>$fileId,
       'extractedText'=>$extractedText,
-      'filename'=>$fileName
+      'filename'=>$fileName,
+      'name'=>$file['name']
     ]);
 }catch (Exception $e) {
     echo json_encode(['success' => false, 'error' => 'Error processing file: ' . $e->getMessage()]);

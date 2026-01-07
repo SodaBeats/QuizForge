@@ -11,10 +11,11 @@ export default function QuizMakerSkeleton() {
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [fileContent, setFileContent] = useState(null);
 
+  //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
 
+  //handle uploaded file
   const handleFileUpload = async (file) => {
-    setUploadedFiles(file);
 
     const allowedTypes = [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
@@ -35,20 +36,25 @@ export default function QuizMakerSkeleton() {
         body: data,
       });
 
-      const result = await response.json();
+      //const result = await response.json();
+      const text = await response.text();
+      console.log('raw response text:', text);
+
+      const result = JSON.parse(text);
 
       if(result.success){
         const newFile = {
           id: result.fileId,
           name: result.filename,
+          nickname: result.name,
           type: file.type,
           content: result.extractedText
         }
         setUploadedFiles([...uploadedFiles, newFile]);
-        setSelectedFileId = result.fileId;
+        setSelectedFileId(result.fileId);
 
-        console.log('File uploaded successfully:', response.fileId);
-        setFileContent(response.extractedText);
+        console.log('File uploaded successfully:', result.fileId);
+        setFileContent(result.extractedText);
       } 
       else {
         alert('Error: ' + result.error);
@@ -81,7 +87,8 @@ export default function QuizMakerSkeleton() {
 
         {/* Middle: Source File Viewer */}
         <FileViewer
-          fileContent={fileContent}
+          fileContent={selectedFile?.content}
+          selectedFile={selectedFile}
         />
 
         {/* Right: Question Editor */}
