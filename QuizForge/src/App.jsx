@@ -10,8 +10,18 @@ export default function QuizMakerSkeleton() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
 
-  const handleFile = (file) => {
+  const handleFileUpload = (file) => {
     setUploadedFile(file);
+
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload a .docx file');
+      return;
+    }
+    setFileContent('Uploading and processing file...');
 
   }
 
@@ -19,7 +29,7 @@ export default function QuizMakerSkeleton() {
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       {/* Top Bar */}
       <TopBar 
-        setUploadedFile={setUploadedFile}
+        handleFileUpload={handleFileUpload}
       />
 
       {/* Main Content Area */}

@@ -1,11 +1,11 @@
 import React from "react";
 
-export default function TopBar({setUploadedFile}) {
+export default function TopBar({ handleFileUpload }) {
 
-  const handleFileUpload = (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if(file){
-      setUploadedFile(file);
+      handleFileUpload(file);
     }
     // Additional logic for handling the uploaded file can be added here
   }
@@ -23,8 +23,8 @@ export default function TopBar({setUploadedFile}) {
           type="file"
           id="file-upload"
           className="hidden"
-          accept=".pdf,.txt"
-          onChange={(e) => {handleFileUpload(e);}}
+          accept=".pdf,.txt,.docx,.doc"
+          onChange={(e) => {handleFileChange(e);}}
         />
         <input 
           type="text" 
