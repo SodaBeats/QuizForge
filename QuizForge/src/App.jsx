@@ -8,7 +8,10 @@ import QuestionEditor from "./components/QuestionEditor";
 export default function QuizMakerSkeleton() {
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [selectedFileId, setSelectedFileId] = useState(null);
   const [fileContent, setFileContent] = useState(null);
+
+  const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
 
   const handleFileUpload = async (file) => {
     setUploadedFiles(file);
@@ -42,6 +45,7 @@ export default function QuizMakerSkeleton() {
           content: result.extractedText
         }
         setUploadedFiles([...uploadedFiles, newFile]);
+        setSelectedFileId = result.fileId;
 
         console.log('File uploaded successfully:', response.fileId);
         setFileContent(response.extractedText);
@@ -71,10 +75,14 @@ export default function QuizMakerSkeleton() {
         {/* Left: Sidebar */}
         <SideBar 
           uploadedFiles={uploadedFiles}
+          selectedFileId = {selectedFileId}
+          setSelectedFileId = {setSelectedFileId}
         />
 
         {/* Middle: Source File Viewer */}
-        <FileViewer />
+        <FileViewer
+          fileContent={fileContent}
+        />
 
         {/* Right: Question Editor */}
         <QuestionEditor />

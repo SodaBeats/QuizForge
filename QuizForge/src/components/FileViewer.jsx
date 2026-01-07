@@ -1,5 +1,5 @@
 
-export default function FileViewer() {
+export default function FileViewer({ fileContent }) {
   return (
     <div className="w-1/2 flex flex-col border-r border-gray-700">
       <div className="border-b border-gray-700 p-3 bg-gray-800">
