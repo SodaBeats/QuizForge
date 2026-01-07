@@ -1,11 +1,11 @@
 import React from "react";
 
-export default function TopBar({ handleFileUpload }) {
+export default function TopBar({ handleFileUploads }) {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if(file){
-      handleFileUpload(file);
+      handleFileUploads(file);
     }
     // Additional logic for handling the uploaded file can be added here
   }

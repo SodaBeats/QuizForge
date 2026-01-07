@@ -7,11 +7,11 @@ import QuestionEditor from "./components/QuestionEditor";
 
 export default function QuizMakerSkeleton() {
 
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileContent, setFileContent] = useState(null);
 
-  const async handleFileUpload = (file) => {
-    setUploadedFile(file);
+  const handleFileUpload = async (file) => {
+    setUploadedFiles(file);
 
     const allowedTypes = [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
@@ -26,14 +26,35 @@ export default function QuizMakerSkeleton() {
     const data = new FormData();
     data.append('file', file);
 
-    await fetch('http://localhost/TESTQUIZFORGE/api/upload.php', {
-      method: 'POST',
-      body: data,
-    });
+    try{
+      const response = await fetch('http://localhost/TESTQUIZFORGE/api/upload.php', {
+        method: 'POST',
+        body: data,
+      });
 
-    const result = await fetch('http://localhost/TESTQUIZFORGE/api/process.php');
-    const text = await result.text();
-    setFileContent(text);
+      const result = await response.json();
+
+      if(result.success){
+        const newFile = {
+          id: result.fileId,
+          name: result.filename,
+          type: file.type,
+          content: result.extractedText
+        }
+        setUploadedFiles([...uploadedFiles, newFile]);
+
+        console.log('File uploaded successfully:', response.fileId);
+        setFileContent(response.extractedText);
+      } 
+      else {
+        alert('Error: ' + result.error);
+      }
+
+    }catch(error){
+      console.error('Upload error:', error);
+      setFileContent('Failed to upload file');
+      alert('Failed to upload file. Please try again.');
+    }
     
 
   }
@@ -49,7 +70,7 @@ export default function QuizMakerSkeleton() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Sidebar */}
         <SideBar 
-          uploadedFile={uploadedFile}
+          uploadedFiles={uploadedFiles}
         />
 
         {/* Middle: Source File Viewer */}
