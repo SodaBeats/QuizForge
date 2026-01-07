@@ -1,12 +1,31 @@
+import React from "react";
 
+export default function TopBar({setUploadedFile}) {
 
-export default function TopBar() {
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if(file){
+      setUploadedFile(file);
+    }
+    // Additional logic for handling the uploaded file can be added here
+  }
+
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600">
+        <button 
+          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600"
+          onClick={() => document.getElementById('file-upload').click()}
+        >
           Upload
         </button>
+        <input 
+          type="file"
+          id="file-upload"
+          className="hidden"
+          accept=".pdf,.txt"
+          onChange={(e) => {handleFileUpload(e);}}
+        />
         <input 
           type="text" 
           placeholder="Quiz Title" 
