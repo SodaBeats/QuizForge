@@ -36,11 +36,7 @@ export default function QuizMakerSkeleton() {
         body: data,
       });
 
-      //const result = await response.json();
-      const text = await response.text();
-      console.log('raw response text:', text);
-
-      const result = JSON.parse(text);
+      const result = await response.json();
 
       if(result.success){
         const newFile = {
@@ -54,7 +50,7 @@ export default function QuizMakerSkeleton() {
         setSelectedFileId(result.fileId);
 
         console.log('File uploaded successfully:', result.fileId);
-        setFileContent(result.extractedText);
+        setFileContent(result.content);
       } 
       else {
         alert('Error: ' + result.error);
