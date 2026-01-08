@@ -1,9 +1,6 @@
 
 export default function QuestionEditor() {
 
-  const questions = {
-    
-  };
   return (
     <div className="flex-1 flex flex-col">
       <div className="border-b border-gray-700 p-3 bg-gray-800">
