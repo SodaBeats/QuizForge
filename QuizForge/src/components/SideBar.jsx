@@ -4,7 +4,6 @@ function SideBar({
   selectedFileId, 
   setSelectedFileId, 
   questions,
-  SelectedQuestionId,
   setSelectedQuestionId}) {
 
   return (

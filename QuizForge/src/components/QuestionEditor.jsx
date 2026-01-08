@@ -1,5 +1,5 @@
 
-export default function QuestionEditor({ selectedQuestion, setSelectedQuestion }) {
+export default function QuestionEditor({ selectedQuestion }) {
 
 
   return (
