@@ -104,6 +104,7 @@ export default function QuizMakerSkeleton() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
+      
       {/* Top Bar */}
       <TopBar 
         handleFileUpload={handleFileUpload}
@@ -112,6 +113,7 @@ export default function QuizMakerSkeleton() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
+
         {/* Left: Sidebar */}
         <SideBar 
           uploadedFiles={uploadedFiles}

@@ -62,7 +62,7 @@ export default function QuestionEditor({ selectedQuestion }) {
               </select>
             </div>
           </>
-        ):(
+          ):(
           <div className="text-gray-500 text-sm">
             Select a question from the sidebar to edit
           </div>
