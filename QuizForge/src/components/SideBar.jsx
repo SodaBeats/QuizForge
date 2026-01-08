@@ -1,5 +1,12 @@
 
-function SideBar({uploadedFiles, selectedFileId, setSelectedFileId, questions}) {
+function SideBar({
+  uploadedFiles, 
+  selectedFileId, 
+  setSelectedFileId, 
+  questions,
+  SelectedQuestionId,
+  setSelectedQuestionId}) {
+
   return (
     <div className="w-48 border-r border-gray-700 flex flex-col">
       {/* File List - 30% */}
@@ -33,6 +40,7 @@ function SideBar({uploadedFiles, selectedFileId, setSelectedFileId, questions}) 
               <div 
                 key={question.id}
                 className="py-1 px-2 hover:bg-gray-800 rounded cursor-pointer"
+                onClick={()=> setSelectedQuestionId(question.id)}
               >
                 {question.id}
               </div>

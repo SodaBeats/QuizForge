@@ -38,11 +38,15 @@ export default function QuizMakerSkeleton() {
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
+  const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
+  const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
+
+  console.log(selectedQuestion);
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
@@ -114,6 +118,8 @@ export default function QuizMakerSkeleton() {
           selectedFileId = {selectedFileId}
           setSelectedFileId = {setSelectedFileId}
           questions = {questions}
+          selectedQuestionId = {selectedQuestionId}
+          setSelectedQuestionId = {setSelectedQuestionId}
         />
 
         {/* Middle: Source File Viewer */}
@@ -123,7 +129,10 @@ export default function QuizMakerSkeleton() {
         />
 
         {/* Right: Question Editor */}
-        <QuestionEditor />
+        <QuestionEditor
+          selectedQuestion = {selectedQuestion}
+          setSelectedQuestionId = {setSelectedQuestionId}
+        />
       </div>
     </div>
   );
