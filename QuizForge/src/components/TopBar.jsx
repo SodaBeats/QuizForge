@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function TopBar({ handleFileUpload }) {
+export default function TopBar({ handleFileUpload, isUploading }) {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -15,9 +15,10 @@ export default function TopBar({ handleFileUpload }) {
       <div className="flex items-center gap-4">
         <button 
           className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600"
+          disabled={isUploading}
           onClick={() => document.getElementById('file-upload').click()}
         >
-          Upload
+          {isUploading? 'Uploading...':'Upload'}
         </button>
         <input 
           type="file"

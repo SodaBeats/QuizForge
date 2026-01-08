@@ -10,12 +10,15 @@ export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [fileContent, setFileContent] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
+
+    setIsUploading(true);
 
     const allowedTypes = [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
@@ -60,8 +63,9 @@ export default function QuizMakerSkeleton() {
       console.error('Upload error:', error);
       setFileContent('Failed to upload file');
       alert('Failed to upload file. Please try again.');
+    }finally{
+      setIsUploading(false);
     }
-    
 
   }
 
@@ -70,6 +74,7 @@ export default function QuizMakerSkeleton() {
       {/* Top Bar */}
       <TopBar 
         handleFileUpload={handleFileUpload}
+        isUploading = {isUploading}
       />
 
       {/* Main Content Area */}
