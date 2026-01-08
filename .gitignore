@@ -25,3 +25,4 @@ dist-ssr
 
 /api/vendor/
 /api/uploads/
+/api/.env
