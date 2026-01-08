@@ -46,8 +46,6 @@ export default function QuizMakerSkeleton() {
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
   const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
 
-  console.log(selectedQuestion);
-
   //handle uploaded file
   const handleFileUpload = async (file) => {
 
