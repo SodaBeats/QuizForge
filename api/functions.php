@@ -78,10 +78,10 @@ function filterExamWorthySentences($text) {
         
         // Check if sentence matches any exam-worthy pattern
         foreach ($examPatterns as $pattern) {
-            if (preg_match($pattern, $sentence)) {
-                $filteredSentences[] = $sentence;
-                break; // Move to next sentence once matched
-            }
+          if (preg_match($pattern, $sentence)) {
+            $filteredSentences[] = $sentence;
+            break; // Move to next sentence once matched
+          }
         }
     }
     
