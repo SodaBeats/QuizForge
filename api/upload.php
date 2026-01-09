@@ -6,6 +6,8 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once 'vendor/autoload.php';
 require_once 'db.php';
+require_once 'functions.php';
+
 use PhpOffice\PhpWord\IOFactory;
 
 if (!$_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -87,6 +89,9 @@ try{
     // Clean up the text - remove excessive line breaks
     $extractedText = preg_replace("/\n{3,}/", "\n\n", $extractedText); // Max 2 consecutive line breaks
     $extractedText = trim($extractedText);
+    $filteredText = filterExamWorthySentences($extractedText);
+
+
 
     if (empty($extractedText)) {
         echo json_encode(['success' => false, 'error' => 'No text could be extracted from the file']);
@@ -101,7 +106,7 @@ try{
     $stmt->execute([
       $file['name'],
       $uploadPath,
-      $extractedText
+      $filteredText
     ]);
 
     $fileId = $pdo->lastInsertId();
@@ -110,7 +115,7 @@ try{
     echo json_encode([
       'success'=>true,
       'fileId'=>$fileId,
-      'extractedText'=>$extractedText,
+      'extractedText'=>$filteredText,
       'filename'=>$fileName,
       'name'=>$file['name']
     ]);
