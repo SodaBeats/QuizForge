@@ -1,5 +1,23 @@
 <?php
 
+//generate hash for uploade file
+function generateFileHash($filePath, $algorithm = 'sha256') {
+    if (!file_exists($filePath)) {
+        return false;
+    }
+    
+    return hash_file($algorithm, $filePath);
+}
+
+//check if file already exists in database
+function checkDuplicateFile($pdo, $fileHash) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM documents WHERE file_hash = ?");
+    $stmt->execute([$fileHash]);
+    
+    return $stmt->fetchColumn() > 0;
+}
+
+
 /**
  * Filters text to keep only exam-worthy sentences containing key educational patterns
  * 
@@ -93,5 +111,7 @@ function filterExamWorthySentences($text) {
 // $unfilteredText = "Your extracted DOCX text here...";
 // $examWorthyText = filterExamWorthySentences($unfilteredText);
 // echo $examWorthyText;
+
+
 
 ?>

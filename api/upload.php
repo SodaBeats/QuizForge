@@ -10,7 +10,7 @@ require_once 'functions.php';
 
 use PhpOffice\PhpWord\IOFactory;
 
-if (!$_SERVER['REQUEST_METHOD'] === 'POST'){
+if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
   echo json_encode(['success' => false, 'error' => 'Invalid request method']);
   exit;
 }
@@ -28,11 +28,18 @@ if (!file_exists($uploadDir)) {
 }
 
 //validate file
-$allowedExtensions = ['docx','doc'];
+$allowedExtensions = ['docx'];
 $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
 if(!in_array($fileExtension, $allowedExtensions)){
   echo json_encode(['success'=>false, 'error'=>'Only docx files are allowed']);
+  exit;
+}
+
+//generate file hash
+$fileHash = generateFileHash($file['tmp_name'], 'sha256');
+if (!$fileHash) {
+  echo json_encode(['success' => false, 'error' => 'Failed to generate file hash']);
   exit;
 }
 
@@ -45,6 +52,28 @@ if(!move_uploaded_file($file['tmp_name'], $uploadPath)){
 }
 
 try{
+
+  //Check if duplicate file
+  $stmt = $pdo->prepare("
+    SELECT * FROM uploaded_files WHERE file_hash = ?
+    LIMIT 1
+  ");
+  $stmt->execute([$fileHash]);
+
+  $existingFile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if($existingFile){
+    echo json_encode([
+      'success'=>true,
+      'fileId'=>$existingFile['id'],
+      'extractedText'=>$existingFile['extracted_text'],
+      'hash'=>$existingFile['file_hash'],
+      'filename'=>$existingFile['filename'],
+      'name'=>$file['name']
+    ]);
+    exit;
+  }
+
   // Extract text from DOCX
     $phpWord = IOFactory::load($uploadPath);
     $extractedText = '';
@@ -100,11 +129,12 @@ try{
 
     //save to database
     $stmt = $pdo->prepare("
-      INSERT INTO uploaded_files (filename, file_path, extracted_text, created_at)
-      VALUES (?, ?, ?, NOW())
+      INSERT INTO uploaded_files (filename, file_hash, file_path, extracted_text, created_at)
+      VALUES (?, ?, ?, ?, NOW())
     ");
     $stmt->execute([
       $file['name'],
+      $fileHash,
       $uploadPath,
       $filteredText
     ]);
@@ -116,9 +146,11 @@ try{
       'success'=>true,
       'fileId'=>$fileId,
       'extractedText'=>$filteredText,
+      'hash'=>$fileHash,
       'filename'=>$fileName,
       'name'=>$file['name']
     ]);
+
 }catch (Exception $e) {
     echo json_encode(['success' => false, 'error' => 'Error processing file: ' . $e->getMessage()]);
 }
