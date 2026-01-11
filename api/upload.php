@@ -79,40 +79,40 @@ try{
     $extractedText = '';
     
     foreach ($phpWord->getSections() as $section) {
-        $elements = $section->getElements();
+      $elements = $section->getElements();
+      
+      foreach ($elements as $element) {
+        $elementClass = get_class($element);
         
-        foreach ($elements as $element) {
-            $elementClass = get_class($element);
-            
-            // Handle text runs (paragraphs)
-            if ($elementClass === 'PhpOffice\PhpWord\Element\TextRun') {
-                $text = '';
-                foreach ($element->getElements() as $textElement) {
-                    if (method_exists($textElement, 'getText')) {
-                        $text .= $textElement->getText();
-                    }
+        // Handle text runs (paragraphs)
+        if ($elementClass === 'PhpOffice\PhpWord\Element\TextRun') {
+            $text = '';
+            foreach ($element->getElements() as $textElement) {
+                if (method_exists($textElement, 'getText')) {
+                    $text .= $textElement->getText();
                 }
-                $extractedText .= trim($text) . "\n\n";
             }
-            // Handle regular text
-            elseif (method_exists($element, 'getText')) {
-                $extractedText .= trim($element->getText()) . "\n\n";
-            }
-            // Handle tables
-            elseif ($elementClass === 'PhpOffice\PhpWord\Element\Table') {
-                foreach ($element->getRows() as $row) {
-                    foreach ($row->getCells() as $cell) {
-                        foreach ($cell->getElements() as $cellElement) {
-                            if (method_exists($cellElement, 'getText')) {
-                                $extractedText .= trim($cellElement->getText()) . " ";
-                            }
+            $extractedText .= trim($text) . "\n\n";
+        }
+        // Handle regular text
+        elseif (method_exists($element, 'getText')) {
+            $extractedText .= trim($element->getText()) . "\n\n";
+        }
+        // Handle tables
+        elseif ($elementClass === 'PhpOffice\PhpWord\Element\Table') {
+            foreach ($element->getRows() as $row) {
+                foreach ($row->getCells() as $cell) {
+                    foreach ($cell->getElements() as $cellElement) {
+                        if (method_exists($cellElement, 'getText')) {
+                            $extractedText .= trim($cellElement->getText()) . " ";
                         }
                     }
-                    $extractedText .= "\n";
                 }
                 $extractedText .= "\n";
             }
+            $extractedText .= "\n";
         }
+      }
     }
 
     // Clean up the text - remove excessive line breaks
