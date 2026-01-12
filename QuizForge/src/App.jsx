@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopBar from "./components/TopBar";
 import SideBar from "./components/SideBar";
 import FileViewer from "./components/FileViewer";
@@ -46,6 +46,22 @@ export default function QuizMakerSkeleton() {
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
   const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
 
+  //load file from local storage
+  const STATE_KEY = "quizForgeState";
+  const TTL = 1000*60; //1minute
+  useEffect(()=>{
+    const savedState = localStorage.getItem('quizForgeState');
+    if (savedState){
+      const {data, savedAt} = JSON.parse(savedState);
+      if (Date.now()-savedAt < TTL){
+        setUploadedFiles([...data]);
+      }
+      else{
+        localStorage.removeItem(STATE_KEY);
+      }
+    }
+  },[]);
+
   //handle uploaded file
   const handleFileUpload = async (file) => {
 
@@ -85,6 +101,7 @@ export default function QuizMakerSkeleton() {
 
         console.log('File uploaded successfully:', result.fileId);
         setFileContent(result.content);
+
       } 
       else {
         alert('Error: ' + result.error);
@@ -99,6 +116,18 @@ export default function QuizMakerSkeleton() {
     }
 
   }
+
+  //save uploaded file into local storage
+  useEffect(()=>{
+    if(uploadedFiles.length>0){
+      localStorage.setItem(
+        STATE_KEY, 
+        JSON.stringify({
+          data: uploadedFiles,
+          savedAt: Date.now()})
+      )
+    }
+  }, [uploadedFiles]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
