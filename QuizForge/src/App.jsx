@@ -46,12 +46,14 @@ export default function QuizMakerSkeleton() {
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
   const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
 
-  //load file from local storage
+  //load file from local storage and remove after 1 minute
   const STATE_KEY = "quizForgeState";
   const TTL = 1000*60; //1minute
   useEffect(()=>{
-    const savedState = localStorage.getItem('quizForgeState');
-    if (savedState){
+    try{
+      const savedState = localStorage.getItem(STATE_KEY);
+      if (!savedState) return;
+
       const {data, savedAt} = JSON.parse(savedState);
       if (Date.now()-savedAt < TTL){
         setUploadedFiles([...data]);
@@ -59,7 +61,10 @@ export default function QuizMakerSkeleton() {
       else{
         localStorage.removeItem(STATE_KEY);
       }
+    }catch{
+      localStorage.removeItem(STATE_KEY);
     }
+
   },[]);
 
   //handle uploaded file
@@ -98,8 +103,6 @@ export default function QuizMakerSkeleton() {
         }
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);
-
-        console.log('File uploaded successfully:', result.fileId);
         setFileContent(result.content);
 
       } 
