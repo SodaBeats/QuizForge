@@ -127,7 +127,8 @@ export default function QuizMakerSkeleton() {
         STATE_KEY, 
         JSON.stringify({
           data: uploadedFiles,
-          savedAt: Date.now()})
+          savedAt: Date.now()
+        })
       )
     }
   }, [uploadedFiles]);
