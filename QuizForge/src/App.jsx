@@ -6,35 +6,6 @@ import FileViewer from "./components/FileViewer";
 import QuestionEditor from "./components/QuestionEditor";
 
 export default function QuizMakerSkeleton() {
-  const questions = [{
-    id: 'Q1',
-    type: 'multiple-choice',
-    prompt: 'What is your favorite color?',
-    options: [
-      {id: 'a', text: 'Blue'},
-      { id: "b", text: "Black" },
-      { id: "c", text: "Purple" },
-      { id: "d", text: "Yellow" }
-    ],
-    correctOptionId: null
-  },{
-    id: "Q2",
-    type: "multiple-choice",
-    prompt: "What is your favorite food?",
-    options: [],
-    correctOptionId: null
-  },{
-    id: 'Q3',
-    type: 'multiple-choice',
-    prompt: 'What is the powerhouse of the cell?',
-    options: [
-      {id: 'a', text: 'White blood cells'},
-      { id: "b", text: "Mitochondria" },
-      { id: "c", text: "hemogoblin" },
-      { id: "d", text: "cell from dbz" }
-    ],
-    correctOptionId: null
-  }];
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
@@ -44,7 +15,6 @@ export default function QuizMakerSkeleton() {
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
-  const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
 
   //load file from local storage and remove after 1 minute
   const STATE_KEY = "quizForgeState";
@@ -150,7 +120,6 @@ export default function QuizMakerSkeleton() {
           uploadedFiles={uploadedFiles}
           selectedFileId = {selectedFileId}
           setSelectedFileId = {setSelectedFileId}
-          questions = {questions}
           selectedQuestionId = {selectedQuestionId}
           setSelectedQuestionId = {setSelectedQuestionId}
         />
@@ -163,8 +132,8 @@ export default function QuizMakerSkeleton() {
 
         {/* Right: Question Editor */}
         <QuestionEditor
-          selectedQuestion = {selectedQuestion}
           setSelectedQuestionId = {setSelectedQuestionId}
+          selectedFile = {selectedFile}
         />
       </div>
     </div>
