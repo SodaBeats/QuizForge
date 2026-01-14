@@ -34,7 +34,6 @@ export default function QuestionEditor({ selectedFileId, selectedFile, questions
         },
         body: JSON.stringify(manualQuestion)
       });
-      console.log(JSON.stringify(manualQuestion));
       const result = await response.json();
 
       if(result.success){
