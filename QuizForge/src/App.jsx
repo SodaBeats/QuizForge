@@ -12,6 +12,7 @@ export default function QuizMakerSkeleton() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [questions, setQuestions] = useState([]);
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
@@ -134,6 +135,9 @@ export default function QuizMakerSkeleton() {
         <QuestionEditor
           setSelectedQuestionId = {setSelectedQuestionId}
           selectedFile = {selectedFile}
+          selectedFileId = {selectedFileId}
+          questions = {questions}
+          setQuestions = {setQuestions}
         />
       </div>
     </div>

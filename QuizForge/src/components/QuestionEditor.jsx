@@ -1,9 +1,11 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 
-export default function QuestionEditor({ selectedFile }) {
+export default function QuestionEditor({ selectedFileId, selectedFile, questions, setQuestions }) {
 
   const [addMode, setAddMode] = useState(null);
   const [manualQuestion, setManualQuestion] = useState({ //question usestate
+
+    documentId: selectedFile?.id,
     questionText: '',
     questionType: 'multiple-choice',
     optionA: '',
@@ -13,8 +15,51 @@ export default function QuestionEditor({ selectedFile }) {
     correctAnswer: ''
   });
 
+  useEffect(() => {
+    setManualQuestion(prev => ({
+      ...prev,
+      documentId: selectedFile?.id || null
+    }));
+  }, [selectedFile]);
+
   const handleModeSelect=(mode)=>{
     setAddMode(mode);
+  }
+  const handleManualSubmit = async ()=>{
+    try{
+      const response = await fetch('http://localhost/TESTQUIZFORGE/api/question_submit.php',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(manualQuestion)
+      });
+      console.log(JSON.stringify(manualQuestion));
+      const result = await response.json();
+
+      if(result.success){
+        const newQuestion = {
+          id: result.questionId,
+          ...manualQuestion
+        }
+        setQuestions([...questions, newQuestion]);
+        setManualQuestion({
+          documentId: selectedFile?.id,
+          questionText: '',
+          questionType: 'multiple-choice',
+          optionA: '',
+          optionB: '',
+          optionC: '',
+          optionD: '',
+          correctAnswer: ''
+        })
+      }else{
+        alert('Error:' + result.message);
+      }
+    }catch(error){
+      console.error('Error submitting questions', error);
+      alert('Failed to submit question');
+    }
   }
 
   return (
@@ -101,6 +146,15 @@ export default function QuestionEditor({ selectedFile }) {
                       <option value="d">D</option>
                     </select>
                   </div>
+                  <div className="flex space-x-2 mt-4">
+                    <button
+                      onClick={handleManualSubmit}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
+                    >
+                      Done
+                    </button>
+                    <button className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2">Cancel</button>
+                  </div>
                 </>
               )}
               {manualQuestion.questionType === 'true-false' && (
@@ -115,6 +169,10 @@ export default function QuestionEditor({ selectedFile }) {
                     <option value="true">True</option>
                     <option value="false">False</option>
                   </select>
+                  <div className="flex space-x-2 mt-4">
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2">Done</button>
+                    <button className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2">Cancel</button>
+                  </div>
                 </div>
               )}
             </>
