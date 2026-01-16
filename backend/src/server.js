@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import healthRoutes from "./routes/health.js";
 
 const app = express();
 
@@ -9,6 +10,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use("/api",healthRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
