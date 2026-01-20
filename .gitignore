@@ -26,3 +26,5 @@ dist-ssr
 /api/vendor/
 /api/uploads/
 /api/.env
+/backend/.env
+/backend/src/db/migration/
