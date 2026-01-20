@@ -57,7 +57,7 @@ export default function QuizMakerSkeleton() {
     data.append('file', file);
 
     try{
-      const response = await fetch('http://localhost/TESTQUIZFORGE/api/upload.php', {
+      const response = await fetch('api/upload', {
         method: 'POST',
         body: data,
       });
