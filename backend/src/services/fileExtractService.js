@@ -25,16 +25,16 @@ export const extractText = async(file) => {
     //when inserting to database, use schema property names (camelCase)
     const [insertedFile] = await db.insert(uploaded_files).values({
       filename: fileName,
-      filePath: filePath,
-      fileHash: fileHash,
-      extractedText: extractedText
+      file_path: filePath,
+      file_hash: fileHash,
+      extracted_text: extractedText
     }).returning();
 
     return{
       success: true,
       fileId: insertedFile.id,
       fileName: insertedFile.filename,
-      content: insertedFile.extractedText,
+      content: insertedFile.extracted_text,
       type: file.mimetype
     }
 

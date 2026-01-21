@@ -28,3 +28,4 @@ dist-ssr
 /api/.env
 /backend/.env
 /backend/src/db/migration/
+/backend/uploads
