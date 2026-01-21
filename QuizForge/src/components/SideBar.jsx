@@ -19,7 +19,7 @@ function SideBar({
                 }`}
                 onClick={() => setSelectedFileId(file.id)}
               >
-                {file.nickname}
+                {file.name}
               </div>
             ))
           ) : (
