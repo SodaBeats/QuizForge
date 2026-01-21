@@ -57,20 +57,25 @@ export default function QuizMakerSkeleton() {
     data.append('file', file);
 
     try{
-      const response = await fetch('api/upload', {
+      const response = await fetch('http://localhost:3000/api/upload', {
         method: 'POST',
         body: data,
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
+      console.log('Upload response:', result);
 
       if(result.success){
         const newFile = {
           id: result.fileId,
-          name: result.filename,
-          nickname: result.name,
+          name: result.fileName,
+          nickname: result.fileName,
           type: file.type,
-          content: result.extractedText
+          content: result.content
         }
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);

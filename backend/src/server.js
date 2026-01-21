@@ -13,6 +13,10 @@ app.use(cors({
 
 app.use(express.json()); // middleware for parsing json
 
+app.use("/api",healthRoutes);
+
+app.use('/api/upload', uploadRoutes); //file uploads go through this route
+
 app.use((err,req,res,next)=>{
   console.error(err);
   res.status(500).json({
@@ -20,10 +24,6 @@ app.use((err,req,res,next)=>{
     error: err.message
   });
 });
-
-app.use("/api",healthRoutes);
-
-app.use('/api/upload', uploadRoutes); //file uploads go through this route
 
 app.listen(3000, () => {
   console.log("API running on http://localhost:3000");
