@@ -12,15 +12,17 @@ const readFile = promisify(fs.readFile);
 
 export const fileHashMiddleware = async (req, res, next) => {
   try {
-    // Handle single file upload (req.file)
+    // Hash the file content
     if (req.file) {
       req.file.fileHash = await hashFile(req.file.path);
     }
     
+    //find the file with the same hash
     const existingFile = await db.query.uploaded_files.findFirst({
       where: eq(uploaded_files.file_hash, req.file.fileHash)
     });
 
+    //extract the existing file from database and send to frontend
     if(existingFile){
       try{
         fs.unlinkSync(req.file.path);
