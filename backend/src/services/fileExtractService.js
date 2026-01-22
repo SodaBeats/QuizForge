@@ -7,13 +7,8 @@ export const extractText = async(file) => {
 
   try{
     const filePath = file.path;
-    console.log('BEFORE mammoth');//debugging
     const result = await mammoth.extractRawText({path: filePath});
-    console.log('AFTER mammoth');//debugging
     const extractedText = result.value;
-
-    console.log('Extracted text length:', extractedText.length); // DEBUG
-    console.log('File hash:', file.fileHash); // DEBUG
     
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');

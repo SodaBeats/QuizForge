@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import { promisify } from 'util';
+import { db } from '../db/db.js';
+import { uploaded_files } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
 
 const readFile = promisify(fs.readFile);
 
@@ -12,6 +15,26 @@ export const fileHashMiddleware = async (req, res, next) => {
     // Handle single file upload (req.file)
     if (req.file) {
       req.file.fileHash = await hashFile(req.file.path);
+    }
+    
+    const existingFile = await db.query.uploaded_files.findFirst({
+      where: eq(uploaded_files.file_hash, req.file.fileHash)
+    });
+
+    if(existingFile){
+      try{
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.error('Failed to delete file:', err);
+      }
+
+      return res.json({
+        success: true,
+        fileId: existingFile.id,
+        fileName: existingFile.filename,
+        content: existingFile.extracted_text,
+        type: req.file.mimetype
+      });
     }
 
     // Handle multiple file uploads (req.files)
@@ -38,7 +61,7 @@ export const fileHashMiddleware = async (req, res, next) => {
   }
 };
 
-/*
+/**
  * Hash a file using SHA-256
  * @param {string} filePath - Path to the file
  * @returns {Promise<string>} - Hex hash string

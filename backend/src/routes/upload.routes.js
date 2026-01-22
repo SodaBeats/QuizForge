@@ -1,20 +1,23 @@
 import express from 'express';
-import { upload } from '../middlewares/uploadMiddleware.js'; // import the multer middleware
-import { fileHashMiddleware } from '../middlewares/fileHashMiddleware.js';//import file hash
+import { upload } from '../middlewares/uploadMiddleware.js';
+import { fileHashMiddleware } from '../middlewares/fileHashMiddleware.js';
 import { extractText } from '../services/fileExtractService.js';
 
+
+//establish router
 const router = express.Router();
 
-// route: POST /api/upload
-// running middlewares: upload, fileHashMiddleware
-router.post('/', 
-  upload.single('file'), 
-  fileHashMiddleware,
-  async (req, res, next) => {
+
+router.post('/',
+  upload.single('file'),         // multer middleware to process file
+  fileHashMiddleware,           // middleware to generate file hash
+  async (req, res, next)=>{
+    //try to extract text and save to database
+    //and then send to frontend if successful
     try{
-      const result = await extractText(req.file);
-      res.status(200).json(result);
-    }catch (err) {
+      const extractedText = await extractText(req.file);
+      res.status(200).json(extractedText);
+    }catch(err){
       next(err);
     }
 });
