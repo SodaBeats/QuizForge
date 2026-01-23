@@ -14,10 +14,11 @@ export const extractText = async(file) => {
       throw new Error('No text extracted from file');
     }
 
+    //store the needed values into variables for ease of use
     const fileName = file.originalname;
     const fileHash = file.fileHash;
 
-    //when inserting to database, use schema property names (camelCase)
+    //when inserting to database, use schema property names (snake case)
     const [insertedFile] = await db.insert(uploaded_files).values({
       filename: fileName,
       file_path: filePath,

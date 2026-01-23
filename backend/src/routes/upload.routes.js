@@ -1,7 +1,7 @@
 import express from 'express';
-import { upload } from '../middlewares/uploadMiddleware.js';
-import { fileHashMiddleware } from '../middlewares/fileHashMiddleware.js';
-import { extractText } from '../services/fileExtractService.js';
+import { upload } from '../middlewares/upload.middleware.js';
+import { fileHashMiddleware } from '../middlewares/fileHash.middleware.js';
+import { extractText } from '../services/fileExtract.service.js';
 
 
 //establish router

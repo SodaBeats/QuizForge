@@ -39,6 +39,7 @@ export const fileHashMiddleware = async (req, res, next) => {
       });
     }
 
+    //-----------------------------------------------------WORK IN PROGRESS
     // Handle multiple file uploads (req.files)
     if (req.files) {
       // If req.files is an array
@@ -57,6 +58,7 @@ export const fileHashMiddleware = async (req, res, next) => {
         }
       }
     }
+    //--------------------------------------------------------
     next();
   } catch (error) {
     next(error);
