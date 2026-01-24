@@ -2,13 +2,14 @@ import fs from 'fs';
 import mammoth from 'mammoth';
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
+import { filterExamWorthySentences } from './textFilter.service.js';
 
 export const extractText = async(file) => {
 
   try{
     const filePath = file.path;
     const result = await mammoth.extractRawText({path: filePath});
-    const extractedText = result.value;
+    const extractedText = filterExamWorthySentences(result.value);
     
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');

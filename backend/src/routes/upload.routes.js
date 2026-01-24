@@ -20,6 +20,7 @@ router.post('/',
     }catch(err){
       next(err);
     }
-});
+  }
+);
 
 export default router;
