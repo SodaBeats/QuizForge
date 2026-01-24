@@ -9,7 +9,8 @@ export const extractText = async(file) => {
   try{
     const filePath = file.path;
     const result = await mammoth.extractRawText({path: filePath});
-    const extractedText = filterExamWorthySentences(result.value);
+    const extractedText = result.value;
+    const filteredText = filterExamWorthySentences(extractedText);
     
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
@@ -24,14 +25,14 @@ export const extractText = async(file) => {
       filename: fileName,
       file_path: filePath,
       file_hash: fileHash,
-      extracted_text: extractedText
+      extracted_text: filteredText
     }).returning();
 
     return{
       success: true,
       fileId: insertedFile.id,
       fileName: insertedFile.filename,
-      content: insertedFile.extracted_text,
+      content: extractedText,
       type: file.mimetype
     }
 
