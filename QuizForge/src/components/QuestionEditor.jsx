@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 
-export default function QuestionEditor({ selectedFileId, selectedFile, questions, setQuestions }) {
+export default function QuestionEditor({ selectedFile, questions, setQuestions }) {
 
   const [addMode, setAddMode] = useState(null);
   const [manualQuestion, setManualQuestion] = useState({ //question usestate
@@ -27,7 +27,7 @@ export default function QuestionEditor({ selectedFileId, selectedFile, questions
   }
   const handleManualSubmit = async ()=>{
     try{
-      const response = await fetch('http://localhost/TESTQUIZFORGE/api/question_submit.php',{
+      const response = await fetch('http://localhost:3000/api/question/manual',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

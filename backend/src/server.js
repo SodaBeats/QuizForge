@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
+import multer from "multer";
 import healthRoutes from "./routes/health.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import manualQuestionRoute from './routes/manualQuestion.route.js';
 
 const app = express();
 
@@ -16,8 +18,21 @@ app.use(express.json()); // middleware for parsing json
 app.use("/api",healthRoutes);
 
 app.use('/api/upload', uploadRoutes); //file uploads go through this route
+app.use('/api/question/manual', manualQuestionRoute)//manually made question go through this route
 
 app.use((err,req,res,next)=>{
+  /*if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'File too large (max 5MB)' });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ error: 'Only one file allowed' });
+    }
+  }
+
+  if (err.code === 'INVALID_FILE_TYPE') {
+    return res.status(400).json({ error: err.message });
+  }*/
   console.error(err);
   res.status(500).json({
     message: 'Something went wrong.',

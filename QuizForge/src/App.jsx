@@ -67,7 +67,7 @@ export default function QuizMakerSkeleton() {
       }
 
       const result = await response.json();
-      console.log('Upload response:', result);
+      //console.log('Upload response:', result);
 
       if(result.success){
         const newFile = {
