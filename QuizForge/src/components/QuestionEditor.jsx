@@ -22,9 +22,11 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions }
     }));
   }, [selectedFile]);
 
+  //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{
     setAddMode(mode);
   }
+
   const handleManualSubmit = async ()=>{
     try{
       const response = await fetch('http://localhost:3000/api/question/manual',{
@@ -152,7 +154,12 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions }
                     >
                       Done
                     </button>
-                    <button className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2">Cancel</button>
+                    <button
+                      onClick={() => setAddMode(null)}
+                      className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </>
               )}
@@ -169,8 +176,17 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions }
                     <option value="false">False</option>
                   </select>
                   <div className="flex space-x-2 mt-4">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2">Done</button>
-                    <button className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2">Cancel</button>
+                    <button 
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
+                    >
+                      Done
+                    </button>
+                    <button
+                      onClick={() => setAddMode(null)}
+                      className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}
