@@ -15,13 +15,13 @@ router.post('/', async (req, res, next)=>{
     try{
       const [insertedQuestion] = await db.insert(quiz_questions).values({
         document_id: req.body.documentId,
-        question_text: req.body.questionText,
+        question_text: req.body.questionText?.trim(),
         question_type: req.body.questionType,
         correct_answer: req.body.correctAnswer,
-        option_a: req.body.optionA,
-        option_b: req.body.optionB,
-        option_c: req.body.optionC,
-        option_d: req.body.optionD
+        option_a: req.body.optionA?.trim(),
+        option_b: req.body.optionB?.trim(),
+        option_c: req.body.optionC?.trim(),
+        option_d: req.body.optionD?.trim()
       }).returning();
 
       res.status(200).json({
