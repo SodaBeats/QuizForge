@@ -21,7 +21,7 @@ app.use('/api/upload', uploadRoutes); //file uploads go through this route
 app.use('/api/question/manual', manualQuestionRoute)//manually made question go through this route
 
 app.use((err,req,res,next)=>{
-  /*if (err instanceof multer.MulterError) {
+  if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({ error: 'File too large (max 5MB)' });
     }
@@ -32,7 +32,7 @@ app.use((err,req,res,next)=>{
 
   if (err.code === 'INVALID_FILE_TYPE') {
     return res.status(400).json({ error: err.message });
-  }*/
+  }
   console.error(err);
   res.status(500).json({
     message: 'Something went wrong.',
@@ -40,6 +40,4 @@ app.use((err,req,res,next)=>{
   });
 });
 
-app.listen(3000, () => {
-  console.log("API running on http://localhost:3000");
-});
+export default app;
