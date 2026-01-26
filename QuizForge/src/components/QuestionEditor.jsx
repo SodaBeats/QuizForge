@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 
-export default function QuestionEditor({ selectedFile, questions, setQuestions }) {
+export default function QuestionEditor({ selectedFile, questions, setQuestions, selectedQuestion }) {
 
   const [addMode, setAddMode] = useState(null);
   const [manualQuestion, setManualQuestion] = useState({ //question usestate
@@ -21,6 +21,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions }
       documentId: selectedFile?.id || null
     }));
   }, [selectedFile]);
+
 
   //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{

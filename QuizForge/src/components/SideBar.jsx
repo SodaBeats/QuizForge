@@ -2,7 +2,11 @@
 function SideBar({
   uploadedFiles, 
   selectedFileId, 
-  setSelectedFileId}) {
+  setSelectedFileId,
+  selectedFile,
+  selectedQuestionId,
+  setSelectedQuestionId,
+  questions}) {
 
   return (
     <div className="w-48 border-r border-gray-700 flex flex-col">
@@ -32,10 +36,27 @@ function SideBar({
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="text-sm font-semibold text-gray-400 mb-2">Questions</div>
         <div className="space-y-1">
-          <div className="py-1 px-2 rounded">No Questions</div>
+          {selectedFile ? (
+            questions.map((question)=>(
+              <div
+                key={question.id}
+                className={`py-1 px-2 rounded cursor-pointer text-sm ${
+                  selectedQuestionId === question.id ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
+                }`}
+                onClick={() => setSelectedQuestionId(question.id)}
+              >
+                {question.question_text}
+              </div>
+            ))
+          ):(
+            <div className="space-y-1">
+              <div className="py-1 px-2 rounded">No Questions</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 export default SideBar;
+

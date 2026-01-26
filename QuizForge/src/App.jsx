@@ -16,6 +16,7 @@ export default function QuizMakerSkeleton() {
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
+  const selectedQuestion = questions?.find(q => q.id === selectedQuestionId) || null;
 
   //load file from local storage and remove after 1 minute
   const STATE_KEY = "quizForgeState";
@@ -109,6 +110,15 @@ export default function QuizMakerSkeleton() {
     }
   }, [uploadedFiles]);
 
+  useEffect(()=> {
+    if (!selectedFileId) return;
+    fetch(`http://localhost:3000/api/questions?documentId=${selectedFileId}`)
+      .then(res => res.json())
+      .then(data => setQuestions(data));
+  }, [selectedFileId]);
+
+  console.log(questions, typeof questions);
+
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       
@@ -126,8 +136,11 @@ export default function QuizMakerSkeleton() {
           uploadedFiles={uploadedFiles}
           selectedFileId = {selectedFileId}
           setSelectedFileId = {setSelectedFileId}
+          selectedFile = {selectedFile}
           selectedQuestionId = {selectedQuestionId}
           setSelectedQuestionId = {setSelectedQuestionId}
+          selectedQuestion = {selectedQuestion}
+          questions = {questions}
         />
 
         {/* Middle: Source File Viewer */}
@@ -143,6 +156,7 @@ export default function QuizMakerSkeleton() {
           selectedFileId = {selectedFileId}
           questions = {questions}
           setQuestions = {setQuestions}
+          selectedQuestion={selectedQuestion}
         />
       </div>
     </div>

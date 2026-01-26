@@ -3,7 +3,7 @@ import cors from "cors";
 import multer from "multer";
 import healthRoutes from "./routes/health.js";
 import uploadRoutes from "./routes/upload.routes.js";
-import manualQuestionRoute from './routes/manualQuestion.route.js';
+import questionRoute from './routes/question.route.js';
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.use(express.json()); // middleware for parsing json
 app.use("/api",healthRoutes);
 
 app.use('/api/upload', uploadRoutes); //file uploads go through this route
-app.use('/api/question/manual', manualQuestionRoute)//manually made question go through this route
+app.use('/api/questions', questionRoute)//manually made question go through this route
 
 app.use((err,req,res,next)=>{
   if (err instanceof multer.MulterError) {

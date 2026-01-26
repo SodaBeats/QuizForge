@@ -1,4 +1,5 @@
 import express from 'express';
+import { eq } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { quiz_questions } from '../db/schema.js';
 
@@ -29,6 +30,22 @@ router.post('/', async (req, res, next)=>{
         documentId: insertedQuestion.document_id, 
         questionId: insertedQuestion.id
       });
+    }catch(error){
+      next(error);
+    }
+  });
+
+  router.get('/', async(req, res, next)=>{
+    const {documentId} = req.query;
+    if (!documentId) {
+      return res.status(400).json({ error: 'documentId required' });
+    }
+    try{
+      const questions = await db.query.quiz_questions.findMany({
+        where: eq(quiz_questions.document_id, documentId)
+      });
+      res.status(200).json(questions);
+
     }catch(error){
       next(error);
     }
