@@ -117,8 +117,6 @@ export default function QuizMakerSkeleton() {
       .then(data => setQuestions(data));
   }, [selectedFileId]);
 
-  console.log(questions, typeof questions);
-
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       

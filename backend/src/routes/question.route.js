@@ -51,4 +51,37 @@ router.post('/', async (req, res, next)=>{
     }
   });
 
+  //WORK ON THIS
+  router.put('/:id', async(req, res, next)=>{
+    const {id} = req.params;
+    const {
+      questionText,
+      questionType,
+      correctAnswer,
+      optionA,
+      optionB,
+      optionC,
+      optionD
+    } = req.body;
+    try{
+      const updatedQuestion = await db.update(quiz_questions)
+        .set({
+          question_text, question_type,
+          correct_answer, option_a,
+          option_b, option_c,
+          option_d
+        })
+        .where (eq(quiz_questions.id, Number(id)));
+
+      if(!updatedQuestion){
+        return res.status(400).json({error: 'Question not found'});
+      }
+
+      res.status(200).json({success: true});
+
+    }catch(error){
+      next(error);
+    }
+  });
+
 export default router;

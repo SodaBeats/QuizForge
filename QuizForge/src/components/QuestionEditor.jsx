@@ -22,6 +22,23 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
     }));
   }, [selectedFile]);
 
+  useEffect(() => {
+    if (selectedQuestion) {
+      setManualQuestion({
+        id: selectedQuestion.id,
+        documentId: selectedQuestion.document_id,
+        questionText: selectedQuestion.question_text || '',
+        questionType: selectedQuestion.question_type || 'multiple-choice',
+        optionA: selectedQuestion.option_a || '',
+        optionB: selectedQuestion.option_b || '',
+        optionC: selectedQuestion.option_c || '',
+        optionD: selectedQuestion.option_d || '',
+        correctAnswer: selectedQuestion.correct_answer || ''
+      });
+      setAddMode('edit');
+    }
+  }, [selectedQuestion]);
+
 
   //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{
@@ -30,8 +47,14 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
 
   const handleManualSubmit = async ()=>{
     try{
-      const response = await fetch('http://localhost:3000/api/question/manual',{
-        method: 'POST',
+      const endpoint = addMode === 'edit' 
+        ? `http://localhost:3000/api/questions/${manualQuestion.id}`
+        : 'http://localhost:3000/api/questions';
+      
+      const method = addMode === 'edit' ? 'PUT' : 'POST';
+      
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -40,11 +63,15 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
       const result = await response.json();
 
       if(result.success){
-        const newQuestion = {
-          id: result.questionId,
-          ...manualQuestion
-        }
-        setQuestions([...questions, newQuestion]);
+        // Refetch questions from the server
+        const questionsResponse = await fetch(
+          `http://localhost:3000/api/questions?documentId=${selectedFile.id}`
+        );
+        const updatedQuestions = await questionsResponse.json();
+        setQuestions(updatedQuestions);
+        
+        // Reset form
+        setAddMode(null);
         setManualQuestion({
           documentId: selectedFile?.id,
           questionText: '',
@@ -55,7 +82,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
           optionD: '',
           correctAnswer: ''
         })
-      }else{
+      } else {
         alert('Error:' + result.message);
       }
     }catch(error){
@@ -74,7 +101,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
         {selectedFile ? (
-          addMode === 'manual' ? (
+          addMode === 'manual' || addMode === 'edit' ? (
             <>
               <div>
                 <label className="block text-sm font-medium mb-1">Question Type</label>
@@ -153,10 +180,22 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
                       onClick={handleManualSubmit}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
                     >
-                      Done
+                      {addMode === 'edit' ? 'Update' : 'Done'}
                     </button>
                     <button
-                      onClick={() => setAddMode(null)}
+                      onClick={() => {
+                        setAddMode(null);
+                        setManualQuestion({
+                          documentId: selectedFile?.id,
+                          questionText: '',
+                          questionType: 'multiple-choice',
+                          optionA: '',
+                          optionB: '',
+                          optionC: '',
+                          optionD: '',
+                          correctAnswer: ''
+                        });
+                      }}
                       className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
                     >
                       Cancel
@@ -178,12 +217,25 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
                   </select>
                   <div className="flex space-x-2 mt-4">
                     <button 
+                      onClick={handleManualSubmit}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
                     >
-                      Done
+                      {addMode === 'edit' ? 'Update' : 'Done'}
                     </button>
                     <button
-                      onClick={() => setAddMode(null)}
+                      onClick={() => {
+                        setAddMode(null);
+                        setManualQuestion({
+                          documentId: selectedFile?.id,
+                          questionText: '',
+                          questionType: 'multiple-choice',
+                          optionA: '',
+                          optionB: '',
+                          optionC: '',
+                          optionD: '',
+                          correctAnswer: ''
+                        });
+                      }}
                       className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
                     >
                       Cancel
