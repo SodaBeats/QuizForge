@@ -66,15 +66,18 @@ router.post('/', async (req, res, next)=>{
     try{
       const updatedQuestion = await db.update(quiz_questions)
         .set({
-          question_text, question_type,
-          correct_answer, option_a,
-          option_b, option_c,
-          option_d
+          question_text: questionText,
+          question_type: questionType,
+          correct_answer: correctAnswer,
+          option_a: optionA,
+          option_b: optionB,
+          option_c: optionC,
+          option_d: optionD
         })
         .where (eq(quiz_questions.id, Number(id)));
 
-      if(!updatedQuestion){
-        return res.status(400).json({error: 'Question not found'});
+      if(updatedQuestion.length < 1){
+        return res.status(404).json({error: 'Question not found'});
       }
 
       res.status(200).json({success: true});
