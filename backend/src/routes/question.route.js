@@ -51,7 +51,6 @@ router.post('/', async (req, res, next)=>{
     }
   });
 
-  //WORK ON THIS
   router.put('/:id', async(req, res, next)=>{
     const {id} = req.params;
     const {
