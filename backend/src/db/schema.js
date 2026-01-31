@@ -1,7 +1,8 @@
-import { pgTable, serial, text, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, integer, uuid } from 'drizzle-orm/pg-core';
 
 export const uploaded_files = pgTable('uploaded_files', {
   id: serial('id').primaryKey(),
+  user_id: integer('user_id').notNull().references(() => users.id),
   filename: varchar('filename', { length: 255 }).notNull(),
   file_path: text('file_path').notNull(),
   file_hash: varchar('file_hash', { length: 64 }).notNull(),
@@ -22,4 +23,15 @@ export const quiz_questions = pgTable('quiz_questions', {
   option_c: text('option_c'),
   option_d: text('option_d'),
   created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  user_id: uuid('user_id').unique().notNull().defaultRandom(),
+  first_name: text('first_name', { length: 64 }).notNull(),
+  last_name: text('last_name', { length: 64 }).notNull(),
+  email: text('email').unique().notNull(),
+  password_hash: varchar('password_hash', { length: 255 }).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull()
 });
