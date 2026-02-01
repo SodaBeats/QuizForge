@@ -2,6 +2,7 @@ import express from 'express';
 import { db } from '../db/db.js';
 import { users } from '../db/schema.js';
 import bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
 import { signupValidator } from '../middlewares/signupValidator.middleware.js';
 
 const router = express.Router();
@@ -10,18 +11,30 @@ router.post('/',
   signupValidator,
   async (req, res, next)=>{
 
-  if (!req.body?.email || !req.body?.password){
-    res.status(500).json({success: false, message: 'Please fill required input'});
-    return;
-  }
+  const { first_name, last_name, email, password, role } = req.body;
 
   try{
-    const [user] = await db.insert(users).values({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      password_hash: await bcrypt.hash(password, 10)
+
+    const existingUser = await db.select().from(users).where(eq(users.email, email));
+
+    if(existingUser.length > 0){
+      return res.status(400).json({success: false, error: 'Email already exists'});
+    }
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const newUser = await db.insert(users).values({
+      first_name: first_name,
+      last_name: last_name,
+      email: email,
+      password_hash: password_hash,
+      role: role || 'student'
     })
+
+    res.status(201).json({ 
+        success: true, 
+        message: 'Account created successfully. Please log in.' 
+    });
+
   }catch(error){
     next(error);
   }

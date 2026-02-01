@@ -8,6 +8,8 @@ export default function LogInComponent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('student'); // ← Add role state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -28,13 +30,13 @@ export default function LogInComponent() {
       alert('Passwords do not match');
       return;
     }
-
+    setLoading(true);
     try {
       const endpoint = isLogin ? '/api/login' : '/api/signup';
       
       const body = isLogin 
-        ? { email, password }
-        : { first_name: firstName, last_name: lastName, email, password };
+        ? { email: email.toLocaleLowerCase(), password: password }
+        : { first_name: firstName.trim(), last_name: lastName.trim(), email: email.toLocaleLowerCase().trim(), password: password, role: role }; // ← Include role
 
       const response = await fetch(`http://localhost:3000${endpoint}`, {
         method: 'POST',
@@ -44,21 +46,28 @@ export default function LogInComponent() {
 
       const data = await response.json();
 
-      if (!data.success){
+      if(!data.success){
         alert(data.error || 'Authentication failed');
         return;
       }
-      if(isLogin){
-        //store token
+      if (isLogin) {
         localStorage.setItem('token', data.token);
-        //redirect to main app
         navigate('/');
-      }else{
-        alert('Your account has been created');
+      } 
+      else{
+        alert(data.message);
+        setIsLogin(true);
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
       }
     } catch (error) {
       console.error('Error:', error);
       alert('An error occurred. Please try again.');
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -94,6 +103,35 @@ export default function LogInComponent() {
                   placeholder="Enter your last name"
                   required
                 />
+              </div>
+
+              {/* Role Selection Buttons */}
+              <div>
+                <label className="block text-gray-300 mb-2">I am a...</label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole('student')}
+                    className={`flex-1 py-2 rounded font-semibold transition duration-200 ${
+                      role === 'student'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('teacher')}
+                    className={`flex-1 py-2 rounded font-semibold transition duration-200 ${
+                      role === 'teacher'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    Teacher
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -138,9 +176,10 @@ export default function LogInComponent() {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition duration-200"
           >
-            {isLogin ? 'Login' : 'Sign Up'}
+            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
           </button>
         </form>
 
