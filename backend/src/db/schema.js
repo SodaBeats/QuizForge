@@ -32,6 +32,7 @@ export const users = pgTable('users', {
   last_name: text('last_name', { length: 64 }).notNull(),
   email: text('email').unique().notNull(),
   password_hash: varchar('password_hash', { length: 255 }).notNull(),
+  role: text('role', { enum: ['student', 'teacher', 'admin'] }).default('student').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull()
 });

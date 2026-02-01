@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,6 +19,11 @@ export default function LogInComponent() {
       return;
     }
 
+    if (!isLogin && (!firstName || !lastName)) {
+      alert('Please enter your first and last name');
+      return;
+    }
+
     if (!isLogin && password !== confirmPassword) {
       alert('Passwords do not match');
       return;
@@ -24,21 +31,30 @@ export default function LogInComponent() {
 
     try {
       const endpoint = isLogin ? '/api/login' : '/api/signup';
+      
+      const body = isLogin 
+        ? { email, password }
+        : { first_name: firstName, last_name: lastName, email, password };
+
       const response = await fetch(`http://localhost:3000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Store token
-        localStorage.setItem('token', data.token);
-        // Redirect to main app
-        navigate('/');
-      } else {
+      if (!data.success){
         alert(data.error || 'Authentication failed');
+        return;
+      }
+      if(isLogin){
+        //store token
+        localStorage.setItem('token', data.token);
+        //redirect to main app
+        navigate('/');
+      }else{
+        alert('Your account has been created');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -54,6 +70,34 @@ export default function LogInComponent() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <>
+              <div>
+                <label className="block text-gray-300 mb-2">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your first name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 mb-2">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your last name"
+                  required
+                />
+              </div>
+            </>
+          )}
+
           <div>
             <label className="block text-gray-300 mb-2">Email</label>
             <input

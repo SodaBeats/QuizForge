@@ -4,6 +4,7 @@ import multer from "multer";
 import healthRoutes from "./routes/health.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import questionRoute from './routes/question.route.js';
+import signupRoute from './routes/signup.route.js';
 
 const app = express();
 
@@ -19,7 +20,7 @@ app.use("/api",healthRoutes);
 
 app.use('/api/upload', uploadRoutes); //file uploads go through this route
 app.use('/api/questions', questionRoute);//manually made question go through this route
-app.use('/api/login', loginRoute);
+//app.use('/api/login', loginRoute);
 app.use('/api/signup', signupRoute);
 
 app.use((err,req,res,next)=>{
