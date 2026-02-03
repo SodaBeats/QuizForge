@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar, integer, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean } from 'drizzle-orm/pg-core';
 
 export const uploaded_files = pgTable('uploaded_files', {
   id: serial('id').primaryKey(),
@@ -35,4 +35,13 @@ export const users = pgTable('users', {
   role: text('role', { enum: ['student', 'teacher', 'admin'] }).default('student').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull()
+});
+
+export const refresh_tokens = pgTable('refresh_tokens', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id').notNull().references(() => users.id),
+  token: text('token').notNull(),
+  expires_at: timestamp('expires_at').notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  revoked: boolean('revoked').default(false)
 });
