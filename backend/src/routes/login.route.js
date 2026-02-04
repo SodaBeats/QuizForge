@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { loginValidator } from '../middlewares/loginValidator.middleware.js';
-import { refresh_tokens } from '../db/schema.js';
+import { refresh_tokens, users } from '../db/schema.js';
 
 const router = express.Router();
 
@@ -14,7 +14,6 @@ router.post('/',
   async (req, res, next)=>{
 
     const { email, password } = req.body;
-
 
     try{
 
@@ -25,7 +24,7 @@ router.post('/',
       }
       
       //check if password is correct
-      const validPassword = await bcrypt.compare(password, users.password_hash);
+      const validPassword = await bcrypt.compare(password, existingUser.password_hash);
       if (!validPassword) {
         return res.status(401).json({ success: false, error: 'Invalid credentials' });
       }
@@ -34,7 +33,7 @@ router.post('/',
       const accessToken = jwt.sign(
         {id: existingUser.id, email: existingUser.email, role: existingUser.role},
         process.env.JWT_SECRET,
-        {expiresIn: '15m'}
+        {expiresIn: '15m'} //jsonwebtoken would convert this to timestamp
       );
 
       //generate refresh token
@@ -46,13 +45,30 @@ router.post('/',
       const expiresAt = new Date(Date.now() + 7*24*60*60*1000); // 7 days
 
       //insert refresh token to database
-      const newRefreshToken = await db.insert(refresh_tokens).values({
+      await db.insert(refresh_tokens).values({
         user_id: existingUser.id,
         token: refreshToken,
         expires_at: expiresAt,
         revoked: false
       });
 
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,      // Can't be accessed by JavaScript
+        secure: process.env.NODE_ENV === 'production',        // if secure is set to true, It would only be sent over HTTPS
+        sameSite: 'strict',  // CSRF protection
+        maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
+      });
+
+      res.json({
+        success: true,
+        accessToken: accessToken,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          first_name: existingUser.first_name,
+          role: existingUser.role
+        }
+      });
 
     }catch(error){
       next(error);
@@ -60,3 +76,5 @@ router.post('/',
 
   }
 );
+
+export default router;
