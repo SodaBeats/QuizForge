@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../components/AuthProvider';
+
+//TO DO: setToken to the login function
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +14,7 @@ export default function LogInComponent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student'); // ← Add role state
   const [loading, setLoading] = useState(false);
+  const { setToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -51,7 +56,7 @@ export default function LogInComponent() {
         return;
       }
       if (isLogin) {
-        localStorage.setItem('token', data.token);
+        setToken(data.accessToken);
         navigate('/');
       } 
       else{

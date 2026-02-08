@@ -22,6 +22,7 @@ app.use('/api/upload', uploadRoutes); //file uploads go through this route
 app.use('/api/questions', questionRoute);//manually made question go through this route
 //app.use('/api/login', loginRoute);
 app.use('/api/signup', signupRoute);
+app.use('/auth/refresh', refreshRoute);
 
 app.use((err,req,res,next)=>{
   if (err instanceof multer.MulterError) {

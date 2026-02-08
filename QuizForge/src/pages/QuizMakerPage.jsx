@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useState, useEffect } from "react";
+import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
 import SideBar from "../components/SideBar";
 import FileViewer from "../components/FileViewer";
@@ -15,6 +16,7 @@ export default function QuizMakerSkeleton() {
   const [fileContent, setFileContent] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [questions, setQuestions] = useState([]);
+  const { authFetch } = useContext(AuthContext);
 
   //determine which file is selected
   const selectedFile = uploadedFiles?.find(f => f.id === selectedFileId) || null;
@@ -60,7 +62,7 @@ export default function QuizMakerSkeleton() {
     data.append('file', file);
 
     try{
-      const response = await fetch('http://localhost:3000/api/upload', {
+      const response = await authFetch('http://localhost:3000/api/upload', {
         method: 'POST',
         body: data,
       });
