@@ -28,14 +28,16 @@ export function AuthProvider({ children }) {
         credentials: 'include', 
       });
 
+      const data = await response.json();
+
       //if the refresh token is also invalid, navigate to login ----------------------WIP
       //STILL NEED TO DO LOGOUT LOGIC
       if(!response.ok){
         setToken(null);
         navigate('/login');
+        alert(data.message);
         return null;
       }
-      const data = await response.json();
       setToken(data.accessToken); // Put the new access token in state
 
       return data.accessToken; //return the new token for the interceptor

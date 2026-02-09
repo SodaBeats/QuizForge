@@ -5,6 +5,7 @@ import healthRoutes from "./routes/health.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import questionRoute from './routes/question.route.js';
 import signupRoute from './routes/signup.route.js';
+import refreshRoute from './routes/refresh.route.js';
 
 const app = express();
 
@@ -38,8 +39,9 @@ app.use((err,req,res,next)=>{
     return res.status(400).json({ error: err.message });
   }
   console.error(err);
-  res.status(500).json({
-    message: 'Something went wrong.',
+  const status = err.status || 500;
+  res.status(status).json({
+    message: err.message || 'Internal Server Error',
     error: err.message
   });
 });
