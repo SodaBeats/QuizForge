@@ -2,7 +2,6 @@ import { createContext, useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from './LoadingScreen';
 
-
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
 
@@ -23,12 +22,10 @@ export function AuthProvider({ children }) {
     try {
       // We include 'credentials: include' so the browser 
       // sends the HTTP-only Refresh Cookie to the server
-      const response = await fetch('http://localhost:3000/auth/refresh', { //-----------------------WIP NO REFRESH ENDPOINT YET
+      const response = await fetch('http://localhost:3000/auth/refresh', {
         method: 'POST',
         credentials: 'include', 
       });
-
-      const data = await response.json();
 
       //if the refresh token is also invalid, navigate to login ----------------------WIP
       //STILL NEED TO DO LOGOUT LOGIC
@@ -38,6 +35,9 @@ export function AuthProvider({ children }) {
         alert(data.message);
         return null;
       }
+
+      const data = await response.json();
+
       setToken(data.accessToken); // Put the new access token in state
 
       return data.accessToken; //return the new token for the interceptor
@@ -68,8 +68,8 @@ export function AuthProvider({ children }) {
     }catch(err){
       console.error('logout fetch failed', err);
     }finally{
-      setToken(null);
-      navigate('/login'); // Send them home or to login!
+      setToken(null); //clear local react state
+      navigate('/login'); // Send them home or to login
     }
   };
 

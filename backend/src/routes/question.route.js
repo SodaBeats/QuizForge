@@ -2,13 +2,16 @@ import express from 'express';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { quiz_questions } from '../db/schema.js';
+import { verifyToken } from '../middlewares/auth.middleware.js';
 
 
 //establish router
 const router = express.Router();
 
 
-router.post('/', async (req, res, next)=>{
+router.post('/',
+  verifyToken,
+  async (req, res, next)=>{
   if (!req.body?.questionText || !req.body?.questionType){
     res.status(500).json({success: false, message: 'Please fill required input'});
     return;
@@ -35,7 +38,7 @@ router.post('/', async (req, res, next)=>{
   }
 });
 
-router.get('/', async(req, res, next)=>{
+router.get('/', verifyToken, async(req, res, next)=>{
   const {documentId} = req.query;
   if (!documentId) {
     return res.status(400).json({ error: 'documentId required' });
@@ -51,7 +54,7 @@ router.get('/', async(req, res, next)=>{
   }
 });
 
-router.put('/:id', async(req, res, next)=>{
+router.put('/:id', verifyToken, async(req, res, next)=>{
   const {id} = req.params;
   const {
     questionText,

@@ -116,9 +116,10 @@ export default function QuizMakerSkeleton() {
 
   useEffect(()=> {
     if (!selectedFileId) return;
-    fetch(`http://localhost:3000/api/questions?documentId=${selectedFileId}`)
+    authFetch(`http://localhost:3000/api/questions?documentId=${selectedFileId}`)
       .then(res => res.json())
       .then(data => setQuestions(data));
+      //eslint-disable-next-line
   }, [selectedFileId]);
 
   return (

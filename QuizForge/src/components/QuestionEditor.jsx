@@ -1,7 +1,9 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "./AuthProvider";
 
 export default function QuestionEditor({ selectedFile, questions, setQuestions, selectedQuestion }) {
 
+  const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
   const [manualQuestion, setManualQuestion] = useState({ //question usestate
 
@@ -53,7 +55,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
       
       const method = addMode === 'edit' ? 'PUT' : 'POST';
       
-      const response = await fetch(endpoint, {
+      const response = await authFetch(endpoint, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
 
       if(result.success){
         // Refetch questions from the server
-        const questionsResponse = await fetch(
+        const questionsResponse = await authFetch(
           `http://localhost:3000/api/questions?documentId=${selectedFile.id}`
         );
         const updatedQuestions = await questionsResponse.json();
