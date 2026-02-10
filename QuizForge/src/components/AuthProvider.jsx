@@ -27,8 +27,8 @@ export function AuthProvider({ children }) {
         credentials: 'include', 
       });
 
-      //if the refresh token is also invalid, navigate to login ----------------------WIP
-      //STILL NEED TO DO LOGOUT LOGIC
+      //if the refresh token is also invalid, navigate to login
+      // TO DO: MAKE ENDPOINT LOGIC AND JUST FETCH THE LOGOUT ENDPOINT--------------------------------
       if(!response.ok){
         setToken(null);
         navigate('/login');
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     //Tell the backend to delete the HTTP-only cookie
     try{
-      await fetch('http://localhost:3000/api/logout', { 
+      await fetch('http://localhost:3000/api/logout', { //TO DO: MAKE LOGOUT ENDPOINT ----------------------
         method: 'POST', 
         credentials: 'include' 
       });
@@ -78,7 +78,6 @@ export function AuthProvider({ children }) {
     return <LoadingScreen />; // Or your loading component
   }
 
-  //--------------------------------------------------WIP---------------
   const authFetch = async (url, options = {}) => {
     //get custom headers inside options and add authz
     const headers = {
@@ -110,7 +109,7 @@ export function AuthProvider({ children }) {
 
   return (
     
-    //any component inside can access token and setToken
+    //any component inside can access token, setToken, logout, silentRefresh, and authFetch
     <AuthContext.Provider value={{token, setToken, logout, silentRefresh, authFetch}}>
       {children}
     </AuthContext.Provider>

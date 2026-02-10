@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./AuthProvider";
 
-export default function QuestionEditor({ selectedFile, questions, setQuestions, selectedQuestion }) {
+export default function QuestionEditor({ selectedFile, setQuestions, selectedQuestion }) {
 
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
@@ -17,6 +17,7 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
     correctAnswer: ''
   });
 
+  /*
   useEffect(() => {
     setManualQuestion(prev => ({
       ...prev,
@@ -40,6 +41,29 @@ export default function QuestionEditor({ selectedFile, questions, setQuestions, 
       setAddMode('edit');
     }
   }, [selectedQuestion]);
+  */
+
+  useEffect(() => {
+    if (selectedQuestion) {
+      setManualQuestion({
+        id: selectedQuestion.id,
+        documentId: selectedQuestion.document_id,
+        questionText: selectedQuestion.question_text || '',
+        questionType: selectedQuestion.question_type || 'multiple-choice',
+        optionA: selectedQuestion.option_a || '',
+        optionB: selectedQuestion.option_b || '',
+        optionC: selectedQuestion.option_c || '',
+        optionD: selectedQuestion.option_d || '',
+        correctAnswer: selectedQuestion.correct_answer || ''
+      });
+      setAddMode('edit');
+    } else {
+      setManualQuestion(prev => ({
+        ...prev,
+        documentId: selectedFile?.id || null
+      }));
+    }
+  }, [selectedQuestion, selectedFile?.id]);
 
 
   //changes question editor depending on which mode you select
