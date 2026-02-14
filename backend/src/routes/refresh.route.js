@@ -1,4 +1,4 @@
-import React from "react";
+import express from 'express';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/db.js';

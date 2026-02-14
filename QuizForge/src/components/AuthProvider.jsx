@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     //get custom headers inside options and add authz
     const headers = {
       ...options.headers,
-      'Authorization': `Bearer ${token}`,
+      'authorization': `Bearer ${token}`,
     };
 
     //only add JSON content-type if not sending FormData
@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
       
       if (newToken) {
         // Retry with the fresh token
-        headers['Authorization'] = `Bearer ${newToken}`;
+        headers['authorization'] = `Bearer ${newToken}`;
         response = await fetch(url, { ...options, headers });
       }
     }

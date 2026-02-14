@@ -4,7 +4,7 @@ import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 import { filterExamWorthySentences } from './textFilter.service.js';
 
-export const extractText = async(file) => {
+export const extractText = async(file, userId) => {
 
   try{
     const filePath = file.path;
@@ -22,6 +22,7 @@ export const extractText = async(file) => {
 
     //when inserting to database, use schema property names (snake case)
     const [insertedFile] = await db.insert(uploaded_files).values({
+      user_id: userId,
       filename: fileName,
       file_path: filePath,
       file_hash: fileHash,

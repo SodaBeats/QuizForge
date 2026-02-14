@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "./AuthProvider";
 
 export default function TopBar({ handleFileUpload, isUploading }) {
+
+  const [isLoading, setIsLoading] = useState(false);
+  const {logout} = useContext(AuthContext);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -9,6 +13,21 @@ export default function TopBar({ handleFileUpload, isUploading }) {
     }
     // Additional logic for handling the uploaded file can be added here
   }
+
+  const handleLogout = ()=>{
+
+    try{
+      setIsLoading(true);
+      logout();
+    }
+    catch(error){
+      alert('Error: ' + error);
+    }
+    finally{
+      setIsLoading(false);
+    }
+
+  };
 
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between">
@@ -39,6 +58,13 @@ export default function TopBar({ handleFileUpload, isUploading }) {
         </button>
         <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600">
           Export
+        </button>
+        <button 
+          className="px-4 py-2 bg-red-800 hover:bg-red-700 rounded border border-red-600"
+          disabled = {isLoading}
+          onClick = { handleLogout }
+        >
+          Logout
         </button>
       </div>
     </div>

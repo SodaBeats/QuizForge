@@ -1,7 +1,6 @@
 import express from 'express';
 import { db } from '../db/db.js';
 import { eq } from 'drizzle-orm';
-import 'dotenv/config';
 import { refresh_tokens } from '../db/schema.js';
 
 const router = express.Router();
@@ -18,7 +17,7 @@ router.post('/', async (req, res, next)=>{
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite:'lax',
       path:'/' //path must be the same as the declared path when creating the cookie
     });
 

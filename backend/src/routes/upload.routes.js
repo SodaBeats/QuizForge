@@ -17,7 +17,7 @@ router.post('/',
     //try to extract text and save to database
     //and then send to frontend if successful
     try{
-      const extractedText = await extractText(req.file);
+      const extractedText = await extractText(req.file, req.user.id);
       res.status(200).json(extractedText);
     }catch(err){
       next(err);

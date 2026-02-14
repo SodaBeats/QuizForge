@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
+import cookieParser from 'cookie-parser';
 import healthRoutes from "./routes/health.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import questionRoute from './routes/question.route.js';
@@ -14,10 +15,13 @@ const app = express();
 //allowing react and express to communicate
 app.use(cors({
   origin: "http://localhost:5173", // React dev server
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json()); // middleware for parsing json
+app.use(cookieParser()); //midlewaer for parsing cookies (refresh/access)
 
 app.use("/api",healthRoutes);
 
