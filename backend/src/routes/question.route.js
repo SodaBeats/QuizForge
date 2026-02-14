@@ -47,6 +47,7 @@ router.get('/', verifyToken, async(req, res, next)=>{
     const questions = await db.query.quiz_questions.findMany({
       where: eq(quiz_questions.document_id, documentId)
     });
+
     res.status(200).json(questions);
 
   }catch(error){

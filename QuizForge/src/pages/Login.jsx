@@ -37,7 +37,7 @@ export default function LogInComponent() {
     }
     setLoading(true);
     try {
-      const endpoint = isLogin ? '/api/login' : '/api/signup';
+      const endpoint = isLogin ? '/auth/login' : '/auth/signup';
       
       const body = isLogin 
         ? { email: email.toLocaleLowerCase(), password: password }

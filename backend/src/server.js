@@ -7,6 +7,7 @@ import questionRoute from './routes/question.route.js';
 import loginRoute from './routes/login.route.js';
 import signupRoute from './routes/signup.route.js';
 import refreshRoute from './routes/refresh.route.js';
+import logoutRoute from './routes/logout.route.js';
 
 const app = express();
 
@@ -22,8 +23,9 @@ app.use("/api",healthRoutes);
 
 app.use('/api/upload', uploadRoutes); //file uploads go through this route
 app.use('/api/questions', questionRoute);//manually made question go through this route
-app.use('/api/login', loginRoute);
-app.use('/api/signup', signupRoute);
+app.use('/auth/login', loginRoute);
+app.use('/auth/signup', signupRoute);
+app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
 app.use((err,req,res,next)=>{

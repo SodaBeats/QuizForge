@@ -56,6 +56,7 @@ router.post('/',
         httpOnly: true,      // Can't be accessed by JavaScript
         secure: process.env.NODE_ENV === 'production',        // if secure is set to true, It would only be sent over HTTPS
         sameSite: 'strict',  // CSRF protection
+        path: '/', // this sends/stores? the cookie in every backend route
         maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
       });
 

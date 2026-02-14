@@ -28,12 +28,8 @@ export function AuthProvider({ children }) {
       });
 
       //if the refresh token is also invalid, navigate to login
-      // TO DO: MAKE ENDPOINT LOGIC AND JUST FETCH THE LOGOUT ENDPOINT--------------------------------
       if(!response.ok){
-        setToken(null);
-        navigate('/login');
-        alert(data.message);
-        return null;
+        logout();
       }
 
       const data = await response.json();
@@ -61,7 +57,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     //Tell the backend to delete the HTTP-only cookie
     try{
-      await fetch('http://localhost:3000/api/logout', { //TO DO: MAKE LOGOUT ENDPOINT ----------------------
+      await fetch('http://localhost:3000/auth/logout', {
         method: 'POST', 
         credentials: 'include' 
       });
