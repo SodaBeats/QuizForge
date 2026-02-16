@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
   //empty default
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const navigate = useNavigate();
 
   const silentRefresh = async () => {

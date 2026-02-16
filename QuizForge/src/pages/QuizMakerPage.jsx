@@ -115,6 +115,7 @@ export default function QuizMakerSkeleton() {
     }
   }, [uploadedFiles]);
 
+  //gets the questions related to the selected document
   useEffect(()=> {
     if (!selectedFileId) return;
     authFetch(`http://localhost:3000/api/questions?documentId=${selectedFileId}`)
