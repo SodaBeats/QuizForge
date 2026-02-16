@@ -18,7 +18,7 @@ router.post('/', async (req, res, next)=>{
 
   //verify if refresh token is untampered
   try{
-    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     //get the refresh token from the database
     const [activeRefresh] = await db.select().from(refresh_tokens).where(eq(refresh_tokens.token, refreshToken));

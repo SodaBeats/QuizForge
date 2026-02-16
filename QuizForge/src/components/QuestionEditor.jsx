@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./AuthProvider";
 
-export default function QuestionEditor({ selectedFile, setQuestions, selectedQuestion }) {
+export default function QuestionEditor({ selectedFile, setQuestions, selectedQuestion, setSelectedQuestionId }) {
 
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
@@ -211,6 +211,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                     <button
                       onClick={() => {
                         setAddMode(null);
+                        setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
                           questionText: '',

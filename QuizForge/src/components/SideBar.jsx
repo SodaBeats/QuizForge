@@ -18,7 +18,7 @@ function SideBar({
             uploadedFiles.map((file) => (
               <div 
                 key={file.id}
-                className={`py-1 px-2 rounded cursor-pointer text-sm ${
+                className={`py-1 px-2 rounded cursor-pointer text-sm truncate ${
                   selectedFileId === file.id ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
                 }`}
                 onClick={() => setSelectedFileId(file.id)}
@@ -40,7 +40,7 @@ function SideBar({
             questions.map((question)=>(
               <div
                 key={question.id}
-                className={`py-1 px-2 rounded cursor-pointer text-sm ${
+                className={`py-1 px-2 rounded cursor-pointer text-sm truncate ${
                   selectedQuestionId === question.id ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
                 }`}
                 onClick={() => setSelectedQuestionId(question.id)}
