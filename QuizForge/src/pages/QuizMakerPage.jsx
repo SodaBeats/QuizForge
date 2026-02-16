@@ -13,7 +13,6 @@ export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
-  const [fileContent, setFileContent] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const { authFetch } = useContext(AuthContext);
@@ -56,7 +55,6 @@ export default function QuizMakerSkeleton() {
       alert('Please upload a .docx file');
       return;
     }
-    setFileContent('Uploading and processing file...');
 
     const data = new FormData();
     data.append('file', file);
@@ -85,7 +83,6 @@ export default function QuizMakerSkeleton() {
         }
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);
-        setFileContent(result.content);
 
       } 
       else {
@@ -94,7 +91,6 @@ export default function QuizMakerSkeleton() {
 
     }catch(error){
       console.error('Upload error:', error);
-      setFileContent('Failed to upload file');
       alert('Failed to upload file. Please try again.');
     }finally{
       setIsUploading(false);
