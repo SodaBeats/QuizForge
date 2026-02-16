@@ -7,6 +7,7 @@ import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
 
 //test commit for the branch
+//another test commit to understand pull requests
 
 export default function QuizMakerSkeleton() {
 
