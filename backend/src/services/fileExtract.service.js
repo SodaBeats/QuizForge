@@ -2,7 +2,7 @@ import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
-import { filterExamWorthySentences } from './textFilter.service.js';
+import { cleanExtractedText } from './textCleaner.service.js';
 
 export const extractText = async(file, userId) => {
 
@@ -23,7 +23,7 @@ export const extractText = async(file, userId) => {
       extractedText = result.value;
     }
 
-    //const filteredText = filterExamWorthySentences(extractedText);
+    const cleanedText = cleanExtractedText(extractedText);
     
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
@@ -39,14 +39,14 @@ export const extractText = async(file, userId) => {
       filename: fileName,
       file_path: 'temporary_input',
       file_hash: fileHash,
-      extracted_text: extractedText
+      extracted_text: cleanedText
     }).returning();
 
     return{
       success: true,
       fileId: insertedFile.id,
       fileName: insertedFile.filename,
-      content: extractedText,
+      content: cleanedText,
       type: file.mimetype
     }
 
