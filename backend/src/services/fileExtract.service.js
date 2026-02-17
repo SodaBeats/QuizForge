@@ -1,5 +1,5 @@
-import fs from 'fs';
 import mammoth from 'mammoth';
+import pdf from 'pdf-extraction';
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 import { filterExamWorthySentences } from './textFilter.service.js';
@@ -7,10 +7,23 @@ import { filterExamWorthySentences } from './textFilter.service.js';
 export const extractText = async(file, userId) => {
 
   try{
-    const filePath = file.path;
-    const result = await mammoth.extractRawText({path: filePath});
-    const extractedText = result.value;
-    const filteredText = filterExamWorthySentences(extractedText);
+    if(!file){
+      throw new Error('no file uploaded');
+    }
+
+    let extractedText = '';
+
+    //Use appropriate library depending on Mimetype
+    if(file.mimetype === 'application/pdf'){
+      const data = await pdf(file.buffer);
+      extractedText = data.text;
+    }
+    else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      extractedText = result.value;
+    }
+
+    //const filteredText = filterExamWorthySentences(extractedText);
     
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
@@ -24,9 +37,9 @@ export const extractText = async(file, userId) => {
     const [insertedFile] = await db.insert(uploaded_files).values({
       user_id: userId,
       filename: fileName,
-      file_path: filePath,
+      file_path: 'temporary_input',
       file_hash: fileHash,
-      extracted_text: filteredText
+      extracted_text: extractedText
     }).returning();
 
     return{
@@ -38,6 +51,6 @@ export const extractText = async(file, userId) => {
     }
 
   }catch(err){
-    throw new Error(`Failed to extract DOCX text: ${err.message}`);
+    throw new Error(`File extraction service error: ${err.message}`);
   }
 }

@@ -49,11 +49,12 @@ export default function QuizMakerSkeleton() {
     setIsUploading(true);
 
     const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/pdf' // .docx
     ];
     
     if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a .docx file');
+      alert('Please upload a DOCX or PDF file');
       return;
     }
 

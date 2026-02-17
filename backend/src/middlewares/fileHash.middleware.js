@@ -14,7 +14,7 @@ export const fileHashMiddleware = async (req, res, next) => {
   try {
     // Hash the file content
     if (req.file) {
-      req.file.fileHash = await hashFile(req.file.path);
+      req.file.fileHash = await hashFile(req.file.buffer);
     }
     
     //find the file with the same hash
@@ -24,11 +24,6 @@ export const fileHashMiddleware = async (req, res, next) => {
 
     //extract the existing file from database and send to frontend
     if(existingFile){
-      try{
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        console.error('Failed to delete file:', err);
-      }
 
       return res.json({
         success: true,
@@ -39,26 +34,17 @@ export const fileHashMiddleware = async (req, res, next) => {
       });
     }
 
-    // Handle multiple file uploads (req.files)
-    //-----------------------------------------------------WORK IN PROGRESS
+    // 3. Handle Multiple Files (WIP Fix)
     if (req.files) {
-      // If req.files is an array
-      if (Array.isArray(req.files)) {
-        for (const file of req.files) {
-          file.fileHash = await hashFile(file.path);
-        }
-      } 
-      // If req.files is an object (field-based uploads)
-      else {
-        for (const fieldName in req.files) {
-          const files = req.files[fieldName];
-          for (const file of files) {
-            file.fileHash = await hashFile(file.path);
-          }
-        }
+      const filesArray = Array.isArray(req.files) 
+        ? req.files 
+        : Object.values(req.files).flat();
+
+      for (const file of filesArray) {
+        file.fileHash = await hashBuffer(file.buffer);
+        // Note: You'd need a strategy for duplicates in multiple uploads
       }
     }
-    //--------------------------------------------------------
     next();
   } catch (error) {
     next(error);
@@ -71,15 +57,14 @@ export const fileHashMiddleware = async (req, res, next) => {
  * @returns {Promise<string>} - Hex hash string
  */
 
-async function hashFile(filePath) {
-  const fileBuffer = await readFile(filePath);
+async function hashFile(buffer) {
   const hash = crypto.createHash('sha256');
-  hash.update(fileBuffer);
+  hash.update(buffer);
   return hash.digest('hex');
 }
 
 /**
- * Alternative: Stream-based hashing for large files
+ * Alternative: Stream-based hashing for large files -------------------- wip
  */
 export const hashFileStream = (filePath) => {
   return new Promise((resolve, reject) => {
@@ -91,25 +76,3 @@ export const hashFileStream = (filePath) => {
     stream.on('error', (error) => reject(error));
   });
 };
-
-// Usage example with Express and Multer:
-/*
-import express from 'express';
-import multer from 'multer';
-import { fileHashMiddleware } from './middleware/fileHash.js';
-
-const app = express();
-const upload = multer({ dest: 'uploads/' });
-
-app.post('/upload', 
-  upload.single('file'), 
-  fileHashMiddleware, 
-  (req, res) => {
-    console.log('File hash:', req.file.fileHash);
-    res.json({
-      filename: req.file.filename,
-      hash: req.file.fileHash
-    });
-  }
-);
-*/
