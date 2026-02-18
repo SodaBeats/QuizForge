@@ -1,12 +1,17 @@
 import mammoth from 'mammoth';
-import pdf from 'pdf-extraction';
+const pdf = require('pdf-extraction');
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 import { cleanExtractedText } from './textCleaner.service.js';
+import type { UploadedFileInterface } from '../types/file.js';
 
-export const extractText = async(file, userId) => {
+export const extractText = async(
+  file: UploadedFileInterface | null | undefined,
+  userId: number
+) => {
 
   try{
+
     if(!file){
       throw new Error('no file uploaded');
     }
@@ -44,13 +49,16 @@ export const extractText = async(file, userId) => {
 
     return{
       success: true,
-      fileId: insertedFile.id,
-      fileName: insertedFile.filename,
+      fileId: insertedFile?.id,
+      fileName: insertedFile?.filename,
       content: cleanedText,
       type: file.mimetype
     }
 
-  }catch(err){
-    throw new Error(`File extraction service error: ${err.message}`);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new Error(`File extraction service error: ${err.message}`);
+    }
+    throw new Error('File extraction service error');
   }
 }

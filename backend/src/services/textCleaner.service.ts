@@ -1,8 +1,6 @@
 
 
-export const cleanExtractedText = (text) =>{
-  
-  if (!text || text.trim() === '') return '';
+export const cleanExtractedText = (text: string): string =>{
 
   return text
     // 1. Remove "Displaced" Footers/Page numbers
