@@ -1,4 +1,5 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/db.js';
 import { users } from '../db/schema.js';
 import bcrypt from 'bcrypt';
@@ -9,7 +10,7 @@ const router = express.Router();
 
 router.post('/', 
   signupValidator,
-  async (req, res, next)=>{
+  async (req: Request, res: Response, next: NextFunction)=>{
 
   const { first_name, last_name, email, password, role } = req.body;
 

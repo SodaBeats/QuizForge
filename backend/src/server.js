@@ -21,7 +21,7 @@ app.use(cors({
 }));
 
 app.use(express.json()); // middleware for parsing json
-app.use(cookieParser()); //midlewaer for parsing cookies (refresh/access)
+app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
 
 app.use("/api",healthRoutes);
 

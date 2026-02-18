@@ -30,8 +30,8 @@ router.post('/',
 
     res.status(200).json({
       success: true, 
-      documentId: insertedQuestion.document_id, 
-      questionId: insertedQuestion.id
+      documentId: insertedQuestion?.document_id, 
+      questionId: insertedQuestion?.id
     });
   }catch(error){
     next(error);
@@ -43,9 +43,16 @@ router.get('/', verifyToken, async(req, res, next)=>{
   if (!documentId) {
     return res.status(400).json({ error: 'documentId required' });
   }
+
+  // make sure we pass a number to `eq`
+  const docIdNum = Number(documentId);
+  if (Number.isNaN(docIdNum)) {
+    return res.status(400).json({ error: 'documentId must be a number' });
+  }
+
   try{
     const questions = await db.query.quiz_questions.findMany({
-      where: eq(quiz_questions.document_id, documentId)
+      where: eq(quiz_questions.document_id, docIdNum)
     });
 
     res.status(200).json(questions);
@@ -69,15 +76,16 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
   try{
     const updatedQuestion = await db.update(quiz_questions)
       .set({
-        question_text: questionText,
+        question_text: questionText?.trim(),
         question_type: questionType,
         correct_answer: correctAnswer,
-        option_a: optionA,
-        option_b: optionB,
-        option_c: optionC,
-        option_d: optionD
+        option_a: optionA?.trim(),
+        option_b: optionB?.trim(),
+        option_c: optionC?.trim(),
+        option_d: optionD?.trim()
       })
-      .where (eq(quiz_questions.id, Number(id)));
+      .where (eq(quiz_questions.id, Number(id)))
+      .returning();
 
     if(updatedQuestion.length < 1){
       return res.status(404).json({error: 'Question not found'});

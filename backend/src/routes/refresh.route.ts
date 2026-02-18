@@ -26,7 +26,7 @@ router.post('/', async (req, res, next)=>{
     //check if it exists, returns a failure if none
     if(!activeRefresh){
       const error = new Error('Token not found');
-      error.status = 401;
+      (error as any).status = 401;
       throw error;
     }
 
@@ -36,7 +36,7 @@ router.post('/', async (req, res, next)=>{
     //check if user exists
     if (!user) {
       const error = new Error('User does not exist');
-      error.status = 401;
+      (error as any).status = 401;
       throw error;
     }
 
@@ -53,8 +53,10 @@ router.post('/', async (req, res, next)=>{
   }
   catch(error){
     //if jwt verify fails (expired or tampered), it throws an error and lands here
-    if(error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError'){
-      return res.status(401).json({message: 'Invalid or expired refresh token'});
+    if(error instanceof Error){
+      if(error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError'){
+        return res.status(401).json({message: 'Invalid or expired refresh token'});
+      }
     }
     next(error);
   }

@@ -1,4 +1,5 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/db.js';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
@@ -11,7 +12,7 @@ const router = express.Router();
 
 router.post('/', 
   loginValidator,
-  async (req, res, next)=>{
+  async (req: Request, res: Response, next: NextFunction)=>{
 
     const { email, password } = req.body;
 
