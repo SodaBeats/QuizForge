@@ -1,5 +1,5 @@
 import mammoth from 'mammoth';
-const pdf = require('pdf-extraction');
+import pdf from 'pdf-extraction';
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 import { cleanExtractedText } from './textCleaner.service.js';

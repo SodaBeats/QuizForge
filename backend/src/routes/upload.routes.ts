@@ -9,7 +9,7 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 //establish router
 const router = express.Router();
 
-// extend the express Request object to capture the custom fields added by middleware
+// extend the express Request object to capture the custom fields added by middlewares
 interface MulterRequest extends Request {
   // multer will populate "file" when using memoryStorage
   file: Express.Multer.File & { fileHash: string };
@@ -33,7 +33,12 @@ router.post('/',
         return res.status(401).json({ message: 'Unauthenticated' });
       }
 
-      // translate the Multer file into our own interface shape
+      // translate the Multer file into my own interface shape
+      //I can just pass multerReq.file in the extracText function
+      //but that function would then be reliant on Multer
+      //by makiing my own object interface, the function won't care if multer exists
+      //also multerReq.file would have too much properties, so I made fileObj with only
+      //the properties I need
       const fileObj = {
         buffer: multerReq.file.buffer,
         mimetype: multerReq.file.mimetype,
