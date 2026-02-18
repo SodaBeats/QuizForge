@@ -23,11 +23,11 @@ export const extractText = async(file, userId) => {
       extractedText = result.value;
     }
 
-    const cleanedText = cleanExtractedText(extractedText);
-    
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
     }
+
+    const cleanedText = cleanExtractedText(extractedText);
 
     //store the needed values into variables for ease of use
     const fileName = file.originalname;
