@@ -76,13 +76,13 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
   try{
     const updatedQuestion = await db.update(quiz_questions)
       .set({
-        question_text: questionText,
+        question_text: questionText?.trim(),
         question_type: questionType,
         correct_answer: correctAnswer,
-        option_a: optionA,
-        option_b: optionB,
-        option_c: optionC,
-        option_d: optionD
+        option_a: optionA?.trim(),
+        option_b: optionB?.trim(),
+        option_c: optionC?.trim(),
+        option_d: optionD?.trim()
       })
       .where (eq(quiz_questions.id, Number(id)))
       .returning();
