@@ -1,4 +1,5 @@
 import express from "express";
+import type { Request, Response, NextFunction} from 'express';
 import cors from "cors";
 import multer from "multer";
 import cookieParser from 'cookie-parser';
@@ -11,6 +12,11 @@ import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 
 const app = express();
+
+interface AppError extends Error{
+  status?: number;
+  code?: string;
+}
 
 //allowing react and express to communicate
 app.use(cors({
@@ -32,7 +38,7 @@ app.use('/auth/signup', signupRoute);
 app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
-app.use((err,req,res,next)=>{
+app.use((err: AppError,req: Request,res: Response,next: NextFunction)=>{
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({ error: 'File too large (max 5MB)' });
