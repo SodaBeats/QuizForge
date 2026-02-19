@@ -9,6 +9,8 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 //establish router
 const router = express.Router();
 
+//Express.Multer.File is a TYPE, like a drawing that specifies what a file must have
+//This line of code extends that drawing to include fileHash
 interface FileWithHash extends Express.Multer.File{
   fileHash: string;
 }
