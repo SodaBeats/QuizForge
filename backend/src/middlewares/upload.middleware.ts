@@ -1,4 +1,5 @@
-import multer from 'multer';
+import type { Request } from 'express';
+import multer, { type FileFilterCallback } from 'multer';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,14 +11,19 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.memoryStorage();
 
 // file filter to only allow DOCX and pdf files
-const fileFilter = (req, file, cb) => {
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback) => {
+  
   const allowedMimeTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
-  const allowedExtension = ['.docx', '.pdf'];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only DOCX and PDF files allowed'));
+    const error = new Error('Only DOCX and PDF files are allowed');
+    (error as any).code = 'INVALID_FILE_TYPE';
+    cb(error as any, false);
   }
 };
 

@@ -9,12 +9,8 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 //establish router
 const router = express.Router();
 
-// extend the express Request object to capture the custom fields added by middlewares
-interface MulterRequest extends Request {
-  // multer will populate "file" when using memoryStorage
-  file: Express.Multer.File & { fileHash: string };
-  // auth middleware attaches a user property containing at least an id
-  user?: { id: number } | any;
+interface FileWithHash extends Express.Multer.File{
+  fileHash: string;
 }
 
 router.post('/',
@@ -23,13 +19,13 @@ router.post('/',
   fileHashMiddleware,           // middleware to generate file hash
   async (req, res: Response, next) => {
     // we'll narrow the type once inside
-    const multerReq = req as MulterRequest;
+    const file = req.file as FileWithHash;
 
     try {
-      if (!multerReq.file) {
+      if (!file) {
         return res.status(400).json({ message: 'No file provided' });
       }
-      if (!multerReq.user) {
+      if (!req.user) {
         return res.status(401).json({ message: 'Unauthenticated' });
       }
 
@@ -40,13 +36,13 @@ router.post('/',
       //also multerReq.file would have too much properties, so I made fileObj with only
       //the properties I need
       const fileObj = {
-        buffer: multerReq.file.buffer,
-        mimetype: multerReq.file.mimetype,
-        originalname: multerReq.file.originalname,
-        fileHash: multerReq.file.fileHash,
+        buffer: file.buffer,
+        mimetype: file.mimetype,
+        originalname: file.originalname,
+        fileHash: file.fileHash,
       };
 
-      const extractedText = await extractText(fileObj, multerReq.user.id);
+      const extractedText = await extractText(fileObj, req.user.id);
       res.status(200).json(extractedText);
     } catch (err) {
       next(err);

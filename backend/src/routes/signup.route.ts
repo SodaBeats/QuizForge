@@ -29,7 +29,7 @@ router.post('/',
       email: email,
       password_hash: password_hash,
       role: role || 'student'
-    })
+    });
 
     res.status(201).json({ 
         success: true, 

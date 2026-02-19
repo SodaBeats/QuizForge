@@ -1,6 +1,14 @@
+import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const verifyToken = (req, res, next) => {
+interface UserPayload {
+  id: number;
+  email: string;
+  role: string;
+}
+
+export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+
   //get token from header
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -10,7 +18,7 @@ export const verifyToken = (req, res, next) => {
   }
   try{
     // decodes the payload (id, email, role) using the secret key and assign it to verified.
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    const verified = jwt.verify(token, process.env.JWT_SECRET) as UserPayload;
 
     //assign (id, email, role) to the request object. (req.user)
     req.user = verified;
