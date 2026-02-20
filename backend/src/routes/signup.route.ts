@@ -5,6 +5,7 @@ import { users } from '../db/schema.js';
 import bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import { signupValidator } from '../middlewares/signupValidator.middleware.js';
+import { hashPassword, formatNewUser } from '../services/signup.service.js';
 
 const router = express.Router();
 
@@ -12,24 +13,22 @@ router.post('/',
   signupValidator,
   async (req: Request, res: Response, next: NextFunction)=>{
 
-  const { first_name, last_name, email, password, role } = req.body;
+  const { email, password } = req.body;
 
   try{
 
+    //check if user exists
     const existingUser = await db.select().from(users).where(eq(users.email, email));
-
     if(existingUser.length > 0){
       return res.status(400).json({success: false, error: 'Email already exists'});
     }
-    const password_hash = await bcrypt.hash(password, 10);
 
-    const newUser = await db.insert(users).values({
-      first_name: first_name,
-      last_name: last_name,
-      email: email,
-      password_hash: password_hash,
-      role: role || 'student'
-    });
+    //hash password and prepare data for data insertion
+    const passwordHash = await hashPassword(password);
+    const userData = formatNewUser(req.body, passwordHash);
+
+    //save to database
+    await db.insert(users).values(userData);
 
     res.status(201).json({ 
         success: true, 
