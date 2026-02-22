@@ -21,13 +21,13 @@ export const hashPassword = async (password: string): Promise<string> =>{
 export const formatNewUser = (
   data: RegistrationInput, 
   hashedPassword: string
-): Omit<InferInsertModel<typeof users>, 'id' | 'created_at' | 'updated_at'> => {
+) => {
   const allowedRoles = ['teacher', 'student'];
   return{
     first_name: data.first_name,
     last_name: data.last_name,
     email: data.email,
     password_hash: hashedPassword,
-    role: (allowedRoles.includes(data.role) ? data.role : 'student') as Role //default to student if role is not valid
+    role: allowedRoles.includes(data.role) ? data.role : 'student' //default to student if role is not valid
   };
 };

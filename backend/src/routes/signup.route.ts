@@ -2,7 +2,6 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/db.js';
 import { users } from '../db/schema.js';
-import bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import { signupValidator } from '../middlewares/signupValidator.middleware.js';
 import { hashPassword, formatNewUser } from '../services/signup.service.js';
