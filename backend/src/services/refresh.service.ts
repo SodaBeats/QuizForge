@@ -31,20 +31,13 @@ export const handleAccessTokenGeneration = async (refreshToken: string) => {
     }
 
     //generate new access token
-    const newAccessToken = jwt.sign(
+    return jwt.sign(
       {id: user.id, email: user.email, role: user.role},
       process.env.JWT_SECRET,
       {expiresIn: '15m'}
     );
 
-    return newAccessToken;
-
   }catch (error: any) {
-    // If it's one of our custom 401 errors, or a JWT error, keep it as is
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      error.status = 401; // Attach a 401 so the controller knows what to do
-    }
-    // Re-throw the original object so the Controller/Middleware gets all the details
     throw error; 
   }
 
