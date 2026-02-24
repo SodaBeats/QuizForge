@@ -44,6 +44,7 @@ router.post('/',
         fileHash: file.fileHash,
       };
 
+      //extract text from file
       const extractedText = await extractText(fileObj, req.user.id);
       res.status(200).json(extractedText);
     } catch (err) {

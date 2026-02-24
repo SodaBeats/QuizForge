@@ -6,8 +6,8 @@ import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
 
 function ProtectedRoute ({children}){
-  const { token } = useContext(AuthContext);
-  if (token) {
+  const { token, userInfo } = useContext(AuthContext);
+  if (token && userInfo.role === 'teacher') {
     return children;
   }else{
     return <Navigate to='/login' />;

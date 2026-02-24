@@ -14,7 +14,7 @@ export default function LogInComponent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student'); // ← Add role state
   const [loading, setLoading] = useState(false);
-  const { setToken } = useContext(AuthContext);
+  const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -58,6 +58,7 @@ export default function LogInComponent() {
       }
       if (isLogin) {
         setToken(data.accessToken);
+        setUserInfo(data.user);
         navigate('/');
       } 
       else{

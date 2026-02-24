@@ -14,8 +14,13 @@ export function AuthProvider({ children }) {
   //current login token, and function to change token
   //empty default
   const [token, setToken] = useState(null);
+  const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    silentRefresh();
+  }, []);
 
   const silentRefresh = async () => {
     try {
@@ -34,6 +39,7 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       setToken(data.accessToken); // Put the new access token in state
+      //setUserInfo(data.userInfo);
 
       return data.accessToken; //return the new token for the interceptor
 
@@ -47,10 +53,6 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    silentRefresh();
-  }, []);
 
   // Logout function to clear token
   const logout = async () => {
@@ -105,7 +107,7 @@ export function AuthProvider({ children }) {
   return (
     
     //any component inside can access token, setToken, logout, silentRefresh, and authFetch
-    <AuthContext.Provider value={{token, setToken, logout, silentRefresh, authFetch}}>
+    <AuthContext.Provider value={{token, setToken, userInfo, setUserInfo, logout, silentRefresh, authFetch}}>
       {children}
     </AuthContext.Provider>
   );

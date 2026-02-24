@@ -1,4 +1,5 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import { handleAccessTokenGeneration } from '../services/refresh.service.js';
 
 const router = express.Router();
@@ -16,10 +17,11 @@ router.post('/', async (req, res, next)=>{
   try{
 
     //service for access token generation
-    const newAccessToken = handleAccessTokenGeneration(refreshToken);
+    const newAccessToken = await handleAccessTokenGeneration(refreshToken);
+    const userInfo = jwt.verify(newAccessToken, process.env.JWT_SECRET);
 
     //send the new access token back to the frontend
-    res.status(200).json({success: true, accessToken: newAccessToken});
+    res.status(200).json({ success: true, accessToken: newAccessToken, userInfo: userInfo });
 
   }
   catch(error){

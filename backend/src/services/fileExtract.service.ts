@@ -3,7 +3,7 @@ import pdf from 'pdf-extraction';
 import { db } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 import { cleanExtractedText } from './textCleaner.service.js';
-import type { UploadedFileInterface } from '../types/file.js';
+import type { UploadedFileInterface } from '../types/file.js'; //TO DO: MAKE UNIT TEST FOR 
 
 export const extractText = async(
   file: UploadedFileInterface | null | undefined,
