@@ -21,7 +21,7 @@ router.post('/', async (req, res, next)=>{
     const userInfo = jwt.verify(newAccessToken, process.env.JWT_SECRET);
 
     //send the new access token back to the frontend
-    res.status(200).json({ success: true, accessToken: newAccessToken, userInfo: userInfo });
+    res.status(200).json({ success: true, accessToken: newAccessToken, user: userInfo });
 
   }
   catch(error){
