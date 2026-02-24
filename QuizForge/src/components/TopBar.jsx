@@ -46,11 +46,6 @@ export default function TopBar({ handleFileUpload, isUploading }) {
           accept=".pdf,.txt,.docx,.doc"
           onChange={(e) => {handleFileChange(e);}}
         />
-        <input 
-          type="text" 
-          placeholder="Quiz Title" 
-          className="px-3 py-2 bg-gray-800 border border-gray-600 rounded w-64"
-        />
       </div>
       <div className="flex items-center gap-2">
         <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600">

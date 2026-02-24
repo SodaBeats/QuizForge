@@ -7,13 +7,13 @@ import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
 
 //test commit for the branch
+//another test commit to understand pull requests
 
 export default function QuizMakerSkeleton() {
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
-  const [fileContent, setFileContent] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const { authFetch } = useContext(AuthContext);
@@ -49,14 +49,14 @@ export default function QuizMakerSkeleton() {
     setIsUploading(true);
 
     const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/pdf' // .docx
     ];
     
     if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a .docx file');
+      alert('Please upload a DOCX or PDF file');
       return;
     }
-    setFileContent('Uploading and processing file...');
 
     const data = new FormData();
     data.append('file', file);
@@ -85,7 +85,6 @@ export default function QuizMakerSkeleton() {
         }
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);
-        setFileContent(result.content);
 
       } 
       else {
@@ -94,7 +93,6 @@ export default function QuizMakerSkeleton() {
 
     }catch(error){
       console.error('Upload error:', error);
-      setFileContent('Failed to upload file');
       alert('Failed to upload file. Please try again.');
     }finally{
       setIsUploading(false);

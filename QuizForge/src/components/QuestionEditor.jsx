@@ -16,33 +16,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
     optionD: '',
     correctAnswer: ''
   });
-
-  /*
-  useEffect(() => {
-    setManualQuestion(prev => ({
-      ...prev,
-      documentId: selectedFile?.id || null
-    }));
-  }, [selectedFile]);
-
-  useEffect(() => {
-    if (selectedQuestion) {
-      setManualQuestion({
-        id: selectedQuestion.id,
-        documentId: selectedQuestion.document_id,
-        questionText: selectedQuestion.question_text || '',
-        questionType: selectedQuestion.question_type || 'multiple-choice',
-        optionA: selectedQuestion.option_a || '',
-        optionB: selectedQuestion.option_b || '',
-        optionC: selectedQuestion.option_c || '',
-        optionD: selectedQuestion.option_d || '',
-        correctAnswer: selectedQuestion.correct_answer || ''
-      });
-      setAddMode('edit');
-    }
-  }, [selectedQuestion]);
-  */
-
+  
   useEffect(() => {
     if (selectedQuestion) {
       setManualQuestion({
@@ -108,6 +82,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
           optionD: '',
           correctAnswer: ''
         })
+        setSelectedQuestionId(null);
       } else {
         alert('Error:' + result.message);
       }
