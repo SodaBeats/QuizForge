@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       setToken(data.accessToken); // Put the new access token in state
-      setUserInfo(data.userInfo);
+      setUserInfo(data.user);
 
       return data.accessToken; //return the new token for the interceptor
 

@@ -6,8 +6,6 @@ import SideBar from "../components/SideBar";
 import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
 
-//test commit for the branch
-//another test commit to understand pull requests
 
 export default function QuizMakerSkeleton() {
 
@@ -128,6 +126,9 @@ export default function QuizMakerSkeleton() {
       <TopBar 
         handleFileUpload={handleFileUpload}
         isUploading = {isUploading}
+        setSelectedFileId = {setSelectedFileId}
+        selectedFileId = {selectedFileId}
+        setUploadedFiles={setUploadedFiles}
       />
 
       {/* Main Content Area */}

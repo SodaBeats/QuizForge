@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "./AuthProvider";
 
-export default function TopBar({ handleFileUpload, isUploading }) {
+export default function TopBar({ handleFileUpload, isUploading, setSelectedFileId, selectedFileId, setUploadedFiles}) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -46,6 +46,47 @@ export default function TopBar({ handleFileUpload, isUploading }) {
     setShowFileModal(false);
   };
 
+  const handleSelectDocument = async (doc) => {
+    // close modal and select immediately
+    setShowFileModal(false);
+    setSelectedFileId(doc.id);
+
+    // ensure parent has an entry for this doc (without copying any large content)
+    setUploadedFiles(prev => prev.some(f => f.id === doc.id) ? prev : [
+      ...prev,
+      {
+        id: doc.id,
+        name: doc.title || String(doc.id),
+        nickname: doc.title || String(doc.id),
+        content: null
+      }
+    ]);
+
+    // fetch full content on demand and merge into parent state
+    try {
+      const resp = await authFetch(`http://localhost:3000/api/documents/${doc.id}`, {
+        credentials: 'include'
+      });
+      if (!resp.ok) {
+        throw new Error(`HTTP error! status: ${resp.status}`);
+      }
+      const full = await resp.json();
+
+      if (!full.success){
+        alert('Error: ' + full.error);
+        return;
+      }
+
+      setUploadedFiles(prev => prev.map(f => f.id === doc.id ? { ...f, content: full.content ?? f.content } : f));
+      //setUploadedFiles(prev => prev.map(f => f.id === doc.id ? { ...f, content: full.content ?? f.content, name: full.title ?? f.name } : f));
+
+    } catch (err) {
+      // swallow — parent can request content later
+      console.error('Document selection error: ', err);
+      alert('Failed to select document. Please try again later');
+    }
+  };
+
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -78,10 +119,15 @@ export default function TopBar({ handleFileUpload, isUploading }) {
 
               <div className="space-y-2 mb-6">
                 {userDocuments.length > 0 ? (
-                  userDocuments.map((doc, index) => (
+                  userDocuments.map((doc) => (
                     <div
-                      key={index}
-                      className="p-3 bg-gray-700 hover:bg-gray-600 rounded cursor-pointer border border-gray-600 text-white"
+                      key={doc.id}
+                        onClick={() => handleSelectDocument(doc)}
+                      className={`p-3 rounded cursor-pointer border transition-colors text-white ${
+                        selectedFileId === doc.id
+                          ? 'bg-blue-600 border-blue-500'
+                          : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
+                      }`}
                     >
                       <span className="truncate">{doc.title || doc}</span>
                     </div>
