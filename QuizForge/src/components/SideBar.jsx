@@ -9,7 +9,8 @@ function SideBar({
   selectedFile,
   selectedQuestionId,
   setSelectedQuestionId,
-  questions}) {
+  questions,
+  setQuestions}) {
 
     const { authFetch } = useContext(AuthContext);
 
@@ -43,6 +44,40 @@ function SideBar({
       }
         */
       
+    };
+
+    const handleQuestionDelete = async(questionId) => {
+      
+      //store question list as backup
+      const previousQuestions = [...questions];
+      //store selected question as backup
+      const previousSelectedQuestionId = selectedQuestionId;
+
+      setQuestions(prev => prev.filter(q =>q.id !== questionId));
+      if(selectedQuestionId === questionId){
+        setSelectedQuestionId(null);
+      }
+      try{
+
+        const response = await authFetch(`http://localhost:3000/api/questions/${questionId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        })
+
+        const deletedQuestion = await response.json();
+        
+        if(!deletedQuestion.success){
+          throw new Error(`Failed to delete question: ${deletedQuestion.message}`)
+        }
+
+      }catch(error){
+        console.error(error.message, error.status);
+        setQuestions = previousQuestions;
+        setSelectedQuestionId = previousSelectedQuestionId;
+        alert('Something went wrong with the question deletion.');
+      }
+      
+
     };
 
   return (
@@ -104,7 +139,7 @@ function SideBar({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('Delete question:', question.id);
+                    handleQuestionDelete(question.id);
                     // TODO: Implement delete question logic
                   }}
                   className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"

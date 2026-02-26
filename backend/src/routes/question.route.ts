@@ -145,4 +145,26 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
   }
 });
 
+router.delete('/:id', verifyToken, async(req, res, next)=>{
+
+  const questionIdNum = Number(req.params.id);
+  if(!questionIdNum){
+    return res.status(400).json({ success: false, message: 'Question ID required'});
+  }
+  try{
+    const [deletedQuestion] = await db.delete(quiz_questions)
+      .where(eq(quiz_questions.id, questionIdNum))
+      .returning();
+      
+    if (!deletedQuestion) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }else{
+      return res.status(200).json({ success: true });
+    }
+  }catch(error){
+    next(error);
+  }
+
+});
+
 export default router;

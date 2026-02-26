@@ -145,6 +145,7 @@ export default function QuizMakerSkeleton() {
           setSelectedQuestionId = {setSelectedQuestionId}
           selectedQuestion = {selectedQuestion}
           questions = {questions}
+          setQuestions = {setQuestions}
         />
 
         {/* Middle: Source File Viewer */}
