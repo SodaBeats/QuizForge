@@ -52,4 +52,30 @@ router.get('/:id', verifyToken, async(req: Request, res: Response, next: NextFun
 
 });
 
+router.delete('/:id', verifyToken, async(req, res, next) => {
+
+  const docIdNum = Number(req.params.id);
+  if(!docIdNum) {
+    return res.status(400).json({ success: false, message: 'Document ID required'});
+  }
+  try{
+    const [deletedFile] = await db.delete(uploaded_files)
+      .where(and(
+        eq(uploaded_files.id, docIdNum),
+        eq(uploaded_files.user_id, req.user.id) // SECURITY FIX: Ensure users can't delete other people's files
+      ))
+      .returning();
+
+    if (!deletedFile) {
+      return res.status(404).json({ success: false, message: 'Document not found' });
+    }else{
+      return res.status(200).json({ success: true });
+    }
+  }catch(error){
+    next(error);
+  }
+
+
+});
+
 export default router;

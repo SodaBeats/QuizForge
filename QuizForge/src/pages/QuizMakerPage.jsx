@@ -137,6 +137,7 @@ export default function QuizMakerSkeleton() {
         {/* Left: Sidebar */}
         <SideBar 
           uploadedFiles={uploadedFiles}
+          setUploadedFiles={setUploadedFiles}
           selectedFileId = {selectedFileId}
           setSelectedFileId = {setSelectedFileId}
           selectedFile = {selectedFile}
