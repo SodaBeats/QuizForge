@@ -32,13 +32,19 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
       });
       setAddMode('edit');
     } else {
-      setManualQuestion(prev => ({
-        ...prev,
-        documentId: selectedFile?.id || null
-      }));
+      setManualQuestion({
+        documentId: selectedFile?.id || null,
+        questionText: '',
+        questionType: 'multiple-choice',
+        optionA: '',
+        optionB: '',
+        optionC: '',
+        optionD: '',
+        correctAnswer: ''
+      });
+      setAddMode(null);
     }
   }, [selectedQuestion, selectedFile?.id]);
-
 
   //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{
@@ -84,7 +90,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         })
         setSelectedQuestionId(null);
       } else {
-        alert('Error:' + result.message);
+        alert('Error: ' + result.message);
       }
     }catch(error){
       console.error('Error submitting questions', error);

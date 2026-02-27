@@ -29,7 +29,6 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
     }
   };
 
-  //  WIP WIP WIP
   const openFileModal = async() => {
     setShowFileModal(true);
     const response = await authFetch('http://localhost:3000/api/documents', {

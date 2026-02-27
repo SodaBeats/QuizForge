@@ -71,7 +71,6 @@ export default function QuizMakerSkeleton() {
       }
 
       const result = await response.json();
-      //console.log('Upload response:', result);
 
       if(result.success){
         const newFile = {
@@ -157,6 +156,7 @@ export default function QuizMakerSkeleton() {
         {/* Right: Question Editor */}
         <QuestionEditor
           setSelectedQuestionId = {setSelectedQuestionId}
+          selectedQuestionId={selectedQuestionId}
           selectedFile = {selectedFile}
           selectedFileId = {selectedFileId}
           questions = {questions}

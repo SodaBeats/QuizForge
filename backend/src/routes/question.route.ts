@@ -135,7 +135,7 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
       .returning();
 
     if(updatedQuestion.length < 1){
-      return res.status(404).json({error: 'Question not found'});
+      return res.status(404).json({success: false, message: 'Question not found'});
     }
 
     res.status(200).json({success: true});

@@ -54,7 +54,7 @@ function SideBar({
       const previousSelectedQuestionId = selectedQuestionId;
 
       setQuestions(prev => prev.filter(q =>q.id !== questionId));
-      if(selectedQuestionId === questionId){
+      if(questionId === selectedQuestionId){
         setSelectedQuestionId(null);
       }
       try{
@@ -72,11 +72,10 @@ function SideBar({
 
       }catch(error){
         console.error(error.message, error.status);
-        setQuestions = previousQuestions;
-        setSelectedQuestionId = previousSelectedQuestionId;
+        setQuestions(previousQuestions);
+        setSelectedQuestionId(previousSelectedQuestionId);
         alert('Something went wrong with the question deletion.');
       }
-      
 
     };
 
