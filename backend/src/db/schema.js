@@ -1,4 +1,5 @@
 import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const uploaded_files = pgTable('uploaded_files', {
   id: serial('id').primaryKey(),
@@ -10,7 +11,7 @@ export const uploaded_files = pgTable('uploaded_files', {
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const quiz_questions = pgTable('quiz_questions', {
+export const questions_db = pgTable('questions_db', {
   id: serial('id').primaryKey(),
   document_id: integer('document_id')
     .notNull()
@@ -44,4 +45,18 @@ export const refresh_tokens = pgTable('refresh_tokens', {
   expires_at: timestamp('expires_at').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
   revoked: boolean('revoked').default(false)
+});
+
+export const quizzes = pgTable('quizzes_db', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  quiz_title: varchar('quiz_title', { length: 255 }).notNull(),
+  quiz_description: text('quiz_description'),
+  share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
+  time_limit: integer('time_limit').default(0), 
+  is_published: boolean('is_published').default(false).notNull(),
+  due_date: timestamp('due_date'),
+  created_at: timestamp('created_at').defaultNow().notNull(),
 });

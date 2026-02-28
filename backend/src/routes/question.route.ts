@@ -1,7 +1,7 @@
 import express from 'express';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { quiz_questions, uploaded_files } from '../db/schema.js';
+import { questions_db, uploaded_files } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 
 
@@ -34,7 +34,7 @@ router.post('/',
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const [insertedQuestion] = await db.insert(quiz_questions).values({
+    const [insertedQuestion] = await db.insert(questions_db).values({
       document_id: docIdNum,
       question_text: req.body.questionText?.trim(),
       question_type: req.body.questionType,
@@ -79,8 +79,8 @@ router.get('/', verifyToken, async(req, res, next)=>{
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const questions = await db.query.quiz_questions.findMany({
-      where: eq(quiz_questions.document_id, docIdNum)
+    const questions = await db.query.questions_db.findMany({
+      where: eq(questions_db.document_id, docIdNum)
     });
 
     res.status(200).json(questions);
@@ -103,9 +103,9 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
   } = req.body;
   try{
     // make sure the question belongs to this user by joining document ownership
-    const [question] = await db.select({ document_id: quiz_questions.document_id })
-      .from(quiz_questions)
-      .where(eq(quiz_questions.id, id));
+    const [question] = await db.select({ document_id: questions_db.document_id })
+      .from(questions_db)
+      .where(eq(questions_db.id, id));
 
     if (!question) {
       return res.status(404).json({ error: 'Question not found' });
@@ -121,7 +121,7 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
       return res.status(404).json({ error: 'Question not found' });
     }
 
-    const updatedQuestion = await db.update(quiz_questions)
+    const updatedQuestion = await db.update(questions_db)
       .set({
         question_text: questionText?.trim(),
         question_type: questionType,
@@ -131,7 +131,7 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
         option_c: optionC?.trim(),
         option_d: optionD?.trim()
       })
-      .where (eq(quiz_questions.id, id))
+      .where (eq(questions_db.id, id))
       .returning();
 
     if(updatedQuestion.length < 1){
@@ -152,8 +152,8 @@ router.delete('/:id', verifyToken, async(req, res, next)=>{
     return res.status(400).json({ success: false, message: 'Question ID required'});
   }
   try{
-    const [deletedQuestion] = await db.delete(quiz_questions)
-      .where(eq(quiz_questions.id, questionIdNum))
+    const [deletedQuestion] = await db.delete(questions_db)
+      .where(eq(questions_db.id, questionIdNum))
       .returning();
       
     if (!deletedQuestion) {

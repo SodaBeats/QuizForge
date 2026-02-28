@@ -102,7 +102,6 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
           accept=".pdf,.txt,.docx,.doc"
           onChange={(e) => {handleFileChange(e);}}
         />
-
         {showFileModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
