@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "./AuthProvider";
+import toast from 'react-hot-toast';
 
 function SideBar({
   uploadedFiles, 
@@ -15,6 +16,7 @@ function SideBar({
   const { authFetch } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [shareData, setShareData] = useState({
     title: '',
     description: '',
@@ -43,13 +45,29 @@ function SideBar({
     if (selectedFile) {
       setShareData(prev => ({ ...prev, title: selectedFile.name }));
     }
-    
-    // Generate share token from backend
-    await handleShareQuiz();
+
+    const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
+      setShareData(prev => ({ 
+      ...prev, 
+      title: selectedFile?.name || '',
+      shareToken: quizToken
+    }));
   };
 
   // Handle share quiz
   const handleShareQuiz = async () => {
+
+    //setup a default due date if user did not set it
+    if(!shareData.dueDate){
+      alert('Please input complete data and time');
+      return;
+    }
+
+    setIsLoading(true);
+    let finalDueDate = new Date(shareData.dueDate).toISOString();
+    
+    console.log(shareData,' ',finalDueDate);
+
     try {
       // TODO: Call your backend API to generate share token
       const response = await authFetch('/api/share-quiz', {
@@ -60,19 +78,26 @@ function SideBar({
           title: shareData.title,
           description: shareData.description,
           timeLimit: shareData.timeLimit,
-          dueDate: shareData.dueDate
+          dueDate: finalDueDate
         }),
         credentials: 'include'
       });
       
       const data = await response.json();
       
-      // Update with token from backend
-      setShareData(prev => ({ ...prev, shareToken: data.shareToken }));
+      if(!data.success){
+        alert(`Something went wrong while creating your quiz: ${data.message}`);
+        return;
+      }
       
     } catch (error) {
-      console.error('Error sharing quiz:', error);
+      console.error('Error sharing quiz: ', error);
+      alert('Error sharing quiz');
+    }finally{
+      setIsLoading(false);
+      setIsShareModalOpen(false);
     }
+
   };
 
   const handleQuestionDelete = async(questionId) => {
@@ -264,13 +289,19 @@ function SideBar({
                     type="text"
                     value={shareData.shareToken}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
+                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-400"
                     placeholder="Generating token..."
                   />
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(shareData.shareToken);
-                      // Optional: Show copied notification
+                      toast.success('Token copied to clipboard!', {
+                        duration: 2000,
+                        style: {
+                          background: '#10B981', // Green
+                          color: '#fff',
+                        },
+                      });
                     }}
                     className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     disabled={!shareData.shareToken}
@@ -312,6 +343,15 @@ function SideBar({
             {/* Modal Actions */}
             <div className="flex gap-3 mt-6">
               <button
+                onClick={async () => {
+                  // TODO: Save quiz share settings to backend
+                  handleShareQuiz();
+                }}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                {isLoading? 'Creating Quiz...' : 'Create Quiz'}
+              </button>
+              <button
                 onClick={() => {
                   setIsShareModalOpen(false);
                   // Reset form
@@ -326,16 +366,6 @@ function SideBar({
                 className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
               >
                 Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  // TODO: Save quiz share settings to backend
-                  console.log('Saving share settings:', shareData);
-                  setIsShareModalOpen(false);
-                }}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Share
               </button>
             </div>
           </div>

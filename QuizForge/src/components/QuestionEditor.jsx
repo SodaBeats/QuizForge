@@ -235,6 +235,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                     <button
                       onClick={() => {
                         setAddMode(null);
+                        setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
                           questionText: '',

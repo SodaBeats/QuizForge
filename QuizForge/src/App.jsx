@@ -1,6 +1,7 @@
 import React from "react";
 import { useContext } from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import { AuthContext } from "./components/AuthProvider";
 import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
@@ -16,6 +17,8 @@ function ProtectedRoute ({children}){
 
 export default function App() {
   return (
+    <>
+      <Toaster position="top-center" />
       <Routes>
         <Route path="/" element = {
           <ProtectedRoute>
@@ -24,6 +27,7 @@ export default function App() {
         } />
         <Route path="/login" element = {<LogInComponent />} />
       </Routes>
+    </>
   );
 }
 
