@@ -149,12 +149,6 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
         )}
       </div>
       <div className="flex items-center gap-2">
-        <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600">
-          Save
-        </button>
-        <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded border border-gray-600">
-          Export
-        </button>
         <button 
           className="px-4 py-2 bg-red-800 hover:bg-red-700 rounded border border-red-600"
           disabled = {isLoading}

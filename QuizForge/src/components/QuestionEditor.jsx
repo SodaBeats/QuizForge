@@ -100,11 +100,13 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="border-b border-gray-700 p-3 bg-gray-800">
-        <h2 className="text-sm font-semibold">Question Editor</h2>
-        <p className="text-xs text-gray-400">
-          {selectedFile ? `Editing questions for ${selectedFile.name}` : 'No question or file selected'}
-        </p>
+      <div className="border-b border-gray-700 p-3 bg-gray-800 flex justify-between items-center">
+        <div>
+          <h2 className="text-sm font-semibold">Question Editor</h2>
+          <p className="text-xs text-gray-400">
+            {selectedFile ? `Editing questions for ${selectedFile.name}` : 'No question or file selected'}
+          </p>
+        </div>
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
         {selectedFile ? (
