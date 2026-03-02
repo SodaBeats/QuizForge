@@ -1,5 +1,5 @@
-import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean, unique, index } from 'drizzle-orm/pg-core';
+import { sql, relations } from 'drizzle-orm';
 
 export const uploaded_files = pgTable('uploaded_files', {
   id: serial('id').primaryKey(),
@@ -47,7 +47,7 @@ export const refresh_tokens = pgTable('refresh_tokens', {
   revoked: boolean('revoked').default(false)
 });
 
-export const quizzes = pgTable('quizzes_db', {
+export const quizzes_db = pgTable('quizzes_db', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id')
     .references(() => users.id, { onDelete: 'cascade' })
@@ -57,6 +57,43 @@ export const quizzes = pgTable('quizzes_db', {
   share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
   time_limit: integer('time_limit').default(0), 
   is_published: boolean('is_published').default(false).notNull(),
-  due_date: timestamp('due_date'),
+  due_date: timestamp('due_date', { withTimezone: true }),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const quiz_questions_db = pgTable('quiz_questions_db', {
+  id: serial('id').primaryKey(),
+  quiz_id: integer('quiz_id').references(()=>quizzes_db.id, {onDelete: 'cascade'}).notNull(),
+  question_id: integer('question_id').references(()=>questions_db.id, {onDelete: 'cascade'}).notNull(),
+}, (table)=>{
+  return {
+    // This index to speed up extraction of questions assigned  to the same quiz id
+    quizIdIndex: index('quiz_id_idx').on(table.quiz_id),
+
+    // Prevent the same question from being added to the same quiz twice
+    uniqueQuizQuestion: unique('unique_quiz_question').on(table.quiz_id, table.question_id),
+  }
+});
+
+
+
+// --RELATIONS
+
+export const quizzesRelations = relations(quizzes_db, ({many}) => ({
+  quiz_questions_db: many(quiz_questions_db),
+}));
+
+export const questionsRelations = relations(questions_db, ({many})=>({
+  quiz_questions_db: many(quiz_questions_db),
+}));
+
+export const quizQuestionsRelations = relations(quiz_questions_db, ({one})=>({
+  quiz: one(quizzes_db, {
+    fields: [quiz_questions_db.quiz_id],
+    references: [quizzes_db.id]
+  }),
+  question: one(questions_db, {
+    fields: [quiz_questions_db.question_id],
+    references: [questions_db.id]
+  }),
+}));

@@ -1,0 +1,39 @@
+
+import express from 'express';
+import { db } from '../db/db.js';
+import { quizzes_db } from '../db/schema.js';
+import { verifyToken } from '../middlewares/auth.middleware.js';
+
+const router = express.Router();
+
+router.post('/', verifyToken, async(req, res, next)=>{
+  //TODO: QUIZ MAKE ENDPOINT
+  const {fileId, title, description, timeLimit, dueDate} = req.body;
+  const {id, role} = req.user;
+  
+  //verify contents
+  if(!fileId || !title){
+    return res.status(400).json({success: false, message: 'Incomplete Input'});
+  }
+  if(role!=='teacher'){
+    return res.status(400).json({success: false, message: 'Unauthorized action'});
+  }
+
+  try{
+    await db.insert(quizzes_db).values({
+      user_id: id,
+      quiz_title: req.body.title.trim(),
+      quiz_description: req.body.description?.trim(),
+      share_token: req.body.shareToken.trim().toLowerCase(),
+      time_limit: req.body.timeLimit,
+      due_date: new Date(req.body.dueDate)
+    });
+
+    res.status(200).json({success: true, message: 'Quiz Forged!'});
+  }catch(error){
+    next(error);
+  }
+
+});
+
+export default router;

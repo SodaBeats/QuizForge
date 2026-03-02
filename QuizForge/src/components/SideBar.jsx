@@ -36,12 +36,12 @@ function SideBar({
     }
   };
 
-  // Add this function to open modal and fetch token
+  // Open modal
   const openShareModal = async () => {
     setIsMenuOpen(false);
     setIsShareModalOpen(true);
 
-    // Optional: Pre-fill with file name if available
+    //Pre-fill with file name
     if (selectedFile) {
       setShareData(prev => ({ ...prev, title: selectedFile.name }));
     }
@@ -52,6 +52,7 @@ function SideBar({
       title: selectedFile?.name || '',
       shareToken: quizToken
     }));
+    console.log(questions);
   };
 
   // Handle share quiz
@@ -64,19 +65,18 @@ function SideBar({
     }
 
     setIsLoading(true);
-    let finalDueDate = new Date(shareData.dueDate).toISOString();
-    
-    console.log(shareData,' ',finalDueDate);
 
     try {
-      // TODO: Call your backend API to generate share token
-      const response = await authFetch('/api/share-quiz', {
+      const finalDueDate = new Date(shareData.dueDate).toISOString();
+
+      const response = await authFetch('http://localhost:3000/api/share-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileId: selectedFileId,
           title: shareData.title,
           description: shareData.description,
+          shareToken: shareData.shareToken,
           timeLimit: shareData.timeLimit,
           dueDate: finalDueDate
         }),
@@ -89,13 +89,20 @@ function SideBar({
         alert(`Something went wrong while creating your quiz: ${data.message}`);
         return;
       }
+      setShareData({
+        title: '',
+        description: '',
+        shareToken: '',
+        timeLimit: 0,
+        dueDate: ''
+      });
+      setIsShareModalOpen(false);
       
     } catch (error) {
       console.error('Error sharing quiz: ', error);
-      alert('Error sharing quiz');
+      alert(`Error: ${error.message || 'Something went wrong'}`);
     }finally{
       setIsLoading(false);
-      setIsShareModalOpen(false);
     }
 
   };
