@@ -241,7 +241,6 @@ function SideBar({
                     onClick={(e) => {
                       e.stopPropagation();
                       handleQuestionDelete(question.id);
-                      // TODO: Implement delete question logic
                     }}
                     className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                   >
@@ -292,7 +291,7 @@ function SideBar({
                 />
               </div>
 
-              {/* Share Token (Read-only) */}
+              {/* Share Token */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Share Token

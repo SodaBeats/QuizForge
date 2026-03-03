@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from "./AuthProvider";
 
 export default function TopBar({ handleFileUpload, isUploading, setSelectedFileId, selectedFileId, setUploadedFiles}) {
@@ -13,6 +13,8 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
 
   const location = useLocation();
   const showFileButton = location.pathname === '/';
+
+  const navigate = useNavigate();
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -197,12 +199,12 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
               >
                 Dashboard
               </button>
-              <Link to = '/Quizzes'
+              <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => { /* Navigate to Quizzes */ setIsProfileMenuOpen(false); }}
+                onClick={() => { navigate('/Quizzes'); setIsProfileMenuOpen(!isProfileMenuOpen); }}
               >
                 Quizzes
-              </Link>
+              </button>
               <button 
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 onClick={() => { /* Navigate to Students */ setIsProfileMenuOpen(false); }}
