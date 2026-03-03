@@ -15,7 +15,6 @@ router.post('/', async (req, res, next)=>{
   }
 
   try{
-
     //service for access token generation
     const newAccessToken = await handleAccessTokenGeneration(refreshToken);
     const userInfo = jwt.verify(newAccessToken, process.env.JWT_SECRET);

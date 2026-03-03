@@ -1,3 +1,4 @@
+
 export interface UserInfo {
   id: number;
   email: string;
@@ -7,7 +8,7 @@ export interface UserInfo {
 declare global{
   namespace Express {
     interface Request {
-      user?: UserInfo;
+      user: UserInfo;
     }
   }
 }

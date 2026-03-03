@@ -1,7 +1,7 @@
 import express from 'express';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { quiz_questions } from '../db/schema.js';
+import { questions_db, uploaded_files } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 
 
@@ -16,9 +16,26 @@ router.post('/',
     res.status(500).json({success: false, message: 'Please fill required input'});
     return;
   }
+
+  // make sure the supplied document actually belongs to the user
+  const docIdNum = Number(req.body.documentId);
+  if (Number.isNaN(docIdNum)) {
+    return res.status(400).json({ error: 'Invalid documentId' });
+  }
+
   try{
-    const [insertedQuestion] = await db.insert(quiz_questions).values({
-      document_id: req.body.documentId,
+    const [owner] = await db.select().from(uploaded_files).where(
+      and(
+        eq(uploaded_files.id, docIdNum),
+        eq(uploaded_files.user_id, req.user.id)
+      )
+    );
+    if (!owner) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const [insertedQuestion] = await db.insert(questions_db).values({
+      document_id: docIdNum,
       question_text: req.body.questionText?.trim(),
       question_type: req.body.questionType,
       correct_answer: req.body.correctAnswer,
@@ -51,8 +68,19 @@ router.get('/', verifyToken, async(req, res, next)=>{
   }
 
   try{
-    const questions = await db.query.quiz_questions.findMany({
-      where: eq(quiz_questions.document_id, docIdNum)
+    // ensure the document belongs to this user before returning questions
+    const [owner] = await db.select().from(uploaded_files).where(
+      and(
+        eq(uploaded_files.id, docIdNum),
+        eq(uploaded_files.user_id, req.user.id)
+      )
+    );
+    if (!owner) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const questions = await db.query.questions_db.findMany({
+      where: eq(questions_db.document_id, docIdNum)
     });
 
     res.status(200).json(questions);
@@ -63,7 +91,7 @@ router.get('/', verifyToken, async(req, res, next)=>{
 });
 
 router.put('/:id', verifyToken, async(req, res, next)=>{
-  const {id} = req.params;
+  const id = Number(req.params.id);
   const {
     questionText,
     questionType,
@@ -74,7 +102,26 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
     optionD
   } = req.body;
   try{
-    const updatedQuestion = await db.update(quiz_questions)
+    // make sure the question belongs to this user by joining document ownership
+    const [question] = await db.select({ document_id: questions_db.document_id })
+      .from(questions_db)
+      .where(eq(questions_db.id, id));
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    const [owner] = await db.select().from(uploaded_files).where(
+      and(
+        eq(uploaded_files.id, question.document_id),
+        eq(uploaded_files.user_id, req.user.id)
+      )
+    );
+    if (!owner) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    const updatedQuestion = await db.update(questions_db)
       .set({
         question_text: questionText?.trim(),
         question_type: questionType,
@@ -84,11 +131,11 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
         option_c: optionC?.trim(),
         option_d: optionD?.trim()
       })
-      .where (eq(quiz_questions.id, Number(id)))
+      .where (eq(questions_db.id, id))
       .returning();
 
     if(updatedQuestion.length < 1){
-      return res.status(404).json({error: 'Question not found'});
+      return res.status(404).json({success: false, message: 'Question not found'});
     }
 
     res.status(200).json({success: true});
@@ -96,6 +143,28 @@ router.put('/:id', verifyToken, async(req, res, next)=>{
   }catch(error){
     next(error);
   }
+});
+
+router.delete('/:id', verifyToken, async(req, res, next)=>{
+
+  const questionIdNum = Number(req.params.id);
+  if(!questionIdNum){
+    return res.status(400).json({ success: false, message: 'Question ID required'});
+  }
+  try{
+    const [deletedQuestion] = await db.delete(questions_db)
+      .where(eq(questions_db.id, questionIdNum))
+      .returning();
+      
+    if (!deletedQuestion) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }else{
+      return res.status(200).json({ success: true });
+    }
+  }catch(error){
+    next(error);
+  }
+
 });
 
 export default router;

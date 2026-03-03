@@ -32,13 +32,19 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
       });
       setAddMode('edit');
     } else {
-      setManualQuestion(prev => ({
-        ...prev,
-        documentId: selectedFile?.id || null
-      }));
+      setManualQuestion({
+        documentId: selectedFile?.id || null,
+        questionText: '',
+        questionType: 'multiple-choice',
+        optionA: '',
+        optionB: '',
+        optionC: '',
+        optionD: '',
+        correctAnswer: ''
+      });
+      setAddMode(null);
     }
   }, [selectedQuestion, selectedFile?.id]);
-
 
   //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{
@@ -84,7 +90,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         })
         setSelectedQuestionId(null);
       } else {
-        alert('Error:' + result.message);
+        alert('Error: ' + result.message);
       }
     }catch(error){
       console.error('Error submitting questions', error);
@@ -94,11 +100,13 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="border-b border-gray-700 p-3 bg-gray-800">
-        <h2 className="text-sm font-semibold">Question Editor</h2>
-        <p className="text-xs text-gray-400">
-          {selectedFile ? `Editing questions for ${selectedFile.name}` : 'No question or file selected'}
-        </p>
+      <div className="border-b border-gray-700 p-3 bg-gray-800 flex justify-between items-center">
+        <div>
+          <h2 className="text-sm font-semibold">Question Editor</h2>
+          <p className="text-xs text-gray-400">
+            {selectedFile ? `Editing questions for ${selectedFile.name}` : 'No question or file selected'}
+          </p>
+        </div>
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
         {selectedFile ? (
@@ -227,6 +235,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                     <button
                       onClick={() => {
                         setAddMode(null);
+                        setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
                           questionText: '',

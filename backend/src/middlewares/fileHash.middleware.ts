@@ -23,14 +23,16 @@ export const fileHashMiddleware = async (req: Request, res: Response, next: Next
       file.fileHash = await hashFile(file.buffer);
     }
     
-    //find the file with the same hash
+    //find the file with the same hash (any user)
     const existingFile = await db.query.uploaded_files.findFirst({
-      where: eq(uploaded_files.file_hash, file.fileHash)
+      where: eq(uploaded_files.file_hash, file.fileHash),
+      // we only need a few columns: user_id so we can check ownership
+      columns: { id: true, filename: true, extracted_text: true, user_id: true }
     });
 
-    //extract the existing file from database and send to frontend
-    if(existingFile){
-
+    // if a match was found, only short‑circuit when the owner is the current user
+    if (existingFile && existingFile.user_id === req.user?.id) {
+      // return info for the user's own copy – this avoids re‑processing
       return res.json({
         success: true,
         fileId: existingFile.id,
@@ -39,6 +41,8 @@ export const fileHashMiddleware = async (req: Request, res: Response, next: Next
         type: file.mimetype
       });
     }
+    // note: same hash belonging to *another* user is ignored; the upload
+    // will continue and a new row will be created for the current user.
 
     /* 3. Handle Multiple Files (WIP Fix)
     if (req.files) {

@@ -6,8 +6,6 @@ import SideBar from "../components/SideBar";
 import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
 
-//test commit for the branch
-//another test commit to understand pull requests
 
 export default function QuizMakerSkeleton() {
 
@@ -73,7 +71,6 @@ export default function QuizMakerSkeleton() {
       }
 
       const result = await response.json();
-      //console.log('Upload response:', result);
 
       if(result.success){
         const newFile = {
@@ -128,6 +125,9 @@ export default function QuizMakerSkeleton() {
       <TopBar 
         handleFileUpload={handleFileUpload}
         isUploading = {isUploading}
+        setSelectedFileId = {setSelectedFileId}
+        selectedFileId = {selectedFileId}
+        setUploadedFiles={setUploadedFiles}
       />
 
       {/* Main Content Area */}
@@ -136,6 +136,7 @@ export default function QuizMakerSkeleton() {
         {/* Left: Sidebar */}
         <SideBar 
           uploadedFiles={uploadedFiles}
+          setUploadedFiles={setUploadedFiles}
           selectedFileId = {selectedFileId}
           setSelectedFileId = {setSelectedFileId}
           selectedFile = {selectedFile}
@@ -143,6 +144,7 @@ export default function QuizMakerSkeleton() {
           setSelectedQuestionId = {setSelectedQuestionId}
           selectedQuestion = {selectedQuestion}
           questions = {questions}
+          setQuestions = {setQuestions}
         />
 
         {/* Middle: Source File Viewer */}
@@ -154,6 +156,7 @@ export default function QuizMakerSkeleton() {
         {/* Right: Question Editor */}
         <QuestionEditor
           setSelectedQuestionId = {setSelectedQuestionId}
+          selectedQuestionId={selectedQuestionId}
           selectedFile = {selectedFile}
           selectedFileId = {selectedFileId}
           questions = {questions}

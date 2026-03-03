@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../components/AuthProvider';
 
-//TO DO: setToken to the login function
-
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
   const [firstName, setFirstName] = useState('');
