@@ -210,7 +210,7 @@ function SideBar({
                   </button>
                   <button
                     onClick={() => {
-                      setIsMenuOpen(false);
+                      setIsMenuOpen(!isMenuOpen);
                       // TODO: Export logic
                       console.log('Export');
                     }}
