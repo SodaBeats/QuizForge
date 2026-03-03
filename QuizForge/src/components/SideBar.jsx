@@ -21,7 +21,7 @@ function SideBar({
     title: '',
     description: '',
     shareToken: '', // Will be filled by backend
-    timeLimit: '',
+    timeLimit: 0,
     dueDate: ''
   });
 
@@ -52,15 +52,14 @@ function SideBar({
       title: selectedFile?.name || '',
       shareToken: quizToken
     }));
-    console.log(questions);
   };
 
   // Handle share quiz
   const handleShareQuiz = async () => {
 
     //setup a default due date if user did not set it
-    if(!shareData.dueDate){
-      alert('Please input complete data and time');
+    if(!shareData.dueDate || !shareData.title){
+      alert('Due date and title are required');
       return;
     }
 
@@ -68,6 +67,12 @@ function SideBar({
 
     try {
       const finalDueDate = new Date(shareData.dueDate).toISOString();
+      const questionIds = questions.map((q)=> {return q.id;});
+
+      if(!questionIds){
+        alert('There are no questions');
+        return;
+      }
 
       const response = await authFetch('http://localhost:3000/api/share-quiz', {
         method: 'POST',
@@ -78,7 +83,8 @@ function SideBar({
           description: shareData.description,
           shareToken: shareData.shareToken,
           timeLimit: shareData.timeLimit,
-          dueDate: finalDueDate
+          dueDate: finalDueDate,
+          questionIds: questionIds
         }),
         credentials: 'include'
       });
