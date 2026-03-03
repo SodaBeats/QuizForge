@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from "./AuthProvider";
 
 export default function TopBar({ handleFileUpload, isUploading, setSelectedFileId, selectedFileId, setUploadedFiles}) {
@@ -10,6 +10,9 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
+
+  const location = useLocation();
+  const showFileButton = location.pathname === '/';
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -110,69 +113,71 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
       {/* RIGHT SIDE: Actions */}
       <div className="flex items-center gap-4">
         {/* Files Section */}
-        <div className="flex items-center">
-          <button 
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600 transition-colors"
-            onClick={openFileModal}
-          >
-            Files
-          </button>
-          
-          <input 
-            type="file"
-            id="file-upload"
-            className="hidden"
-            accept=".pdf,.txt,.docx,.doc"
-            onChange={(e) => {handleFileChange(e);}}
-          />
+        {showFileButton && (
+          <div className="flex items-center">
+            <button 
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600 transition-colors"
+              onClick={openFileModal}
+            >
+              Files
+            </button>
+            
+            <input 
+              type="file"
+              id="file-upload"
+              className="hidden"
+              accept=".pdf,.txt,.docx,.doc"
+              onChange={(e) => {handleFileChange(e);}}
+            />
 
-          {/* Modal Logic Remains the Same */}
-          {showFileModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-white">My Documents</h2>
-                  <button
-                    onClick={closeFileModal}
-                    className="text-gray-400 hover:text-white text-2xl leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
+            {/* Modal Logic Remains the Same */}
+            {showFileModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">My Documents</h2>
+                    <button
+                      onClick={closeFileModal}
+                      className="text-gray-400 hover:text-white text-2xl leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
 
-                <div className="space-y-2 mb-6">
-                  {userDocuments.length > 0 ? (
-                    userDocuments.map((doc) => (
-                      <div
-                        key={doc.id}
-                        onClick={() => handleSelectDocument(doc)}
-                        className={`p-3 rounded cursor-pointer border transition-colors text-white ${
-                          selectedFileId === doc.id
-                            ? 'bg-blue-600 border-blue-500'
-                            : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
-                        }`}
-                      >
-                        <span className="truncate">{doc.title || doc}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 text-center py-4">No documents found</p>
-                  )}
-                </div>
+                  <div className="space-y-2 mb-6">
+                    {userDocuments.length > 0 ? (
+                      userDocuments.map((doc) => (
+                        <div
+                          key={doc.id}
+                          onClick={() => handleSelectDocument(doc)}
+                          className={`p-3 rounded cursor-pointer border transition-colors text-white ${
+                            selectedFileId === doc.id
+                              ? 'bg-blue-600 border-blue-500'
+                              : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
+                          }`}
+                        >
+                          <span className="truncate">{doc.title || doc}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-400 text-center py-4">No documents found</p>
+                    )}
+                  </div>
 
-                <div className="border-t border-gray-700 pt-4">
-                  <button
-                    onClick={() => document.getElementById('file-upload').click()}
-                    disabled={isUploading}
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isUploading ? 'Uploading...' : 'Upload New Document'}
-                  </button>
+                  <div className="border-t border-gray-700 pt-4">
+                    <button
+                      onClick={() => document.getElementById('file-upload').click()}
+                      disabled={isUploading}
+                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isUploading ? 'Uploading...' : 'Upload New Document'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* PROFILE DROPDOWN */}
         <div className="relative" ref={menuRef}>
@@ -192,12 +197,12 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
               >
                 Dashboard
               </button>
-              <button 
+              <Link to = '/Quizzes'
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 onClick={() => { /* Navigate to Quizzes */ setIsProfileMenuOpen(false); }}
               >
                 Quizzes
-              </button>
+              </Link>
               <button 
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 onClick={() => { /* Navigate to Students */ setIsProfileMenuOpen(false); }}

@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthContext } from "./components/AuthProvider";
 import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
+import QuizzesPage from "./pages/QuizzesPage";
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -23,6 +24,11 @@ export default function App() {
         <Route path="/" element = {
           <ProtectedRoute>
             <QuizMakerSkeleton />
+          </ProtectedRoute>
+        } />
+        <Route path="/Quizzes" element = {
+          <ProtectedRoute>
+            <QuizzesPage />
           </ProtectedRoute>
         } />
         <Route path="/login" element = {<LogInComponent />} />
