@@ -74,7 +74,7 @@ function SideBar({
         return;
       }
 
-      const response = await authFetch('http://localhost:3000/api/share-quiz', {
+      const response = await authFetch('http://localhost:3000/api/quizzes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

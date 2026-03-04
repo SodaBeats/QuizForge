@@ -43,7 +43,7 @@ export default function QuizzesMetadata({ quiz }) {
           <div className="flex gap-2">
             <input
               type="text"
-              value={quiz.shareToken || 'N/A'}
+              value={quiz.shareToken.toUpperCase() || 'N/A'}
               readOnly
               className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-gray-400 text-sm"
             />

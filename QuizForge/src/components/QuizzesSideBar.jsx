@@ -1,7 +1,9 @@
 
 // QuizzesSidebar.jsx
 
-export default function QuizzesSidebar({ quizzes, selectedQuizId, onSelectQuiz, onDeleteQuiz }) {
+export default function QuizzesSidebar({ quizzes, setSelectedQuizId, selectedQuizId, onSelectQuiz, onDeleteQuiz }) {
+
+
 
   return (
     <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
@@ -22,7 +24,10 @@ export default function QuizzesSidebar({ quizzes, selectedQuizId, onSelectQuiz, 
                     ? 'bg-blue-600 text-white' 
                     : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
                 }`}
-                onClick={() => onSelectQuiz(quiz.id)}
+                onClick={()=> {
+                  setSelectedQuizId(quiz.id)
+                  onSelectQuiz(quiz.id)
+                }}
               >
                 <div className="flex-1 truncate">
                   <div className="font-medium truncate">{quiz.quizTitle}</div>

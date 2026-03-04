@@ -38,12 +38,16 @@ export default function QuizzesPage (){
   const handleSelectedQuiz = async(chosenQuizId)=>{
     try{
       const response = await authFetch(`http://localhost:3000/api/quizzes/${chosenQuizId}/questions`)
-      const result = response.json();
+      const result = await response.json();
 
       if(!result.success){
-        alert('This quiz does not have questions');
+        alert(`Something went wrong: ${result.message}`);
         return;
       }
+
+      setQuestions(result.questionList);
+      console.log(questions);
+      console.log(chosenQuizId);
     }catch(error){
       console.error(error);
       alert(`something went wrong while fetching questions`);
@@ -69,8 +73,12 @@ export default function QuizzesPage (){
         />
         {selectedQuizId ? (
           <>
-            <QuizzesMetaData quiz={selectedQuiz} />
-            <QuizzesQuestionList questions={mockQuestions} />
+            <QuizzesMetaData 
+              quiz={selectedQuiz}
+            />
+            <QuizzesQuestionList 
+              questions={questions}
+            />
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
