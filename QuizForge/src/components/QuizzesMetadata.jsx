@@ -1,4 +1,5 @@
 // QuizMetadata.jsx
+import toast from 'react-hot-toast';
 
 
 export default function QuizzesMetadata({ quiz }) {
@@ -14,7 +15,7 @@ export default function QuizzesMetadata({ quiz }) {
     <div className="flex-1 h-full bg-gray-800 border-r border-gray-700 flex flex-col">
       {/* Header */}
       <div className="border-b border-gray-700 p-4">
-        <h2 className="text-xl font-semibold text-white mb-2">{quiz.title}</h2>
+        <h2 className="text-xl font-semibold text-white mb-2">{quiz.quizTitle}</h2>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{quiz.questionCount} questions</span>
           <span>•</span>
@@ -47,7 +48,19 @@ export default function QuizzesMetadata({ quiz }) {
               className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-gray-400 text-sm"
             />
             {quiz.shareToken && (
-              <button className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+              <button 
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                onClick={() => {
+                  navigator.clipboard.writeText(quiz.shareToken);
+                  toast.success('Token copied to clipboard!', {
+                    duration: 2000,
+                    style: {
+                      background: '#10B981', // Green
+                      color: '#fff',
+                    },
+                  });
+                }}
+              >
                 Copy
               </button>
             )}

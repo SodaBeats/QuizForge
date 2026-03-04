@@ -6,7 +6,7 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, async(req: Request, res: Response, next: NextFunction)=>{
+router.get('/', verifyToken, async(req, res, next)=>{
 
   try{
     const documents = await db.select({
@@ -23,7 +23,7 @@ router.get('/', verifyToken, async(req: Request, res: Response, next: NextFuncti
 
 });
 
-router.get('/:id', verifyToken, async(req: Request, res: Response, next: NextFunction)=>{
+router.get('/:id', verifyToken, async(req, res, next)=>{
 
   // express puts params under the name in the route; here it's "id" not "docId"
   const docIdNum = Number(req.params.id);

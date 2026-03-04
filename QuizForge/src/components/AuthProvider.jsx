@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from './LoadingScreen';
 
@@ -22,7 +22,27 @@ export function AuthProvider({ children }) {
     silentRefresh();
   }, []);
 
-  const silentRefresh = async () => {
+  useEffect(()=>{
+    console.log('Auth Provider re-rendered');
+  });
+  
+  // Logout function to clear token
+  const logout = useCallback(async () => {
+    //Tell the backend to delete the HTTP-only cookie
+    try{
+      await fetch('http://localhost:3000/auth/logout', {
+        method: 'POST', 
+        credentials: 'include' 
+      });
+    }catch(err){
+      console.error('logout fetch failed', err);
+    }finally{
+      setToken(null); //clear local react state
+      navigate('/login'); // Send them home or to login
+    }
+  }, [navigate]);
+
+  const silentRefresh = useCallback(async () => {
     try {
       // We include 'credentials: include' so the browser 
       // sends the HTTP-only Refresh Cookie to the server
@@ -52,30 +72,9 @@ export function AuthProvider({ children }) {
     finally {
       setLoading(false);
     }
-  };
+  }, [logout, navigate]);
 
-  // Logout function to clear token
-  const logout = async () => {
-    //Tell the backend to delete the HTTP-only cookie
-    try{
-      await fetch('http://localhost:3000/auth/logout', {
-        method: 'POST', 
-        credentials: 'include' 
-      });
-    }catch(err){
-      console.error('logout fetch failed', err);
-    }finally{
-      setToken(null); //clear local react state
-      navigate('/login'); // Send them home or to login
-    }
-  };
-
-  // Don't render children until auth check is complete
-  if (loading) {
-    return <LoadingScreen />; // Or your loading component
-  }
-
-  const authFetch = async (url, options = {}) => {
+  const authFetch = useCallback(async (url, options = {}) => {
     //get custom headers inside options and add authz
     const headers = {
       ...options.headers,
@@ -102,7 +101,12 @@ export function AuthProvider({ children }) {
     }
 
     return response;
-  };
+  }, [token, silentRefresh]);
+
+  // Don't render children until auth check is complete
+  if (loading) {
+    return <LoadingScreen />; // Or your loading component
+  }
 
   return (
     

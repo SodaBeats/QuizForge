@@ -25,7 +25,7 @@ export default function QuizzesSidebar({ quizzes, selectedQuizId, onSelectQuiz, 
                 onClick={() => onSelectQuiz(quiz.id)}
               >
                 <div className="flex-1 truncate">
-                  <div className="font-medium truncate">{quiz.title}</div>
+                  <div className="font-medium truncate">{quiz.quizTitle}</div>
                   <div className="text-xs text-gray-400 mt-1">
                     {quiz.questionCount || 0} questions
                   </div>

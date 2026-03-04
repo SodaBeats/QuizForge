@@ -1,5 +1,6 @@
 
 import express from 'express';
+import { eq, count } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { quiz_questions_db, quizzes_db } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
@@ -7,7 +8,6 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.post('/', verifyToken, async(req, res, next)=>{
-  //TODO: QUIZ MAKE ENDPOINT
   const {fileId, title, description, timeLimit, dueDate} = req.body;
   const {id, role} = req.user;
   
@@ -37,7 +37,6 @@ router.post('/', verifyToken, async(req, res, next)=>{
       question_id: qId
     }));
 
-    // TO DO: FINISH THIS
     await db.insert(quiz_questions_db).values(junctionRows);
 
 
@@ -46,6 +45,42 @@ router.post('/', verifyToken, async(req, res, next)=>{
     next(error);
   }
 
+});
+
+router.get('/', verifyToken, async(req, res, next)=>{
+  
+  const userId = req.user.id;
+  try{
+    //count all questions assigned to a quiz
+
+    const userQuizzes = await db.select({
+      id: quizzes_db.id,
+      quizTitle: quizzes_db.quiz_title,
+      description: quizzes_db.quiz_description,
+      shareToken: quizzes_db.share_token,
+      timeLimit: quizzes_db.time_limit,
+      dueDate: quizzes_db.due_date,
+      questionCount: count(quiz_questions_db.question_id),
+    })
+    .from(quizzes_db)
+    // Join quizzes to the junction table where IDs match
+    .leftJoin(
+      quiz_questions_db, 
+      eq(quizzes_db.id, quiz_questions_db.quiz_id)
+    )
+    .where(eq(quizzes_db.user_id, userId))
+    // We MUST group by the quiz ID to get individual counts per quiz
+    .groupBy(quizzes_db.id);
+
+    res.status(200).json(userQuizzes);
+
+  }catch(error){
+    next(error);
+  }
+});
+
+router.get('/:id/questions', verifyToken, (req, res, next) => {
+  
 });
 
 export default router;

@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../components/AuthProvider';
 import QuizzesSidebar from '../components/QuizzesSideBar';
 import TopBar from '../components/TopBar';
 import QuizzesMetaData from '../components/QuizzesMetadata';
@@ -7,34 +8,10 @@ import QuizzesQuestionList from '../components/QuizzesQuestionList';
 
 export default function QuizzesPage (){
 
+  const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
-  const [quizzes, setQuizzes] = useState([
-    { 
-      id: 1, 
-      title: 'Math Quiz', 
-      questionCount: 10,
-      description: 'Basic algebra and geometry questions',
-      shareToken: 'ABC123',
-      timeLimit: 30,
-      dueDate: '2026-03-10T23:59',
-      status: 'active'
-    },
-    { 
-      id: 2, 
-      title: 'Science Quiz', 
-      questionCount: 15,
-      description: 'Physics and chemistry fundamentals',
-      shareToken: 'XYZ789',
-      timeLimit: 45,
-      status: 'active'
-    },
-    { 
-      id: 3, 
-      title: 'History Quiz', 
-      questionCount: 8,
-      status: 'draft'
-    },
-  ]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [questions, setQuestions] = useState([]);
 
   // Mock questions data
   const mockQuestions = [
@@ -45,12 +22,34 @@ export default function QuizzesPage (){
   
   const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
 
+  useEffect(()=>{
+    authFetch(`http://localhost:3000/api/quizzes`)
+    .then(res => res.json())
+    .then(data => setQuizzes(data));
+  },[authFetch]);
+
   const handleDeleteQuiz = (quizId) => {
     setQuizzes(quizzes.filter(q => q.id !== quizId));
     if (selectedQuizId === quizId) {
       setSelectedQuizId(null);
     }
   };
+
+  const handleSelectedQuiz = async(chosenQuizId)=>{
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/${chosenQuizId}/questions`)
+      const result = response.json();
+
+      if(!result.success){
+        alert('This quiz does not have questions');
+        return;
+      }
+    }catch(error){
+      console.error(error);
+      alert(`something went wrong while fetching questions`);
+    }
+  }
+
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -64,8 +63,9 @@ export default function QuizzesPage (){
         <QuizzesSidebar 
           quizzes = {quizzes}
           selectedQuizId={selectedQuizId}
-          onSelectQuiz={setSelectedQuizId}
+          setSelectedQuizId={setSelectedQuizId}
           onDeleteQuiz={handleDeleteQuiz}
+          onSelectQuiz={handleSelectedQuiz}
         />
         {selectedQuizId ? (
           <>

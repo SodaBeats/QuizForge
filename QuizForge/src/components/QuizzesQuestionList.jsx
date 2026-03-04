@@ -8,9 +8,6 @@ export default function QuizzesQuestionsList({ questions }) {
       {/* Header */}
       <div className="border-b border-gray-700 p-4">
         <h3 className="text-lg font-semibold text-white">Questions</h3>
-        <p className="text-xs text-gray-400 mt-1">
-          {questions?.length || 0} questions in this quiz
-        </p>
       </div>
 
       {/* Questions List */}
