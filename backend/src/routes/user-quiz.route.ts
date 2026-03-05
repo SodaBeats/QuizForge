@@ -113,4 +113,30 @@ router.get('/:id/questions', verifyToken, async(req, res, next) => {
 
 });
 
+router.patch('/:quizId/question/:questionId', verifyToken, async(req, res, next)=>{
+  const {questionId} = req.params;
+  const { id } = req.body;
+
+  const dataForDrizzle = {
+    question_text: req.body.questionText.trim(),
+    question_type: req.body.questionType,
+    correct_answer: req.body.correctAnswer,
+    option_a: req.body.optionA,
+    option_b: req.body.optionB,
+    option_c: req.body.optionC,
+    option_d: req.body.optionD,
+  };
+
+  try{
+    const [updatedQuestion] = await db.update(questions_db)
+      .set(dataForDrizzle)
+      .where(eq(questions_db.id, Number(questionId)))
+      .returning();
+
+    res.status(200).json({success: true, message: 'Question updated!', updatedQuestion: updatedQuestion});
+  }catch(err){
+    next(err);
+  }
+});
+
 export default router;

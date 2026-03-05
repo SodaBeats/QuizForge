@@ -19,6 +19,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
   
   useEffect(() => {
     if (selectedQuestion) {
+      // eslint-disable-next-line
       setManualQuestion({
         id: selectedQuestion.id,
         documentId: selectedQuestion.document_id,

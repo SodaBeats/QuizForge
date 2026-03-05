@@ -12,13 +12,6 @@ export default function QuizzesPage (){
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
-
-  // Mock questions data
-  const mockQuestions = [
-    { id: 1, text: 'What is 2 + 2?' },
-    { id: 2, text: 'What is the capital of France?' },
-    { id: 3, text: 'Who wrote Romeo and Juliet?' },
-  ];
   
   const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
 
@@ -46,11 +39,35 @@ export default function QuizzesPage (){
       }
 
       setQuestions(result.questionList);
-      console.log(questions);
-      console.log(chosenQuizId);
     }catch(error){
       console.error(error);
       alert(`something went wrong while fetching questions`);
+    }
+  }
+
+  const handleQuestionUpdate = async(quizId, editingQuestion) => {
+    const originalQuestions = [...questions];
+    setQuestions((prev)=> prev.map((q)=> q.id === editingQuestion.id ? editingQuestion : q));
+
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,{
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(editingQuestion),
+        credentials: 'include'
+      });
+      const result = await response.json();
+
+      if(!response.ok){
+        alert('Something went wrong. try again later');
+        console.error(result.message);
+        setQuestions(originalQuestions);
+      }
+
+    }catch(error){
+      setQuestions(originalQuestions);
+      alert(`Network error`);
+      console.error('Network error: ',error);
     }
   }
 
@@ -78,6 +95,8 @@ export default function QuizzesPage (){
             />
             <QuizzesQuestionList 
               questions={questions}
+              selectedQuiz={selectedQuiz}
+              onUpdateQuestion={handleQuestionUpdate}
             />
           </>
         ) : (
