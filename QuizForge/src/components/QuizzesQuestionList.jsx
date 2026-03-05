@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz }) => {
   const [editingQuestion, setEditingQuestion] = useState(null);
-  
+
   useEffect(()=>{
     // eslint-disable-next-line
     setEditingQuestion(null);
@@ -73,20 +73,35 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz }) => {
           )}
 
           {/* Correct Answer */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Correct Answer</label>
-            <select
-              value={editingQuestion.correctAnswer}
-              onChange={(e) => setEditingQuestion({...editingQuestion, correctAnswer: e.target.value})}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
-            >
-              <option value="">Select correct answer...</option>
-              <option value="a">A</option>
-              <option value="b">B</option>
-              <option value="c">C</option>
-              <option value="d">D</option>
-            </select>
-          </div>
+          {editingQuestion.questionType === 'multiple-choice' ? (
+            <>
+              <label className="block text-sm font-medium mb-1">Correct Answer</label>
+              <select
+                value={editingQuestion.correctAnswer}
+                onChange={(e) => setEditingQuestion({...editingQuestion, correctAnswer: e.target.value})}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+              >
+                <option value="">Select correct answer...</option>
+                <option value="a">A</option>
+                <option value="b">B</option>
+                <option value="c">C</option>
+                <option value="d">D</option>
+              </select>
+            </>
+          ) : (
+            <>
+              <label className="block text-sm font-medium mb-1">Correct Answer</label>
+              <select
+                value={editingQuestion.correctAnswer}
+                onChange={(e) => setEditingQuestion({...editingQuestion, correctAnswer: e.target.value})}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+              >
+                <option value="">Select correct answer...</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
+            </>
+          )}
           <button 
             onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-all mt-4"
