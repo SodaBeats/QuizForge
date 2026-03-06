@@ -14,7 +14,6 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz }) => {
   const handleEditClick = (question) => {
     setEditingQuestion({ ...question }); // Clone to avoid direct mutation
   };
-  console.log(editingQuestion);
 
   // If we are editing, show the Editor View
   if (editingQuestion) {

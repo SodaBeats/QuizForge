@@ -1,8 +1,12 @@
 // QuizMetadata.jsx
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
+// TODO : FINISH THIS
+export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
 
-export default function QuizzesMetadata({ quiz }) {
+  const [editingQuiz, setEditingQuiz] = useState({...quiz});
+
   if (!quiz) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -15,7 +19,18 @@ export default function QuizzesMetadata({ quiz }) {
     <div className="flex-1 h-full bg-gray-800 border-r border-gray-700 flex flex-col">
       {/* Header */}
       <div className="border-b border-gray-700 p-4">
-        <h2 className="text-xl font-semibold text-white mb-2">{quiz.quizTitle}</h2>
+        <input
+          type="text"
+          name="quizTitle"
+          value={editingQuiz.quizTitle || ''}
+          onChange={(e) => setEditingQuiz({ 
+            ...editingQuiz, 
+            quizTitle: e.target.value 
+          })}
+          placeholder="Enter Quiz Title..."
+          className="w-full bg-transparent text-xl font-semibold text-white mb-2 border-b border-transparent focus:border-blue-500 focus:outline-none transition-all hover:bg-gray-800/50 rounded px-1 -ml-1"
+        />
+        
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{quiz.questionCount} questions</span>
           <span>•</span>
@@ -30,9 +45,13 @@ export default function QuizzesMetadata({ quiz }) {
           <label className="text-sm font-semibold text-gray-400 block mb-2">
             Description
           </label>
-          <p className="text-sm text-gray-300">
-            {quiz.description || 'No description provided'}
-          </p>
+          <textarea
+            value={editingQuiz.description}
+            onChange={(e)=>{setEditingQuiz({...editingQuiz, description: e.target.value})}}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
+            rows="3"
+            placeholder="Enter quiz description"
+          />
         </div>
 
         {/* Share Token */}
@@ -67,26 +86,52 @@ export default function QuizzesMetadata({ quiz }) {
           </div>
         </div>
 
-        {/* Time Limit */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 block mb-2">
-            Time Limit
-          </label>
-          <p className="text-sm text-gray-300">
-            {quiz.timeLimit ? `${quiz.timeLimit} minutes` : 'No time limit'}
-          </p>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Time Limit */}
+          <div>
+            <label className="text-sm font-semibold text-gray-400 block mb-2">
+              Time Limit (minutes)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                name="timeLimit"
+                min="0"
+                placeholder="e.g. 30"
+                value={editingQuiz.timeLimit || ''}
+                onChange={(e) =>
+                  setEditingQuiz({
+                    ...editingQuiz,
+                    timeLimit: e.target.value === '' ? null : Number(e.target.value),
+                  })
+                }
+                className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all pr-12"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 text-xs">
+                min
+              </div>
+            </div>
+          </div>
 
-        {/* Due Date */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 block mb-2">
-            Due Date
-          </label>
-          <p className="text-sm text-gray-300">
-            {quiz.dueDate 
-              ? new Date(quiz.dueDate).toLocaleString() 
-              : 'No due date'}
-          </p>
+          {/* Due Date */}
+          <div>
+            <label className="text-sm font-semibold text-gray-400 block mb-2">
+              Due Date
+            </label>
+            <input
+              type="datetime-local"
+              name="dueDate"
+              // Formats the date to YYYY-MM-DDTHH:mm for the input
+              value={editingQuiz.dueDate.slice(0,16)}
+              onChange={(e) =>
+                setEditingQuiz({
+                  ...editingQuiz,
+                  dueDate: e.target.value || null,
+                })
+              }
+              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
         </div>
 
         {/* Status */}
@@ -106,8 +151,11 @@ export default function QuizzesMetadata({ quiz }) {
 
       {/* Actions */}
       <div className="border-t border-gray-700 p-4 space-y-2">
-        <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors font-medium">
-          Edit Quiz
+        <button 
+          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors font-medium"
+          onClick={()=>onUpdateQuizMeta(editingQuiz)}
+        >
+          Save Changes
         </button>
         <button className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium">
           View Results

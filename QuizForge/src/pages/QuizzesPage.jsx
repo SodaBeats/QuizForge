@@ -43,7 +43,7 @@ export default function QuizzesPage (){
       console.error(error);
       alert(`something went wrong while fetching questions`);
     }
-  }
+  };
 
   const handleQuestionUpdate = async(quizId, editingQuestion) => {
     const originalQuestions = [...questions];
@@ -69,7 +69,56 @@ export default function QuizzesPage (){
       alert(`Network error`);
       console.error('Network error: ',error);
     }
-  }
+  };
+
+  const getChanges = (original, draft) => {
+    const changes = {};
+    for (const key in draft) {
+      if (draft[key] !== original[key]) {
+        changes[key] = draft[key];
+      }
+    }
+    return changes;
+  };
+
+  const handleQuizMetaUpdate = async(quizToChange) => {
+
+    const originalQuizzes = {...quizzes};
+    const originalQuiz = quizzes.find((quiz) => quiz.id === quizToChange.id);
+
+    const changes = getChanges(originalQuiz, quizToChange);
+    console.log(changes);
+
+    if(Object.keys(changes).length === 0){
+      console.log('No changes to save');
+      return;
+    }
+
+    setQuizzes((prev) => prev.map((q) => q.id === quizToChange.id ? quizToChange : q));
+    setSelectedQuizId(quizToChange.id);
+
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizToChange.id}`, {
+        method: 'PATCH',
+        headers: {'Content-type':'application/json'},
+        body: JSON.stringify(quizToChange),
+        credentials: 'include'
+      })
+
+      const result = await response.json();
+
+      if(!result.success){
+        alert('Something went wrong while editing quiz information');
+        console.error(result.message);
+        setQuizzes(originalQuizzes);
+      }
+
+    }catch(error){
+      alert('Error editing quiz information');
+      console.error('Error: ', error);
+      setQuizzes(originalQuizzes);
+    }
+  };
 
 
   return (
@@ -91,7 +140,9 @@ export default function QuizzesPage (){
         {selectedQuizId ? (
           <>
             <QuizzesMetaData 
+              key={selectedQuiz.id}
               quiz={selectedQuiz}
+              onUpdateQuizMeta={handleQuizMetaUpdate}
             />
             <QuizzesQuestionList 
               questions={questions}

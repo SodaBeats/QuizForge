@@ -139,4 +139,26 @@ router.patch('/:quizId/question/:questionId', verifyToken, async(req, res, next)
   }
 });
 
+router.patch('/:id', verifyToken, async(req, res, next)=> {
+  if(Object.keys(req.body).length < 1){
+    return res.status(400).json({success: false, message: 'No changes to be saved'});
+  }
+  const {id} = req.params;
+  const dataForDrizzle = {
+    quiz_title: req.body.quizTitle.trim(),
+    quiz_description: req.body.description.trim(),
+    time_limit: req.body.timeLimit,
+    due_date: new Date(req.body.dueDate)
+  };
+
+  try{
+    const [updatedQuiz] = await db.update(quizzes_db).set(dataForDrizzle).where(eq(quizzes_db.id, Number(id))).returning();
+    console.log(updatedQuiz);
+
+    res.status(200).json({success: true, message: 'Quiz updated!', updatedQuiz});
+  }catch(error){
+    next(error);
+  }
+});
+
 export default router;

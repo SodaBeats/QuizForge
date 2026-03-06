@@ -62,6 +62,10 @@ function SideBar({
       alert('Due date and title are required');
       return;
     }
+    if(typeof(shareData.timeLimit) !== 'number'){
+      alert('Time limit should be a valid number');
+      return;
+    }
 
     setIsLoading(true);
 
