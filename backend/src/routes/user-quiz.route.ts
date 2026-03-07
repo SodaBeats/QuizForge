@@ -153,7 +153,6 @@ router.patch('/:id', verifyToken, async(req, res, next)=> {
 
   try{
     const [updatedQuiz] = await db.update(quizzes_db).set(dataForDrizzle).where(eq(quizzes_db.id, Number(id))).returning();
-    console.log(updatedQuiz);
 
     res.status(200).json({success: true, message: 'Quiz updated!', updatedQuiz});
   }catch(error){

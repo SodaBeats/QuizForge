@@ -9,12 +9,24 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
   const [userDocuments, setUserDocuments] = useState([]);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
 
   const location = useLocation();
   const showFileButton = location.pathname === '/';
 
   const navigate = useNavigate();
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -93,17 +105,6 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
       alert('Failed to select document. Please try again later');
     }
   };
-
-  // Close profile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">
@@ -209,7 +210,7 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 onClick={() => { /* Navigate to Students */ setIsProfileMenuOpen(false); }}
               >
-                Students
+                Classes
               </button>
               
               <div className="border-t border-gray-700 my-1"></div>

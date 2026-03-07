@@ -6,6 +6,7 @@ import { AuthContext } from "./components/AuthProvider";
 import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
 import QuizzesPage from "./pages/QuizzesPage";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -13,6 +14,15 @@ function ProtectedRoute ({children}){
     return children;
   }else{
     return <Navigate to='/login' />;
+  }
+}
+
+function StudentRoute ({children}) {
+  const { token, userInfo } = useContext(AuthContext);
+  if(token && userInfo.role === 'student'){
+    return children;
+  }else{
+    return <Navigate to = '/login' />;
   }
 }
 
@@ -30,6 +40,11 @@ export default function App() {
           <ProtectedRoute>
             <QuizzesPage />
           </ProtectedRoute>
+        } />
+        <Route path='/Student' element = {
+          <StudentRoute>
+            <StudentDashboardPage />
+          </StudentRoute>
         } />
         <Route path="/login" element = {<LogInComponent />} />
       </Routes>
