@@ -12,6 +12,7 @@ import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
 import quizzesRoute from './routes/user-quiz.route.js';
+import quizAccessRoute from './routes/quizAccess.route.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/upload', uploadRoutes); //file uploads go through this route
 app.use('/api/questions', questionRoute);//manually made question go through this route
 app.use('/api/documents', documentRoute);// retrieve documents here
 app.use('/api/quizzes/', quizzesRoute);
+app.use('/api/student/quiz-access', quizAccessRoute);
 app.use('/auth/login', loginRoute);
 app.use('/auth/signup', signupRoute);
 app.use('/auth/logout', logoutRoute);

@@ -36,7 +36,7 @@ export default function SudentTopbar(){
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">
       {/* LEFT SIDE: Logo */}
-      <Link to= '/' className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">
+      <Link to= '/Student' className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">
         QuizForge
       </Link>
 

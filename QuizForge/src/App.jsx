@@ -6,7 +6,8 @@ import { AuthContext } from "./components/AuthProvider";
 import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
 import QuizzesPage from "./pages/QuizzesPage";
-import StudentDashboardPage from "./pages/StudentDashboardPage";
+import StudentTokenPage from "./pages/StudentTokenPage";
+import StudentQuizPage from "./pages/StudentQuizPage";
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -41,9 +42,14 @@ export default function App() {
             <QuizzesPage />
           </ProtectedRoute>
         } />
-        <Route path='/Student' element = {
+        <Route path='/student' element = {
           <StudentRoute>
-            <StudentDashboardPage />
+            <StudentTokenPage />
+          </StudentRoute>
+        } />
+        <Route path='/student/quiz/:quizToken' element = {
+          <StudentRoute>
+            <StudentQuizPage />
           </StudentRoute>
         } />
         <Route path="/login" element = {<LogInComponent />} />

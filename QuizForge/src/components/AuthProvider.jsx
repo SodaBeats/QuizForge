@@ -4,7 +4,6 @@ import LoadingScreen from './LoadingScreen';
 
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
-
 export { AuthContext };
 
 //make component called AuthProvider
