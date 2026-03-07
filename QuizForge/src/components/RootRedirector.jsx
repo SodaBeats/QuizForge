@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import LoadingScreen from "./LoadingScreen";
 
-export default function RootDirector() {
+export default function RootRedirector() {
 
   const { isLoading, userInfo } = useContext(AuthContext);
 

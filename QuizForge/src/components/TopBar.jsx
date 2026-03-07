@@ -13,7 +13,7 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
   const { logout, authFetch } = useContext(AuthContext);
 
   const location = useLocation();
-  const showFileButton = location.pathname === '/';
+  const showFileButton = location.pathname === '/teacher';
 
   const navigate = useNavigate();
 
@@ -109,7 +109,7 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">
       {/* LEFT SIDE: Logo */}
-      <Link to= '/' className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">
+      <Link to= '/teacher' className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">
         QuizForge
       </Link>
 
@@ -202,7 +202,7 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
               </button>
               <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => { navigate('/Quizzes'); setIsProfileMenuOpen(!isProfileMenuOpen); }}
+                onClick={() => { navigate('/teacher/quizzes'); setIsProfileMenuOpen(!isProfileMenuOpen); }}
               >
                 Quizzes
               </button>

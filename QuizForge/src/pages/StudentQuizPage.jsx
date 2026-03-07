@@ -1,8 +1,9 @@
 
 import { useEffect, useState, useContext } from 'react';
 import { useLocation, useParams } from "react-router-dom";
-import StudentTopbar from "../components/StudentTopbar";
 import { AuthContext } from '../components/AuthProvider';
+import StudentTopbar from "../components/StudentTopbar";
+import StudentSidebar from '../components/StudentSidebar';
 
 export default function StudentQuizPage(){
   const location = useLocation();
@@ -11,7 +12,8 @@ export default function StudentQuizPage(){
 
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
-  
+  console.log(quiz);
+
   //fetch from backend in case quiz data is lost
   useEffect(()=>{
     if(!quiz && quizToken){
@@ -24,6 +26,9 @@ export default function StudentQuizPage(){
   return(
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       <StudentTopbar />
+      <StudentSidebar
+        questions={quiz.questions}
+      />
     </div>
   );
 };
