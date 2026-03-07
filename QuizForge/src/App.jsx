@@ -8,6 +8,7 @@ import LogInComponent from "./pages/Login";
 import QuizzesPage from "./pages/QuizzesPage";
 import StudentTokenPage from "./pages/StudentTokenPage";
 import StudentQuizPage from "./pages/StudentQuizPage";
+import RootDirector from "./components/RootDirector";
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -32,7 +33,9 @@ export default function App() {
     <>
       <Toaster position="top-center" />
       <Routes>
-        <Route path="/" element = {
+        <Route path='/' element = {<RootDirector />} />
+
+        <Route path="/teacher" element = {
           <ProtectedRoute>
             <QuizMakerSkeleton />
           </ProtectedRoute>
