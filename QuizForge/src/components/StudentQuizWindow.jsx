@@ -13,50 +13,59 @@ export default function StudentQuizWindow({
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-white">
       {/* Question Content */}
-      <div className="flex-1 p-8 max-w-3xl mx-auto w-full">
-        <span className="text-blue-400 text-sm font-bold uppercase tracking-wider">
-          {question.questionType === 'multiple-choice' ? (<p>Multiple Choice</p>) 
-          : question.questionType === 'true-false' ? (<p>True or False</p>) : (<p>Reasoning</p>)}
-        </span>
-        <h1 className="text-2xl font-medium mt-2 mb-8 leading-relaxed select-none">
-          {question.questionText}
-        </h1>
+      <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full px-8">
+        {/* Question Part */}
+        <div className="flex-[1.5] flex flex-col justify-center py-6 border-b border-gray-800/50">
+          <div className="overflow-y-auto pr-2">
+            <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-white text-center">
+              {question.questionText}
+            </h1>
+          </div>
+        </div>
 
-        {/* Dynamic Inputs based on Type */}
-        <div className="space-y-4">
-          {question.questionType === 'multiple-choice' ? (
-            ['A', 'B', 'C', 'D'].map((letter) => {
-              const optionKey = `option${letter}`;
-              const optionText = question[optionKey];
-              if (!optionText) return null;
+        {/* Input Part */}
+        <div className="flex-1 flex flex-col justify-center py-6">
+          <div className="w-full max-w-2xl mx-auto"> 
+            {/* max-w-2xl keeps buttons from getting too wide on desktop */}
+            {question.questionType === 'multiple-choice' || question.questionType === 'true-false' ? (
+              <div className="space-y-2"> {/* Reduced vertical spacing */}
+                {['A', 'B', 'C', 'D'].map((letter) => {
+                  const optionKey = `option${letter}`;
+                  const optionText = question[optionKey];
+                  if (!optionText) return null;
 
-              return (
-                <button
-                  key={letter}
-                  onClick={() => onAnswerChange(letter.toLowerCase())}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-4 ${
-                    userAnswer === letter.toLowerCase()
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
-                    userAnswer === letter.toLowerCase() ? 'bg-blue-500' : 'bg-gray-700'
-                  }`}>
-                    {letter}
-                  </div>
-                  {optionText}
-                </button>
-              );
-            })
-          ) : (
-            <textarea
-              className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl p-4 focus:border-blue-500 focus:outline-none h-40 resize-none"
-              placeholder="Type your answer here..."
-              value={userAnswer || ''}
-              onChange={(e) => onAnswerChange(e.target.value)}
-            />
-          )}
+                  return (
+                    <button
+                      key={letter}
+                      onClick={() => onAnswerChange(letter.toLowerCase())}
+                      className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center gap-3 ${
+                        userAnswer === letter.toLowerCase()
+                          ? 'border-blue-500 bg-blue-500/10 text-white'
+                          : 'border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:bg-gray-800/40'
+                      }`}
+                    >
+                      {/* Smaller Letter Indicator */}
+                      <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0 ${
+                        userAnswer === letter.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-400'
+                      }`}>
+                        {letter}
+                      </div>
+                      <span className="text-sm">{optionText}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-48 flex flex-col"> {/* Fixed height for textarea to prevent takeover */}
+                <textarea
+                  className="w-full flex-1 bg-gray-800/40 border border-gray-800 rounded-xl p-4 focus:border-blue-500 focus:outline-none text-white text-sm resize-none"
+                  placeholder="Type your answer here..."
+                  value={userAnswer || ''}
+                  onChange={(e) => onAnswerChange(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
