@@ -15,12 +15,10 @@ export default function StudentQuizWindow({
       {/* Question Content */}
       <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full px-8">
         {/* Question Part */}
-        <div className="flex-[1.5] flex flex-col justify-center py-6 border-b border-gray-800/50">
-          <div className="overflow-y-auto pr-2">
-            <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-white text-center">
-              {question.questionText}
-            </h1>
-          </div>
+        <div className="flex-1 flex flex-col justify-center py-6 border-b border-gray-800/50 overflow-y-auto pr-2">
+          <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-white text-center">
+            {question.questionText}
+          </h1>
         </div>
 
         {/* Input Part */}

@@ -16,6 +16,8 @@ export default function StudentQuizPage(){
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
+  const [canPrev, setCanPrev] = useState(true);
+  const [canNext, setCanNext] = useState(true);
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
   //fetch from backend in case quiz data is lost
@@ -30,6 +32,17 @@ export default function StudentQuizPage(){
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
+  };
+  
+  const handlePrev = () => {
+    if(selectedQuestionIndex > 0){
+      setSelectedQuestionIndex(prev=> prev-1);
+    }
+  };
+  const handleNext = () => {
+    if(selectedQuestionIndex < questions.length-1){
+      setSelectedQuestionIndex(prev => prev+1);
+    }
   };
 
   return(
@@ -48,6 +61,10 @@ export default function StudentQuizPage(){
         {/* The Question Stage (Center) */}
         <StudentQuizWindow
           question={selectedQuestion}
+          canPrev={canPrev}
+          onPrev={handlePrev}
+          canNext={canNext}
+          onNext={handleNext}
         />
 
         {/* The Timer Sidebar (Right) */}
