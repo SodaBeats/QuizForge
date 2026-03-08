@@ -16,8 +16,8 @@ export default function StudentQuizPage(){
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
-  const [canPrev, setCanPrev] = useState(true);
-  const [canNext, setCanNext] = useState(true);
+  const canPrev = true;
+  const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
   //fetch from backend in case quiz data is lost

@@ -15,6 +15,7 @@ export default function QuizzesPage (){
   
   const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
 
+  //get quizzes related to user
   useEffect(()=>{
     authFetch(`http://localhost:3000/api/quizzes`)
     .then(res => res.json())
@@ -28,9 +29,10 @@ export default function QuizzesPage (){
     }
   };
 
+  //get all questions related to quiz
   const handleSelectedQuiz = async(chosenQuizId)=>{
     try{
-      const response = await authFetch(`http://localhost:3000/api/quizzes/${chosenQuizId}/questions`)
+      const response = await authFetch(`http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`)
       const result = await response.json();
 
       if(!result.success){

@@ -47,12 +47,13 @@ router.post('/', verifyToken, async(req, res, next)=>{
 
 });
 
+//get all quizzes related to user
 router.get('/', verifyToken, async(req, res, next)=>{
   
   const userId = req.user.id;
   try{
-    //count all questions assigned to a quiz
 
+    //count all questions assigned to a quiz
     const userQuizzes = await db.select({
       id: quizzes_db.id,
       quizTitle: quizzes_db.quiz_title,
@@ -79,12 +80,14 @@ router.get('/', verifyToken, async(req, res, next)=>{
   }
 });
 
-router.get('/:id/questions', verifyToken, async(req, res, next) => {
-  const quizId = Number(req.params.id);
+//get all questions related to selected quiz
+router.get('/questions', verifyToken, async(req, res, next) => {
+  const {quizId} = req.query;
   
   if(!quizId){
     return res.status(400).json({success: false, message: 'You must select a quiz'});
   }
+  
   try{
     const questionList = await db.select({
       id: questions_db.id,
@@ -98,7 +101,7 @@ router.get('/:id/questions', verifyToken, async(req, res, next) => {
     })
       .from(questions_db)
       .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
-      .where(eq(quiz_questions_db.quiz_id, quizId))
+      .where(eq(quiz_questions_db.quiz_id, Number(quizId)))
 
     if(questionList.length<1){
       return res.status(404).json({success: false, message: 'There are no questions in this quiz'});
