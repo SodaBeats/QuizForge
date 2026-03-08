@@ -4,6 +4,8 @@ import { useLocation, useParams } from "react-router-dom";
 import { AuthContext } from '../components/AuthProvider';
 import StudentTopbar from "../components/StudentTopbar";
 import StudentSidebar from '../components/StudentSidebar';
+import StudentQuizWindow from '../components/StudentQuizWindow';
+import StudentTimeLimit from '../components/StudentTimeLimit';
 
 export default function StudentQuizPage(){
   const location = useLocation();
@@ -12,23 +14,45 @@ export default function StudentQuizPage(){
 
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
-  console.log(quiz);
+  const [questions, setQuestions] = useState(location.state?.questions || null);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
+  const selectedQuestion = questions?.[selectedQuestionIndex];
 
   //fetch from backend in case quiz data is lost
   useEffect(()=>{
     if(!quiz && quizToken){
       authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
         .then(res => res.json())
-        .then(data=>setQuiz(data.quiz));
+        .then(data=>setQuiz(data.quiz))
+        .then(data=>setQuestions(data.questions));
     }
   }, [quiz, quizToken, authFetch]);
 
+  const handleQuestionSelect = (index) => {
+    setSelectedQuestionIndex(index);
+  };
+
   return(
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
+      
       <StudentTopbar />
-      <StudentSidebar
-        questions={quiz.questions}
-      />
+      <div className="flex h-screen overflow-hidden bg-black">
+
+        {/* The Question List*/}
+        <StudentSidebar
+          questions={questions}
+          onQuestionSelect={handleQuestionSelect}
+          currentQuestionIndex={selectedQuestionIndex}
+        />
+
+        {/* The Question Stage (Center) */}
+        <StudentQuizWindow
+          question={selectedQuestion}
+        />
+
+        {/* The Timer Sidebar (Right) */}
+        <StudentTimeLimit />
+      </div>
     </div>
   );
 };

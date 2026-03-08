@@ -1,7 +1,7 @@
 import express from 'express';
 import {eq} from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { quizzes_db } from '../db/schema.js';
+import { questions_db, quiz_questions_db, quizzes_db } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -10,13 +10,45 @@ router.post('/', verifyToken, async(req, res, next)=>{
   try{
 
     const {token} = req.body;
-    const [quiz] = await db.select().from(quizzes_db).where(eq(quizzes_db.share_token, token.toLowerCase()));
+
+    if(!token || typeof (token) !== 'string'){
+      return res.status(400).json({success: false, message: 'Invalid token'});
+    }
+
+    //fetch the quiz info
+    const [quiz] = await db.select()
+      .from(quizzes_db)
+      .where(eq(quizzes_db.share_token, token.toLowerCase()));
 
     if(!quiz){
       return res.status(404).json({success: false, message: "Quiz does not exist"});
     }
 
-    return res.status(200).json({success: true, message: "Quiz Found!", quiz: quiz});
+    //fetch questions related to quiz
+    const questions = await db.select({
+      id: questions_db.id,
+      questionText: questions_db.question_text,
+      questionType: questions_db.question_type,
+      correctAnswer: questions_db.correct_answer,
+      optionA: questions_db.option_a,
+      optionB: questions_db.option_b,
+      optionC: questions_db.option_c,
+      optionD: questions_db.option_d,
+    })
+      .from(questions_db)
+      .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
+      .where(eq(quiz_questions_db.quiz_id, quiz.id))
+
+    if(questions.length < 1){
+      return res.status(404).json({success: false, message: 'This quiz has no questions'});
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Quiz Found!",
+      quiz: quiz,
+      questions: questions
+    });
 
 
   }catch(error){
@@ -34,12 +66,40 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
 
   try{
     
-    const [quiz] = await db.select().from(quizzes_db).where(eq(quizzes_db.share_token, quizToken));
+    //fetch the quiz info
+    const [quiz] = await db.select()
+      .from(quizzes_db)
+      .where(eq(quizzes_db.share_token, quizToken.toLowerCase()));
+
     if(!quiz){
       return res.status(404).json({success: false, message: "Quiz does not exist"});
     }
 
-    return res.status(200).json({success: true, message: "Quiz Found!", quiz: quiz});
+    //fetch questions related to quiz
+    const questions = await db.select({
+      id: questions_db.id,
+      questionText: questions_db.question_text,
+      questionType: questions_db.question_type,
+      correctAnswer: questions_db.correct_answer,
+      optionA: questions_db.option_a,
+      optionB: questions_db.option_b,
+      optionC: questions_db.option_c,
+      optionD: questions_db.option_d,
+    })
+      .from(questions_db)
+      .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
+      .where(eq(quiz_questions_db.quiz_id, quiz.id))
+
+    if(questions.length < 1){
+      return res.status(404).json({success: false, message: 'This quiz has no questions'});
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Quiz Found!",
+      quiz: quiz,
+      questions: questions
+    });
 
   }catch(error){
     next(error);
