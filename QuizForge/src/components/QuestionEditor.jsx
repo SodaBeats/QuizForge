@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import toast from 'react-hot-toast';
 import { AuthContext } from "./AuthProvider";
 
 export default function QuestionEditor({ selectedFile, setQuestions, selectedQuestion, setSelectedQuestionId }) {
@@ -6,7 +7,6 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
   const [manualQuestion, setManualQuestion] = useState({ //question usestate
-
     documentId: selectedFile?.id,
     questionText: '',
     questionType: 'multiple-choice',
@@ -52,6 +52,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
     setAddMode(mode);
   }
 
+  //submit generated or manually made questions
   const handleManualSubmit = async ()=>{
     try{
       const endpoint = addMode === 'edit' 
@@ -59,6 +60,11 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         : 'http://localhost:3000/api/questions';
       
       const method = addMode === 'edit' ? 'PUT' : 'POST';
+
+      if(!manualQuestion.questionText){
+        toast.error("Please input a question");
+        return;
+      }
       
       const response = await authFetch(endpoint, {
         method: method,

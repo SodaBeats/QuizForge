@@ -1,13 +1,20 @@
 
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { eq, count } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { questions_db, quiz_questions_db, quizzes_db } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { quizInputValidator } from '../middlewares/quizInputValidator.middleware.js';
+import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
 
 const router = express.Router();
 
-router.post('/', verifyToken, async(req, res, next)=>{
+router.post('/',
+  verifyToken,
+  quizInputValidator,
+  async(req: Request, res: Response, next: NextFunction)=>{
+
   const {fileId, title, description, timeLimit, dueDate} = req.body;
   const {id, role} = req.user;
   
@@ -116,9 +123,12 @@ router.get('/questions', verifyToken, async(req, res, next) => {
 
 });
 
-router.patch('/:quizId/question/:questionId', verifyToken, async(req, res, next)=>{
+router.patch('/:quizId/question/:questionId',
+  verifyToken,
+  questionInputValidator,
+  async(req: Request, res: Response, next: NextFunction)=>{
+
   const {questionId} = req.params;
-  const { id } = req.body;
 
   const dataForDrizzle = {
     question_text: req.body.questionText.trim(),
@@ -142,7 +152,11 @@ router.patch('/:quizId/question/:questionId', verifyToken, async(req, res, next)
   }
 });
 
-router.patch('/:id', verifyToken, async(req, res, next)=> {
+router.patch('/:id',
+  verifyToken,
+  quizInputValidator,
+  async(req: Request, res: Response, next: NextFunction)=> {
+
   if(Object.keys(req.body).length < 1){
     return res.status(400).json({success: false, message: 'No changes to be saved'});
   }

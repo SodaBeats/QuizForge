@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
 import SideBar from "../components/SideBar";
@@ -50,9 +51,16 @@ export default function QuizMakerSkeleton() {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/pdf' // .docx
     ];
+    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
     
     if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a DOCX or PDF file');
+      toast.error('Please upload a DOCX or PDF file');
+      return;
+    }
+    
+    // 2. Check File Size
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error(`File is too large. Maximum size is 5MB.`);
       return;
     }
 
