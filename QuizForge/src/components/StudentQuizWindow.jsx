@@ -25,7 +25,7 @@ export default function StudentQuizWindow({
         <div className="flex-1 flex flex-col justify-center py-6">
           <div className="w-full max-w-2xl mx-auto"> 
             {/* max-w-2xl keeps buttons from getting too wide on desktop */}
-            {question.questionType === 'multiple-choice' || question.questionType === 'true-false' ? (
+            {question.questionType === 'multiple-choice' ? (
               <div className="space-y-2"> {/* Reduced vertical spacing */}
                 {['A', 'B', 'C', 'D'].map((letter) => {
                   const optionKey = `option${letter}`;

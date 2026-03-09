@@ -15,6 +15,7 @@ export default function StudentQuizPage(){
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
+  
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
   const canPrev = true;
   const canNext = true;

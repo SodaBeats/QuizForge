@@ -62,8 +62,10 @@ function SideBar({
       alert('Due date and title are required');
       return;
     }
-    if(typeof(shareData.timeLimit) !== 'number'){
-      alert('Time limit should be a valid number');
+    const timeLimit = Number(shareData.timeLimit);
+
+    if(typeof(timeLimit) !== 'number' || isNaN(timeLimit) || timeLimit <= 0){
+      toast.error('Time limit must be a valid number');
       return;
     }
 
@@ -86,7 +88,7 @@ function SideBar({
           title: shareData.title,
           description: shareData.description,
           shareToken: shareData.shareToken,
-          timeLimit: shareData.timeLimit,
+          timeLimit: timeLimit,
           dueDate: finalDueDate,
           questionIds: questionIds
         }),
@@ -96,7 +98,7 @@ function SideBar({
       const data = await response.json();
       
       if(!data.success){
-        alert(`Something went wrong while creating your quiz: ${data.message}`);
+        toast.error(data.message || data.errors.map(e=>e.msg).join(', '));
         return;
       }
       setShareData({
