@@ -59,7 +59,7 @@ function SideBar({
 
     //setup a default due date if user did not set it
     if(!shareData.dueDate || !shareData.title){
-      alert('Due date and title are required');
+      toast.error('Due date and title are required');
       return;
     }
     const timeLimit = Number(shareData.timeLimit);
@@ -76,7 +76,7 @@ function SideBar({
       const questionIds = questions.map((q)=> {return q.id;});
 
       if(!questionIds){
-        alert('There are no questions');
+        toast.error('There are no questions');
         return;
       }
 

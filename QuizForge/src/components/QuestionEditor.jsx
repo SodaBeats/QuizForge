@@ -97,7 +97,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         })
         setSelectedQuestionId(null);
       } else {
-        alert('Error: ' + result.message);
+        toast.error(`Error: ${result.message || result.errors.map(e => e.msg).join(', ')}`);
       }
     }catch(error){
       console.error('Error submitting questions', error);

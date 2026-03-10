@@ -1,5 +1,6 @@
 
 import { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../components/AuthProvider';
 import QuizzesSidebar from '../components/QuizzesSideBar';
 import TopBar from '../components/TopBar';
@@ -60,8 +61,8 @@ export default function QuizzesPage (){
       });
       const result = await response.json();
 
-      if(!response.ok){
-        alert('Something went wrong. try again later');
+      if(!result.success){
+        toast.error(result.message || result.errors.map(e=>e.msg).join(', '));
         console.error(result.message);
         setQuestions(originalQuestions);
       }
@@ -110,8 +111,7 @@ export default function QuizzesPage (){
       const result = await response.json();
 
       if(!result.success){
-        alert('Something went wrong while editing quiz information');
-        console.error(result.message);
+        toast.error(result.message || result.errors.map(e => e.msg).join(', '));
         setQuizzes(originalQuizzes);
       }
 
