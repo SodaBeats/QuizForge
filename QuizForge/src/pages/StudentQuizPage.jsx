@@ -15,13 +15,18 @@ export default function StudentQuizPage(){
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
-  
+  const [answers, setAnswers] = useState({});
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
+  const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   const canPrev = true;
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
-  //fetch from backend in case quiz data is lost
+  console.log('question list: ',questions);
+  console.log('answer list: ', answers);
+  console.log('Set of answered questions: ', answeredQuestions);
+
+  //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
     if(!quiz && quizToken){
       authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
@@ -46,6 +51,15 @@ export default function StudentQuizPage(){
     }
   };
 
+  const handleAnswerChange = (ans) => {
+    setAnswers({...answers, [selectedQuestion.id]: ans});
+    setAnsweredQuestions((prev)=> {
+      const newSet = new Set(prev);
+      newSet.add(selectedQuestion.id);
+      return newSet;
+    });
+  };
+
   return(
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       
@@ -57,6 +71,7 @@ export default function StudentQuizPage(){
           questions={questions}
           onQuestionSelect={handleQuestionSelect}
           currentQuestionIndex={selectedQuestionIndex}
+          answeredQuestions={answeredQuestions}
         />
 
         {/* The Question Stage (Center) */}
@@ -66,6 +81,8 @@ export default function StudentQuizPage(){
           onPrev={handlePrev}
           canNext={canNext}
           onNext={handleNext}
+          answers={answers}
+          onAnswerChange={handleAnswerChange}
         />
 
         {/* The Timer Sidebar (Right) */}

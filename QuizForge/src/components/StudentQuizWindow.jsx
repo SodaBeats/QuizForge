@@ -5,7 +5,7 @@ export default function StudentQuizWindow({
   onPrev, 
   canNext, 
   canPrev,
-  userAnswer,
+  answers,
   onAnswerChange 
 }) {
   if (!question) return <div className="flex-1 p-8 text-gray-500">Select a question to begin.</div>;
@@ -37,14 +37,14 @@ export default function StudentQuizWindow({
                       key={letter}
                       onClick={() => onAnswerChange(letter.toLowerCase())}
                       className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center gap-3 ${
-                        userAnswer === letter.toLowerCase()
+                        answers?.[question.id] === letter.toLowerCase()
                           ? 'border-blue-500 bg-blue-500/10 text-white'
                           : 'border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:bg-gray-800/40'
                       }`}
                     >
                       {/* Smaller Letter Indicator */}
                       <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0 ${
-                        userAnswer === letter.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-400'
+                        answers?.[question.id] === letter.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-400'
                       }`}>
                         {letter}
                       </div>
@@ -58,7 +58,7 @@ export default function StudentQuizWindow({
                 <textarea
                   className="w-full flex-1 bg-gray-800/40 border border-gray-800 rounded-xl p-4 focus:border-blue-500 focus:outline-none text-white text-sm resize-none"
                   placeholder="Type your answer here..."
-                  value={userAnswer || ''}
+                  value={answers || ''}
                   onChange={(e) => onAnswerChange(e.target.value)}
                 />
               </div>
