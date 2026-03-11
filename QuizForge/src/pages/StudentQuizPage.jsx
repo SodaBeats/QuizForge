@@ -25,6 +25,7 @@ export default function StudentQuizPage(){
   console.log('question list: ',questions);
   console.log('answer list: ', answers);
   console.log('Set of answered questions: ', answeredQuestions);
+  console.log('quiz info: ', quiz);
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
@@ -60,6 +61,10 @@ export default function StudentQuizPage(){
     });
   };
 
+  const handleQuizSubmit = ()=> {
+    
+  };
+
   return(
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       
@@ -72,6 +77,7 @@ export default function StudentQuizPage(){
           onQuestionSelect={handleQuestionSelect}
           currentQuestionIndex={selectedQuestionIndex}
           answeredQuestions={answeredQuestions}
+          onQuizSubmit={handleQuizSubmit}
         />
 
         {/* The Question Stage (Center) */}
@@ -86,7 +92,9 @@ export default function StudentQuizPage(){
         />
 
         {/* The Timer Sidebar (Right) */}
-        <StudentTimeLimit />
+        <StudentTimeLimit
+          quiz={quiz}
+        />
       </div>
     </div>
   );

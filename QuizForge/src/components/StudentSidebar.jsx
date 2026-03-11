@@ -4,7 +4,8 @@ export default function StudentSidebar({
   questions, 
   currentQuestionIndex, 
   onQuestionSelect,
-  answeredQuestions 
+  answeredQuestions,
+  onQuizSubmit
 }) {
   const totalQuestions = questions.length;
   const answeredCount = answeredQuestions?.size || 0;
@@ -76,9 +77,10 @@ export default function StudentSidebar({
               const confirm = window.confirm(
                 `You have ${unanswered} unanswered question(s). Submit anyway?`
               );
+              console.log(confirm);
               if (!confirm) return;
             }
-            console.log('Submitting quiz...');
+            onQuizSubmit();
           }}
         >
           Submit Quiz

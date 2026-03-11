@@ -1,14 +1,44 @@
+import { useEffect, useState } from "react";
 
-export default function StudentTimeLimit() {
+export default function StudentTimeLimit({quiz}) {
+
+  // 1. Initialize state with total seconds
+  // Using a fallback of 0 if time_limit isn't provided
+  const [secondsLeft, setSecondsLeft] = useState((quiz.time_limit || 0) * 60);
+
+  useEffect(()=>{
+    if(secondsLeft<=0) return;
+
+    //set up interval
+    const intervalId = setInterval(()=>{
+      setSecondsLeft((prev)=>{
+        if(prev<=1){
+          clearInterval(intervalId); // stop at zero
+          return 0;
+        }
+        return prev - 1;
+      })
+    }, 1000);
+
+    //cleanup: stops timer when user leaves page
+    return () => clearInterval(intervalId);
+
+  }, []);
+
+  //formatting
+  const minutes = Math.floor(secondsLeft/60);
+  const seconds = secondsLeft%60;
+  const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+
   return (
     <div className="w-72 border-l border-gray-700 bg-gray-900 p-6 hidden lg:flex flex-col gap-8">
       {/* Timer Section */}
       <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 text-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Time Remaining</p>
         <div className="text-4xl font-mono font-bold text-white">
-          24:59
+          {formattedTime}
         </div>
-        {/* Visual progress ring could go here */}
       </div>
 
       {/* Quiz Info */}
