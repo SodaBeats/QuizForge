@@ -75,6 +75,28 @@ export const quiz_questions_db = pgTable('quiz_questions_db', {
   }
 });
 
+export const quiz_attempts_db = pgTable("quiz_attempts", {
+  id: serial("id").primaryKey(),
+  
+  // Connects to the Quiz
+  quiz_id: integer("quiz_id")
+    .references(() => quizzes_db.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // Connects to the Student
+  user_id: integer("user_id")
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  
+  // The result data
+  score: integer("score").default(0),
+  
+  // Helpful metadata
+  status: text("status").default('completed'), // 'in-progress' or 'completed'
+  
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
 
 
 // --RELATIONS

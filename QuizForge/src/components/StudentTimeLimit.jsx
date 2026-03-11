@@ -36,7 +36,7 @@ export default function StudentTimeLimit({quiz}) {
       {/* Timer Section */}
       <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 text-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Time Remaining</p>
-        <div className="text-4xl font-mono font-bold text-white">
+        <div className={`text-4xl font-mono font-bold ${secondsLeft < 60 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
           {formattedTime}
         </div>
       </div>
