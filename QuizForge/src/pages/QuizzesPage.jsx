@@ -15,7 +15,7 @@ export default function QuizzesPage (){
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   
-  const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
+  const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
 
   //get quizzes related to user
   useEffect(()=>{
@@ -89,14 +89,16 @@ export default function QuizzesPage (){
 
   const handleQuizMetaUpdate = async(quizToChange) => {
 
-    const originalQuizzes = {...quizzes};
-    const originalQuiz = quizzes.find((quiz) => quiz.id === quizToChange.id);
+    //make copy of original quizzes list
+    const originalQuizzes = [...quizzes];
+
+    //make copy of original quiz currently editing
+    const originalQuiz = originalQuizzes.find((originalQuiz) => originalQuiz.id === quizToChange.id);
 
     const changes = getChanges(originalQuiz, quizToChange);
-    console.log(changes);
 
     if(Object.keys(changes).length === 0){
-      console.log('No changes to save');
+      toast.error('No changes to save');
       return;
     }
 
