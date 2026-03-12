@@ -55,7 +55,8 @@ export const quizzes_db = pgTable('quizzes_db', {
   quiz_title: varchar('quiz_title', { length: 255 }).notNull(),
   quiz_description: text('quiz_description'),
   share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
-  time_limit: integer('time_limit').default(0), 
+  time_limit: integer('time_limit').default(0),
+  max_attempts: integer('max_attempts').default(1).notNull(),
   is_published: boolean('is_published').default(false).notNull(),
   due_date: timestamp('due_date', { withTimezone: true }),
   created_at: timestamp('created_at').defaultNow().notNull(),
@@ -75,7 +76,7 @@ export const quiz_questions_db = pgTable('quiz_questions_db', {
   }
 });
 
-export const quiz_attempts_db = pgTable("quiz_attempts", {
+export const quiz_attempts_db = pgTable("quiz_attempts_db", {
   id: serial("id").primaryKey(),
   
   // Connects to the Quiz
@@ -93,7 +94,7 @@ export const quiz_attempts_db = pgTable("quiz_attempts", {
   
   // Helpful metadata
   status: text("status").default('completed'), // 'in-progress' or 'completed'
-  
+
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

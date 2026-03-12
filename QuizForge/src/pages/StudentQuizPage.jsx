@@ -16,16 +16,16 @@ export default function StudentQuizPage(){
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
   const [answers, setAnswers] = useState({});
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   const canPrev = true;
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
-  console.log('question list: ',questions);
-  console.log('answer list: ', answers);
+  console.log('question list: ',typeof(questions), questions);
+  console.log('answer list: ', typeof(answers), answers);
   console.log('Set of answered questions: ', answeredQuestions);
-  console.log('quiz info: ', quiz);
+  console.log('quiz info: ', typeof(quiz), quiz);
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
@@ -61,8 +61,27 @@ export default function StudentQuizPage(){
     });
   };
 
-  const handleQuizSubmit = ()=> {
-    
+  const handleQuizSubmit = async()=> {
+    try{
+      const response = await authFetch('http://localhost:3000/api/student/quiz-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({questions, answers, quiz}),
+        credentials: 'include'
+      })
+
+      const result = await response.json();
+
+      if(!result.succcess){
+        console.log('Oh nyo, something went wrong while submitting attempt');
+        return;
+      }
+
+
+    }catch(error){
+      console.error(error);
+      alert('Something went wrong while submitting attempt');
+    }
   };
 
   return(
