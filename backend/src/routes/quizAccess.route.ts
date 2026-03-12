@@ -16,7 +16,16 @@ router.post('/', verifyToken, async(req, res, next)=>{
     }
 
     //fetch the quiz info
-    const [quiz] = await db.select()
+    const [quiz] = await db.select({
+      id: quizzes_db.id,
+      userId: quizzes_db.user_id,
+      quizTitle: quizzes_db.quiz_title,
+      quizDescription: quizzes_db.quiz_description,
+      shareToken: quizzes_db.share_token,
+      timeLimit: quizzes_db.time_limit,
+      maxAttempts: quizzes_db.max_attempts,
+      dueDate: quizzes_db.due_date,
+    })
       .from(quizzes_db)
       .where(eq(quizzes_db.share_token, token.toLowerCase()));
 

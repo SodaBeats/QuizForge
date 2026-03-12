@@ -13,7 +13,7 @@ import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
 import quizzesRoute from './routes/user-quiz.route.js';
 import quizAccessRoute from './routes/quizAccess.route.js';
-import quizSubmitRoute from './routes/quizSubmit.route.js';
+import quizAttemptsRoute from './routes/quizAttempts.route.js';
 
 const app = express();
 
@@ -41,7 +41,7 @@ app.use('/api/questions', questionRoute);// teacer route: manually made question
 app.use('/api/documents', documentRoute);// teacher route: getting/deleting documents
 app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and getting quiz
-//app.use('/api/student/quiz-submit', quizSubmitRoute);//student route: submitting quiz attempt
+app.use('/api/student/quiz-attempts', quizAttemptsRoute);//student route: submitting quiz attempt
 
 //Auth
 app.use('/auth/login', loginRoute);

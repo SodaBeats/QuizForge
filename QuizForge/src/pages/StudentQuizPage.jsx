@@ -22,9 +22,9 @@ export default function StudentQuizPage(){
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
-  console.log('question list: ',typeof(questions), questions);
-  console.log('answer list: ', typeof(answers), answers);
-  console.log('Set of answered questions: ', answeredQuestions);
+  //console.log('question list: ',typeof(questions), questions);
+  //console.log('answer list: ', typeof(answers), answers);
+  //console.log('Set of answered questions: ', answeredQuestions);
   console.log('quiz info: ', typeof(quiz), quiz);
 
   //fetch from backend in case quiz data is lost from state
@@ -63,7 +63,7 @@ export default function StudentQuizPage(){
 
   const handleQuizSubmit = async()=> {
     try{
-      const response = await authFetch('http://localhost:3000/api/student/quiz-submit', {
+      const response = await authFetch('http://localhost:3000/api/student/quiz-attempts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({questions, answers, quiz}),
@@ -72,10 +72,12 @@ export default function StudentQuizPage(){
 
       const result = await response.json();
 
-      if(!result.succcess){
+      if(!result.success){
         console.log('Oh nyo, something went wrong while submitting attempt');
         return;
       }
+
+      console.log(result);
 
 
     }catch(error){

@@ -82,7 +82,7 @@ export default function QuizTokenModal({ isOpen, onClose, onSubmit }) {
             disabled={isLoading || token.length !== 6}
             className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Verifying...' : 'Start Quiz'}
+            {isLoading ? 'Verifying...' : 'Start Attempt'}
           </button>
         </form>
         

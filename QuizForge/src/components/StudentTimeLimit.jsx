@@ -4,7 +4,7 @@ export default function StudentTimeLimit({quiz}) {
 
   // 1. Initialize state with total seconds
   // Using a fallback of 0 if time_limit isn't provided
-  const [secondsLeft, setSecondsLeft] = useState((quiz.time_limit || 0) * 60);
+  const [secondsLeft, setSecondsLeft] = useState((quiz.timeLimit || 0) * 60);
 
   useEffect(()=>{
     if(secondsLeft<=0) return;
