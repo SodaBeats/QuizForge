@@ -13,6 +13,7 @@ export default function QuizzesPage (){
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [editingQuestion, setEditingQuestion] = useState(null);
   
   const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
 
@@ -66,6 +67,8 @@ export default function QuizzesPage (){
         console.error(result.message);
         setQuestions(originalQuestions);
       }
+
+      setEditingQuestion(null);
 
     }catch(error){
       setQuestions(originalQuestions);
@@ -150,6 +153,8 @@ export default function QuizzesPage (){
               questions={questions}
               selectedQuiz={selectedQuiz}
               onUpdateQuestion={handleQuestionUpdate}
+              editingQuestion={editingQuestion}
+              setEditingQuestion={setEditingQuestion}
             />
           </>
         ) : (

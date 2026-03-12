@@ -11,7 +11,7 @@ export const questionInputValidator = [
   body('optionB').optional().trim().escape(),
   body('optionC').optional().trim().escape(),
   body('optionD').optional().trim().escape(),
-  body('correctAnswer').optional().trim().isString().escape(),
+  body('correctAnswer').optional().trim().isString().toLowerCase().escape(),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){

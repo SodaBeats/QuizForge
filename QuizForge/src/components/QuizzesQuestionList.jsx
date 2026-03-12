@@ -1,14 +1,12 @@
 
 // QuizQuestionsList.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
-const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz }) => {
-  const [editingQuestion, setEditingQuestion] = useState(null);
+const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuestion, setEditingQuestion }) => {
 
   useEffect(()=>{
-    // eslint-disable-next-line
     setEditingQuestion(null);
-  },[selectedQuiz]);
+  },[selectedQuiz, setEditingQuestion]);
 
   // Handle opening the editor
   const handleEditClick = (question) => {

@@ -10,6 +10,7 @@ import { questionInputValidator } from '../middlewares/questionValidator.middlew
 
 const router = express.Router();
 
+//Router for making a quiz
 router.post('/',
   verifyToken,
   quizInputValidator,
@@ -123,6 +124,7 @@ router.get('/questions', verifyToken, async(req, res, next) => {
 
 });
 
+// Router for question updates
 router.patch('/:quizId/question/:questionId',
   verifyToken,
   questionInputValidator,
@@ -152,6 +154,7 @@ router.patch('/:quizId/question/:questionId',
   }
 });
 
+//Router for quiz metadata updates
 router.patch('/:id',
   verifyToken,
   quizInputValidator,
