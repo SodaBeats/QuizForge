@@ -1,6 +1,7 @@
 // QuizMetadata.jsx
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { toDatetimeLocal } from '../util/toDateTimeLocal';
 
 // TODO : FINISH THIS
 export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
@@ -122,7 +123,7 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
               type="datetime-local"
               name="dueDate"
               // Formats the date to YYYY-MM-DDTHH:mm for the input
-              value={editingQuiz.dueDate.slice(0,16)}
+              value={toDatetimeLocal(editingQuiz.dueDate).slice(0,16)}
               onChange={(e) =>
                 setEditingQuiz({
                   ...editingQuiz,

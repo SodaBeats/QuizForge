@@ -56,7 +56,7 @@ router.post('/', verifyToken, async(req, res, next)=>{
       success: true,
       message: "Quiz Found!",
       quiz: quiz,
-      questions: questions
+      questions: questions,
     });
 
 

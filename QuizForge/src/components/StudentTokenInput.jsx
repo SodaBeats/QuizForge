@@ -35,7 +35,7 @@ export default function QuizTokenModal({ isOpen, onClose, onSubmit }) {
     
     try {
       // Call the parent's submit handler
-      await onSubmit(token.toUpperCase());
+      await onSubmit(token);
 
     } catch (error) {
       toast.error('Invalid quiz token');

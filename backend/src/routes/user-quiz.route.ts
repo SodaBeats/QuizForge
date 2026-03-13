@@ -81,6 +81,10 @@ router.get('/', verifyToken, async(req, res, next)=>{
     // We MUST group by the quiz ID to get individual counts per quiz
     .groupBy(quizzes_db.id);
 
+    if(!userQuizzes){
+      return res.status(404).json({success: false, message: 'This user does not have quizzes.'});
+    }
+
     res.status(200).json(userQuizzes);
 
   }catch(error){
