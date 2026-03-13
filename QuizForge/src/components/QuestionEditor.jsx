@@ -96,6 +96,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
           correctAnswer: ''
         })
         setSelectedQuestionId(null);
+        toast.success('Question Updated!');
       } else {
         toast.error(`Error: ${result.message || result.errors.map(e => e.msg).join(', ')}`);
       }

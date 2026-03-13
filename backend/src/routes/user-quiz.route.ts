@@ -16,11 +16,11 @@ router.post('/',
   quizInputValidator,
   async(req: Request, res: Response, next: NextFunction)=>{
 
-  const {fileId, title, description, timeLimit, dueDate} = req.body;
+  const {fileId, quizTitle, description, timeLimit, dueDate} = req.body;
   const {id, role} = req.user;
   
   //verify contents
-  if(!fileId || !title){
+  if(!fileId || !quizTitle){
     return res.status(400).json({success: false, message: 'Incomplete Input'});
   }
   if(role!=='teacher'){
@@ -30,9 +30,9 @@ router.post('/',
   try{
     const [newQuiz] = await db.insert(quizzes_db).values({
       user_id: id,
-      quiz_title: req.body.title.trim(),
-      quiz_description: req.body.description?.trim(),
-      share_token: req.body.shareToken.trim().toLowerCase(),
+      quiz_title: req.body.quizTitle,
+      quiz_description: req.body.description,
+      share_token: req.body.shareToken,
       time_limit: req.body.timeLimit,
       due_date: new Date(req.body.dueDate)
     }).returning({id: quizzes_db.id});

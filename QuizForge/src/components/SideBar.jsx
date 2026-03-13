@@ -18,7 +18,7 @@ function SideBar({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shareData, setShareData] = useState({
-    title: '',
+    quizTitle: '',
     description: '',
     shareToken: '', // Will be filled by backend
     timeLimit: 0,
@@ -43,13 +43,13 @@ function SideBar({
 
     //Pre-fill with file name
     if (selectedFile) {
-      setShareData(prev => ({ ...prev, title: selectedFile.name }));
+      setShareData(prev => ({ ...prev, quizTitle: selectedFile.name }));
     }
 
     const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
       setShareData(prev => ({ 
       ...prev, 
-      title: selectedFile?.name || '',
+      quizTitle: selectedFile?.name || '',
       shareToken: quizToken
     }));
   };
@@ -58,7 +58,7 @@ function SideBar({
   const handleShareQuiz = async () => {
 
     //setup a default due date if user did not set it
-    if(!shareData.dueDate || !shareData.title){
+    if(!shareData.dueDate || !shareData.quizTitle){
       toast.error('Due date and title are required');
       return;
     }
@@ -85,7 +85,7 @@ function SideBar({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileId: selectedFileId,
-          title: shareData.title,
+          quizTitle: shareData.quizTitle,
           description: shareData.description,
           shareToken: shareData.shareToken,
           timeLimit: timeLimit,
@@ -99,10 +99,11 @@ function SideBar({
       
       if(!data.success){
         toast.error(data.message || data.errors.map(e=>e.msg).join(', '));
+        console.error(data);
         return;
       }
       setShareData({
-        title: '',
+        quizTitle: '',
         description: '',
         shareToken: '',
         timeLimit: 0,
@@ -276,8 +277,8 @@ function SideBar({
                 </label>
                 <input
                   type="text"
-                  value={shareData.title}
-                  onChange={(e) => setShareData(prev => ({ ...prev, title: e.target.value }))}
+                  value={shareData.quizTitle}
+                  onChange={(e) => setShareData(prev => ({ ...prev, quizTitle: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   placeholder="Enter quiz title"
                 />
@@ -374,7 +375,7 @@ function SideBar({
                   setIsShareModalOpen(false);
                   // Reset form
                   setShareData({
-                    title: '',
+                    quizTitle: '',
                     description: '',
                     shareToken: '',
                     timeLimit: '',

@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
-export default function StudentTimeLimit({quiz}) {
+export default function StudentTimeLimit({quiz, handleAutoSubmit}) {
 
   // 1. Initialize state with total seconds
   // Using a fallback of 0 if time_limit isn't provided
   const [secondsLeft, setSecondsLeft] = useState((quiz.timeLimit || 0) * 60);
+  const navigate = useNavigate();
 
   useEffect(()=>{
     if(secondsLeft<=0) return;
@@ -17,7 +20,7 @@ export default function StudentTimeLimit({quiz}) {
           return 0;
         }
         return prev - 1;
-      })
+      });
     }, 1000);
 
     //cleanup: stops timer when user leaves page
@@ -25,7 +28,22 @@ export default function StudentTimeLimit({quiz}) {
 
   }, []);
 
-  //formatting
+  //calls the submit function when the time runs out
+  const onQuizTimeLimit = useCallback(async()=> {
+
+    await handleAutoSubmit();
+    toast.error('Time is Up!');
+    navigate('/student', { replace: true });
+
+  }, [navigate, handleAutoSubmit]);
+
+  useEffect(()=>{
+    if(secondsLeft === 0){
+      onQuizTimeLimit();
+    }
+  }, [secondsLeft, onQuizTimeLimit]);
+
+  //formatting time before display
   const minutes = Math.floor(secondsLeft/60);
   const seconds = secondsLeft%60;
   const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;

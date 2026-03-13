@@ -1,6 +1,7 @@
 
 import { useEffect, useState, useContext } from 'react';
 import { useLocation, useParams } from "react-router-dom";
+import toast from 'react-hot-toast';
 import { AuthContext } from '../components/AuthProvider';
 import StudentTopbar from "../components/StudentTopbar";
 import StudentSidebar from '../components/StudentSidebar';
@@ -22,18 +23,19 @@ export default function StudentQuizPage(){
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
 
-  //console.log('question list: ',typeof(questions), questions);
-  //console.log('answer list: ', typeof(answers), answers);
-  //console.log('Set of answered questions: ', answeredQuestions);
-  console.log('quiz info: ', typeof(quiz), quiz);
-
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
     if(!quiz && quizToken){
       authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
         .then(res => res.json())
-        .then(data=>setQuiz(data.quiz))
-        .then(data=>setQuestions(data.questions));
+        .then(data=>{
+          setQuiz(data.quiz);
+          setQuestions(data.questions);
+        })
+        .catch(err => {
+          console.error(err);
+          toast.error('Something went wrong while fetching quiz.');
+        });
     }
   }, [quiz, quizToken, authFetch]);
 
@@ -115,6 +117,7 @@ export default function StudentQuizPage(){
         {/* The Timer Sidebar (Right) */}
         <StudentTimeLimit
           quiz={quiz}
+          handleAutoSubmit={handleQuizSubmit}
         />
       </div>
     </div>
