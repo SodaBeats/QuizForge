@@ -3,7 +3,9 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { toDatetimeLocal } from '../util/toDateTimeLocal';
 
-// TODO : FINISH THIS
+// TO DO (WAIT FOR TOKEN): ASK WHY EDITINGQUIZ IS NOT UPDATING WHEN USER CHANGES QUIZ
+
+//eslint-disable-next-line
 export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
 
   const [editingQuiz, setEditingQuiz] = useState({...quiz});
@@ -75,7 +77,7 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
                   toast.success('Token copied to clipboard!', {
                     duration: 2000,
                     style: {
-                      background: '#10B981', // Green
+                      background: '#10B981',
                       color: '#fff',
                     },
                   });
@@ -93,25 +95,21 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
             <label className="text-sm font-semibold text-gray-400 block mb-2">
               Time Limit (minutes)
             </label>
-            <div className="relative">
-              <input
-                type="number"
-                name="timeLimit"
-                min="0"
-                placeholder="e.g. 30"
-                value={editingQuiz.timeLimit || ''}
-                onChange={(e) =>
-                  setEditingQuiz({
-                    ...editingQuiz,
-                    timeLimit: e.target.value === '' ? null : Number(e.target.value),
-                  })
-                }
-                className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all pr-12"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500 text-xs">
-                min
-              </div>
-            </div>
+            <input
+              type="number"
+              name="timeLimit"
+              min="0"
+              placeholder="e.g. 30"
+              value={editingQuiz.timeLimit || ''}
+              onChange={(e) =>
+                setEditingQuiz({
+                  ...editingQuiz,
+                  timeLimit: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
+                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            />
           </div>
 
           {/* Due Date */}
@@ -122,7 +120,6 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
             <input
               type="datetime-local"
               name="dueDate"
-              // Formats the date to YYYY-MM-DDTHH:mm for the input
               value={toDatetimeLocal(editingQuiz.dueDate).slice(0,16)}
               onChange={(e) =>
                 setEditingQuiz({
@@ -130,23 +127,54 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
                   dueDate: e.target.value || null,
                 })
               }
-              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
+                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
         </div>
 
-        {/* Status */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 block mb-2">
-            Status
-          </label>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-            quiz.status === 'active' 
-              ? 'bg-green-600 text-white' 
-              : 'bg-gray-600 text-gray-300'
-          }`}>
-            {quiz.status || 'Draft'}
-          </span>
+        {/* Status and Max Attempts - Side by Side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Max Attempts */}
+          <div>
+            <label className="text-sm font-semibold text-gray-400 block mb-2">
+              Max Attempts
+            </label>
+            <input
+              type="number"
+              name="maxAttempts"
+              min="1"
+              placeholder="e.g. 3"
+              value={editingQuiz.maxAttempts || ''}
+              onChange={(e) =>
+                setEditingQuiz({
+                  ...editingQuiz,
+                  maxAttempts: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
+                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="text-sm font-semibold text-gray-400 block mb-2">
+              Status
+            </label>
+            <select
+              value={editingQuiz.status || 'draft'}
+              onChange={(e) => setEditingQuiz({
+                ...editingQuiz,
+                status: e.target.value
+              })}
+              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
+                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
         </div>
       </div>
 

@@ -57,7 +57,7 @@ export const quizzes_db = pgTable('quizzes_db', {
   share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
   time_limit: integer('time_limit').default(0),
   max_attempts: integer('max_attempts').default(1).notNull(),
-  is_published: boolean('is_published').default(false).notNull(),
+  status: text('status').notNull().default('draft'),
   due_date: timestamp('due_date', { withTimezone: true }).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });

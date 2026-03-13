@@ -119,6 +119,8 @@ export default function QuizzesPage (){
         toast.error(result.message || result.errors.map(e => e.msg).join(', '));
         setQuizzes(originalQuizzes);
       }
+      
+      toast.success('Quiz Updated!');
 
     }catch(error){
       alert('Error editing quiz information');

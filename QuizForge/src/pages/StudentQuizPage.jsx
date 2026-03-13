@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useContext } from 'react';
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { AuthContext } from '../components/AuthProvider';
 import StudentTopbar from "../components/StudentTopbar";
@@ -22,6 +22,7 @@ export default function StudentQuizPage(){
   const canPrev = true;
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
+  const navigate = useNavigate();
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
@@ -76,10 +77,12 @@ export default function StudentQuizPage(){
 
       if(!result.success){
         console.log('Oh nyo, something went wrong while submitting attempt');
+        toast.error('Something went wrong while submitting quiz. Please try again later');
         return;
       }
 
-      console.log(result);
+      toast.success('Attempt received!');
+      navigate('/student', { replace: true });
 
 
     }catch(error){

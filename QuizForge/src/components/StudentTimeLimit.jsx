@@ -1,13 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 
 export default function StudentTimeLimit({quiz, handleAutoSubmit}) {
 
   // 1. Initialize state with total seconds
   // Using a fallback of 0 if time_limit isn't provided
   const [secondsLeft, setSecondsLeft] = useState((quiz.timeLimit || 0) * 60);
-  const navigate = useNavigate();
 
   useEffect(()=>{
     if(secondsLeft<=0) return;
@@ -33,9 +31,8 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit}) {
 
     await handleAutoSubmit();
     toast.error('Time is Up!');
-    navigate('/student', { replace: true });
 
-  }, [navigate, handleAutoSubmit]);
+  }, [handleAutoSubmit]);
 
   useEffect(()=>{
     if(secondsLeft === 0){

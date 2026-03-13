@@ -16,7 +16,7 @@ router.post('/',
   quizInputValidator,
   async(req: Request, res: Response, next: NextFunction)=>{
 
-  const {fileId, quizTitle, description, timeLimit, dueDate} = req.body;
+  const {fileId, quizTitle, description, timeLimit,maxAttempts, dueDate, status} = req.body;
   const {id, role} = req.user;
   
   //verify contents
@@ -34,12 +34,15 @@ router.post('/',
       quiz_description: req.body.description,
       share_token: req.body.shareToken,
       time_limit: req.body.timeLimit,
-      due_date: new Date(req.body.dueDate)
+      max_attempts: req.body.maxAttempts,
+      due_date: new Date(req.body.dueDate),
+      status: req.body.status
     }).returning({id: quizzes_db.id});
 
     const newQuizId = newQuiz?.id;
     const questionIds = req.body.questionIds;
 
+    //assigning question IDs to the quiz id and insert into junction table
     const junctionRows = questionIds.map((qId: Number)=>({
       quiz_id: newQuizId,
       question_id: qId
@@ -68,7 +71,9 @@ router.get('/', verifyToken, async(req, res, next)=>{
       description: quizzes_db.quiz_description,
       shareToken: quizzes_db.share_token,
       timeLimit: quizzes_db.time_limit,
+      maxAttempts: quizzes_db.max_attempts,
       dueDate: quizzes_db.due_date,
+      status: quizzes_db.status,
       questionCount: count(quiz_questions_db.question_id),
     })
     .from(quizzes_db)
@@ -172,7 +177,9 @@ router.patch('/:id',
     quiz_title: req.body.quizTitle.trim(),
     quiz_description: req.body.description.trim(),
     time_limit: req.body.timeLimit,
-    due_date: new Date(req.body.dueDate)
+    due_date: new Date(req.body.dueDate),
+    max_attempts: req.body.maxAttempts,
+    status: req.body.status
   };
 
   try{
