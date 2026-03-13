@@ -41,7 +41,7 @@ export default function StudentSidebar({
             return (
               <button
                 key={question.id}
-                onClick={() => onQuestionSelect(index)}
+                //onClick={() => onQuestionSelect(index)}
                 className={`
                   flex items-center gap-3 p-3 rounded-lg text-sm transition-all text-left
                   ${isSelected 
@@ -59,7 +59,7 @@ export default function StudentSidebar({
                 </div>
 
                 <span className="truncate font-medium">
-                  {question.questionText || `Question ${index + 1}`}
+                  {`Question ${index + 1}`}
                 </span>
               </button>
             );

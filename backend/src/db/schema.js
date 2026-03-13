@@ -58,7 +58,7 @@ export const quizzes_db = pgTable('quizzes_db', {
   time_limit: integer('time_limit').default(0),
   max_attempts: integer('max_attempts').default(1).notNull(),
   is_published: boolean('is_published').default(false).notNull(),
-  due_date: timestamp('due_date', { withTimezone: true }),
+  due_date: timestamp('due_date', { withTimezone: true }).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 

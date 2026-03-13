@@ -29,10 +29,17 @@ router.post('/', verifyToken, async(req, res, next)=>{
       .from(quizzes_db)
       .where(eq(quizzes_db.share_token, token.toLowerCase()));
 
+      //check if quiz exists
     if(!quiz){
       return res.status(404).json({success: false, message: "Quiz does not exist"});
     }
 
+    //check quiz deadline
+    const deadline = new Date(quiz.dueDate);
+    if(Date.now() > deadline.getTime()){
+      return res.status(400).json({success: false, message: "Quiz is past the deadline"});
+    }
+    
     //fetch questions related to quiz
     const questions = await db.select({
       id: questions_db.id,
@@ -58,7 +65,6 @@ router.post('/', verifyToken, async(req, res, next)=>{
       quiz: quiz,
       questions: questions,
     });
-
 
   }catch(error){
     next(error);

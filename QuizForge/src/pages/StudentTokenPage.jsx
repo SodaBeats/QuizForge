@@ -25,8 +25,6 @@ export default function StudentTokenPage() {
         return;
       }
 
-      console.log('Student token page: ', result.quiz);
-
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
       navigate(`/student/quiz/${result.quiz.share_token}`, {state: {quizData: result.quiz, questions: result.questions}});
