@@ -1,11 +1,14 @@
 import express from 'express';
-import {eq} from 'drizzle-orm';
+import type { Request, Response, NextFunction } from 'express';
+import {eq, count, and} from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { questions_db, quiz_questions_db, quizzes_db } from '../db/schema.js';
+import { questions_db, quiz_attempts_db, quiz_questions_db, quizzes_db } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { quizAccessValidator } from '../middlewares/quizAccessValidator.middleware.js';
 
 const router = express.Router();
 
+//get quiz info and questions after user input token
 router.post('/', verifyToken, async(req, res, next)=>{
   try{
 
@@ -71,6 +74,7 @@ router.post('/', verifyToken, async(req, res, next)=>{
   }
 });
 
+//get and questions by quiz token, just in case
 router.get('/:quizToken', verifyToken, async(req, res, next)=>{
 
   const {quizToken} = req.params;
@@ -120,5 +124,88 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
     next(error);
   }
 });
+
+//get user attempts number
+router.get('/:quizToken/:userId',
+    verifyToken,
+    quizAccessValidator,
+    async(req: Request, res: Response, next: NextFunction)=>{
+
+  const quizToken = req.params.quizToken;
+  const userId = Number(req.params.userId);
+
+  // Guard clause: Ensure it's a string and it exists
+  if (typeof quizToken !== 'string') {
+    return res.status(400).json({ success: false, message: "Invalid Token" });
+  }
+  if(!userId){
+    return res.status(400).json({success: false, message: 'Unauthorized Action'});
+  }
+
+  try{
+    /*
+    const [quiz] = await db.select({id:quizzes_db.id, maxAttempts: quizzes_db.max_attempts})
+      .from(quizzes_db)
+      .where(eq(quizzes_db.share_token, quizToken));
+
+    if(!quiz){
+      return res.status(404).json({success: false, message: 'This quiz does not exist'});
+    }
+
+    //get attempts for this quiz and user
+    const [result] = await db.select({value: count()})
+      .from(quiz_attempts_db)
+      .where(and(eq(quiz_attempts_db.quiz_id, quiz.id), eq(quiz_attempts_db.user_id, userId)));
+
+    const attemptCount = result?.value ?? 0;
+
+    if(attemptCount>=2){
+      return res.status(400).json({success: false, message: "Max attempts reached!"});
+    }
+
+    res.status(200).json({success: true, attemptCount: attemptCount});
+    */
+    const [attemptsData] = await db.select({
+      id: quizzes_db.id,
+      maxAttempts: quizzes_db.max_attempts,
+      attemptCount: count(quiz_attempts_db.id), // Aggregating the count
+    })
+    .from(quizzes_db)
+    //  join the attempts but ONLY for this specific user
+    .leftJoin(
+      quiz_attempts_db,
+      and(
+        eq(quizzes_db.id, quiz_attempts_db.quiz_id),
+        eq(quiz_attempts_db.user_id, userId)
+      )
+    )
+    .where(eq(quizzes_db.share_token, quizToken))
+    .groupBy(quizzes_db.id); // Required when using count()
+
+    if (!attemptsData) {
+      return res.status(404).json({ success: false, message: 'This quiz does not exist' });
+    }
+
+    // Now we use the dynamic maxAttempts from your DB instead of hardcoding "2"
+    if (attemptsData.attemptCount >= attemptsData.maxAttempts) {
+      return res.status(400).json({
+        success: false,
+        message: `You have used up all ${attemptsData.maxAttempts} attempts`
+      });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      attemptCount: attemptsData.attemptCount,
+      maxAttempts: attemptsData.maxAttempts 
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+
+});
+
 
 export default router;

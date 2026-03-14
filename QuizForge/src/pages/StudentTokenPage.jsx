@@ -7,30 +7,56 @@ import { useNavigate } from "react-router-dom";
 
 export default function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);
-  const { authFetch } = useContext(AuthContext);
+  const { authFetch, userInfo } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmitToken = async(token)=> {
     try{
-      const response = await authFetch(`http://localhost:3000/api/student/quiz-access`, {
-        method: 'POST',
-        body: JSON.stringify({token: token}),
-        credentials: 'include'
-      })
+      const [quizAndQuestionsRes, attemptsRes] = await Promise.all(
+        [authFetch(`http://localhost:3000/api/student/quiz-access`, {
+          method: 'POST',
+          body: JSON.stringify({token: token}),
+          credentials: 'include'
+        }),
+        authFetch(`http://localhost:3000/api/student/quiz-access/${token}/${userInfo.id}`, {
+          credentials: 'include'
+        })]
+    )
 
-      const result = await response.json();
+      const [quizAndQuestions, attempts] = await Promise.all([
+        quizAndQuestionsRes.json(),
+        attemptsRes.json()
+      ]);
 
-      if(!result.success){
-        toast.error(`${result.message}`);
+      if(!quizAndQuestions.success){
+        toast.error(quizAndQuestions.message || "Access Denied");
+        return;
+      }
+      if(!attempts.success){
+        toast.error(attempts.message || "Access Denied");
+        return;
+      }
+      
+      //stop user if already used up all attempts
+      if (attempts.attemptCount >= attempts.maxAttempts) {
+        toast.error(`You have used up all ${attempts.maxAttempts} available attempts`);
         return;
       }
 
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
-      navigate(`/student/quiz/${result.quiz.share_token}`, {state: {quizData: result.quiz, questions: result.questions}});
+
+      navigate(`/student/quiz/${quizAndQuestions.quiz.shareToken}`, {
+        state: {
+          quizData: quizAndQuestions.quiz,
+          questions: quizAndQuestions.questions,
+          attemptCount: attempts.attemptCount,
+          maxAttempts: attempts.maxAttempts
+        }
+      });
       
     }catch(error){
-      toast.error('Something went wrong with token verification')
+      alert('Something went wrong with token verification');
       console.error(error);
     }
   };

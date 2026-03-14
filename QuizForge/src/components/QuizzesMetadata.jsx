@@ -3,8 +3,6 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { toDatetimeLocal } from '../util/toDateTimeLocal';
 
-// TO DO (WAIT FOR TOKEN): ASK WHY EDITINGQUIZ IS NOT UPDATING WHEN USER CHANGES QUIZ
-
 //eslint-disable-next-line
 export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
 

@@ -16,6 +16,8 @@ export default function StudentQuizPage(){
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
+  const attemptCount = location.state?.attemptCount;
+  const maxAttempts = location.state?.maxAttempts;
   const [answers, setAnswers] = useState({});
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
@@ -121,6 +123,8 @@ export default function StudentQuizPage(){
         <StudentTimeLimit
           quiz={quiz}
           handleAutoSubmit={handleQuizSubmit}
+          attemptCount={attemptCount}
+          maxAttempts={maxAttempts}
         />
       </div>
     </div>
