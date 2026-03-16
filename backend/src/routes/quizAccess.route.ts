@@ -9,96 +9,107 @@ import { quizAccessValidator } from '../middlewares/quizAccessValidator.middlewa
 const router = express.Router();
 
 //get quiz info, get user total attempt,
-router.post('/', verifyToken, async(req, res, next)=>{
-  try{
-
-    const {token} = req.body;
+router.post('/', verifyToken, async (req, res, next) => {
+  try {
+    const { token } = req.body;
     const userId = req.user.id;
 
-    if(!token || typeof (token) !== 'string'){
-      return res.status(400).json({success: false, message: 'Invalid token'});
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid token' });
     }
 
-    //FETCH QUIZ INFO
-    const [quiz] = await db.select({
-      id: quizzes_db.id,
-      userId: quizzes_db.user_id,
-      quizTitle: quizzes_db.quiz_title,
-      quizDescription: quizzes_db.quiz_description,
-      shareToken: quizzes_db.share_token,
-      timeLimit: quizzes_db.time_limit,
-      maxAttempts: quizzes_db.max_attempts,
-      dueDate: quizzes_db.due_date,
-    })
+    // FETCH QUIZ + ATTEMPT COUNT
+    const [quiz] = await db
+      .select({
+        id: quizzes_db.id,
+        userId: quizzes_db.user_id,
+        quizTitle: quizzes_db.quiz_title,
+        quizDescription: quizzes_db.quiz_description,
+        shareToken: quizzes_db.share_token,
+        timeLimit: quizzes_db.time_limit,
+        maxAttempts: quizzes_db.max_attempts,
+        dueDate: quizzes_db.due_date,
+        totalAttempts: count(quiz_attempts_db.id)
+      })
       .from(quizzes_db)
-      .where(eq(quizzes_db.share_token, token.toLowerCase()));
+      .leftJoin(
+        quiz_attempts_db,
+        and(
+          eq(quiz_attempts_db.quiz_id, quizzes_db.id),
+          eq(quiz_attempts_db.user_id, userId)
+        )
+      )
+      .where(eq(quizzes_db.share_token, token.toLowerCase()))
+      .groupBy(quizzes_db.id);
 
-      //check if quiz exists
-    if(!quiz){
-      return res.status(404).json({success: false, message: "Quiz does not exist"});
+    if (!quiz) {
+      return res.status(404).json({ success: false, message: "Quiz does not exist" });
     }
 
-    //check quiz deadline
-    const deadline = new Date(quiz.dueDate);
-    if(Date.now() > deadline.getTime()){
-      return res.status(400).json({success: false, message: "Quiz is past the deadline"});
-    }
-    
-    const [totalAttemptCheck] = await db.select({attemptTotal: count(quiz_attempts_db.id)})
-      .from(quiz_attempts_db)
-      .where(and(
-        eq(quiz_attempts_db.quiz_id, quiz.id), eq(quiz_attempts_db.user_id, userId)
-      ));
-
-    const totalAttempt = totalAttemptCheck?.attemptTotal || 0;
-
-    if(totalAttempt >= quiz.maxAttempts){
-      return res.status(400).json({success: false, message: "You have used all attempts for this quiz"});
+    // CHECK DEADLINE
+    if (Date.now() > new Date(quiz.dueDate).getTime()) {
+      return res.status(400).json({ success: false, message: "Quiz is past the deadline" });
     }
 
-    //FETCH QUIZ QUESTIONS
-    const questions = await db.select({
-      id: questions_db.id,
-      questionText: questions_db.question_text,
-      questionType: questions_db.question_type,
-      correctAnswer: questions_db.correct_answer,
-      optionA: questions_db.option_a,
-      optionB: questions_db.option_b,
-      optionC: questions_db.option_c,
-      optionD: questions_db.option_d,
-    })
+    // CHECK ATTEMPTS
+    if (quiz.totalAttempts >= quiz.maxAttempts) {
+      return res.status(400).json({
+        success: false,
+        message: "You have used all attempts for this quiz"
+      });
+    }
+
+    // FETCH QUESTIONS
+    const questions = await db
+      .select({
+        id: questions_db.id,
+        questionText: questions_db.question_text,
+        questionType: questions_db.question_type,
+        correctAnswer: questions_db.correct_answer,
+        optionA: questions_db.option_a,
+        optionB: questions_db.option_b,
+        optionC: questions_db.option_c,
+        optionD: questions_db.option_d
+      })
       .from(questions_db)
-      .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
-      .where(eq(quiz_questions_db.quiz_id, quiz.id))
+      .innerJoin(
+        quiz_questions_db,
+        eq(questions_db.id, quiz_questions_db.question_id)
+      )
+      .where(eq(quiz_questions_db.quiz_id, quiz.id));
 
-    if(questions.length < 1){
-      return res.status(404).json({success: false, message: 'This quiz has no questions'});
+    if (questions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'This quiz has no questions'
+      });
     }
 
-    //ADD "IN-PROGRESS" ATTEMPT
-    const [result] = await db.insert(quiz_attempts_db).values({
-      quiz_id: quiz.id,
-      user_id: Number(userId),
-      score: 0,
-      status: 'in-progress',
-    }).returning({attemptStart: quiz_attempts_db.created_at});
-
-    const attemptStart = result?.attemptStart;
-
-    if(!attemptStart){
-      return res.status(500).json({success: false, message: "Something went wrong while creating attempt"});
-    }
+    // CREATE ATTEMPT
+    const [attempt] = await db
+      .insert(quiz_attempts_db)
+      .values({
+        quiz_id: quiz.id,
+        user_id: Number(userId),
+        score: 0,
+        status: 'in-progress'
+      })
+      .returning({
+        attemptStart: quiz_attempts_db.created_at,
+        attemptId: quiz_attempts_db.id
+      });
 
     return res.status(200).json({
       success: true,
       message: "Quiz Found!",
-      quiz: quiz,
-      questions: questions,
-      attemptStart: attemptStart,
-      totalAttempts: totalAttempt
+      quiz,
+      questions,
+      attemptStart: attempt?.attemptStart,
+      attemptId: attempt?.attemptId,
+      totalAttempts: quiz.totalAttempts
     });
 
-  }catch(error){
+  } catch (error) {
     next(error);
   }
 });

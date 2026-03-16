@@ -60,6 +60,11 @@ export const quizzes_db = pgTable('quizzes_db', {
   status: text('status').notNull().default('draft'),
   due_date: timestamp('due_date', { withTimezone: true }).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
+  
+}, (table)=> {
+  return{
+    quizTokenIndex: index('quiz_token_idx').on(table.share_token),
+  }
 });
 
 export const quiz_questions_db = pgTable('quiz_questions_db', {

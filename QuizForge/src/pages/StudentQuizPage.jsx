@@ -18,6 +18,7 @@ export default function StudentQuizPage(){
   const [questions, setQuestions] = useState(location.state?.questions || null);
   const attemptStart = location.state?.attemptStart;
   const attemptCount = location.state?.attemptCount;
+  const attemptId = location.state?.attemptId;
   const maxAttempts = location.state?.maxAttempts;
   const [answers, setAnswers] = useState({});
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
@@ -74,7 +75,7 @@ export default function StudentQuizPage(){
       const response = await authFetch('http://localhost:3000/api/student/quiz-submit', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({questions, answers, quiz}),
+        body: JSON.stringify({questions, answers, quiz, attemptId}),
         credentials: 'include'
       });
 

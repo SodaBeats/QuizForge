@@ -34,14 +34,13 @@ export default function StudentTokenPage() {
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
 
-      console.log(quizAndQuestions.attemptStart,' ',typeof(quizAndQuestions.attemptStart));
-
       navigate(`/student/quiz/${quizAndQuestions.quiz.shareToken}`, {
         state: {
           quizData: quizAndQuestions.quiz,
           questions: quizAndQuestions.questions,
           attemptCount: quizAndQuestions.totalAttempts,
           maxAttempts: quizAndQuestions.quiz.maxAttempts,
+          attemptId: quizAndQuestions.attemptId,
           attemptStart: quizAndQuestions.attemptStart
         }
       });
