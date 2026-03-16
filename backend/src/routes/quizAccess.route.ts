@@ -8,17 +8,18 @@ import { quizAccessValidator } from '../middlewares/quizAccessValidator.middlewa
 
 const router = express.Router();
 
-//get quiz info and questions after user input token
+//get quiz info, get user total attempt,
 router.post('/', verifyToken, async(req, res, next)=>{
   try{
 
     const {token} = req.body;
+    const userId = req.user.id;
 
     if(!token || typeof (token) !== 'string'){
       return res.status(400).json({success: false, message: 'Invalid token'});
     }
 
-    //fetch the quiz info
+    //FETCH QUIZ INFO
     const [quiz] = await db.select({
       id: quizzes_db.id,
       userId: quizzes_db.user_id,
@@ -43,7 +44,19 @@ router.post('/', verifyToken, async(req, res, next)=>{
       return res.status(400).json({success: false, message: "Quiz is past the deadline"});
     }
     
-    //fetch questions related to quiz
+    const [totalAttemptCheck] = await db.select({attemptTotal: count(quiz_attempts_db.id)})
+      .from(quiz_attempts_db)
+      .where(and(
+        eq(quiz_attempts_db.quiz_id, quiz.id), eq(quiz_attempts_db.user_id, userId)
+      ));
+
+    const totalAttempt = totalAttemptCheck?.attemptTotal || 0;
+
+    if(totalAttempt >= quiz.maxAttempts){
+      return res.status(400).json({success: false, message: "You have used all attempts for this quiz"});
+    }
+
+    //FETCH QUIZ QUESTIONS
     const questions = await db.select({
       id: questions_db.id,
       questionText: questions_db.question_text,
@@ -62,11 +75,27 @@ router.post('/', verifyToken, async(req, res, next)=>{
       return res.status(404).json({success: false, message: 'This quiz has no questions'});
     }
 
+    //ADD "IN-PROGRESS" ATTEMPT
+    const [result] = await db.insert(quiz_attempts_db).values({
+      quiz_id: quiz.id,
+      user_id: Number(userId),
+      score: 0,
+      status: 'in-progress',
+    }).returning({attemptStart: quiz_attempts_db.created_at});
+
+    const attemptStart = result?.attemptStart;
+
+    if(!attemptStart){
+      return res.status(500).json({success: false, message: "Something went wrong while creating attempt"});
+    }
+
     return res.status(200).json({
       success: true,
       message: "Quiz Found!",
       quiz: quiz,
       questions: questions,
+      attemptStart: attemptStart,
+      totalAttempts: totalAttempt
     });
 
   }catch(error){
@@ -86,12 +115,27 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
   try{
     
     //fetch the quiz info
-    const [quiz] = await db.select()
+    const [quiz] = await db.select({
+      id: quizzes_db.id,
+      userId: quizzes_db.user_id,
+      quizTitle: quizzes_db.quiz_title,
+      quizDescription: quizzes_db.quiz_description,
+      shareToken: quizzes_db.share_token,
+      timeLimit: quizzes_db.time_limit,
+      maxAttempts: quizzes_db.max_attempts,
+      dueDate: quizzes_db.due_date,
+    })
       .from(quizzes_db)
       .where(eq(quizzes_db.share_token, quizToken.toLowerCase()));
 
     if(!quiz){
       return res.status(404).json({success: false, message: "Quiz does not exist"});
+    }
+
+    //check quiz deadline
+    const deadline = new Date(quiz.dueDate);
+    if(Date.now() > deadline.getTime()){
+      return res.status(400).json({success: false, message: "Quiz is past the deadline"});
     }
 
     //fetch questions related to quiz
@@ -125,7 +169,7 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
   }
 });
 
-//get user attempts number
+/*/get user attempts number
 router.get('/:quizToken/:userId',
     verifyToken,
     quizAccessValidator,
@@ -143,28 +187,6 @@ router.get('/:quizToken/:userId',
   }
 
   try{
-    /*
-    const [quiz] = await db.select({id:quizzes_db.id, maxAttempts: quizzes_db.max_attempts})
-      .from(quizzes_db)
-      .where(eq(quizzes_db.share_token, quizToken));
-
-    if(!quiz){
-      return res.status(404).json({success: false, message: 'This quiz does not exist'});
-    }
-
-    //get attempts for this quiz and user
-    const [result] = await db.select({value: count()})
-      .from(quiz_attempts_db)
-      .where(and(eq(quiz_attempts_db.quiz_id, quiz.id), eq(quiz_attempts_db.user_id, userId)));
-
-    const attemptCount = result?.value ?? 0;
-
-    if(attemptCount>=2){
-      return res.status(400).json({success: false, message: "Max attempts reached!"});
-    }
-
-    res.status(200).json({success: true, attemptCount: attemptCount});
-    */
     const [attemptsData] = await db.select({
       id: quizzes_db.id,
       maxAttempts: quizzes_db.max_attempts,
@@ -186,7 +208,6 @@ router.get('/:quizToken/:userId',
       return res.status(404).json({ success: false, message: 'This quiz does not exist' });
     }
 
-    // Now we use the dynamic maxAttempts from your DB instead of hardcoding "2"
     if (attemptsData.attemptCount >= attemptsData.maxAttempts) {
       return res.status(400).json({
         success: false,
@@ -204,8 +225,8 @@ router.get('/:quizToken/:userId',
     next(error);
   }
 
-
 });
+*/
 
 
 export default router;

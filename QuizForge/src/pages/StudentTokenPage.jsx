@@ -7,51 +7,42 @@ import { useNavigate } from "react-router-dom";
 
 export default function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);
-  const { authFetch, userInfo } = useContext(AuthContext);
+  const { authFetch } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmitToken = async(token)=> {
     try{
-      const [quizAndQuestionsRes, attemptsRes] = await Promise.all(
-        [authFetch(`http://localhost:3000/api/student/quiz-access`, {
-          method: 'POST',
-          body: JSON.stringify({token: token}),
-          credentials: 'include'
-        }),
-        authFetch(`http://localhost:3000/api/student/quiz-access/${token}/${userInfo.id}`, {
-          credentials: 'include'
-        })]
-    )
+      const quizAndQuestionsRes = await authFetch(`http://localhost:3000/api/student/quiz-access`, {
+        method: 'POST',
+        body: JSON.stringify({token: token}),
+        credentials: 'include'
+      })
 
-      const [quizAndQuestions, attempts] = await Promise.all([
-        quizAndQuestionsRes.json(),
-        attemptsRes.json()
-      ]);
+      const quizAndQuestions = await quizAndQuestionsRes.json();
 
       if(!quizAndQuestions.success){
         toast.error(quizAndQuestions.message || "Access Denied");
         return;
       }
-      if(!attempts.success){
-        toast.error(attempts.message || "Access Denied");
-        return;
-      }
       
       //stop user if already used up all attempts
-      if (attempts.attemptCount >= attempts.maxAttempts) {
-        toast.error(`You have used up all ${attempts.maxAttempts} available attempts`);
+      if (quizAndQuestions.totalAttempts > quizAndQuestions.maxAttempts) {
+        toast.error(`You have used up all ${quizAndQuestions.maxAttempts} available attempts`);
         return;
       }
 
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
 
+      console.log(quizAndQuestions.attemptStart,' ',typeof(quizAndQuestions.attemptStart));
+
       navigate(`/student/quiz/${quizAndQuestions.quiz.shareToken}`, {
         state: {
           quizData: quizAndQuestions.quiz,
           questions: quizAndQuestions.questions,
-          attemptCount: attempts.attemptCount,
-          maxAttempts: attempts.maxAttempts
+          attemptCount: quizAndQuestions.totalAttempts,
+          maxAttempts: quizAndQuestions.quiz.maxAttempts,
+          attemptStart: quizAndQuestions.attemptStart
         }
       });
       

@@ -1,31 +1,30 @@
 import { useEffect, useState, useCallback } from "react";
 
-export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, maxAttempts}) {
+export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, maxAttempts, attemptStart}) {
 
   // 1. Initialize state with total seconds
   // Using a fallback of 0 if time_limit isn't provided
-  const [secondsLeft, setSecondsLeft] = useState((quiz.timeLimit || 0) * 60);
+  const timeLimitSeconds = (quiz.timeLimit || 0) * 60;
+  const [now, setNow] = useState(() => Date.now());
+  const finishTime = new Date(attemptStart).getTime() + timeLimitSeconds * 1000;
+  const remainingMs = Math.max(0, finishTime - now);
+  const remainingSeconds = Math.floor(remainingMs / 1000);
+
 
   useEffect(()=>{
-    if(secondsLeft<=0) return;
+    if(timeLimitSeconds<=0) return;
 
     //set up interval
     const intervalId = setInterval(()=>{
-      setSecondsLeft((prev)=>{
-        if(prev<=1){
-          clearInterval(intervalId); // stop at zero
-          return 0;
-        }
-        return prev - 1;
-      });
+      setNow(Date.now());
     }, 1000);
 
     //cleanup: stops timer when user leaves page
     return () => clearInterval(intervalId);
 
-  }, []);
+  }, [timeLimitSeconds]);
 
-  //calls the submit function when the time runs out
+  // Auto-submit when time runs out
   const onQuizTimeLimit = useCallback(async()=> {
 
     await handleAutoSubmit();
@@ -33,14 +32,14 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
   }, [handleAutoSubmit]);
 
   useEffect(()=>{
-    if(secondsLeft === 0){
+    if(timeLimitSeconds > 0 && remainingSeconds === 0){
       onQuizTimeLimit();
     }
-  }, [secondsLeft, onQuizTimeLimit]);
+  }, [timeLimitSeconds, onQuizTimeLimit, remainingSeconds]);
 
   //formatting time before display
-  const minutes = Math.floor(secondsLeft/60);
-  const seconds = secondsLeft%60;
+  const minutes = Math.floor(remainingSeconds/60);
+  const seconds = remainingSeconds%60;
   const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
   return (
@@ -51,7 +50,7 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
       </>
       <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 text-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Time Remaining</p>
-        <div className={`text-4xl font-mono font-bold ${secondsLeft < 60 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+        <div className={`text-4xl font-mono font-bold ${remainingSeconds < 60 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
           {formattedTime}
         </div>
       </div>

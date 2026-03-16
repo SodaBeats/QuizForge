@@ -16,6 +16,7 @@ export default function StudentQuizPage(){
   //get data passed from the navigation
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
+  const attemptStart = location.state?.attemptStart;
   const attemptCount = location.state?.attemptCount;
   const maxAttempts = location.state?.maxAttempts;
   const [answers, setAnswers] = useState({});
@@ -25,6 +26,7 @@ export default function StudentQuizPage(){
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex];
   const navigate = useNavigate();
+
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
@@ -38,9 +40,10 @@ export default function StudentQuizPage(){
         .catch(err => {
           console.error(err);
           toast.error('Something went wrong while fetching quiz.');
+          navigate('/student');
         });
     }
-  }, [quiz, quizToken, authFetch]);
+  }, [quiz, quizToken, authFetch, navigate]);
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
@@ -68,14 +71,15 @@ export default function StudentQuizPage(){
 
   const handleQuizSubmit = async()=> {
     try{
-      const response = await authFetch('http://localhost:3000/api/student/quiz-attempts', {
-        method: 'POST',
+      const response = await authFetch('http://localhost:3000/api/student/quiz-submit', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({questions, answers, quiz}),
         credentials: 'include'
-      })
+      });
 
       const result = await response.json();
+      console.log(result);
 
       if(!result.success){
         console.log('Oh nyo, something went wrong while submitting attempt');
@@ -123,6 +127,7 @@ export default function StudentQuizPage(){
         <StudentTimeLimit
           quiz={quiz}
           handleAutoSubmit={handleQuizSubmit}
+          attemptStart={attemptStart}
           attemptCount={attemptCount}
           maxAttempts={maxAttempts}
         />
