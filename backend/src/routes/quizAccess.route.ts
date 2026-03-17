@@ -9,7 +9,11 @@ import { quizAccessValidator } from '../middlewares/quizAccessValidator.middlewa
 const router = express.Router();
 
 //get quiz info, get user total attempt,
-router.post('/', verifyToken, async (req, res, next) => {
+router.post('/',
+  verifyToken,
+  quizAccessValidator,
+  async (req: Request, res: Response, next: NextFunction) => {
+    
   try {
     const { token } = req.body;
     const userId = req.user.id;
@@ -118,6 +122,9 @@ router.post('/', verifyToken, async (req, res, next) => {
 router.get('/:quizToken', verifyToken, async(req, res, next)=>{
 
   const {quizToken} = req.params;
+  const userId = req.user.id;
+
+  console.log('refetch ran');
 
   if(!quizToken || typeof (quizToken) !== 'string'){
     return res.status(400).json({success: false, message: 'Invalid token'});
@@ -125,19 +132,29 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
 
   try{
     
-    //fetch the quiz info
-    const [quiz] = await db.select({
-      id: quizzes_db.id,
-      userId: quizzes_db.user_id,
-      quizTitle: quizzes_db.quiz_title,
-      quizDescription: quizzes_db.quiz_description,
-      shareToken: quizzes_db.share_token,
-      timeLimit: quizzes_db.time_limit,
-      maxAttempts: quizzes_db.max_attempts,
-      dueDate: quizzes_db.due_date,
-    })
+    // FETCH QUIZ + ATTEMPT COUNT
+    const [quiz] = await db
+      .select({
+        id: quizzes_db.id,
+        userId: quizzes_db.user_id,
+        quizTitle: quizzes_db.quiz_title,
+        quizDescription: quizzes_db.quiz_description,
+        shareToken: quizzes_db.share_token,
+        timeLimit: quizzes_db.time_limit,
+        maxAttempts: quizzes_db.max_attempts,
+        dueDate: quizzes_db.due_date,
+        totalAttempts: count(quiz_attempts_db.id)
+      })
       .from(quizzes_db)
-      .where(eq(quizzes_db.share_token, quizToken.toLowerCase()));
+      .leftJoin(
+        quiz_attempts_db,
+        and(
+          eq(quiz_attempts_db.quiz_id, quizzes_db.id),
+          eq(quiz_attempts_db.user_id, userId)
+        )
+      )
+      .where(eq(quizzes_db.share_token, quizToken.toLowerCase()))
+      .groupBy(quizzes_db.id);
 
     if(!quiz){
       return res.status(404).json({success: false, message: "Quiz does not exist"});
@@ -147,6 +164,14 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
     const deadline = new Date(quiz.dueDate);
     if(Date.now() > deadline.getTime()){
       return res.status(400).json({success: false, message: "Quiz is past the deadline"});
+    }
+
+    // CHECK ATTEMPTS
+    if (quiz.totalAttempts >= quiz.maxAttempts) {
+      return res.status(400).json({
+        success: false,
+        message: "You have used all attempts for this quiz"
+      });
     }
 
     //fetch questions related to quiz
@@ -168,11 +193,21 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
       return res.status(404).json({success: false, message: 'This quiz has no questions'});
     }
 
+    //fetch attempt start
+    const [attemptStart] = await db.select({id: quiz_attempts_db.id, start: quiz_attempts_db.created_at}).from(quiz_attempts_db)
+      .where(and(
+        eq(quiz_attempts_db.quiz_id, quiz.id),
+        eq(quiz_attempts_db.user_id, userId),
+        eq(quiz_attempts_db.status, 'in-progress'))).limit(1);
+
     return res.status(200).json({
       success: true,
       message: "Quiz Found!",
       quiz: quiz,
-      questions: questions
+      questions: questions,
+      attemptStart: attemptStart?.start,
+      attemptId: attemptStart?.id,
+      totalAttempts: quiz.totalAttempts,
     });
 
   }catch(error){

@@ -34,6 +34,7 @@ export default function StudentTokenPage() {
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
 
+      //navigate to quiz page and pass the data from this page into quiz page using location.state
       navigate(`/student/quiz/${quizAndQuestions.quiz.shareToken}`, {
         state: {
           quizData: quizAndQuestions.quiz,

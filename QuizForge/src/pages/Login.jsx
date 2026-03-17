@@ -57,12 +57,12 @@ export default function LogInComponent() {
       if (isLogin && data.user.role === 'teacher') {
         setToken(data.accessToken);
         setUserInfo(data.user);
-        navigate('/');
+        navigate('/teacher');
       }
       else if(isLogin && data.user.role === 'student'){
         setToken(data.accessToken),
         setUserInfo(data.user);
-        navigate('/Student');
+        navigate('/student');
       }
       else{
         alert(data.message || 'Something wrong with login');

@@ -1,12 +1,11 @@
 
 import type { Request, Response, NextFunction } from 'express';
-import { param, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 
 export const quizAccessValidator = [
-  param('quizToken').trim().notEmpty().withMessage('Please input a token')
-    .isLength({min: 6}).withMessage('Must be a 6 character token').isAlphanumeric().toLowerCase(),
-  param('userId').trim().notEmpty().withMessage('You must be logged in').isInt({min: 1}),
-  (req: Request, res: Response, next: NextFunction) => {
+  body('token').trim().notEmpty().withMessage('Please input a token')
+    .isLength({min: 6}).withMessage('Must be a 6 character token').isAlphanumeric().withMessage('No special characters').toLowerCase(),
+    (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()){

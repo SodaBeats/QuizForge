@@ -9,34 +9,42 @@ import StudentQuizWindow from '../components/StudentQuizWindow';
 import StudentTimeLimit from '../components/StudentTimeLimit';
 
 export default function StudentQuizPage(){
+  useEffect(() => {
+    console.log("EFFECT RUNNING");
+  }, []);
+
   const location = useLocation();
   const {quizToken} = useParams();
   const {authFetch} = useContext(AuthContext);
 
-  //get data passed from the navigation
+  //get data passed from the last page using LOCATION.STATE
   const [quiz, setQuiz] = useState(location.state?.quizData || null);
   const [questions, setQuestions] = useState(location.state?.questions || null);
-  const attemptStart = location.state?.attemptStart;
-  const attemptCount = location.state?.attemptCount;
-  const attemptId = location.state?.attemptId;
-  const maxAttempts = location.state?.maxAttempts;
+  const [attemptStart, setAttemptStart] = useState(location.state?.attemptStart || null);
+  const [attemptCount, setAttemptCount] = useState(location.state?.attemptCount || 0);
+  const [attemptId, setAttemptId] = useState(location.state?.attemptId || null);
+  const [maxAttempts, setMaxAttempts] = useState(location.state?.maxAttempts || 0);
   const [answers, setAnswers] = useState({});
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   const canPrev = true;
   const canNext = true;
-  const selectedQuestion = questions?.[selectedQuestionIndex];
+  const selectedQuestion = questions?.[selectedQuestionIndex] || null;
   const navigate = useNavigate();
-
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
+    console.log('useEffect triggered');
     if(!quiz && quizToken){
       authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
         .then(res => res.json())
         .then(data=>{
           setQuiz(data.quiz);
           setQuestions(data.questions);
+          setAttemptStart(data.attemptStart);
+          setAttemptId(data.attemptId);
+          setMaxAttempts(data.quiz.maxAttempts);
+          setAttemptCount(data.totalAttempts);
         })
         .catch(err => {
           console.error(err);

@@ -3,7 +3,7 @@
 export default function StudentSidebar({ 
   questions, 
   currentQuestionIndex, 
-  onQuestionSelect,
+  //onQuestionSelect,
   answeredQuestions,
   onQuizSubmit
 }) {
