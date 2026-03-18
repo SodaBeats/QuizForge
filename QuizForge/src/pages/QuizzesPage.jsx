@@ -1,5 +1,7 @@
 
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { AuthContext } from '../components/AuthProvider';
 import QuizzesSidebar from '../components/QuizzesSideBar';
 import TopBar from '../components/TopBar';
 import QuizzesMetaData from '../components/QuizzesMetadata';
@@ -7,43 +9,20 @@ import QuizzesQuestionList from '../components/QuizzesQuestionList';
 
 export default function QuizzesPage (){
 
+  const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
-  const [quizzes, setQuizzes] = useState([
-    { 
-      id: 1, 
-      title: 'Math Quiz', 
-      questionCount: 10,
-      description: 'Basic algebra and geometry questions',
-      shareToken: 'ABC123',
-      timeLimit: 30,
-      dueDate: '2026-03-10T23:59',
-      status: 'active'
-    },
-    { 
-      id: 2, 
-      title: 'Science Quiz', 
-      questionCount: 15,
-      description: 'Physics and chemistry fundamentals',
-      shareToken: 'XYZ789',
-      timeLimit: 45,
-      status: 'active'
-    },
-    { 
-      id: 3, 
-      title: 'History Quiz', 
-      questionCount: 8,
-      status: 'draft'
-    },
-  ]);
-
-  // Mock questions data
-  const mockQuestions = [
-    { id: 1, text: 'What is 2 + 2?' },
-    { id: 2, text: 'What is the capital of France?' },
-    { id: 3, text: 'Who wrote Romeo and Juliet?' },
-  ];
+  const [quizzes, setQuizzes] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [editingQuestion, setEditingQuestion] = useState(null);
   
-  const selectedQuiz = quizzes.find(q => q.id === selectedQuizId);
+  const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
+
+  //get quizzes related to user
+  useEffect(()=>{
+    authFetch(`http://localhost:3000/api/quizzes`)
+    .then(res => res.json())
+    .then(data => setQuizzes(data));
+  },[authFetch]);
 
   const handleDeleteQuiz = (quizId) => {
     setQuizzes(quizzes.filter(q => q.id !== quizId));
@@ -51,6 +30,105 @@ export default function QuizzesPage (){
       setSelectedQuizId(null);
     }
   };
+
+  //get all questions related to quiz
+  const handleSelectedQuiz = async(chosenQuizId)=>{
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`)
+      const result = await response.json();
+
+      if(!result.success){
+        alert(`Something went wrong: ${result.message}`);
+        return;
+      }
+
+      setQuestions(result.questionList);
+    }catch(error){
+      console.error(error);
+      alert(`something went wrong while fetching questions`);
+    }
+  };
+
+  const handleQuestionUpdate = async(quizId, editingQuestion) => {
+    const originalQuestions = [...questions];
+    setQuestions((prev)=> prev.map((q)=> q.id === editingQuestion.id ? editingQuestion : q));
+
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,{
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(editingQuestion),
+        credentials: 'include'
+      });
+      const result = await response.json();
+
+      if(!result.success){
+        toast.error(result.message || result.errors.map(e=>e.msg).join(', '));
+        console.error(result.message);
+        setQuestions(originalQuestions);
+      }
+
+      setEditingQuestion(null);
+
+    }catch(error){
+      setQuestions(originalQuestions);
+      alert(`Network error`);
+      console.error('Network error: ',error);
+    }
+  };
+
+  const getChanges = (original, draft) => {
+    const changes = {};
+    for (const key in draft) {
+      if (draft[key] !== original[key]) {
+        changes[key] = draft[key];
+      }
+    }
+    return changes;
+  };
+
+  const handleQuizMetaUpdate = async(quizToChange) => {
+
+    //make copy of original quizzes list
+    const originalQuizzes = [...quizzes];
+
+    //make copy of original quiz currently editing
+    const originalQuiz = originalQuizzes.find((originalQuiz) => originalQuiz.id === quizToChange.id);
+
+    const changes = getChanges(originalQuiz, quizToChange);
+
+    if(Object.keys(changes).length === 0){
+      toast.error('No changes to save');
+      return;
+    }
+
+    setQuizzes((prev) => prev.map((q) => q.id === quizToChange.id ? quizToChange : q));
+    setSelectedQuizId(quizToChange.id);
+
+    try{
+      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizToChange.id}`, {
+        method: 'PATCH',
+        headers: {'Content-type':'application/json'},
+        body: JSON.stringify(quizToChange),
+        credentials: 'include'
+      })
+
+      const result = await response.json();
+
+      if(!result.success){
+        toast.error(result.message || result.errors.map(e => e.msg).join(', '));
+        setQuizzes(originalQuizzes);
+      }
+      
+      toast.success('Quiz Updated!');
+
+    }catch(error){
+      alert('Error editing quiz information');
+      console.error('Error: ', error);
+      setQuizzes(originalQuizzes);
+    }
+  };
+
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -64,13 +142,24 @@ export default function QuizzesPage (){
         <QuizzesSidebar 
           quizzes = {quizzes}
           selectedQuizId={selectedQuizId}
-          onSelectQuiz={setSelectedQuizId}
+          setSelectedQuizId={setSelectedQuizId}
           onDeleteQuiz={handleDeleteQuiz}
+          onSelectQuiz={handleSelectedQuiz}
         />
         {selectedQuizId ? (
           <>
-            <QuizzesMetaData quiz={selectedQuiz} />
-            <QuizzesQuestionList questions={mockQuestions} />
+            <QuizzesMetaData 
+              key={selectedQuiz.id}
+              quiz={selectedQuiz}
+              onUpdateQuizMeta={handleQuizMetaUpdate}
+            />
+            <QuizzesQuestionList 
+              questions={questions}
+              selectedQuiz={selectedQuiz}
+              onUpdateQuestion={handleQuestionUpdate}
+              editingQuestion={editingQuestion}
+              setEditingQuestion={setEditingQuestion}
+            />
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">

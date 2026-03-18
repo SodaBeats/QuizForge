@@ -54,13 +54,18 @@ export default function LogInComponent() {
         alert(data.error || 'Authentication failed');
         return;
       }
-      if (isLogin) {
+      if (isLogin && data.user.role === 'teacher') {
         setToken(data.accessToken);
         setUserInfo(data.user);
-        navigate('/');
-      } 
+        navigate('/teacher');
+      }
+      else if(isLogin && data.user.role === 'student'){
+        setToken(data.accessToken),
+        setUserInfo(data.user);
+        navigate('/student');
+      }
       else{
-        alert(data.message);
+        alert(data.message || 'Something wrong with login');
         setIsLogin(true);
         setFirstName('');
         setLastName('');

@@ -1,8 +1,10 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express'
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { questions_db, uploaded_files } from '../db/schema.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
 
 
 //establish router
@@ -11,7 +13,8 @@ const router = express.Router();
 
 router.post('/',
   verifyToken,
-  async (req, res, next)=>{
+  questionInputValidator,
+  async (req: Request, res: Response, next: NextFunction)=>{
   if (!req.body?.questionText || !req.body?.questionType){
     res.status(500).json({success: false, message: 'Please fill required input'});
     return;
@@ -90,7 +93,10 @@ router.get('/', verifyToken, async(req, res, next)=>{
   }
 });
 
-router.put('/:id', verifyToken, async(req, res, next)=>{
+router.put('/:id',
+  verifyToken,
+  questionInputValidator,
+  async(req: Request, res: Response, next: NextFunction)=>{
   const id = Number(req.params.id);
   const {
     questionText,

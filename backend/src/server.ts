@@ -11,7 +11,9 @@ import signupRoute from './routes/signup.route.js';
 import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
-import shareQuizRoute from './routes/share-quiz.route.js';
+import quizzesRoute from './routes/user-quiz.route.js';
+import quizAccessRoute from './routes/quizAccess.route.js';
+import quizSubmitRoute from './routes/quizSubmit.route.js';
 
 const app = express();
 
@@ -24,7 +26,7 @@ interface AppError extends Error{
 app.use(cors({
   origin: "http://localhost:5173", // React dev server
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -33,15 +35,21 @@ app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
 
 app.use("/api",healthRoutes);
 
-app.use('/api/upload', uploadRoutes); //file uploads go through this route
-app.use('/api/questions', questionRoute);//manually made question go through this route
-app.use('/api/documents', documentRoute);// retrieve documents here
-app.use('/api/share-quiz', shareQuizRoute);
+//API
+app.use('/api/upload', uploadRoutes); // teacher route: file uploads
+app.use('/api/questions', questionRoute);// teacer route: manually made questions
+app.use('/api/documents', documentRoute);// teacher route: getting/deleting documents
+app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
+app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and getting quiz
+app.use('/api/student/quiz-submit', quizSubmitRoute);//student route: submitting quiz attempt
+
+//Auth
 app.use('/auth/login', loginRoute);
 app.use('/auth/signup', signupRoute);
 app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
+//Central Error Handler
 app.use((err: AppError,req: Request,res: Response,next: NextFunction)=>{
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {

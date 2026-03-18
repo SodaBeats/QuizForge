@@ -1,6 +1,6 @@
 //signup.test.ts
 
-import { describe, test, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import { formatNewUser} from "../services/signup.service.js";
 import { type Role, type RegistrationInput } from "../services/signup.service.js"
 

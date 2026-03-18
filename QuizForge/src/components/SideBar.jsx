@@ -18,17 +18,16 @@ function SideBar({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shareData, setShareData] = useState({
-    title: '',
+    quizTitle: '',
     description: '',
     shareToken: '', // Will be filled by backend
     timeLimit: 0,
-    dueDate: ''
+    maxAttempts: 0,
+    dueDate: '',
+    status: 'Draft'
   });
 
   const handleFileDelete = async(fileId) => {
-
-    //const previousFiles = [...uploadedFiles];
-    //const previousSelectedId = selectedFileId;
 
     setUploadedFiles(prev => prev.filter(f=>f.id !== fileId));
     if(selectedFileId === fileId){
@@ -43,13 +42,13 @@ function SideBar({
 
     //Pre-fill with file name
     if (selectedFile) {
-      setShareData(prev => ({ ...prev, title: selectedFile.name }));
+      setShareData(prev => ({ ...prev, quizTitle: selectedFile?.name }));
     }
 
     const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
       setShareData(prev => ({ 
       ...prev, 
-      title: selectedFile?.name || '',
+      quizTitle: selectedFile?.name || '',
       shareToken: quizToken
     }));
   };
@@ -58,8 +57,19 @@ function SideBar({
   const handleShareQuiz = async () => {
 
     //setup a default due date if user did not set it
-    if(!shareData.dueDate || !shareData.title){
-      alert('Due date and title are required');
+    if(!shareData.dueDate || !shareData.quizTitle){
+      toast.error('Due date and title are required');
+      return;
+    }
+    const timeLimit = Number(shareData.timeLimit);
+    const maxAttempts = Number(shareData.maxAttempts);
+
+    if(typeof(timeLimit) !== 'number' || isNaN(timeLimit) || timeLimit <= 0){
+      toast.error('Time limit must be a valid number');
+      return;
+    }
+    if(typeof(maxAttempts) !== 'number' || isNaN(maxAttempts) || maxAttempts <=0){
+      toast.error('Max attempts must be a valid number');
       return;
     }
 
@@ -70,20 +80,22 @@ function SideBar({
       const questionIds = questions.map((q)=> {return q.id;});
 
       if(!questionIds){
-        alert('There are no questions');
+        toast.error('There are no questions');
         return;
       }
 
-      const response = await authFetch('http://localhost:3000/api/share-quiz', {
+      const response = await authFetch('http://localhost:3000/api/quizzes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileId: selectedFileId,
-          title: shareData.title,
+          quizTitle: shareData.quizTitle,
           description: shareData.description,
           shareToken: shareData.shareToken,
-          timeLimit: shareData.timeLimit,
+          timeLimit: timeLimit,
+          maxAttempts: maxAttempts,
           dueDate: finalDueDate,
+          status: shareData.status,
           questionIds: questionIds
         }),
         credentials: 'include'
@@ -92,15 +104,21 @@ function SideBar({
       const data = await response.json();
       
       if(!data.success){
-        alert(`Something went wrong while creating your quiz: ${data.message}`);
+        toast.error(data.message || data.errors.map(e=>e.msg).join(', '));
+        console.error(data);
         return;
       }
+
+      toast.success(data.message);
+
       setShareData({
-        title: '',
+        quizTitle: '',
         description: '',
         shareToken: '',
         timeLimit: 0,
-        dueDate: ''
+        maxAttempts: 0,
+        dueDate: '',
+        status: 'Draft',
       });
       setIsShareModalOpen(false);
       
@@ -259,7 +277,7 @@ function SideBar({
       {/* Share Quiz Modal */}
       {isShareModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-96 max-w-full mx-4">
+          <div className="bg-gray-800 rounded-lg p-6 w-[500px] max-w-full mx-4">
             <h2 className="text-xl font-semibold mb-4">Share Quiz</h2>
             
             <div className="space-y-4">
@@ -270,8 +288,8 @@ function SideBar({
                 </label>
                 <input
                   type="text"
-                  value={shareData.title}
-                  onChange={(e) => setShareData(prev => ({ ...prev, title: e.target.value }))}
+                  value={shareData.quizTitle}
+                  onChange={(e) => setShareData(prev => ({ ...prev, quizTitle: e.target.value }))}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   placeholder="Enter quiz title"
                 />
@@ -310,7 +328,7 @@ function SideBar({
                       toast.success('Token copied to clipboard!', {
                         duration: 2000,
                         style: {
-                          background: '#10B981', // Green
+                          background: '#10B981',
                           color: '#fff',
                         },
                       });
@@ -323,32 +341,69 @@ function SideBar({
                 </div>
               </div>
 
-              {/* Time Limit */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Time Limit (minutes)
-                </label>
-                <input
-                  type="number"
-                  value={shareData.timeLimit}
-                  onChange={(e) => setShareData(prev => ({ ...prev, timeLimit: e.target.value }))}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter time limit"
-                  min="1"
-                />
+              {/* Time Limit and Max Attempts - Side by Side */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Time Limit */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Time Limit (min)
+                  </label>
+                  <input
+                    type="number"
+                    value={shareData.timeLimit}
+                    onChange={(e) => setShareData(prev => ({ ...prev, timeLimit: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    placeholder="10"
+                    min="1"
+                  />
+                </div>
+
+                {/* Max Attempts */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Max Attempts
+                  </label>
+                  <input
+                    type="number"
+                    value={shareData.maxAttempts}
+                    onChange={(e) => setShareData(prev => ({ ...prev, maxAttempts: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    placeholder="2"
+                    min="1"
+                  />
+                </div>
               </div>
 
-              {/* Due Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Due Date
-                </label>
-                <input
-                  type="datetime-local"
-                  value={shareData.dueDate}
-                  onChange={(e) => setShareData(prev => ({ ...prev, dueDate: e.target.value }))}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                />
+              {/* Due Date and Status - Side by Side */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Due Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Due Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={shareData.dueDate}
+                    onChange={(e) => setShareData(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm
+                      focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={shareData.status || 'draft'}
+                    onChange={(e) => setShareData(prev => ({ ...prev, status: e.target.value.toLowerCase() }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -356,23 +411,24 @@ function SideBar({
             <div className="flex gap-3 mt-6">
               <button
                 onClick={async () => {
-                  // TODO: Save quiz share settings to backend
                   handleShareQuiz();
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
-                {isLoading? 'Creating Quiz...' : 'Create Quiz'}
+                {isLoading ? 'Creating Quiz...' : 'Create Quiz'}
               </button>
               <button
                 onClick={() => {
                   setIsShareModalOpen(false);
                   // Reset form
                   setShareData({
-                    title: '',
+                    quizTitle: '',
                     description: '',
                     shareToken: '',
-                    timeLimit: '',
-                    dueDate: ''
+                    timeLimit: 0,
+                    maxAttempts: 0,
+                    dueDate: '',
+                    status: 'Draft'
                   });
                 }}
                 className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"

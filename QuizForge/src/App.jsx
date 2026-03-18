@@ -6,6 +6,9 @@ import { AuthContext } from "./components/AuthProvider";
 import QuizMakerSkeleton from "./pages/QuizMakerPage";
 import LogInComponent from "./pages/Login";
 import QuizzesPage from "./pages/QuizzesPage";
+import StudentTokenPage from "./pages/StudentTokenPage";
+import StudentQuizPage from "./pages/StudentQuizPage";
+import RootRedirector from "./components/RootRedirector";
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -16,20 +19,41 @@ function ProtectedRoute ({children}){
   }
 }
 
+function StudentRoute ({children}) {
+  const { token, userInfo } = useContext(AuthContext);
+  if(token && userInfo.role === 'student'){
+    return children;
+  }else{
+    return <Navigate to = '/login' />;
+  }
+}
+
 export default function App() {
   return (
     <>
       <Toaster position="top-center" />
       <Routes>
-        <Route path="/" element = {
+        <Route path='/' element = {<RootRedirector />} />
+
+        <Route path="/teacher" element = {
           <ProtectedRoute>
             <QuizMakerSkeleton />
           </ProtectedRoute>
         } />
-        <Route path="/Quizzes" element = {
+        <Route path="/teacher/quizzes" element = {
           <ProtectedRoute>
             <QuizzesPage />
           </ProtectedRoute>
+        } />
+        <Route path='/student' element = {
+          <StudentRoute>
+            <StudentTokenPage />
+          </StudentRoute>
+        } />
+        <Route path='/student/quiz/:quizToken' element = {
+          <StudentRoute>
+            <StudentQuizPage />
+          </StudentRoute>
         } />
         <Route path="/login" element = {<LogInComponent />} />
       </Routes>
