@@ -1,7 +1,5 @@
 import express from 'express';
-import { db } from '../db/db.js';
-import { eq } from 'drizzle-orm';
-import { refresh_tokens } from '../db/schema.js';
+import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
 
 const router = express.Router();
 
@@ -11,7 +9,7 @@ router.post('/', async (req, res, next)=>{
 
   try{
     if(refreshToken){
-      await db.delete(refresh_tokens).where(eq(refresh_tokens.token, refreshToken));
+      await RefreshTokenRepository.deleteRefreshToken(refreshToken);
     }
 
     res.clearCookie('refreshToken', {
