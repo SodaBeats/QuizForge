@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { db } from '../db/db.js';
 import { eq } from 'drizzle-orm';
 import { users, refresh_tokens } from '../db/schema.js';
+import { UserRepository } from '../repository/UserRepository.js';
+import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
 
 interface Data {
   email: string,
@@ -16,7 +18,8 @@ export const handleLogin = async(data: Data) => {
   try{
 
     //check if the account exists
-    const [existingUser] = await db.select().from(users).where(eq(users.email, email));
+    const existingUser = await UserRepository.selectUserByEmail(email);
+
     if(!existingUser){
       const error = new Error ('Invalid Credentials');
       (error as any).status = 401;
@@ -48,12 +51,7 @@ export const handleLogin = async(data: Data) => {
     const expiresAt = new Date(Date.now() + 7*24*60*60*1000); // 7 days
 
     //insert refresh token to database
-    await db.insert(refresh_tokens).values({
-      user_id: existingUser.id,
-      token: refreshToken,
-      expires_at: expiresAt,
-      revoked: false
-    });
+    await RefreshTokenRepository.InsertRefreshToken(existingUser.id, refreshToken, expiresAt);
 
     return {
       accessToken: accessToken,
