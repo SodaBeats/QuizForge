@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../components/AuthProvider';
 
 export default function LogInComponent() {
@@ -51,7 +52,7 @@ export default function LogInComponent() {
       const data = await response.json();
 
       if(!data.success){
-        alert(data.error || 'Authentication failed');
+        toast.error(data.error || 'Authentication failed');
         return;
       }
       if (isLogin && data.user.role === 'teacher') {

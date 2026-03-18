@@ -1,6 +1,4 @@
 import bcrypt from 'bcrypt';
-import { type InferInsertModel } from 'drizzle-orm';
-import { users } from '../db/schema.js';
 
 export type Role = 'student' | 'teacher' | 'admin';
 export interface RegistrationInput {
