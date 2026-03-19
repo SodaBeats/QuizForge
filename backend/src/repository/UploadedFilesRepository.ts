@@ -14,7 +14,7 @@ export const UploadedFilesRepository = {
     return result;
   },
 
-  //get documents title and id by owner id
+  //get all documents title and id by owner id
   async getDocTitleAndIdByOwner(userId: number){
     return await db.select({
         title: uploaded_files.filename,
@@ -35,6 +35,18 @@ export const UploadedFilesRepository = {
           )
         );
     return row;
+  },
+
+  async isDocOwnedByOwnerId(docId: number, userId: number){
+    const ownerRecord = await db.select({docId: uploaded_files.id})
+      .from(uploaded_files)
+      .where(
+        and(
+          eq(uploaded_files.id, docId),
+          eq(uploaded_files.user_id, userId)
+        )
+      );
+    return ownerRecord?.length > 0;
   },
 
   //delete documents by document id and owner id

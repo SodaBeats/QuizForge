@@ -155,6 +155,8 @@ function SideBar({
         throw new Error(`Failed to delete question: ${deletedQuestion.message}`)
       }
 
+      toast.success(deletedQuestion.message);
+
     }catch(error){
       console.error(error.message, error.status);
       setQuestions(previousQuestions);

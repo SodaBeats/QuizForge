@@ -11,7 +11,7 @@ export const UserRepository = {
   //find user by email
   async selectUserByEmail(email: string){
     const [result] = await db.select().from(users).where(eq(users.email, email));
-    return result || null;
+    return result ?? null;
   },
 
   //select a user by email (unique)

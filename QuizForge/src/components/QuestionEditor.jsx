@@ -59,7 +59,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         ? `http://localhost:3000/api/questions/${manualQuestion.id}`
         : 'http://localhost:3000/api/questions';
       
-      const method = addMode === 'edit' ? 'PUT' : 'POST';
+      const method = addMode === 'edit' ? 'PATCH' : 'POST';
 
       if(!manualQuestion.questionText){
         toast.error("Please input a question");
@@ -94,10 +94,11 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
           optionC: '',
           optionD: '',
           correctAnswer: ''
-        })
+        });
         setSelectedQuestionId(null);
         toast.success('Question Updated!');
       } else {
+        console.error(result.message || result.errors.map(e => e.msg).join(', '))
         toast.error(`Error: ${result.message || result.errors.map(e => e.msg).join(', ')}`);
       }
     }catch(error){
