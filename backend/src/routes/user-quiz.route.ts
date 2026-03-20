@@ -41,8 +41,16 @@ router.post('/',
   try{
     //insert quiz data to database
     const newQuiz = await UserQuizzesRepository.insertNewQuiz(formattedData);
+    if (!newQuiz){
+      return res.status(500).json({success: false, message: 'Failed to create quiz'});
+    }
+
     const newQuizId = newQuiz?.id;
     const questionIds = req.body.questionIds;
+
+    if(!Array.isArray(questionIds) || questionIds.length<=0){
+      return res.status(400).json({success: false, message: 'No questions provided'});
+    }
 
     //assigning question IDs to the quiz id and insert into junction table
     const junctionRows = questionIds.map((qId: number) => {

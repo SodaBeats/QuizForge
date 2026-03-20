@@ -17,7 +17,10 @@ export const quizInputValidator = [
       }
       return true;
     }),
-  body('status').trim().notEmpty().withMessage('Status is required').toLowerCase(),
+  body('status').trim()
+    .notEmpty().withMessage('Status is required')
+    .toLowerCase()
+    .isIn(['draft', 'published']).withMessage('Status must be Draft or Published'),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
 

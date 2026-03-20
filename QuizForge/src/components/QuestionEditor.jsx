@@ -98,8 +98,12 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         setSelectedQuestionId(null);
         toast.success('Question Updated!');
       } else {
-        console.error(result.message || result.errors.map(e => e.msg).join(', '))
-        toast.error(`Error: ${result.message || result.errors.map(e => e.msg).join(', ')}`);
+        const errorMessage = result.message ?? result.error ?? (
+          Array.isArray(result.errors) ? result.errors.map(e => e.msg).join(', ')
+          : 'Failed to submit question'
+        );
+        console.error(errorMessage);
+        toast.error(`Error: ${result.message}`);
       }
     }catch(error){
       console.error('Error submitting questions', error);

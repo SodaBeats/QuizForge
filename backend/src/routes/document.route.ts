@@ -48,7 +48,7 @@ router.delete('/:id', verifyToken, async(req, res, next) => {
     return res.status(400).json({ success: false, message: 'Document ID required'});
   }
   try{
-    const deletedFile = UploadedFilesRepository.deleteDocByDocIdOwnerId(docIdNum, req.user.id);
+    const deletedFile = await UploadedFilesRepository.deleteDocByDocIdOwnerId(docIdNum, req.user.id);
 
     if (!deletedFile) {
       return res.status(404).json({ success: false, message: 'Document not found' });

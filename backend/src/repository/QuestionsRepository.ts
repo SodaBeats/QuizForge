@@ -5,7 +5,7 @@ import { db } from '../db/db.js';
 import { questions_db, quiz_questions_db } from '../db/schema.js';
 
 type QuestionInputData = InferInsertModel<typeof questions_db>;
-type QuestionUpdataData = Partial<QuestionInputData>;
+type QuestionUpdateData = Partial<QuestionInputData>;
 
 export const QuestionsRepository = {
 
@@ -35,7 +35,7 @@ export const QuestionsRepository = {
   },
 
   //update question data
-  async updateQuestion(data: QuestionInputData, qId: number){
+  async updateQuestion(data: QuestionUpdateData, qId: number){
     const [updated] = await db.update(questions_db)
       .set(data)
       .where (eq(questions_db.id, qId))
@@ -44,7 +44,7 @@ export const QuestionsRepository = {
   },
 
   //update question data but return all
-  async updateQuestionReturning(data: QuestionUpdataData, qId: number){
+  async updateQuestionReturning(data: QuestionUpdateData, qId: number){
     const [updated] = await db.update(questions_db)
       .set(data)
       .where(eq(questions_db.id, qId))

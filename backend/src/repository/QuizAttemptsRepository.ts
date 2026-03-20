@@ -5,7 +5,7 @@ import { db } from '../db/db.js';
 import { quiz_attempts_db } from '../db/schema.js';
 
 type AttemptInsertData = InferInsertModel<typeof quiz_attempts_db>;
-type AttemptUpdataData = Partial<AttemptInsertData>;
+type AttemptUpdateData = Partial<AttemptInsertData>;
 
 export const QuizAttemptsRepo = {
 
@@ -21,7 +21,7 @@ export const QuizAttemptsRepo = {
   },
 
   //update attempt
-  async updateAttempt(data: AttemptUpdataData, quizId: number, attemptId: number){
+  async updateAttempt(data: AttemptUpdateData, quizId: number, attemptId: number){
     await db.update(quiz_attempts_db)
       .set(data).where(and(
         eq(quiz_attempts_db.quiz_id, quizId), eq(quiz_attempts_db.id, attemptId)

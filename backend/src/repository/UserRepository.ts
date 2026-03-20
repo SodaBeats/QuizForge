@@ -15,7 +15,7 @@ export const UserRepository = {
   },
 
   //select a user by email (unique)
-  async checkEmailUniqeness(email: string){
+  async checkEmailUniqueness(email: string){
     const result = await db.select().from(users).where(eq(users.email, email));
     return result;
   },

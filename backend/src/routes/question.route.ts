@@ -81,7 +81,7 @@ router.get('/', verifyToken, async(req, res, next)=>{
   }
 });
 
-// ROUTER FOR EDITING QUESTIONS     TO DO----------------------------------------------
+// ROUTER FOR EDITING QUESTIONS
 router.patch('/:id',
   verifyToken,
   questionInputValidator,
@@ -137,10 +137,21 @@ router.patch('/:id',
 router.delete('/:id', verifyToken, async(req, res, next)=>{
 
   const questionIdNum = Number(req.params.id);
-  if(!questionIdNum){
+  if(Number.isNaN(questionIdNum)){
     return res.status(400).json({ success: false, message: 'You must select a question'});
   }
   try{
+    // make sure the question belongs to this user by joining document ownership
+    const documentId = await QuestionsRepository.checkWhichDocOwnsQuestion(questionIdNum);
+    if (!documentId) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }
+    //check if document is owned by user
+    const owner = await UploadedFilesRepository.isDocOwnedByOwnerId(documentId, req.user.id);
+    if (!owner) {
+      return res.status(404).json({ success: false, message: 'Question not found' });
+    }
+
     const deletedQuestion = await QuestionsRepository.deleteQuestionById(questionIdNum);
     if (!deletedQuestion) {
       return res.status(404).json({ success: false, message: 'Question not found' });

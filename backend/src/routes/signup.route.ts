@@ -15,7 +15,7 @@ router.post('/',
   try{
 
     //check if user exists
-    const existingUser = await UserRepository.checkEmailUniqeness(email);
+    const existingUser = await UserRepository.checkEmailUniqueness(email);
     if(existingUser.length > 0){
       return res.status(400).json({success: false, error: 'Email already exists'});
     }
