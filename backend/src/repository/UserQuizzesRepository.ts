@@ -1,8 +1,8 @@
 
 import type { InferInsertModel } from "drizzle-orm";
-import { eq, count } from 'drizzle-orm';
+import { eq, count, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { quizzes_db, quiz_questions_db } from "../db/schema.js";
+import { quizzes_db, quiz_questions_db, quiz_attempts_db } from "../db/schema.js";
 
 type QuizInputData = InferInsertModel<typeof quizzes_db>;
 type QuizUpdateData = Partial<QuizInputData>;
@@ -45,6 +45,33 @@ export const UserQuizzesRepository = {
   async updateQuizDataReturnAll(data: QuizUpdateData, quizId: number){
     const [updated] = await db.update(quizzes_db).set(data).where(eq(quizzes_db.id, quizId)).returning();
     return updated;
+  },
+
+  // get quiz data and attempt count
+  async getQuizAndAttemptCount(token: string, userId: number){
+    const [result] = await db.select({
+        id: quizzes_db.id,
+        userId: quizzes_db.user_id,
+        quizTitle: quizzes_db.quiz_title,
+        quizDescription: quizzes_db.quiz_description,
+        shareToken: quizzes_db.share_token,
+        timeLimit: quizzes_db.time_limit,
+        maxAttempts: quizzes_db.max_attempts,
+        dueDate: quizzes_db.due_date,
+        totalAttempts: count(quiz_attempts_db.id)
+      })
+      .from(quizzes_db)
+      .leftJoin(
+        quiz_attempts_db,
+        and(
+          eq(quiz_attempts_db.quiz_id, quizzes_db.id),
+          eq(quiz_attempts_db.user_id, userId)
+        )
+      )
+      .where(eq(quizzes_db.share_token, token.toLowerCase()))
+      .groupBy(quizzes_db.id);
+
+    return result;
   },
 
   

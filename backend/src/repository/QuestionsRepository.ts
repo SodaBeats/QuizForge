@@ -60,6 +60,7 @@ export const QuestionsRepository = {
     return deleted ?? null;
   },
 
+  //get questions by quiz id
   async getQuestionsRelatedToQuiz(quizId: number){
     const questionsList = await db.select({
           id: questions_db.id,
@@ -71,9 +72,9 @@ export const QuestionsRepository = {
           optionC: questions_db.option_c,
           optionD: questions_db.option_d,
         })
-          .from(questions_db)
-          .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
-          .where(eq(quiz_questions_db.quiz_id, quizId));
+        .from(questions_db)
+        .innerJoin(quiz_questions_db, eq(questions_db.id, quiz_questions_db.question_id))
+        .where(eq(quiz_questions_db.quiz_id, quizId));
 
     return questionsList ?? null;
   },
