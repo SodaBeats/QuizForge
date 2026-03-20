@@ -1,14 +1,13 @@
 import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
-import { db } from '../db/db.js';
-import { uploaded_files } from '../db/schema.js';
 import { cleanExtractedText } from './textCleaner.service.js';
 import type { UploadedFileInterface } from '../types/file.js'; //TO DO: MAKE UNIT TEST FOR 
+import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 
 export const extractText = async(
   file: UploadedFileInterface | null | undefined,
   userId: number
-) => {
+  ) => {
 
   try{
 
@@ -38,14 +37,17 @@ export const extractText = async(
     const fileName = file.originalname;
     const fileHash = file.fileHash;
 
-    //when inserting to database, use schema property names (snake case)
-    const [insertedFile] = await db.insert(uploaded_files).values({
+    //format data for database insert
+    const formattedData = {
       user_id: userId,
       filename: fileName,
       file_path: 'temporary_input',
       file_hash: fileHash,
-      extracted_text: cleanedText
-    }).returning();
+      extracted_text: cleanedText,
+    }
+
+    //when inserting to database, use schema property names
+    const insertedFile = await UploadedFilesRepository.insertFileToDb(formattedData);
 
     return{
       success: true,

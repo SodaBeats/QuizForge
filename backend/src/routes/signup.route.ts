@@ -1,10 +1,8 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import { db } from '../db/db.js';
-import { users } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
 import { signupValidator } from '../middlewares/signupValidator.middleware.js';
 import { hashPassword, formatNewUser } from '../services/signup.service.js';
+import { UserRepository } from '../repository/UserRepository.js';
 
 const router = express.Router();
 
@@ -17,17 +15,18 @@ router.post('/',
   try{
 
     //check if user exists
-    const existingUser = await db.select().from(users).where(eq(users.email, email));
+    const existingUser = await UserRepository.checkEmailUniqueness(email);
     if(existingUser.length > 0){
       return res.status(400).json({success: false, error: 'Email already exists'});
     }
 
-    //hash password and prepare data for data insertion
+    //hash password
     const passwordHash = await hashPassword(password);
+    // format data for database insertion
     const userData = formatNewUser(req.body, passwordHash);
 
     //save to database
-    await db.insert(users).values(userData);
+    await UserRepository.registerUser(userData);
 
     res.status(201).json({ 
         success: true, 
