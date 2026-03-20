@@ -103,7 +103,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
           : 'Failed to submit question'
         );
         console.error(errorMessage);
-        toast.error(`Error: ${result.message}`);
+        toast.error(`Error: ${errorMessage}`);
       }
     }catch(error){
       console.error('Error submitting questions', error);
