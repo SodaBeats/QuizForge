@@ -154,7 +154,7 @@ describe('UserRepository Integration Tests', () => {
       await UserRepository.registerUser(userData);
 
       //Act and Assert
-      expect(UserRepository.registerUser(userData)).rejects.toThrow();
+      await expect(UserRepository.registerUser(userData)).rejects.toThrow();
     });
 
     it('should not insert when email is missing', async () => {
@@ -167,7 +167,7 @@ describe('UserRepository Integration Tests', () => {
         role: 'teacher' as const
       };
       //Act and Assert
-      expect(UserRepository.registerUser(invalidData as any)).rejects.toThrow();
+      await expect(UserRepository.registerUser(invalidData as any)).rejects.toThrow();
 
       //verify nothing was inserted
       const allUsers = await db.select().from(users);
