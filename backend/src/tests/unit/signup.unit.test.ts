@@ -1,8 +1,8 @@
 //signup.test.ts
 
 import { test, expect } from '@jest/globals';
-import { formatNewUser} from "../services/signup.service.js";
-import { type Role, type RegistrationInput } from "../services/signup.service.js"
+import { formatNewUser} from "../../services/signup.service.js";
+import { type Role, type RegistrationInput } from "../../services/signup.service.js"
 
 const hashedPassword: string = 'hashed_password';
 const data: RegistrationInput = {

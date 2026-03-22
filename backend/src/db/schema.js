@@ -3,7 +3,7 @@ import { sql, relations } from 'drizzle-orm';
 
 export const uploaded_files = pgTable('uploaded_files', {
   id: serial('id').primaryKey(),
-  user_id: integer('user_id').notNull().references(() => users.id),
+  user_id: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade '}),
   filename: varchar('filename', { length: 255 }).notNull(),
   file_path: text('file_path').notNull(),
   file_hash: varchar('file_hash', { length: 64 }).notNull(),

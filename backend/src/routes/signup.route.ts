@@ -10,16 +10,9 @@ router.post('/',
   signupValidator,
   async (req: Request, res: Response, next: NextFunction)=>{
 
-  const { email, password } = req.body;
+  const { password } = req.body;
 
   try{
-
-    //check if user exists
-    const existingUser = await UserRepository.checkEmailUniqueness(email);
-    if(existingUser.length > 0){
-      return res.status(400).json({success: false, error: 'Email already exists'});
-    }
-
     //hash password
     const passwordHash = await hashPassword(password);
     // format data for database insertion
@@ -28,13 +21,16 @@ router.post('/',
     //save to database
     await UserRepository.registerUser(userData);
 
-    res.status(201).json({ 
+    return res.status(201).json({ 
         success: true, 
         message: 'Account created successfully. Please log in.' 
     });
 
-  }catch(error){
-    next(error);
+  }catch(error: any){
+    if(error.cause?.code === '23505'){
+      return res.status(409).json({success: false, message: "This email is already in use"});
+    }
+    return next(error);
   }
 
 });
