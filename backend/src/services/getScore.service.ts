@@ -1,6 +1,6 @@
 
 //STILL NEED TO WORK ON CASES WHERE CORRECT ANSWER IS NULL
-interface Question {
+export interface Question {
   id: number,
   documentId: number,
   questionText: string,
@@ -10,13 +10,15 @@ interface Question {
   optionB: string | null,
   optionC: string | null,
   optionD: string | null,
-}
-enum QuestionType{
+};
+
+export enum QuestionType{
   MultipleChoice = 'multiple-choice',
   TrueFalse = 'true-false'
-}
+};
+type ScoreableQuestion = Pick<Question, 'id' | 'correctAnswer'>;
 
-export const getScore = (questions: Question[], answers: Record<string, string>)=> {
+export const getScore = (questions: ScoreableQuestion[], answers: Record<string, string>)=> {
 
   if(!answers){
     console.log('no answers');
