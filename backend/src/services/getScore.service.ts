@@ -21,11 +21,14 @@ type ScoreableQuestion = Pick<Question, 'id' | 'correctAnswer'>;
 export const getScore = (questions: ScoreableQuestion[], answers: Record<string, string>)=> {
 
   if(!answers){
-    console.log('no answers');
     return 0;
   }
 
   return questions.reduce((totalScore, q)=>{
+
+    if(q.correctAnswer === null){
+      return totalScore;
+    }
 
     const userAnswer = answers[q.id.toString()];
 

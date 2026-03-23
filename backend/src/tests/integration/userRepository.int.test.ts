@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/db.js';
-import { users } from '../../db/schema.js';
+import { refresh_tokens, users } from '../../db/schema.js';
 import { UserRepository } from '../../repository/UserRepository.js';
 
 describe('UserRepository Integration Tests', () => {
@@ -175,4 +175,41 @@ describe('UserRepository Integration Tests', () => {
     });
 
   });
+
+  describe('findRefreshTokenOwner', () => {
+    it('should return correct user', async () => {
+      //Arrange
+      const [testUser] = await db.insert(users).values({
+        email: 'tokenowner@example.com',
+      password_hash: 'hashedpassword123',
+      first_name: 'Token',
+      last_name: 'Owner',
+      role: 'student'
+      }).returning();
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
+      if(!testUser){
+        return;
+      }
+
+      const tokenData = {
+        user_id: testUser?.id, // Use the actual user ID
+        token: 'thisRefreshToken',
+        expires_at: expiresAt, // Date object works fine
+        revoked: false
+      };
+      await db.insert(refresh_tokens).values(tokenData);
+
+      //Act - find token owner using token user_id
+      const owner = await UserRepository.findRefreshTokenOwner(tokenData.user_id);
+
+      //Assert
+      expect(owner).toBeDefined();
+      expect(owner?.id).toBe(testUser.id);
+      expect(owner?.email).toBe(testUser.email);
+    });
+  });
 });
+// TO DO: FINISH THIS, CHECK CLAUDE AI FOR THE SAMPLE
