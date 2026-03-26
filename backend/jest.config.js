@@ -26,7 +26,7 @@ export default {
   // globalTeardown runs ONCE after all tests complete. It wipes the test DB.
   globalTeardown: './src/tests/integration/setup/globalTeardown.ts',
 
-  // setupFilesAfterFramework runs inside each test worker, after the test
+  // setupFilesAfterEnv runs inside each test worker, after the test
   // framework is installed. We use it to load .env.test so that every
   // test file sees the correct DATABASE_URL and JWT_SECRET.
   setupFilesAfterEnv: ['<rootDir>/src/tests/integration/setup/loadEnv.ts'],

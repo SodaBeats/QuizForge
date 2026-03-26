@@ -42,6 +42,7 @@ let seededDocId: number;
 let seededQuestionId: number;
 let seededQuizId: number;
 let seededQuizShareToken: string;
+let createdQuizId: number;
 
 // ── Helper: a future due date ─────────────────────────────────────────────────
 const futureDueDate = () =>
@@ -145,6 +146,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if(createdQuizId){
+    await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, createdQuizId));
+    await db.delete(quizzes_db).where(eq(quizzes_db.id, createdQuizId));
+  }
   await db.delete(quiz_attempts_db).where(eq(quiz_attempts_db.user_id, studentId));
   await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, seededQuizId));
   await db.delete(quizzes_db).where(eq(quizzes_db.id, seededQuizId));
@@ -165,6 +170,10 @@ describe('POST /api/quizzes', () => {
       .post('/api/quizzes')
       .set(authHeader(teacherToken))
       .send(payload);
+
+    if(res.body.id){
+      createdQuizId = res.body.id;
+    }
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -343,16 +352,10 @@ describe('PATCH /api/student/quiz-submit', () => {
       .set(authHeader(studentToken))
       .send({ token: seededQuizShareToken });
 
-    // If we've exhausted attempts from the access test above, seed a fresh quiz
-    if (accessRes.status !== 200) {
-      console.warn('[quizzes.test] Skipping submit test — no attempts left');
-      return;
-    }
-
     const { quiz, questions, attemptId } = accessRes.body;
 
     // Build an answers object: { [questionId]: selectedAnswer }
-    const answers: Record<number, string> = {};
+    const answers: Record<string, string> = {};
     for (const q of questions) {
       answers[q.id] = q.option_a; // just pick option A for every question
     }

@@ -62,7 +62,7 @@ router.post('/',
 
     await QuestionsToQuizRepo.assignQuestionsToQuizzes(junctionRows);
 
-    res.status(200).json({success: true, message: 'Quiz Forged!'});
+    res.status(200).json({success: true, message: 'Quiz Forged!', id: newQuizId});
 
   }catch(error){
     next(error);

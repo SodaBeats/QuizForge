@@ -82,12 +82,6 @@ export default async function globalSetup() {
     })
     .returning({ id: users.id });
 
-  // ── 5. Expose IDs to all test files via process.env ─────────────────────
-  // globalSetup runs in a separate Node context from tests,
-  // so process.env is the cleanest way to pass values across.
-  process.env.TEST_TEACHER_ID = String(teacher?.id);
-  process.env.TEST_STUDENT_ID = String(student?.id);
-
   console.log(
     `[globalSetup] Done. Teacher ID=${teacher?.id}, Student ID=${student?.id}, DB: ${process.env.DATABASE_URL}\n`
   );

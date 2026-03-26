@@ -1,4 +1,4 @@
-// src/tests/integration/auth.test.ts
+// src/tests/integration/auth.int.test.ts
 //
 // Tests for:
 //   POST /auth/signup

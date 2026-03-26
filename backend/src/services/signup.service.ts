@@ -22,9 +22,12 @@ export const formatNewUser = (
   hashedPassword: string
 ) => {
 
-  if(!data.email || !data.first_name || !data.last_name || !data.role || !hashedPassword){
-    return 'Incomplete data';
+  if(!data.email || !data.first_name || !data.last_name || !hashedPassword){
+    const error = new Error('Incomplete Data');
+    (error as any).status = 400;
+    throw error;
   }
+  
   const allowedRoles = ['teacher', 'student'];
   return{
     first_name: data.first_name,

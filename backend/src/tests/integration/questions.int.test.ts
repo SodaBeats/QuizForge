@@ -229,21 +229,6 @@ describe('DELETE /api/questions/:id', () => {
   let questionToDeleteId: number;
 
   beforeEach(async () => {
-    
-    const [doc] = await db
-      .insert(uploaded_files)
-      .values({
-        user_id: teacherId,
-        filename: 'test_doc.pdf',
-        file_path: '/fake/test_doc.pdf',
-        file_hash: 'qhash001',
-        extracted_text: 'Some document text.',
-      })
-      .returning({ id: uploaded_files.id });
-
-    if(!doc){
-      throw new Error('Failed to seed document');
-    }
 
     const [q] = await db
       .insert(questions_db)
@@ -264,6 +249,11 @@ describe('DELETE /api/questions/:id', () => {
     }
 
     questionToDeleteId = q.id;
+  });
+
+  afterEach(async () => {
+    //clean up seeded question
+    await db.delete(questions_db).where(eq(questions_db.id, questionToDeleteId));
   });
 
   it('200 — deletes an owned question successfully', async () => {

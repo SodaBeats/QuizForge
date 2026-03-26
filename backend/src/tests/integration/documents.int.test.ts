@@ -1,4 +1,4 @@
-// src/tests/integration/documents.test.ts
+// src/tests/integration/documents.int.test.ts
 //
 // Tests for:
 //   GET    /api/documents

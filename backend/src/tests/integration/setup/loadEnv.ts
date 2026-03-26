@@ -1,6 +1,6 @@
 // src/tests/integration/setup/loadEnv.ts
 //
-// This file is referenced in jest.config.js under setupFilesAfterFramework.
+// This file is referenced in jest.config.js under setupFilesAfterEnv.
 // It runs inside each Jest worker process so that process.env has the
 // test database URL and JWT secret before any test file imports your app.
 
