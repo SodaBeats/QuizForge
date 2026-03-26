@@ -29,3 +29,4 @@ dist-ssr
 /backend/.env
 /backend/src/db/migration/
 /backend/uploads
+/backend/.env.test

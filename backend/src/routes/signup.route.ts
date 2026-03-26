@@ -17,6 +17,10 @@ router.post('/',
     const passwordHash = await hashPassword(password);
     // format data for database insertion
     const userData = formatNewUser(req.body, passwordHash);
+    //return if input is incomplete
+    if(userData === 'Incomplete data'){
+      return res.status(400).json({success: false, message: 'Incomplete data'});
+    }
 
     //save to database
     await UserRepository.registerUser(userData);
