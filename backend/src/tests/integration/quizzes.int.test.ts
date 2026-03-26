@@ -354,6 +354,9 @@ describe('PATCH /api/student/quiz-submit', () => {
 
     const { quiz, questions, attemptId } = accessRes.body;
 
+    expect(accessRes.status).toBe(200);
+    expect(questions).toBeDefined();
+
     // Build an answers object: { [questionId]: selectedAnswer }
     const answers: Record<string, string> = {};
     for (const q of questions) {
