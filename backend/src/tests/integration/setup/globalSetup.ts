@@ -46,13 +46,25 @@ export default async function globalSetup() {
   const db = drizzle(sql);
 
   console.log('[globalSetup] Cleaning test database...');
-  await db.delete(quiz_attempts_db);
-  await db.delete(quiz_questions_db);
-  await db.delete(quizzes_db);
-  await db.delete(questions_db);
-  await db.delete(uploaded_files);
-  await db.delete(refresh_tokens);
-  await db.delete(users);
+  try {
+  // We use raw SQL because TRUNCATE is significantly faster than DELETE 
+  // and CASCADE solves all Foreign Key ordering issues instantly.
+    await sql`
+      TRUNCATE TABLE 
+        "quiz_attempts_db", 
+        "quiz_questions_db", 
+        "quizzes_db", 
+        "questions_db", 
+        "uploaded_files", 
+        "refresh_tokens", 
+        "users" 
+      RESTART IDENTITY CASCADE;
+    `;
+    console.log('✅ Database wiped clean.');
+  } catch (error) {
+    console.error('❌ Nuclear cleanup failed:', error);
+    throw error; // Force the test to stop if we can't clean the DB
+  }
 
   // ── 4. Seed a teacher and a student ─────────────────────────────────────
   console.log('[globalSetup] Seeding test users...');
@@ -83,6 +95,6 @@ export default async function globalSetup() {
     .returning({ id: users.id });
 
   console.log(
-    `[globalSetup] Done. Teacher ID=${teacher?.id}, Student ID=${student?.id}, DB: ${process.env.DATABASE_URL}\n`
+    `[globalSetup] Done. Teacher ID=${teacher?.id}, Student ID=${student?.id}\n`
   );
 }

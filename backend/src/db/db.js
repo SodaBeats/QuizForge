@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import * as schema from './schema.js';
-import type { Pool } from 'pg';
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
 
-let db: any;
-let pool: Pool | undefined;
+let db;
+let pool;
 
 if (process.env.NODE_ENV === 'test') {
   // CI/test environment — uses standard pg driver to connect to local Postgres

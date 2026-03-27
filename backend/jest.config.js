@@ -21,10 +21,10 @@ export default {
   //
   // globalSetup runs in its own Node process ONCE before Jest starts any tests.
   // It pushes the schema and seeds the test users.
-  globalSetup: './src/tests/integration/setup/globalSetup.ts',
+  globalSetup: '<rootDir>/src/tests/integration/setup/globalSetup.ts',
 
   // globalTeardown runs ONCE after all tests complete. It wipes the test DB.
-  globalTeardown: './src/tests/integration/setup/globalTeardown.ts',
+  globalTeardown: '<rootDir>/src/tests/integration/setup/globalTeardown.ts',
 
   // setupFilesAfterEnv runs inside each test worker, after the test
   // framework is installed. We use it to load .env.test so that every

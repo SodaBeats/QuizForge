@@ -17,6 +17,8 @@ import {
 } from '../../../db/schema.js';
 import { pool } from '../../../db/db.js';
 
+const typedPool = pool as any;
+
 export default async function globalTeardown() {
   dotenv.config({ path: '.env.test' });
 
@@ -33,7 +35,7 @@ export default async function globalTeardown() {
   await db.delete(uploaded_files);
   await db.delete(refresh_tokens);
   await db.delete(users);
-  if(pool) await pool.end();
+  if(typedPool) await typedPool.end();
 
   console.log('[globalTeardown] Done.\n');
 }
