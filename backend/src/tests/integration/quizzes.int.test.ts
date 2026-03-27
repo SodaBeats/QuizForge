@@ -9,9 +9,10 @@
 //   PATCH  /api/student/quiz-submit             — student submits quiz
 
 import request from 'supertest';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
+import pkg from 'pg';
+const { Pool } = pkg;
 import app from '../../server.js';
 import {
   uploaded_files,
@@ -29,8 +30,8 @@ import {
 } from './setup/testHelpers.js';
 
 // ── DB client ────────────────────────────────────────────────────────────────
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool);
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
@@ -155,6 +156,8 @@ afterAll(async () => {
   await db.delete(quizzes_db).where(eq(quizzes_db.id, seededQuizId));
   await db.delete(questions_db).where(eq(questions_db.document_id, seededDocId));
   await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
+
+  await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

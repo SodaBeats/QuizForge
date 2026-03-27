@@ -1,41 +1,45 @@
-// src/tests/integration/setup/globalTeardown.ts
-//
-// Runs ONCE after the entire test suite finishes.
-// Wipes the test DB clean so the next run always starts fresh.
-
 import * as dotenv from 'dotenv';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
-import {
-  users,
-  uploaded_files,
-  questions_db,
-  quizzes_db,
-  quiz_questions_db,
-  quiz_attempts_db,
-  refresh_tokens,
-} from '../../../db/schema.js';
-import { pool } from '../../../db/db.js';
-
-const typedPool = pool as any;
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 export default async function globalTeardown() {
   dotenv.config({ path: '.env.test' });
 
-  if (!process.env.DATABASE_URL) return;
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    console.log('[globalTeardown] No DATABASE_URL found, skipping...');
+    return;
+  }
 
-  const sql = neon(process.env.DATABASE_URL);
-  const db = drizzle(sql);
+  // 1. Initialize the correct driver for CI/Local Postgres
+  const pool = new Pool({ connectionString: dbUrl });
+  const db = drizzle(pool);
 
-  console.log('\n[globalTeardown] Wiping test database...');
-  await db.delete(quiz_attempts_db);
-  await db.delete(quiz_questions_db);
-  await db.delete(quizzes_db);
-  await db.delete(questions_db);
-  await db.delete(uploaded_files);
-  await db.delete(refresh_tokens);
-  await db.delete(users);
-  if(typedPool) await typedPool.end();
+  console.log('\n[globalTeardown] Wiping test database for a clean exit...');
 
-  console.log('[globalTeardown] Done.\n');
+  try {
+    // 2. Use the same Nuclear Option to handle Foreign Keys
+    await db.execute(sql`
+      TRUNCATE TABLE 
+        "quiz_attempts_db", 
+        "quiz_questions_db", 
+        "quizzes_db", 
+        "questions_db", 
+        "uploaded_files", 
+        "refresh_tokens", 
+        "users" 
+      RESTART IDENTITY CASCADE;
+    `);
+    console.log('✅ Database wiped clean.');
+  } catch (error) {
+    // We don't want to crash the whole process if teardown fails, 
+    // but we should know why.
+    console.error('⚠️ [globalTeardown] Cleanup warning:', error);
+  } finally {
+    // 3. CRITICAL: Close the pool so Jest can exit
+    await pool.end();
+    console.log('[globalTeardown] Connection closed. Done.\n');
+  }
 }

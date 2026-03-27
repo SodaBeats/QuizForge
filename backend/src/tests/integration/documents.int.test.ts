@@ -12,16 +12,17 @@
 //   a document to test GET and DELETE against.
 
 import request from 'supertest';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
+import pkg from 'pg';
+const { Pool } = pkg;
 import app from '../../server.js';
 import { uploaded_files } from '../../db/schema.js';
 import { loginAs, authHeader, TEACHER_CREDS } from './setup/testHelpers.js';
 
 // ── DB client (uses .env.test loaded by jest) ────────────────────────────────
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool);
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
@@ -61,6 +62,7 @@ afterAll(async () => {
   // Clean up any documents this test file created
   // (cascade deletes questions too, so no extra cleanup needed)
   await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
+  await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
