@@ -1,9 +1,25 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
 import * as schema from './schema.js';
 
-if(!process.env.DATABASE_URL) throw new Error ('DATABASE_URL is required');
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
 
-const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle(sql, {schema});
+let db;
+
+if (process.env.NODE_ENV === 'test') {
+  // CI/test environment — uses standard pg driver to connect to local Postgres
+  const { drizzle } = await import('drizzle-orm/node-postgres');
+  const { Pool } = await import('pg');
+
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  db = drizzle(pool, { schema });
+} 
+else {
+  // Production/dev — uses Neon serverless driver
+  const { drizzle } = await import('drizzle-orm/neon-http');
+  const { neon } = await import('@neondatabase/serverless');
+  
+  const sql = neon(process.env.DATABASE_URL);
+  db = drizzle(sql, { schema });
+}
+
+export { db };
