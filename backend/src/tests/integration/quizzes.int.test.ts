@@ -363,7 +363,7 @@ describe('PATCH /api/student/quiz-submit', () => {
     // Build an answers object: { [questionId]: selectedAnswer }
     const answers: Record<string, string> = {};
     for (const q of questions) {
-      answers[q.id] = q.option_a; // just pick option A for every question
+      answers[q.id] = q.optionA; // just pick option A for every question
     }
 
     const res = await request(app)
