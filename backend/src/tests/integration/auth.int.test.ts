@@ -6,9 +6,18 @@
 //   POST /auth/logout
 //   POST /auth/refresh
 
+import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
+import pkg from 'pg';
+const { Pool } = pkg;
 import app from '../../server.js';
 import { generateShareToken } from './setup/testHelpers.js';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+afterAll(async () => {
+  await pool.end();
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /auth/signup
