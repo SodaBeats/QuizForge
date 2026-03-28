@@ -6,7 +6,6 @@
 //   POST /auth/logout
 //   POST /auth/refresh
 
-import { drizzle } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import pkg from 'pg';
 const { Pool } = pkg;

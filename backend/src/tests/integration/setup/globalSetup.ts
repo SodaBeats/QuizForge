@@ -15,13 +15,7 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import bcrypt from 'bcrypt';
 import {
-  users,
-  uploaded_files,
-  questions_db,
-  quizzes_db,
-  quiz_questions_db,
-  quiz_attempts_db,
-  refresh_tokens,
+  users
 } from '../../../db/schema.js';
 
 export default async function globalSetup() {
