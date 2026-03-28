@@ -78,4 +78,4 @@ jobs:
       # WHY:  This is the whole point — if tests fail, the PR is blocked
       - name: Run integration tests
         working-directory: backend
-        run: npm run test:int -- --detectOPenHandles
+        run: npm run test:int -- --detectOpenHandles
