@@ -1,0 +1,81 @@
+# .github/workflows/integration-tests.yml
+#
+# Runs integration tests on every pull request.
+# Spins up a local Postgres container as the test database
+# so no external DB credentials are needed.
+
+name: Integration Tests
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # ── Postgres service container ──────────────────────────────────────────
+    # GitHub Actions spins this up before your job steps run.
+    # It's a real Postgres instance accessible at localhost:5432.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quizforge_test
+        ports:
+          - 5432:5432
+        # Wait until Postgres is actually ready before proceeding
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # ── Environment variables ───────────────────────────────────────────────
+    # These replace your .env.test file in CI.
+    # NODE_ENV=test tells db.ts to use the pg driver instead of Neon.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quizforge_test
+      JWT_SECRET: test_jwt_secret_for_ci
+      REFRESH_TOKEN_SECRET: test_refresh_secret_for_ci
+      NODE_ENV: test
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────────────────────
+      # WHAT: Downloads your repository code onto the CI runner
+      # WHY:  The runner is a blank Ubuntu machine — it has nothing yet
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node.js ──────────────────────────────────────────────────
+      # WHAT: Installs Node 22 on the runner
+      # WHY:  Again, blank machine — no Node installed by default
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # ── 3. Install dependencies ───────────────────────────────────────────
+      # WHAT: Runs npm install inside your backend folder
+      # WHY:  Installs express, drizzle, jest, supertest, everything
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
+
+      # ── 4. Push schema to test DB ─────────────────────────────────────────
+      # WHAT: Runs drizzle-kit push against the Postgres container
+      # WHY:  The container starts completely empty — no tables yet.
+      #       This creates all your tables before the tests run.
+      - name: Push database schema
+        working-directory: backend
+        run: npx drizzle-kit push
+
+      # ── 5. Run integration tests ──────────────────────────────────────────
+      # WHAT: Runs your Jest integration test suite
+      # WHY:  This is the whole point — if tests fail, the PR is blocked
+      - name: Run integration tests
+        working-directory: backend
+        run: npm run test:int -- --detectOpenHandles

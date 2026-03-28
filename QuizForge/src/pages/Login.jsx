@@ -52,7 +52,7 @@ export default function LogInComponent() {
       const data = await response.json();
 
       if(!data.success){
-        toast.error(data.error || 'Authentication failed');
+        toast.error(data.message || data.error || 'Authentication failed');
         return;
       }
       if (isLogin && data.user.role === 'teacher') {

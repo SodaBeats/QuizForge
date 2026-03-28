@@ -21,6 +21,13 @@ export const formatNewUser = (
   data: RegistrationInput, 
   hashedPassword: string
 ) => {
+
+  if(!data.email || !data.first_name || !data.last_name || !hashedPassword){
+    const error = new Error('Incomplete Data');
+    (error as any).status = 400;
+    throw error;
+  }
+  
   const allowedRoles = ['teacher', 'student'];
   return{
     first_name: data.first_name,

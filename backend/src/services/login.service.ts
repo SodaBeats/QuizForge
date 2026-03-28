@@ -1,8 +1,5 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/db.js';
-import { eq } from 'drizzle-orm';
-import { users, refresh_tokens } from '../db/schema.js';
 import { UserRepository } from '../repository/UserRepository.js';
 import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
 

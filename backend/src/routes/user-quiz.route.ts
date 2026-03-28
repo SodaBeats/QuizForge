@@ -38,6 +38,11 @@ router.post('/',
     status: req.body.status
   };
 
+  const questionIds = req.body.questionIds;
+  if(!Array.isArray(questionIds) || questionIds.length<=0){
+    return res.status(400).json({success: false, message: 'No questions provided'});
+  }
+
   try{
     //insert quiz data to database
     const newQuiz = await UserQuizzesRepository.insertNewQuiz(formattedData);
@@ -46,11 +51,6 @@ router.post('/',
     }
 
     const newQuizId = newQuiz?.id;
-    const questionIds = req.body.questionIds;
-
-    if(!Array.isArray(questionIds) || questionIds.length<=0){
-      return res.status(400).json({success: false, message: 'No questions provided'});
-    }
 
     //assigning question IDs to the quiz id and insert into junction table
     const junctionRows = questionIds.map((qId: number) => {
@@ -62,7 +62,7 @@ router.post('/',
 
     await QuestionsToQuizRepo.assignQuestionsToQuizzes(junctionRows);
 
-    res.status(200).json({success: true, message: 'Quiz Forged!'});
+    res.status(200).json({success: true, message: 'Quiz Forged!', id: newQuizId});
 
   }catch(error){
     next(error);

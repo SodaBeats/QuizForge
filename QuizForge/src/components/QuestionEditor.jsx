@@ -50,7 +50,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
   //changes question editor depending on which mode you select
   const handleModeSelect=(mode)=>{
     setAddMode(mode);
-  }
+  };
 
   //submit generated or manually made questions
   const handleManualSubmit = async ()=>{
@@ -109,7 +109,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
       console.error('Error submitting questions', error);
       alert('Failed to submit question');
     }
-  }
+  };
 
   return (
     <div className="flex-1 flex flex-col">
