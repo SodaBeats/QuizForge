@@ -12,17 +12,11 @@
 //   a document to test GET and DELETE against.
 
 import request from 'supertest';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
-import pkg from 'pg';
-const { Pool } = pkg;
 import app from '../../server.js';
+import { db, pool } from '../../db/db.js';
 import { uploaded_files } from '../../db/schema.js';
 import { loginAs, authHeader, TEACHER_CREDS } from './setup/testHelpers.js';
-
-// ── DB client (uses .env.test loaded by jest) ────────────────────────────────
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool);
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
@@ -49,7 +43,7 @@ beforeAll(async () => {
       file_hash: 'abc123hash',
       extracted_text: 'This is the extracted text from the test document.',
     })
-    .returning({ id: uploaded_files.id });
+    .returning();
 
   if(!doc){
     throw new Error('Failed to seed document for testing');
@@ -62,7 +56,7 @@ afterAll(async () => {
   // Clean up any documents this test file created
   // (cascade deletes questions too, so no extra cleanup needed)
   await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
-  await pool.end();
+  if(pool) await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,7 +146,7 @@ describe('DELETE /api/documents/:id', () => {
         file_hash: 'deletehash123',
         extracted_text: 'Delete me.',
       })
-      .returning({ id: uploaded_files.id });
+      .returning();
     
     if(!doc){
       throw new Error('Failed to seed document for testing');
