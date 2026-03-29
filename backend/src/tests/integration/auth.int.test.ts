@@ -7,15 +7,12 @@
 //   POST /auth/refresh
 
 import request from 'supertest';
-import pkg from 'pg';
-const { Pool } = pkg;
 import app from '../../server.js';
+import { db, pool } from '../../db/db.js';
 import { generateShareToken } from './setup/testHelpers.js';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
 afterAll(async () => {
-  await pool.end();
+  if(pool) await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

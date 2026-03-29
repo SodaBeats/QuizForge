@@ -9,10 +9,8 @@
 //   PATCH  /api/student/quiz-submit             — student submits quiz
 
 import request from 'supertest';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
-import pkg from 'pg';
-const { Pool } = pkg;
+import { db, pool } from '../../db/db.js';
 import app from '../../server.js';
 import {
   uploaded_files,
@@ -28,10 +26,6 @@ import {
   STUDENT_CREDS,
   generateShareToken,
 } from './setup/testHelpers.js';
-
-// ── DB client ────────────────────────────────────────────────────────────────
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool);
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
@@ -87,7 +81,7 @@ beforeAll(async () => {
       file_hash: 'quizhash001',
       extracted_text: 'Quiz test document text.',
     })
-    .returning({ id: uploaded_files.id });
+    .returning();
 
   if(!doc){
     throw new Error('Failed to seed document');
@@ -108,7 +102,7 @@ beforeAll(async () => {
       option_c: 'Earth',
       option_d: 'Mars',
     })
-    .returning({ id: questions_db.id });
+    .returning();
   
   if(!question){
     throw new Error('Failed to seed question');
@@ -131,7 +125,7 @@ beforeAll(async () => {
       status: 'published',
       due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
-    .returning({ id: quizzes_db.id, share_token: quizzes_db.share_token });
+    .returning();
 
   if(!quiz){
     throw new Error('Failed to seed quiz');
@@ -157,7 +151,7 @@ afterAll(async () => {
   await db.delete(questions_db).where(eq(questions_db.document_id, seededDocId));
   await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
 
-  await pool.end();
+  if(pool) await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
+import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
-import pkg from 'pg';
-const { Pool } = pkg;
+import * as schema from '../../../db/schema.js';
 
 export default async function globalTeardown() {
   dotenv.config({ path: '.env.test' });
@@ -13,9 +13,8 @@ export default async function globalTeardown() {
     return;
   }
 
-  // 1. Initialize the correct driver for CI/Local Postgres
-  const pool = new Pool({ connectionString: dbUrl });
-  const db = drizzle(pool);
+  const pool = new Pool({connectionString: process.env.DATABASE_URL});
+  const db = drizzle(pool, {schema})
 
   console.log('\n[globalTeardown] Wiping test database for a clean exit...');
 
@@ -39,7 +38,7 @@ export default async function globalTeardown() {
     console.error('⚠️ [globalTeardown] Cleanup warning:', error);
   } finally {
     // 3. CRITICAL: Close the pool so Jest can exit
-    await pool.end();
+    if(pool) await pool.end();
     console.log('[globalTeardown] Connection closed. Done.\n');
   }
 }

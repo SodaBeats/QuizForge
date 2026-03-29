@@ -7,17 +7,11 @@
 //   DELETE /api/questions/:id
 
 import request from 'supertest';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
-import pkg from 'pg';
-const { Pool } = pkg;
 import app from '../../server.js';
+import { db, pool } from '../../db/db.js';
 import { uploaded_files, questions_db } from '../../db/schema.js';
 import { loginAs, authHeader, TEACHER_CREDS } from './setup/testHelpers.js';
-
-// ── DB client ────────────────────────────────────────────────────────────────
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool);
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
@@ -55,7 +49,7 @@ beforeAll(async () => {
       file_hash: 'qhash001',
       extracted_text: 'Some document text.',
     })
-    .returning({ id: uploaded_files.id });
+    .returning();
 
   if(!doc){
     throw new Error('Failed to seed document');
@@ -76,7 +70,7 @@ beforeAll(async () => {
       option_c: 'Also Wrong',
       option_d: 'Still Wrong',
     })
-    .returning({ id: questions_db.id });
+    .returning();
 
   if(!question){
     throw new Error('Failed to seed question');
@@ -87,7 +81,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
-  await pool.end();
+  if(pool) await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -244,7 +238,7 @@ describe('DELETE /api/questions/:id', () => {
         option_c: 'Maybe',
         option_d: 'Never',
       })
-      .returning({ id: questions_db.id });
+      .returning();
 
     if(!q){
       throw new Error('Failed to seed question');
