@@ -12,8 +12,6 @@ router.patch('/', verifyToken, async(req, res, next)=> {
   const {questions, answers, quiz, attemptId} = req.body;
   const score = getScore(questions, answers);
 
-  console.log(answers);
-
   const formattedData = {
     score: score,
     status: 'completed',
