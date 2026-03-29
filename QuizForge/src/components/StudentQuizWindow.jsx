@@ -53,6 +53,34 @@ export default function StudentQuizWindow({
                   );
                 })}
               </div>
+            ) : question.questionType === 'true-false' ? (
+              <div className="space-y-3">
+                {/* True Option */}
+                <label className="flex items-center gap-3 p-4 bg-gray-800/40 border border-gray-800 rounded-xl cursor-pointer hover:border-blue-500/50 transition-colors">
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    value="true"
+                    checked={answers[question.id] === 'true'}
+                    onChange={(e) => onAnswerChange(e.target.value)}
+                    className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-white text-sm flex-1">True</span>
+                </label>
+
+                {/* False Option */}
+                <label className="flex items-center gap-3 p-4 bg-gray-800/40 border border-gray-800 rounded-xl cursor-pointer hover:border-blue-500/50 transition-colors">
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    value="false"
+                    checked={answers[question.id] === 'false'}
+                    onChange={(e) => onAnswerChange(e.target.value)}
+                    className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-white text-sm flex-1">False</span>
+                </label>
+              </div>
             ) : (
               <div className="h-48 flex flex-col"> {/* Fixed height for textarea to prevent takeover */}
                 <textarea

@@ -7,6 +7,7 @@ import { neon } from '@neondatabase/serverless';
 
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
 
+//telling typescript what kind of database driver and what schema
 type DB = NodePgDatabase<typeof schema> | NeonHttpDatabase<typeof schema>;
 
 let db: DB;
