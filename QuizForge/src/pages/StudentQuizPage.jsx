@@ -9,9 +9,6 @@ import StudentQuizWindow from '../components/StudentQuizWindow';
 import StudentTimeLimit from '../components/StudentTimeLimit';
 
 export default function StudentQuizPage(){
-  useEffect(() => {
-    console.log("EFFECT RUNNING");
-  }, []);
 
   const location = useLocation();
   const {quizToken} = useParams();

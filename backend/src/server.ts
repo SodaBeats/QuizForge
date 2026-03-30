@@ -63,7 +63,7 @@ app.use((err: AppError,req: Request,res: Response,next: NextFunction)=>{
   if (err.code === 'INVALID_FILE_TYPE') {
     return res.status(400).json({ error: err.message });
   }
-  //console.error(err);
+  console.error(err);
   const status = err.status || 500;
   res.status(status).json({
     message: err.message || 'Internal Server Error',
