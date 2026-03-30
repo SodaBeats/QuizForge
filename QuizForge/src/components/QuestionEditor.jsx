@@ -134,6 +134,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                 >
                   <option value="multiple-choice">Multiple Choice</option>
                   <option value="true-false">True/False</option>
+                  <option value="short-answer">Short Answer</option>
                 </select>
               </div>
               <div>
@@ -265,6 +266,35 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                       Cancel
                     </button>
                   </div>
+                </div>
+              )}
+              {manualQuestion.questionType === 'short-answer' && (
+                <div className="flex space-x-2 mt-4">
+                  <button 
+                    onClick={handleManualSubmit}
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
+                  >
+                    {addMode === 'edit' ? 'Update' : 'Done'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAddMode(null);
+                      setSelectedQuestionId(null);
+                      setManualQuestion({
+                        documentId: selectedFile?.id,
+                        questionText: '',
+                        questionType: 'multiple-choice',
+                        optionA: '',
+                        optionB: '',
+                        optionC: '',
+                        optionD: '',
+                        correctAnswer: ''
+                      });
+                    }}
+                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
+                  >
+                    Cancel
+                  </button>
                 </div>
               )}
             </>

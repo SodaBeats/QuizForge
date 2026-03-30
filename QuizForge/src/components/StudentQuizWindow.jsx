@@ -86,7 +86,7 @@ export default function StudentQuizWindow({
                 <textarea
                   className="w-full flex-1 bg-gray-800/40 border border-gray-800 rounded-xl p-4 focus:border-blue-500 focus:outline-none text-white text-sm resize-none"
                   placeholder="Type your answer here..."
-                  value={answers || ''}
+                  value={answers[question.id] || ''}
                   onChange={(e) => onAnswerChange(e.target.value)}
                 />
               </div>
