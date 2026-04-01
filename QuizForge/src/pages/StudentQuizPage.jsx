@@ -1,29 +1,30 @@
 
 import { useEffect, useState, useContext } from 'react';
-import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { AuthContext } from '../components/AuthProvider';
 import StudentTopbar from "../components/StudentTopbar";
 import StudentSidebar from '../components/StudentSidebar';
 import StudentQuizWindow from '../components/StudentQuizWindow';
 import StudentTimeLimit from '../components/StudentTimeLimit';
+import LoadingScreen from '../components/LoadingScreen';
 
 export default function StudentQuizPage(){
-
-  const location = useLocation();
   const {quizToken} = useParams();
   const {authFetch} = useContext(AuthContext);
 
   //get data passed from the last page using LOCATION.STATE
-  const [quiz, setQuiz] = useState(location.state?.quizData || null);
-  const [questions, setQuestions] = useState(location.state?.questions || null);
-  const [attemptStart, setAttemptStart] = useState(location.state?.attemptStart || null);
-  const [attemptCount, setAttemptCount] = useState(location.state?.attemptCount || 0);
-  const [attemptId, setAttemptId] = useState(location.state?.attemptId || null);
-  const [maxAttempts, setMaxAttempts] = useState(location.state?.maxAttempts || 0);
+  const [quiz, setQuiz] = useState(null);
+  const [questions, setQuestions] = useState(null);
+  const [attemptStart, setAttemptStart] = useState(null);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [attemptId, setAttemptId] = useState(null);
+  const [maxAttempts, setMaxAttempts] = useState(0);
   const [answers, setAnswers] = useState({});
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [fetchErr, setFetchErr] = useState(null);
   const canPrev = true;
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex] || null;
@@ -31,25 +32,28 @@ export default function StudentQuizPage(){
 
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
-    console.log('useEffect triggered');
-    if(!quiz && quizToken){
-      authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
-        .then(res => res.json())
-        .then(data=>{
-          setQuiz(data.quiz);
-          setQuestions(data.questions);
-          setAttemptStart(data.attemptStart);
-          setAttemptId(data.attemptId);
-          setMaxAttempts(data.quiz.maxAttempts);
-          setAttemptCount(data.totalAttempts);
-        })
-        .catch(err => {
-          console.error(err);
-          toast.error('Something went wrong while fetching quiz.');
-          navigate('/student');
-        });
-    }
-  }, [quiz, quizToken, authFetch, navigate]);
+    if(!quizToken || !authFetch) return;
+    console.log('USEEFFECT RAN');
+
+    authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
+      .then(res => res.json())
+      .then(data=>{
+        console.log(data);
+        setQuiz(data.quiz);
+        setQuestions(data.questions);
+        setAttemptStart(data.attemptStart);
+        setAttemptId(data.attemptId);
+        setMaxAttempts(data.quiz.maxAttempts);
+        setAttemptCount(data.totalAttempts);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setFetchErr('Something went wrong while fetching the quiz');
+      })
+      .finally(()=> setLoading(false));
+
+  }, [authFetch, quizToken]);
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
@@ -102,6 +106,23 @@ export default function StudentQuizPage(){
       alert('Something went wrong while submitting attempt');
     }
   };
+
+  if(loading){
+    return <LoadingScreen />;
+  }
+
+  if (fetchErr) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-100">
+        <div className="text-center">
+          <p className="text-red-400">{fetchErr}</p>
+          <button onClick={() => navigate('/student')} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
+            Back to Student Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return(
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">

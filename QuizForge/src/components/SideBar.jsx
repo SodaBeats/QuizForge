@@ -55,7 +55,6 @@ function SideBar({
 
   // Handle share quiz
   const handleShareQuiz = async () => {
-
     //setup a default due date if user did not set it
     if(!shareData.dueDate || !shareData.quizTitle){
       toast.error('Due date and title are required');
@@ -109,6 +108,7 @@ function SideBar({
         return;
       }
 
+      console.log('done');
       toast.success(data.message);
 
       setShareData({

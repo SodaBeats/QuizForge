@@ -11,8 +11,8 @@ export const UserQuizzesRepository = {
 
   //insert quiz to table
   async insertNewQuiz(data: QuizInputData){
-    const [quiz] = await db.insert(quizzes_db).values(data).returning({id: quizzes_db.id});
-    return quiz ?? null;
+    const [quiz] = await db.insert(quizzes_db).values(data).returning();
+    return quiz ? {id: quiz.id} : null;
   },
 
   //get all quizzes related to user

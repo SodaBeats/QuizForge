@@ -43,9 +43,7 @@ router.post('/',
     const insertedQuestion = await QuestionsRepository.insertQuestionToDb(formattedData);
 
     res.status(200).json({
-      success: true, 
-      documentId: insertedQuestion?.documentId, 
-      questionId: insertedQuestion?.questionId
+      success: true
     });
     
   }catch(error){

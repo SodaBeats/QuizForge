@@ -17,11 +17,6 @@ router.post('/',
   try {
     const { token } = req.body;
     const userId = Number(req.user.id);
-
-    if (!token || typeof token !== 'string') {
-      return res.status(400).json({ success: false, message: 'Invalid token' });
-    }
-
     // FETCH QUIZ + ATTEMPT COUNT
     const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(token, userId);
     if (!quiz) {
@@ -41,16 +36,6 @@ router.post('/',
       });
     }
 
-    // FETCH QUESTIONS RELATED TO QUIZ
-    const questions = await QuestionsRepository.getQuestionsRelatedToQuiz(quiz.id);
-
-    if (questions.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'This quiz has no questions'
-      });
-    }
-
     const formattedInsertData = {
       quiz_id: quiz.id,
       user_id: userId,
@@ -67,11 +52,9 @@ router.post('/',
     return res.status(200).json({
       success: true,
       message: "Quiz Found!",
-      quiz,
-      questions,
-      attemptStart: attempt?.attemptStart,
-      attemptId: attempt?.attemptId,
-      totalAttempts: quiz.totalAttempts
+      shareToken: quiz.shareToken,
+      maxAttempts: quiz.maxAttempts,
+      totalAttempts: quiz.totalAttempts,
     });
 
   } catch (error) {
@@ -85,7 +68,7 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
   const {quizToken} = req.params;
   const userId = req.user.id;
 
-  console.log('refetch ran');
+  console.log('FETCHING QUIZ AND ATTEMPTS');
 
   if(!quizToken || typeof (quizToken) !== 'string'){
     return res.status(400).json({success: false, message: 'Invalid token'});
@@ -107,7 +90,7 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
     }
 
     // CHECK ATTEMPTS
-    if (quiz.totalAttempts >= quiz.maxAttempts) {
+    if (quiz.totalAttempts > quiz.maxAttempts) {
       return res.status(400).json({
         success: false,
         message: "You have used all attempts for this quiz"

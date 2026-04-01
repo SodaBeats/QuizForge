@@ -13,11 +13,11 @@ export const QuizAttemptsRepo = {
   async createAttempt(data: AttemptInsertData){
     const [inserted] = await db.insert(quiz_attempts_db)
       .values(data)
-      .returning({
-        attemptStart: quiz_attempts_db.created_at,
-        attemptId: quiz_attempts_db.id
-      });
-    return inserted ?? null;
+      .returning();
+    return inserted ? {
+      attemptStart: inserted.created_at,
+      attemptId: inserted.id
+    } : null;
   },
 
   //update attempt

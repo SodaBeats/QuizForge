@@ -26,7 +26,7 @@ export default function StudentTokenPage() {
       }
       
       //stop user if already used up all attempts
-      if (quizAndQuestions.totalAttempts > quizAndQuestions.maxAttempts) {
+      if (quizAndQuestions.totalAttempts >= quizAndQuestions.maxAttempts) {
         toast.error(`You have used up all ${quizAndQuestions.maxAttempts} available attempts`);
         return;
       }
@@ -34,17 +34,8 @@ export default function StudentTokenPage() {
       toast.success('Quiz found! Starting...');
       setIsModalOpen(false);
 
-      //navigate to quiz page and pass the data from this page into quiz page using location.state
-      navigate(`/student/quiz/${quizAndQuestions.quiz.shareToken}`, {
-        state: {
-          quizData: quizAndQuestions.quiz,
-          questions: quizAndQuestions.questions,
-          attemptCount: quizAndQuestions.totalAttempts,
-          maxAttempts: quizAndQuestions.quiz.maxAttempts,
-          attemptId: quizAndQuestions.attemptId,
-          attemptStart: quizAndQuestions.attemptStart
-        }
-      });
+      //navigate to quiz page
+      navigate(`/student/quiz/${quizAndQuestions.shareToken}`);
       
     }catch(error){
       alert('Something went wrong with token verification');

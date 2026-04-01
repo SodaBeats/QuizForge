@@ -7,7 +7,7 @@ export default function StudentSidebar({
   answeredQuestions,
   onQuizSubmit
 }) {
-  const totalQuestions = questions.length;
+  const totalQuestions = questions?.length;
   const answeredCount = answeredQuestions?.size || 0;
   const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
