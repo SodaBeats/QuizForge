@@ -40,8 +40,7 @@ export const QuestionsRepository = {
       .set(data)
       .where (eq(questions_db.id, qId))
       .returning();
-    return updated ? {qId: questions_db.id} : null;
-  },
+    return updated ? {qId: updated.id} : null;  },
 
   //update question data but return all
   async updateQuestionReturning(data: QuestionUpdateData, qId: number){
@@ -57,7 +56,7 @@ export const QuestionsRepository = {
     const [deleted] = await db.delete(questions_db)
       .where(eq(questions_db.id, qId))
       .returning();
-    return deleted ? {qId: questions_db.id} : null;
+    return deleted ? {qId: deleted.id} : null;
   },
 
   //get questions by quiz id

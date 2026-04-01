@@ -122,5 +122,15 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
   }
 });
 
+router.delete('/', verifyToken, async(req, res, next) => {
+  const userId = Number(req.user.id);
+  const deletedId = await QuizAttemptsRepo.deleteAttempt(userId);
+
+  if(!deletedId){
+    return res.status(500).json({success: false, message: 'failed to delete attempt'});
+  }
+  res.status(200).json({success: true, message: 'Deleted attempt'});
+});
+
 
 export default router;

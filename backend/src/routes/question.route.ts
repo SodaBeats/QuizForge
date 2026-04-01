@@ -42,6 +42,10 @@ router.post('/',
 
     const insertedQuestion = await QuestionsRepository.insertQuestionToDb(formattedData);
 
+    if (!insertedQuestion) {
+      return res.status(500).json({ success: false, message: 'Failed to create question' });
+    }
+
     res.status(200).json({
       success: true
     });

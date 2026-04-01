@@ -38,14 +38,16 @@ export default function StudentQuizPage(){
     authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
       .then(res => res.json())
       .then(data=>{
-        console.log(data);
+        if(!data.success){
+          setFetchErr(data.message || 'Failed to load quiz');
+          return;
+        }
         setQuiz(data.quiz);
         setQuestions(data.questions);
         setAttemptStart(data.attemptStart);
         setAttemptId(data.attemptId);
         setMaxAttempts(data.quiz.maxAttempts);
         setAttemptCount(data.totalAttempts);
-        setLoading(false);
       })
       .catch(err => {
         console.error(err);
@@ -107,11 +109,20 @@ export default function StudentQuizPage(){
     }
   };
 
+  const deleteAttempt = async () => {
+    await authFetch('http://localhost:3000/api/student/quiz-access', {
+      method: 'DELETE',
+      headers: {'Content-Type':'application/json'},
+      credentials: 'include',
+    });
+  };
+
   if(loading){
     return <LoadingScreen />;
   }
 
   if (fetchErr) {
+    deleteAttempt();
     return (
       <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-100">
         <div className="text-center">

@@ -44,4 +44,18 @@ export const QuizAttemptsRepo = {
     return attempt ?? null;
   },
 
+  //delete attempt
+  async deleteAttempt(userId: number){
+    const [deletedAttempt] = await db.delete(quiz_attempts_db)
+      .where(and(
+        eq(quiz_attempts_db.user_id, userId),
+        eq(quiz_attempts_db.status, 'in-progress')
+      ))
+      .returning();
+
+    return deletedAttempt ? {
+      deletedAttemptId: deletedAttempt.id
+    } : null;
+  },
+
 };
