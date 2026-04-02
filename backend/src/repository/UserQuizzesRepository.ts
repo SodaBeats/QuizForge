@@ -44,7 +44,7 @@ export const UserQuizzesRepository = {
   //update quiz and return all data
   async updateQuizDataReturnAll(data: QuizUpdateData, quizId: number){
     const [updated] = await db.update(quizzes_db).set(data).where(eq(quizzes_db.id, quizId)).returning();
-    return updated;
+    return updated ?? null;
   },
 
   // get quiz data and attempt count
@@ -72,6 +72,15 @@ export const UserQuizzesRepository = {
       .groupBy(quizzes_db.id);
 
     return result;
+  },
+
+  //get quiz by token, return quiz id
+  async getQuizByToken(token: string | string[]){
+    const actualToken = Array.isArray(token) ? token[0] : token;
+    if(!actualToken) return null;
+
+    const [result] = await db.select({id: quizzes_db.id}).from(quizzes_db).where(eq(quizzes_db.share_token, actualToken));
+    return result?.id ??  null;
   },
 
   

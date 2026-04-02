@@ -110,24 +110,37 @@ export default function StudentQuizPage(){
   };
 
   const deleteAttempt = async () => {
-    await authFetch('http://localhost:3000/api/student/quiz-access', {
-      method: 'DELETE',
-      headers: {'Content-Type':'application/json'},
-      credentials: 'include',
-    });
+    try{
+      const response = await authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`, {
+        method: 'DELETE',
+        headers: {'Content-Type':'application/json'},
+        credentials: 'include',
+      });
+      const result = await response.json();
+      if(!result.success){
+        console.log('failed to delete attempt', result.message || result.error);
+        toast.error('Failed to delete attempt');
+      }
+    }catch (err){
+      console.error('Failed delete attempt', err);
+      toast.error('Failed to delete attempt');
+    }
+    
   };
 
   if(loading){
     return <LoadingScreen />;
   }
 
-  if (fetchErr) {
-    deleteAttempt();
+  if (fetchErr) {// TO DO ---------------------------------
     return (
       <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-100">
         <div className="text-center">
           <p className="text-red-400">{fetchErr}</p>
-          <button onClick={() => navigate('/student')} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
+          <button onClick={() => {
+            deleteAttempt();
+            navigate('/student');
+            }} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
             Back to Student Page
           </button>
         </div>

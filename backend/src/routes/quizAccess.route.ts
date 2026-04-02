@@ -124,11 +124,21 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
 
 router.delete('/', verifyToken, async(req, res, next) => {
   const userId = Number(req.user.id);
-  const deletedId = await QuizAttemptsRepo.deleteAttempt(userId);
+  const quizToken = req.params.quizToken;
+  if(!quizToken) return res.status(400).json({success: false, message: "This quiz does not exist"});
 
-  if(!deletedId){
-    return res.status(500).json({success: false, message: 'failed to delete attempt'});
+  console.log('Delete requestion on quizAccess Route ran');
+  
+  try{
+    const quizId = await UserQuizzesRepository.getQuizByToken(quizToken);
+    if(!quizId) return res.status(400).json({success: false, message: "This quiz does not exist"});
+
+    const deletedId = await QuizAttemptsRepo.deleteAttempt(userId, quizId);
+    if(!deletedId) return res.status(404).json({success: false, message: 'failed to delete attempt'});
+  }catch(error){
+    next(error);
   }
+  
   res.status(200).json({success: true, message: 'Deleted attempt'});
 });
 

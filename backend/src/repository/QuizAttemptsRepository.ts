@@ -45,10 +45,11 @@ export const QuizAttemptsRepo = {
   },
 
   //delete attempt
-  async deleteAttempt(userId: number){
+  async deleteAttempt(userId: number, quizId: number){
     const [deletedAttempt] = await db.delete(quiz_attempts_db)
       .where(and(
         eq(quiz_attempts_db.user_id, userId),
+        eq(quiz_attempts_db.quiz_id, quizId),
         eq(quiz_attempts_db.status, 'in-progress')
       ))
       .returning();
