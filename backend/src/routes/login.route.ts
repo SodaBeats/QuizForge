@@ -23,7 +23,7 @@ router.post('/',
         maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
       });
 
-      res.json({
+      return res.json({
         success: true,
         accessToken: credentials.accessToken,
         user: {
@@ -35,7 +35,7 @@ router.post('/',
       });
 
     }catch(error){
-      next(error);
+      return next(error);
     }
 
   }

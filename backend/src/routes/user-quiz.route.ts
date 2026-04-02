@@ -62,10 +62,10 @@ router.post('/',
 
     await QuestionsToQuizRepo.assignQuestionsToQuizzes(junctionRows);
 
-    res.status(200).json({success: true, message: 'Quiz Forged!', id: newQuizId});
+    return res.status(200).json({success: true, message: 'Quiz Forged!', id: newQuizId});
 
   }catch(error){
-    next(error);
+    return next(error);
   }
 
 });
@@ -82,7 +82,7 @@ router.get('/', verifyToken, async(req, res, next)=>{
       return res.status(404).json({success: false, message: 'This user does not have quizzes.'});
     }
 
-    res.status(200).json(userQuizzes);
+    return res.status(200).json(userQuizzes);
 
   }catch(error){
     next(error);
@@ -104,10 +104,10 @@ router.get('/questions', verifyToken, async(req, res, next) => {
       return res.status(404).json({success: false, message: 'There are no questions in this quiz'});
     }
 
-    res.status(200).json({success: true, questionList});
+    return res.status(200).json({success: true, questionList});
 
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
@@ -131,9 +131,9 @@ router.patch('/:quizId/question/:questionId',
 
   try{
     const updatedQuestion = await QuestionsRepository.updateQuestionReturning(dataForDrizzle, Number(questionId));
-    res.status(200).json({success: true, message: 'Question updated!', updatedQuestion: updatedQuestion});
+    return res.status(200).json({success: true, message: 'Question updated!', updatedQuestion: updatedQuestion});
   }catch(err){
-    next(err);
+    return next(err);
   }
 });
 
@@ -160,9 +160,9 @@ router.patch('/:id',
   try{
     const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(dataForDrizzle, Number(id));
 
-    res.status(200).json({success: true, message: 'Quiz updated!', updatedQuiz});
+    return res.status(200).json({success: true, message: 'Quiz updated!', updatedQuiz});
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 

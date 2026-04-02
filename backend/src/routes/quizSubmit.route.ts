@@ -19,10 +19,10 @@ router.patch('/', verifyToken, async(req, res, next)=> {
   
   try{
     await QuizAttemptsRepo.updateAttempt(formattedData, quiz.id, attemptId);
-    res.status(200).json({success: true, message: 'Attempt received!'});
+    return res.status(200).json({success: true, message: 'Attempt received!'});
     
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 

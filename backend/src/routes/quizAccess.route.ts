@@ -58,7 +58,7 @@ router.post('/',
     });
 
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -118,15 +118,14 @@ router.get('/:quizToken', verifyToken, async(req, res, next)=>{
     });
 
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
-router.delete('/', verifyToken, async(req, res, next) => {
+router.delete('/:quizToken', verifyToken, async(req, res, next) => {
   const userId = Number(req.user.id);
   const quizToken = req.params.quizToken;
   if(!quizToken) return res.status(400).json({success: false, message: "This quiz does not exist"});
-
   console.log('Delete requestion on quizAccess Route ran');
   
   try{
@@ -135,11 +134,12 @@ router.delete('/', verifyToken, async(req, res, next) => {
 
     const deletedId = await QuizAttemptsRepo.deleteAttempt(userId, quizId);
     if(!deletedId) return res.status(404).json({success: false, message: 'failed to delete attempt'});
-  }catch(error){
-    next(error);
+
+    return res.status(200).json({success: true, message: 'Deleted attempt'});
   }
-  
-  res.status(200).json({success: true, message: 'Deleted attempt'});
+  catch(error){
+    return next(error);
+  }
 });
 
 

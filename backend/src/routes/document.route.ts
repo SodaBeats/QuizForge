@@ -12,9 +12,9 @@ router.get('/', verifyToken, async(req, res, next)=>{
   try{
     //get all documents by user ID
     const documents = await UploadedFilesRepository.getDocTitleAndIdByOwner(req.user.id);
-    res.status(200).json(documents);
+    return res.status(200).json(documents);
   }catch(err){
-    next(err);
+    return next(err);
   }
 
 });
@@ -36,7 +36,7 @@ router.get('/:id', verifyToken, async(req, res, next)=>{
     return res.status(200).json({ success: true, id: row.id, content: row.extracted_text });
 
   }catch(err){
-    next(err);
+    return next(err);
   }
 
 });
@@ -56,7 +56,7 @@ router.delete('/:id', verifyToken, async(req, res, next) => {
       return res.status(200).json({ success: true });
     }
   }catch(error){
-    next(error);
+    return next(error);
   }
 
 

@@ -47,9 +47,9 @@ router.post('/',
       //extract text from file and insert into db
       const extractedText = await extractText(fileObj, req.user.id);
       
-      res.status(200).json(extractedText);
+      return res.status(200).json(extractedText);
     } catch (err) {
-      next(err);
+      return next(err);
     }
   }
 );

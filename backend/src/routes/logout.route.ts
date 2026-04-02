@@ -12,7 +12,7 @@ router.post('/', async (req, res, next)=>{
       await RefreshTokenRepository.deleteRefreshToken(refreshToken);
     }
 
-    res.clearCookie('refreshToken', {
+    return res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite:'lax',
@@ -22,7 +22,7 @@ router.post('/', async (req, res, next)=>{
     res.status(200).send();
 
   }catch(err){
-    next(err);
+    return next(err);
   }
 
 });
