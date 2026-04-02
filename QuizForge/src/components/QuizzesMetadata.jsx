@@ -1,5 +1,6 @@
 // QuizMetadata.jsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { toDatetimeLocal } from '../util/toDateTimeLocal';
 
@@ -7,6 +8,7 @@ import { toDatetimeLocal } from '../util/toDateTimeLocal';
 export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
 
   const [editingQuiz, setEditingQuiz] = useState({...quiz});
+  const navigate = useNavigate();
 
   if (!quiz) {
     return (
@@ -184,7 +186,10 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
         >
           Save Changes
         </button>
-        <button className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium">
+        <button 
+          className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium"
+          onClick={()=> navigate('/teacher/quizzes/result')}
+        >
           View Results
         </button>
       </div>

@@ -17,9 +17,9 @@ router.post('/', async (req, res, next)=>{
       secure: process.env.NODE_ENV === 'production',
       sameSite:'lax',
       path:'/' //path must be the same as the declared path when creating the cookie
-    });
-
-    res.status(200).send();
+    })
+    .status(200)
+    .send();
 
   }catch(err){
     return next(err);

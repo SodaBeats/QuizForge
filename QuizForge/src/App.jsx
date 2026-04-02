@@ -9,6 +9,7 @@ import QuizzesPage from "./pages/QuizzesPage";
 import StudentTokenPage from "./pages/StudentTokenPage";
 import StudentQuizPage from "./pages/StudentQuizPage";
 import RootRedirector from "./components/RootRedirector";
+import QuizResultDashboard from './pages/QuizResultDashboard';
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
@@ -43,6 +44,11 @@ export default function App() {
         <Route path="/teacher/quizzes" element = {
           <ProtectedRoute>
             <QuizzesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/quizzes/result" element = {
+          <ProtectedRoute>
+            <QuizResultDashboard />
           </ProtectedRoute>
         } />
         <Route path='/student' element = {

@@ -126,7 +126,6 @@ router.delete('/:quizToken', verifyToken, async(req, res, next) => {
   const userId = Number(req.user.id);
   const quizToken = req.params.quizToken;
   if(!quizToken) return res.status(400).json({success: false, message: "This quiz does not exist"});
-  console.log('Delete requestion on quizAccess Route ran');
   
   try{
     const quizId = await UserQuizzesRepository.getQuizByToken(quizToken);
