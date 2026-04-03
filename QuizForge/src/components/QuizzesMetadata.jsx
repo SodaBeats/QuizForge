@@ -188,7 +188,7 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
         </button>
         <button 
           className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium"
-          onClick={()=> navigate('/teacher/quizzes/result')}
+          onClick={()=> navigate(`/teacher/quizzes/${quiz.id}`)}
         >
           View Results
         </button>

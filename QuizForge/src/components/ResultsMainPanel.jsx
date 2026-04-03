@@ -4,44 +4,6 @@
 
 // ── Mock data ──────────────────────────────────────────────────────────────
 
-const MOCK_METRICS = [
-  {
-    id: 1,
-    label: 'Total takers',
-    value: '84',
-    sub: 'out of 91 enrolled',
-    accent: 'border-blue-500',
-  },
-  {
-    id: 2,
-    label: 'Completion rate',
-    value: '92%',
-    sub: '77 fully submitted',
-    accent: 'border-green-500',
-  },
-  {
-    id: 3,
-    label: 'Average score',
-    value: '71%',
-    sub: 'class average',
-    accent: 'border-amber-500',
-  },
-  {
-    id: 4,
-    label: 'Highest score',
-    value: '98%',
-    sub: 'Ana Reyes',
-    accent: 'border-purple-500',
-  },
-  {
-    id: 5,
-    label: 'Lowest score',
-    value: '34%',
-    sub: 'class minimum',
-    accent: 'border-red-500',
-  },
-];
-
 const MOCK_DIFFICULTY = [
   { id: 1, label: 'Q1 — Cell division',          pct: 94 },
   { id: 2, label: 'Q2 — Mitosis stages',         pct: 88 },
@@ -74,9 +36,9 @@ function difficultyTextClass(pct) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function MetricCard({ label, value, sub, accent }) {
+function MetricCard({ label, value, sub, }) {
   return (
-    <div className={`flex-1 min-w-0 bg-gray-800 rounded-xl border-t-2 ${accent} p-4 flex flex-col justify-between`}>
+    <div className={`flex-1 min-w-0 bg-gray-800 rounded-xl p-4 flex flex-col justify-between`}>
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
         {label}
       </p>
@@ -135,14 +97,14 @@ function ReviewRow({ rank, label, pct }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsMainPanel() {
+export default function ResultsMainPanel({MOCK_METRICS}) {
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 p-4 gap-4">
 
       {/* ── Row 1: Metric cards (~30% height) ──────────────────────── */}
       <div className="flex gap-3" style={{ height: '30%' }}>
-        {MOCK_METRICS.map((m) => (
-          <MetricCard key={m.id} {...m} />
+        {MOCK_METRICS.map((m, index) => (
+          <MetricCard key={index} {...m} />
         ))}
       </div>
 

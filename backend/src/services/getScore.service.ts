@@ -20,11 +20,11 @@ type ScoreableQuestion = Pick<Question, 'id' | 'correctAnswer'>;
 
 export const getScore = (questions: ScoreableQuestion[], answers: Record<string, string>)=> {
 
-  if(!answers){
+  if (!answers || questions.length === 0) {
     return 0;
   }
 
-  return questions.reduce((totalScore, q)=>{
+  const rawScore = questions.reduce((totalScore, q)=>{
 
     if(q.correctAnswer === null){
       return totalScore;
@@ -40,5 +40,9 @@ export const getScore = (questions: ScoreableQuestion[], answers: Record<string,
     // if answer is not correct: score stays the same and return it
     return totalScore;
   },0);
+
+  const percentile = (rawScore/questions.length) * 100;
+  
+  return Math.round(percentile);
 
 };

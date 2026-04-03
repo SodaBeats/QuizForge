@@ -46,7 +46,7 @@ export default function App() {
             <QuizzesPage />
           </ProtectedRoute>
         } />
-        <Route path="/teacher/quizzes/result" element = {
+        <Route path="/teacher/quizzes/:quizId" element = {
           <ProtectedRoute>
             <QuizResultDashboard />
           </ProtectedRoute>

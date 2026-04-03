@@ -132,7 +132,7 @@ export default function StudentQuizPage(){
     return <LoadingScreen />;
   }
 
-  if (fetchErr) {// TO DO ---------------------------------
+  if (fetchErr) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-100">
         <div className="text-center">

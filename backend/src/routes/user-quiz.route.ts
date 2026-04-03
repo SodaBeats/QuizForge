@@ -7,6 +7,7 @@ import { questionInputValidator } from '../middlewares/questionValidator.middlew
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { QuestionsToQuizRepo } from '../repository/QuestionsToQuizRepo.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
+import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 
 const router = express.Router();
 
@@ -110,6 +111,54 @@ router.get('/questions', verifyToken, async(req, res, next) => {
     return next(error);
   }
 });
+
+router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
+  const quizId = Number(req.params.quizId);
+  if(Number.isNaN(quizId)){
+    return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+
+  try{
+    const [totalTakersAndAverage, highestScoreAndUser, lowestScore] = await Promise.all([
+      QuizAttemptsRepo.getTotalTakersAndAverage(quizId),
+      QuizAttemptsRepo.getHighestScoreAndName(quizId),
+      QuizAttemptsRepo.getLowestScore(quizId),
+    ]);
+    const lowestScoreValue = lowestScore ?? 0;
+
+    return res.status(200).json({
+      success: true,
+      totalTakers: totalTakersAndAverage?.totalTakers ?? 0,
+      quizAverage: totalTakersAndAverage?.average ?? 0,
+      highestScore: highestScoreAndUser?.highestScore ?? 0,
+      highestScorer: `${highestScoreAndUser?.name} ${highestScoreAndUser?.lastName}`,
+      lowestScore: lowestScoreValue
+    });
+
+  }catch(error){
+    return next(error);
+  }
+
+});
+
+router.get('/:quizId/students', verifyToken, async (req, res, next) => {
+  const quizId = Number(req.params.quizId);
+  if(Number.isNaN(quizId)){
+    return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+
+  try{
+    const studentRanking = await QuizAttemptsRepo.getStudentRanking(quizId);
+
+    return res.status(200).json({
+      success: true,
+      data: studentRanking
+    });
+  }catch(error){
+    next(error);
+  }
+});
+
 
 // Router for question updates
 router.patch('/:quizId/question/:questionId',
