@@ -149,7 +149,7 @@ export default function QuizzesPage (){
         {selectedQuizId ? (
           <>
             <QuizzesMetaData 
-              key={selectedQuiz.id}
+              quizKey={selectedQuiz.id}
               quiz={selectedQuiz}
               onUpdateQuizMeta={handleQuizMetaUpdate}
             />

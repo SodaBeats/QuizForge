@@ -1,5 +1,5 @@
 import { useEffect, useContext, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import TopBar from '../components/TopBar';
 import ResultsLeaderboard from '../components/ResultsLeaderboard';
@@ -13,6 +13,7 @@ export default function QuizResultDashboard () {
   const [students, setStudents] = useState(null);
   const { authFetch } = useContext(AuthContext);
   const { quizId } = useParams();
+  const navigate = useNavigate();
 
   function buildMetrics(data) {
     return [
@@ -67,6 +68,9 @@ export default function QuizResultDashboard () {
         ]);
 
         if(!metrics.success){
+          if(metrics.message === 'unauthorized'){
+            navigate('/login');
+          }
           toast.error('Something went wrong while fetching metrics');
           return;
         }

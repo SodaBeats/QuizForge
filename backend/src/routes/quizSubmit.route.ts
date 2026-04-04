@@ -10,10 +10,9 @@ const router = express.Router();
 //update attempt with score and marked "complete"
 router.patch('/', verifyToken, async(req, res, next)=> {
   const {questions, answers, quiz, attemptId} = req.body;
-  if(!questions || !quiz?.id || !attemptId){
+  if(!questions || !answers || !quiz?.id || !attemptId){
     return res.status(400).json({success: false, message: 'Missing required fields'});
   }
-
   const score = getScore(questions, answers);
 
   const formattedData = {

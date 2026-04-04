@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { toDatetimeLocal } from '../util/toDateTimeLocal';
 
 //eslint-disable-next-line
-export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
+export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
 
   const [editingQuiz, setEditingQuiz] = useState({...quiz});
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
           <div className="flex gap-2">
             <input
               type="text"
-              value={quiz.shareToken.toUpperCase() || 'N/A'}
+              value={quiz.shareToken?.toUpperCase() || 'N/A'}
               readOnly
               className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-gray-400 text-sm"
             />

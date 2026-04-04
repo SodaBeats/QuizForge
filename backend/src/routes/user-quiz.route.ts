@@ -114,8 +114,12 @@ router.get('/questions', verifyToken, async(req, res, next) => {
 
 router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
   const quizId = Number(req.params.quizId);
+  const { role } = req.user;
   if(Number.isNaN(quizId)){
     return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+  if(role!=='teacher'){
+    return res.status(400).json({success: false, message: 'unauthorized'});
   }
 
   try{
@@ -143,8 +147,12 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
 
 router.get('/:quizId/students', verifyToken, async (req, res, next) => {
   const quizId = Number(req.params.quizId);
+  const { role } = req.user;
   if(Number.isNaN(quizId)){
     return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+  if(role!=='teacher'){
+    return res.status(400).json({success: false, message: 'unauthorized'});
   }
 
   try{

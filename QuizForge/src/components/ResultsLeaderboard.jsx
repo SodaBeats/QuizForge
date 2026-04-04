@@ -100,7 +100,7 @@ function StudentRow({ student, rank }) {
 
 function ClassRow({ cls, rank, maxAverage }) {
   // Width of the progress bar is relative to the top-scoring class
-  const barWidth = Math.round((cls.average / maxAverage) * 100);
+  const barWidth = maxAverage > 0 ? Math.round((cls.average / maxAverage) * 100) : 0;
 
   return (
     <div className="py-2 px-3 rounded-lg hover:bg-gray-800 transition-colors">
@@ -135,7 +135,7 @@ function ClassRow({ cls, rank, maxAverage }) {
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function ResultsLeaderboard({ students = MOCK_STUDENTS, classes = MOCK_CLASSES }) {
-  const maxAverage = Math.max(...classes.map((c) => c.average));
+  const maxAverage = classes.length > 0 ? Math.max(...classes.map((c) => c.average)) : 0;
 
   return (
     <div className="w-[30%] flex-shrink-0 flex flex-col h-full border-l border-gray-700 bg-gray-900">
