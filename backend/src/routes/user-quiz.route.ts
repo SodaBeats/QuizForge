@@ -25,7 +25,7 @@ router.post('/',
     return res.status(400).json({success: false, message: 'Incomplete Input'});
   }
   if(role!=='teacher'){
-    return res.status(400).json({success: false, message: 'Unauthorized action'});
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
 
   const formattedData = {
@@ -119,7 +119,7 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
     return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
   }
   if(role!=='teacher'){
-    return res.status(400).json({success: false, message: 'unauthorized'});
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
 
   try{
@@ -152,7 +152,7 @@ router.get('/:quizId/students', verifyToken, async (req, res, next) => {
     return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
   }
   if(role!=='teacher'){
-    return res.status(400).json({success: false, message: 'unauthorized'});
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
 
   try{
