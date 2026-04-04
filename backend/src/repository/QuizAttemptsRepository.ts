@@ -73,7 +73,7 @@ export const QuizAttemptsRepo = {
 
     return {
       totalTakers: result.totalTakers,
-      average: Math.round(result.average)
+      average: result.average !== null ? Math.round(result.average) : null
     }
   },
 

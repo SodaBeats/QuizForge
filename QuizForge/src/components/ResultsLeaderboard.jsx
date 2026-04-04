@@ -134,7 +134,7 @@ function ClassRow({ cls, rank, maxAverage }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsLeaderboard({ students = MOCK_STUDENTS, classes = MOCK_CLASSES }) {
+export default function ResultsLeaderboard({ STUDENTS, classes = MOCK_CLASSES }) {
   const maxAverage = classes.length > 0 ? Math.max(...classes.map((c) => c.average)) : 0;
 
   return (
@@ -148,14 +148,37 @@ export default function ResultsLeaderboard({ students = MOCK_STUDENTS, classes =
           <h2 className="text-sm font-semibold text-white tracking-wide">
             Student ranking
           </h2>
-          <span className="text-xs text-gray-500">{students.length} students</span>
+          <span className="text-xs text-gray-500">{STUDENTS?.data.length ?? 0} Students</span>
         </div>
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto py-2 px-1">
-          {students.map((student, index) => (
-            <StudentRow key={student.id} student={student} rank={index + 1} />
-          ))}
+          {!STUDENTS || !Array.isArray(STUDENTS.data) || STUDENTS.data.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+              {/* Inline SVG - No external link needed! */}
+              <svg 
+                className="w-16 h-16 text-gray-700 mb-4" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={1.5} 
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" 
+                />
+              </svg>
+              <h3 className="text-gray-400 font-medium">Waiting for Students</h3>
+              <p className="text-sm text-gray-600 mt-1 max-w-xs">
+                Once students start the quiz, their progress and scores will appear here automatically.
+              </p>
+            </div>
+          ) : (
+            STUDENTS?.data.map((student, index) => (
+              <StudentRow key={student.id} student={student} rank={index + 1} />
+            ))
+          )}
         </div>
       </div>
 

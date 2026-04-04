@@ -97,15 +97,19 @@ function ReviewRow({ rank, label, pct }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsMainPanel({MOCK_METRICS = []}) {
+export default function ResultsMainPanel({METRICS = []}) {
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 p-4 gap-4">
 
       {/* ── Row 1: Metric cards (~30% height) ──────────────────────── */}
       <div className="flex gap-3" style={{ height: '30%' }}>
-        {MOCK_METRICS.map((m, index) => (
-          <MetricCard key={index} {...m} />
-        ))}
+        {!METRICS || METRICS.length === 0 ? (
+          <p className="text-xs text-gray-500 mt-0.5">No data yet</p>
+        ) : (
+          METRICS.map((m, index) => (
+            <MetricCard key={index} {...m} />
+          ))
+        )}
       </div>
 
       {/* ── Row 2: Bottom panels (~70% height) ─────────────────────── */}

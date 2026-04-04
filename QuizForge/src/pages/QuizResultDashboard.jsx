@@ -17,36 +17,12 @@ export default function QuizResultDashboard () {
 
   function buildMetrics(data) {
     return [
-      { label: 'Total takers', value: data.totalTakers, sub: 'unique students'},
-      { label: 'Average score', value: `${data.averageScore}%`, sub: 'class average'},
-      { label: 'Highest score', value: `${data.highestScore}%`, sub: data.highestScorer},
+      { label: 'Total takers', value: data.totalTakers > 0 ? data.totalTakers : 'No Data', sub: 'unique students'},
+      { label: 'Average score', value: data.quizAverage > 0 ? `${data.quizAverage}%` : 'No Data', sub: 'class average'},
+      { label: 'Highest score', value: data.highestScore > 0 ? `${data.highestScore}%` : 'No Data', sub: data.highestScorer},
       { label: 'Lowest score', value: `${data.lowestScore}%`, sub: 'class minimum'},
     ];
-  }
-
-  // ── Mock data ──────────────────────────────────────────────────────────────
-  const MOCK_METRICS = [
-    {
-      label: 'Total takers',
-      value: '84',
-      sub: 'out of 91 enrolled',
-    },
-    {
-      label: 'Average score',
-      value: '71%',
-      sub: 'class average',
-    },
-    {
-      label: 'Highest score',
-      value: '98%',
-      sub: 'Ana Reyes',
-    },
-    {
-      label: 'Lowest score',
-      value: '34%',
-      sub: 'class minimum',
-    },
-  ];
+  };
 
   useEffect(() => {
     async function fetchDashboardData(){
@@ -88,7 +64,9 @@ export default function QuizResultDashboard () {
       }
     }
     fetchDashboardData();
-  }, [quizId, authFetch]);
+  }, [quizId, authFetch, navigate]);
+
+  console.log(students);
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -96,9 +74,11 @@ export default function QuizResultDashboard () {
       <div className="flex flex-1 min-h-0">
         {/* Main content area */}
         <ResultsMainPanel
-          MOCK_METRICS = { MOCK_METRICS }
+          METRICS={metrics}
         />
-        <ResultsLeaderboard />
+        <ResultsLeaderboard
+          STUDENTS={students}
+        />
       </div>
     </div>
   );

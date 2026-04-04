@@ -157,13 +157,20 @@ router.get('/:quizId/students', verifyToken, async (req, res, next) => {
 
   try{
     const studentRanking = await QuizAttemptsRepo.getStudentRanking(quizId);
+    const studentRankingWithCombinedName = studentRanking.map((s)=>{
+      return {
+        id: s.studentId,
+        name: `${s.name} ${s.lastName}`,
+        score: s.score
+      }
+    });
 
     return res.status(200).json({
       success: true,
-      data: studentRanking
+      data: studentRankingWithCombinedName
     });
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
