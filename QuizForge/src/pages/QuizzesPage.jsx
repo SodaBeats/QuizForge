@@ -21,7 +21,7 @@ export default function QuizzesPage (){
   useEffect(()=>{
     authFetch(`http://localhost:3000/api/quizzes`)
     .then(res => res.json())
-    .then(data => setQuizzes(Array.isArray(data) ? data : null))
+    .then(data => setQuizzes(Array.isArray(data) ? data : []))
     .catch(error => {
       console.error('Failed to fetch quizzes', error);
       toast.error('Failed to load quizzes');
@@ -120,7 +120,7 @@ export default function QuizzesPage (){
       const result = await response.json();
 
       if(!result.success){
-        toast.error(result.message || result.errors.map(e => e.msg).join(', '));
+        toast.error(result.message || result.errors.map(e => e.msg).join(', ') || 'Update Failed');
         setQuizzes(originalQuizzes);
         return;
       }
