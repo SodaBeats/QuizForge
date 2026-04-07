@@ -79,8 +79,18 @@ export const UserQuizzesRepository = {
     const actualToken = Array.isArray(token) ? token[0] : token;
     if(!actualToken) return null;
 
-    const [result] = await db.select({id: quizzes_db.id}).from(quizzes_db).where(eq(quizzes_db.share_token, actualToken));
+    const [result] = await db.select({id: quizzes_db.id})
+      .from(quizzes_db)
+      .where(eq(quizzes_db.share_token, actualToken.toLowerCase()));
     return result?.id ??  null;
+  },
+
+  //get quiz by id, return user id
+  async getQuizById(quizId: number){
+    if(!quizId || Number.isNaN(quizId)) return null;
+
+    const [result] = await db.select({userId: quizzes_db.user_id}).from(quizzes_db).where(eq(quizzes_db.id, quizId));
+    return result?.userId ??  null;
   },
 
   

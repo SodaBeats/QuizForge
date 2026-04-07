@@ -123,6 +123,10 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
+  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+  if(!quizOwnerId || quizOwnerId !== req.user.id){
+    return res.status(404).json({success: false, message: 'Quiz not found'});
+  }
 
   try{
     const [totalTakersAndAverage, highestScoreAndUser, lowestScore] = await Promise.all([
@@ -137,7 +141,7 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
       totalTakers: totalTakersAndAverage?.totalTakers ?? 0,
       quizAverage: totalTakersAndAverage?.average ?? 0,
       highestScore: highestScoreAndUser?.highestScore ?? 0,
-      highestScorer: `${highestScoreAndUser?.name} ${highestScoreAndUser?.lastName}`,
+      highestScorer: highestScoreAndUser ? `${highestScoreAndUser.name} ${highestScoreAndUser.lastName}` : null,
       lowestScore: lowestScoreValue
     });
 
@@ -156,6 +160,10 @@ router.get('/:quizId/students', verifyToken, async (req, res, next) => {
   }
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
+  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+  if(!quizOwnerId || quizOwnerId !== req.user.id){
+    return res.status(404).json({success: false, message: 'Quiz not found'});
   }
 
   try{
@@ -186,6 +194,10 @@ router.get('/:quizId/questions', verifyToken, async(req, res, next) => {
   }
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
+  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+  if(!quizOwnerId || quizOwnerId !== req.user.id){
+    return res.status(404).json({success: false, message: 'Quiz not found'});
   }
 
   try{

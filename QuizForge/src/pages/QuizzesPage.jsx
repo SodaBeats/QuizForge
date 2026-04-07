@@ -120,7 +120,7 @@ export default function QuizzesPage (){
       const result = await response.json();
 
       if(!result.success){
-        toast.error(result.message || result.errors.map(e => e.msg).join(', ') || 'Update Failed');
+        toast.error(result.message || result.errors?.map(e => e.msg).join(', ') || 'Update Failed');
         setQuizzes(originalQuizzes);
         return;
       }

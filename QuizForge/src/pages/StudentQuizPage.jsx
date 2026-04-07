@@ -33,7 +33,6 @@ export default function StudentQuizPage(){
   //fetch from backend in case quiz data is lost from state
   useEffect(()=>{
     if(!quizToken || !authFetch) return;
-    console.log('USEEFFECT RAN');
 
     authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
       .then(res => res.json())
@@ -137,8 +136,8 @@ export default function StudentQuizPage(){
       <div className="h-screen flex items-center justify-center bg-gray-900 text-gray-100">
         <div className="text-center">
           <p className="text-red-400">{fetchErr}</p>
-          <button onClick={() => {
-            deleteAttempt();
+          <button onClick={async() => {
+            await deleteAttempt();
             navigate('/student');
             }} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
             Back to Student Page

@@ -158,9 +158,18 @@ export default function ResultsMainPanel({METRICS = [], DIFFICULTY = []}) {
               <p className="text-xs text-gray-500 mt-0.5">Lowest success rate — consider revisiting in class</p>
             </div>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-              {MOCK_NEEDS_REVIEW.map((q, i) => (
-                <ReviewRow key={i} rank={i + 1} label={q.label} pct={q.pct} />
-              ))}
+              {!MOCK_NEEDS_REVIEW || !Array.isArray(MOCK_NEEDS_REVIEW) || MOCK_NEEDS_REVIEW.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-green-900 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-green-400" />
+                  </div>
+                  <p className="text-xs text-gray-600">No questions need review at this time</p>
+                </div>
+              ) : (
+                MOCK_NEEDS_REVIEW.map((q, i) => (
+                  <ReviewRow key={i} rank={i + 1} label={q.label} pct={q.pct} />
+                ))
+              )}
             </div>
           </div>
 

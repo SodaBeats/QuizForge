@@ -46,7 +46,7 @@ router.post('/',
       return res.status(500).json({ success: false, message: 'Failed to create question' });
     }
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true
     });
     

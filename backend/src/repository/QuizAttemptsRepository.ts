@@ -87,7 +87,10 @@ export const QuizAttemptsRepo = {
       })
       .from(quiz_attempts_db)
       .innerJoin(users, eq(quiz_attempts_db.user_id, users.id))
-      .where(eq(quiz_attempts_db.quiz_id, quizId))
+      .where(and(
+        eq(quiz_attempts_db.quiz_id, quizId),
+        eq(quiz_attempts_db.status, 'completed')
+      ))
       .orderBy(desc(quiz_attempts_db.score))
       .limit(1);
 
@@ -127,7 +130,10 @@ export const QuizAttemptsRepo = {
       })
       .from(quiz_attempts_db)
       .innerJoin(users,(eq(quiz_attempts_db.user_id, users.id)))
-      .where(eq(quiz_attempts_db.quiz_id, quizId))
+      .where(and(
+        eq(quiz_attempts_db.quiz_id, quizId),
+        eq(quiz_attempts_db.status, 'completed')
+      ))
       .groupBy(quiz_attempts_db.user_id, users.first_name, users.last_name)
       .orderBy(desc(max(quiz_attempts_db.score)))
       .limit(5)

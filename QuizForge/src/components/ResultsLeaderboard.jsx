@@ -16,6 +16,7 @@ const MOCK_CLASSES = [
 
 // Derives initials from a full name string — e.g. "Ana Reyes" → "AR"
 function getInitials(name) {
+  if(!name) return '??';
   return name
     .split(' ')
     .map((part) => part[0])
@@ -35,7 +36,8 @@ const AVATAR_COLORS = [
 ];
 
 function avatarColor(id) {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
+  const safeId = typeof id === 'number' ? id : 0;
+  return AVATAR_COLORS[safeId % AVATAR_COLORS.length];
 }
 
 // Medal colors for the top 3 ranks

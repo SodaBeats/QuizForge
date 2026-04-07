@@ -58,6 +58,10 @@ export default function QuizResultDashboard () {
           })
         ]);
 
+        if (!metricRes.ok || !studentsRes.ok || !questionsRes.ok) {
+          throw new Error('One or more API requests failed');
+        }
+
         const [metrics, students, questions] = await Promise.all([
           metricRes.json(),
           studentsRes.json(),
@@ -91,12 +95,10 @@ export default function QuizResultDashboard () {
         }
         setQuestions(buildQuestionCorrectionRate(questions.data));
 
-        console.log(students);
-        console.log(questions);
-
       }catch(error){
         console.error('Failed to fetch dashboard data', error);
         toast.error('Something went wrong while fetching dashboard data');
+        return;
       }
     }
     fetchDashboardData();
