@@ -1,7 +1,7 @@
 
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq, and, countDistinct, avg, asc, desc, max } from 'drizzle-orm';
-import { db, type Transaction, type DB } from '../db/db.js';
+import { db, type QueryClient } from '../db/db.js';
 import { quiz_attempts_db, users } from '../db/schema.js';
 
 type AttemptInsertData = InferInsertModel<typeof quiz_attempts_db>;
@@ -21,7 +21,7 @@ export const QuizAttemptsRepo = {
   },
 
   //update attempt
-  async updateAttempt(data: AttemptUpdateData, quizId: number, attemptId: number, tx: DB | Transaction = db){
+  async updateAttempt(data: AttemptUpdateData, quizId: number, attemptId: number, tx: QueryClient = db){
     await tx.update(quiz_attempts_db)
       .set(data).where(and(
         eq(quiz_attempts_db.quiz_id, quizId), eq(quiz_attempts_db.id, attemptId)

@@ -8,6 +8,7 @@ import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { QuestionsToQuizRepo } from '../repository/QuestionsToQuizRepo.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
+import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 
 const router = express.Router();
 
@@ -112,6 +113,7 @@ router.get('/questions', verifyToken, async(req, res, next) => {
   }
 });
 
+//get metrics for dashboard
 router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
   const quizId = Number(req.params.quizId);
   const { role } = req.user;
@@ -145,6 +147,7 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
 
 });
 
+//get student ranking for dashboard
 router.get('/:quizId/students', verifyToken, async (req, res, next) => {
   const quizId = Number(req.params.quizId);
   const { role } = req.user;
@@ -172,6 +175,26 @@ router.get('/:quizId/students', verifyToken, async (req, res, next) => {
   }catch(error){
     return next(error);
   }
+});
+
+//get question correction rate ranking for dashboard
+router.get('/:quizId/questions', verifyToken, async(req, res, next) => {
+  const quizId = Number(req.params.quizId);
+  const { role } = req.user;
+  if(Number.isNaN(quizId)){
+    return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+  if(role!=='teacher'){
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
+
+  try{
+    const questionsRanking = await AttemptAnswersRepo.getQuestionCorrectionRate(quizId);
+    return res.status(200).json({success: true, data: questionsRanking});
+  }catch(error){
+    next(error);
+  }
+
 });
 
 

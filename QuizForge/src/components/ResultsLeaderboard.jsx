@@ -7,18 +7,6 @@
 // Props (all optional for now — hardcoded mock data is used by default):
 //   students  — array of { id, name, score, avatar? }
 //   classes   — array of { id, name, average, takers }
-
-const MOCK_STUDENTS = [
-  { id: 1, name: 'Ana Reyes',   score: 98 },
-  { id: 2, name: 'Marco Lim',   score: 95 },
-  { id: 3, name: 'Sara Diaz',   score: 91 },
-  { id: 4, name: 'Kion Park',   score: 89 },
-  { id: 5, name: 'Lena Cruz',   score: 87 },
-  { id: 6, name: 'Theo Santos', score: 82 },
-  { id: 7, name: 'Mia Flores',  score: 78 },
-  { id: 8, name: 'Dave Tan',    score: 74 },
-];
-
 const MOCK_CLASSES = [
   { id: 1, name: 'Section A', average: 84, takers: 28 },
   { id: 2, name: 'Section B', average: 79, takers: 31 },
@@ -148,12 +136,12 @@ export default function ResultsLeaderboard({ STUDENTS, classes = MOCK_CLASSES })
           <h2 className="text-sm font-semibold text-white tracking-wide">
             Student ranking
           </h2>
-          <span className="text-xs text-gray-500">{STUDENTS?.data.length ?? 0} Students</span>
+          <span className="text-xs text-gray-500">{STUDENTS?.length ?? 0} Students</span>
         </div>
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto py-2 px-1">
-          {!STUDENTS || !Array.isArray(STUDENTS.data) || STUDENTS.data.length === 0 ? (
+          {!STUDENTS || !Array.isArray(STUDENTS) || STUDENTS.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
               {/* Inline SVG - No external link needed! */}
               <svg 
@@ -175,7 +163,7 @@ export default function ResultsLeaderboard({ STUDENTS, classes = MOCK_CLASSES })
               </p>
             </div>
           ) : (
-            STUDENTS?.data.map((student, index) => (
+            STUDENTS?.map((student, index) => (
               <StudentRow key={student.id} student={student} rank={index + 1} />
             ))
           )}

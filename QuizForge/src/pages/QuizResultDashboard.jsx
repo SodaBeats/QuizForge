@@ -6,46 +6,67 @@ import ResultsLeaderboard from '../components/ResultsLeaderboard';
 import ResultsMainPanel from '../components/ResultsMainPanel';
 import { AuthContext } from '../components/AuthProvider';
 
-
 export default function QuizResultDashboard () {
 
-  const [metrics, setMetrics] = useState(null);
-  const [students, setStudents] = useState(null);
-  const { authFetch } = useContext(AuthContext);
+  const [metrics, setMetrics] = useState([
+    {label: 'Total Takers', value: 'No data yet', sub: 'unique students'},
+    {label: 'Average Score', value: 'No data yet', sub: 'quiz average'},
+    {label: 'Highest Score', value: 'No data yet', sub: 'No data yet'},
+    {label: 'Lowest Score', value: 'No data yet', sub: 'quiz minimum'},
+  ]);
+  const [students, setStudents] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const { authFetch, logout } = useContext(AuthContext);
   const { quizId } = useParams();
   const navigate = useNavigate();
 
+  //--HELPER FUNCTIONS -------------------------------------
   function buildMetrics(data) {
     return [
       { label: 'Total takers', value: data.totalTakers > 0 ? data.totalTakers : 'No Data', sub: 'unique students'},
-      { label: 'Average score', value: data.quizAverage > 0 ? `${data.quizAverage}%` : 'No Data', sub: 'class average'},
+      { label: 'Average score', value: data.quizAverage > 0 ? `${data.quizAverage}%` : 'No Data', sub: 'quiz average'},
       { label: 'Highest score', value: data.highestScore > 0 ? `${data.highestScore}%` : 'No Data', sub: data.highestScorer},
-      { label: 'Lowest score', value: `${data.lowestScore}%`, sub: 'class minimum'},
+      { label: 'Lowest score', value: `${data.lowestScore}%`, sub: 'quiz minimum'},
     ];
   };
+  function buildQuestionCorrectionRate(data){
+    return data.map((q)=> {
+      return {
+        id: q.questionId,
+        label: q.questionText,
+        pct: q.successRate,
+      }
+    });
+  }
 
+  //--DATA FETCH --------------------------------------------
   useEffect(() => {
     async function fetchDashboardData(){
       try{
-        const [metricRes, studentsRes] = await Promise.all([
+        const [metricRes, studentsRes, questionsRes] = await Promise.all([
           authFetch(`http://localhost:3000/api/quizzes/${quizId}/metrics`, {
             method: 'GET',
             credentials: 'include',
           }),
           authFetch(`http://localhost:3000/api/quizzes/${quizId}/students`, {
             method: 'GET',
-            ceredentials: 'include'
+            credentials: 'include'
+          }),
+          authFetch(`http://localhost:3000/api/quizzes/${quizId}/questions`, {
+            method: 'GET',
+            credentials: 'include'
           })
         ]);
 
-        const [metrics, students] = await Promise.all([
+        const [metrics, students, questions] = await Promise.all([
           metricRes.json(),
-          studentsRes.json()
+          studentsRes.json(),
+          questionsRes.json(),
         ]);
 
         if(!metrics.success){
-          if(metrics.message === 'unauthorized'){
-            navigate('/login');
+          if(metrics.message === 'Unauthorized action'){
+            logout();
           }
           toast.error('Something went wrong while fetching metrics');
           return;
@@ -53,10 +74,25 @@ export default function QuizResultDashboard () {
         setMetrics(buildMetrics(metrics));
 
         if(!students.success){
-          toast.error('Something went wrong while fetching metrics');
+          if(students.message === 'Unauthorized action'){
+            logout();
+          }
+          toast.error('Something went wrong while fetching student ranking');
           return;
         }
-        setStudents(students);
+        setStudents(students.data);
+        
+        if(!questions.success){
+          if(questions.message === 'Unauthorized action'){
+            logout();
+          }
+          toast.error('Something went wrong while fetching questions data');
+          return;
+        }
+        setQuestions(buildQuestionCorrectionRate(questions.data));
+
+        console.log(students);
+        console.log(questions);
 
       }catch(error){
         console.error('Failed to fetch dashboard data', error);
@@ -64,9 +100,7 @@ export default function QuizResultDashboard () {
       }
     }
     fetchDashboardData();
-  }, [quizId, authFetch, navigate]);
-
-  console.log(students);
+  }, [quizId, authFetch, navigate, logout]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -75,6 +109,7 @@ export default function QuizResultDashboard () {
         {/* Main content area */}
         <ResultsMainPanel
           METRICS={metrics}
+          DIFFICULTY={questions}
         />
         <ResultsLeaderboard
           STUDENTS={students}

@@ -1,22 +1,4 @@
 // ResultsMainPanel.jsx
-//
-// All data is hardcoded mock data. Replace props with real data later.
-
-// ── Mock data ──────────────────────────────────────────────────────────────
-
-const MOCK_DIFFICULTY = [
-  { id: 1, label: 'Q1 — Cell division',          pct: 94 },
-  { id: 2, label: 'Q2 — Mitosis stages',         pct: 88 },
-  { id: 3, label: 'Q3 — DNA replication',        pct: 76 },
-  { id: 4, label: 'Q4 — Meiosis vs mitosis',     pct: 61 },
-  { id: 5, label: 'Q5 — Chromosome structure',   pct: 45 },
-  { id: 6, label: 'Q6 — Genetic recombination',  pct: 38 },
-];
-
-// Questions that need review = lowest success rate questions
-const MOCK_NEEDS_REVIEW = [...MOCK_DIFFICULTY]
-  .sort((a, b) => a.pct - b.pct)
-  .slice(0, 3);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -97,17 +79,23 @@ function ReviewRow({ rank, label, pct }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsMainPanel({METRICS = []}) {
+export default function ResultsMainPanel({METRICS = [], DIFFICULTY = []}) {
+
+  // Questions that need review = lowest success rate questions
+  const MOCK_NEEDS_REVIEW = [...DIFFICULTY]
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3);
+
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 p-4 gap-4">
 
       {/* ── Row 1: Metric cards (~30% height) ──────────────────────── */}
       <div className="flex gap-3" style={{ height: '30%' }}>
-        {!METRICS || METRICS.length === 0 ? (
+        {!METRICS || !Array.isArray(METRICS) || METRICS.length === 0 ? (
           <p className="text-xs text-gray-500 mt-0.5">No data yet</p>
         ) : (
-          METRICS.map((m, index) => (
-            <MetricCard key={index} {...m} />
+          METRICS.map((m) => (
+            <MetricCard key={m.label} {...m} />
           ))
         )}
       </div>
@@ -149,11 +137,18 @@ export default function ResultsMainPanel({METRICS = []}) {
               <h2 className="text-sm font-semibold text-white">Question difficulty</h2>
               <p className="text-xs text-gray-500 mt-0.5">% of students who answered correctly</p>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-between gap-2">
-              {MOCK_DIFFICULTY.map((q) => (
-                <DifficultyRow key={q.id} label={q.label} pct={q.pct} />
-              ))}
-            </div>
+            { !DIFFICULTY || !Array.isArray(DIFFICULTY) || DIFFICULTY.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-gray-500 text-sm italic">
+                No Data Yet
+              </div>
+              ) : (
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-between gap-2">
+                {DIFFICULTY.map((q) => (
+                  <DifficultyRow key={q.id} label={q.label} pct={q.pct} />
+                ))}
+              </div>
+              )
+            }
           </div>
 
           {/* Questions needing review */}
@@ -164,7 +159,7 @@ export default function ResultsMainPanel({METRICS = []}) {
             </div>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
               {MOCK_NEEDS_REVIEW.map((q, i) => (
-                <ReviewRow key={q.id} rank={i + 1} label={q.label} pct={q.pct} />
+                <ReviewRow key={i} rank={i + 1} label={q.label} pct={q.pct} />
               ))}
             </div>
           </div>
