@@ -105,7 +105,7 @@ function BarGraph({data}){
   const barData = {
     labels: ["0-20", "21-40", "41-60", "61-80", "81-100"],
     datasets: [{
-      label: "Score Distribution",
+      label: "Student Per Score Range",
       data: data.length>0 ? data : [0,0,0,0,0],
       backgroundColor: "#3b82f6",
       borderWidth: 1,
@@ -116,11 +116,11 @@ function BarGraph({data}){
     maintainAspectRatio: false,
     scales: {
       y: {
-        tickes:{
+        ticks:{
           stepSize: 1,
           precision: 0
         },
-        begingAtZero: true,
+        beginAtZero: true,
       },
     },
   };
@@ -157,7 +157,7 @@ export default function ResultsMainPanel({METRICS = [], DIFFICULTY = [], SCORES 
         <div className="flex-1 min-w-0 bg-gray-800 rounded-xl border border-gray-700 flex flex-col">
           <div className="px-4 py-3 border-b border-gray-700 flex-shrink-0">
             <h2 className="text-sm font-semibold text-white">Score distribution</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Chart coming soon</p>
+            <p className="text-xs text-gray-500 mt-0.5">Number of students per score range</p>
           </div>
           {/* Placeholder body */}
           <div className="flex-1 flex items-center justify-center p-4">

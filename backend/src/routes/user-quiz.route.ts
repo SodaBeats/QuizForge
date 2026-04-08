@@ -123,12 +123,13 @@ router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
-  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
-  if(!quizOwnerId || quizOwnerId !== req.user.id){
-    return res.status(404).json({success: false, message: 'Quiz not found'});
-  }
 
   try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+
     const [totalTakersAndAverage, highestScoreAndUser, lowestScore] = await Promise.all([
       QuizAttemptsRepo.getTotalTakersAndAverage(quizId),
       QuizAttemptsRepo.getHighestScoreAndName(quizId),
@@ -161,12 +162,13 @@ router.get('/:quizId/students', verifyToken, async (req, res, next) => {
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
-  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
-  if(!quizOwnerId || quizOwnerId !== req.user.id){
-    return res.status(404).json({success: false, message: 'Quiz not found'});
-  }
 
   try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+
     const studentRanking = await QuizAttemptsRepo.getStudentRanking(quizId);
     const studentRankingWithCombinedName = studentRanking.map((s)=>{
       return {
@@ -195,12 +197,13 @@ router.get('/:quizId/questions', verifyToken, async(req, res, next) => {
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
-  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
-  if(!quizOwnerId || quizOwnerId !== req.user.id){
-    return res.status(404).json({success: false, message: 'Quiz not found'});
-  }
 
   try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+
     const questionsRanking = await AttemptAnswersRepo.getQuestionCorrectionRate(quizId);
     return res.status(200).json({success: true, data: questionsRanking});
   }catch(error){
@@ -220,14 +223,14 @@ router.get('/:quizId/score', verifyToken, async (req, res, next) => {
   if(role!=='teacher'){
     return res.status(403).json({success: false, message: 'Unauthorized action'});
   }
-  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
-  if(!quizOwnerId || quizOwnerId !== req.user.id){
-    return res.status(404).json({success: false, message: 'Quiz not found'});
-  }
 
   try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+
     const userScores = await QuizAttemptsRepo.getBestAttemptsPerUser(quizId);
-    console.log(userScores);
     return res.status(200).json({success: true, data: userScores});
   }catch(error){
     next(error);

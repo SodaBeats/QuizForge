@@ -123,7 +123,7 @@ export default function QuizResultDashboard () {
             await logout();
             return;
           }
-          toast.error('Something went wrong while fetching score distirbution data');
+          toast.error('Something went wrong while fetching score distribution data');
           return;
         }
         setScoreDistribution(getScoreDistribution(scores.data));
