@@ -1,4 +1,23 @@
 // ResultsMainPanel.jsx
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -17,6 +36,11 @@ function difficultyTextClass(pct) {
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────
+
+/*function ScoreDistributionGraph(){
+  const options = {};
+  return <Bar options={options} data={} />;
+}*/
 
 function MetricCard({ label, value, sub, }) {
   return (
@@ -77,9 +101,35 @@ function ReviewRow({ rank, label, pct }) {
   );
 }
 
+function BarGraph({data}){
+  const barData = {
+    labels: ["0-20", "21-40", "41-60", "61-80", "81-100"],
+    datasets: [{
+      label: "Score Distribution",
+      data: data.length>0 ? data : [0,0,0,0,0],
+      backgroundColor: "#3b82f6",
+      borderWidth: 1,
+    }],
+  };
+  const options = { 
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        tickes:{
+          stepSize: 1,
+          precision: 0
+        },
+        begingAtZero: true,
+      },
+    },
+  };
+  return <Bar options={options} data={barData} />;
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsMainPanel({METRICS = [], DIFFICULTY = []}) {
+export default function ResultsMainPanel({METRICS = [], DIFFICULTY = [], SCORES = []}) {
 
   // Questions that need review = lowest success rate questions
   const MOCK_NEEDS_REVIEW = [...DIFFICULTY]
@@ -110,20 +160,9 @@ export default function ResultsMainPanel({METRICS = [], DIFFICULTY = []}) {
             <p className="text-xs text-gray-500 mt-0.5">Chart coming soon</p>
           </div>
           {/* Placeholder body */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center mx-auto mb-3">
-                {/* Bar chart icon — pure CSS, no emoji */}
-                <div className="flex items-end gap-0.5 h-5">
-                  <div className="w-1.5 h-2 bg-gray-500 rounded-sm" />
-                  <div className="w-1.5 h-4 bg-gray-500 rounded-sm" />
-                  <div className="w-1.5 h-5 bg-gray-500 rounded-sm" />
-                  <div className="w-1.5 h-3 bg-gray-500 rounded-sm" />
-                  <div className="w-1.5 h-1 bg-gray-500 rounded-sm" />
-                </div>
-              </div>
-              <p className="text-sm text-gray-500">Chart placeholder</p>
-              <p className="text-xs text-gray-600 mt-1">Score distribution will render here</p>
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="relative w-full h-full">
+              <BarGraph data={SCORES} />
             </div>
           </div>
         </div>

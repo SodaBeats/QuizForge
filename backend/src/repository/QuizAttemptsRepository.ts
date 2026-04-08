@@ -1,6 +1,6 @@
 
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, and, countDistinct, avg, asc, desc, max } from 'drizzle-orm';
+import { eq, and, countDistinct, avg, asc, desc, max, sql } from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import { quiz_attempts_db, users } from '../db/schema.js';
 
@@ -139,6 +139,32 @@ export const QuizAttemptsRepo = {
       .limit(5)
 
     return result;
+  },
+
+  //GET THE ATTEMPT WITH HIGHEST SCORE FOR EACH UNIQUE USER
+  async getBestAttemptsPerUser(quizId: number){
+    const query = sql`
+      WITH ranked_attempts AS (
+        SELECT 
+          id, 
+          user_id, 
+          score, 
+          created_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY user_id 
+            ORDER BY score DESC, created_at DESC
+          ) as rank
+        FROM ${quiz_attempts_db}
+        WHERE quiz_id = ${quizId}
+      )
+      SELECT id, user_id as "userId", score, created_at as "createdAt"
+      FROM ranked_attempts
+      WHERE rank = 1
+    `;
+
+    const result = await db.execute(query);
+
+    return result.rows ?? [];
   },
 
 };

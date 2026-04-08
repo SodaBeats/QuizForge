@@ -16,6 +16,7 @@ export default function QuizResultDashboard () {
   ]);
   const [students, setStudents] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [scoreDistribution, setScoreDistribution] = useState([]);
   const { authFetch, logout } = useContext(AuthContext);
   const { quizId } = useParams();
   const navigate = useNavigate();
@@ -38,12 +39,26 @@ export default function QuizResultDashboard () {
       }
     });
   }
+  function getScoreDistribution(data){
+    const buckets = [
+      { label: "0-20",   min: 0,  max: 20,  count: 0 },
+      { label: "21-40",  min: 21, max: 40,  count: 0 },
+      { label: "41-60",  min: 41, max: 60,  count: 0 },
+      { label: "61-80",  min: 61, max: 80,  count: 0 },
+      { label: "81-100", min: 81, max: 100, count: 0 },
+    ];
+    data.forEach((student) => {
+      const bucket = buckets.find(b => student.score >= b.min && student.score <= b.max);
+      if (bucket) bucket.count++;
+    });
+    return buckets.map(b => {return b.count});
+  }
 
   //--DATA FETCH --------------------------------------------
   useEffect(() => {
     async function fetchDashboardData(){
       try{
-        const [metricRes, studentsRes, questionsRes] = await Promise.all([
+        const [metricRes, studentsRes, questionsRes, scoreRes] = await Promise.all([
           authFetch(`http://localhost:3000/api/quizzes/${quizId}/metrics`, {
             method: 'GET',
             credentials: 'include',
@@ -55,22 +70,28 @@ export default function QuizResultDashboard () {
           authFetch(`http://localhost:3000/api/quizzes/${quizId}/questions`, {
             method: 'GET',
             credentials: 'include'
-          })
+          }),
+          authFetch(`http://localhost:3000/api/quizzes/${quizId}/score` , {
+            method: 'GET',
+            credentials: 'include'
+          }),
         ]);
 
-        if (!metricRes.ok || !studentsRes.ok || !questionsRes.ok) {
+        if (!metricRes.ok || !studentsRes.ok || !questionsRes.ok || !scoreRes.ok) {
           throw new Error('One or more API requests failed');
         }
 
-        const [metrics, students, questions] = await Promise.all([
+        const [metrics, students, questions, scores] = await Promise.all([
           metricRes.json(),
           studentsRes.json(),
           questionsRes.json(),
+          scoreRes.json()
         ]);
 
         if(!metrics.success){
           if(metrics.message === 'Unauthorized action'){
-            logout();
+            await logout();
+            return;
           }
           toast.error('Something went wrong while fetching metrics');
           return;
@@ -79,7 +100,8 @@ export default function QuizResultDashboard () {
 
         if(!students.success){
           if(students.message === 'Unauthorized action'){
-            logout();
+            await logout();
+            return;
           }
           toast.error('Something went wrong while fetching student ranking');
           return;
@@ -88,12 +110,23 @@ export default function QuizResultDashboard () {
         
         if(!questions.success){
           if(questions.message === 'Unauthorized action'){
-            logout();
+            await logout();
+            return;
           }
           toast.error('Something went wrong while fetching questions data');
           return;
         }
         setQuestions(buildQuestionCorrectionRate(questions.data));
+
+        if(!scores.success){
+          if(scores.message === 'Unauthorized action'){
+            await logout();
+            return;
+          }
+          toast.error('Something went wrong while fetching score distirbution data');
+          return;
+        }
+        setScoreDistribution(getScoreDistribution(scores.data));
 
       }catch(error){
         console.error('Failed to fetch dashboard data', error);
@@ -112,6 +145,7 @@ export default function QuizResultDashboard () {
         <ResultsMainPanel
           METRICS={metrics}
           DIFFICULTY={questions}
+          SCORES={scoreDistribution}
         />
         <ResultsLeaderboard
           STUDENTS={students}

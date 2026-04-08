@@ -209,6 +209,32 @@ router.get('/:quizId/questions', verifyToken, async(req, res, next) => {
 
 });
 
+//get all quiz taker score
+router.get('/:quizId/score', verifyToken, async (req, res, next) => {
+  const quizId = Number(req.params.quizId);
+  const { role } = req.user;
+
+  if(Number.isNaN(quizId)){
+    return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+  if(role!=='teacher'){
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
+  const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+  if(!quizOwnerId || quizOwnerId !== req.user.id){
+    return res.status(404).json({success: false, message: 'Quiz not found'});
+  }
+
+  try{
+    const userScores = await QuizAttemptsRepo.getBestAttemptsPerUser(quizId);
+    console.log(userScores);
+    return res.status(200).json({success: true, data: userScores});
+  }catch(error){
+    next(error);
+  }
+
+});
+
 
 // Router for question updates
 router.patch('/:quizId/question/:questionId',
