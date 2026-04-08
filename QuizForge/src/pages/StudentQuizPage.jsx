@@ -93,7 +93,7 @@ export default function StudentQuizPage(){
       console.log(result);
 
       if(!result.success){
-        console.log('Oh nyo, something went wrong while submitting attempt');
+        console.log(result.error || result.message || 'Something went wrong while submitting quiz');
         toast.error('Something went wrong while submitting quiz. Please try again later');
         return;
       }

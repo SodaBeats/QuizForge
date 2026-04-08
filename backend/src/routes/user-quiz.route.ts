@@ -113,6 +113,33 @@ router.get('/questions', verifyToken, async(req, res, next) => {
   }
 });
 
+//check if quiz has attempts
+router.get('/:quizId/attempts', verifyToken, async(req, res, next) => {
+  const quizId = Number(req.params.quizId);
+  if(Number.isNaN(quizId)){
+    return res.status(400).json({success: false, message: 'Invalid Quiz ID'});
+  }
+  if(req.user.role !== 'teacher'){
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
+  try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(quizId);
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+
+    const attemptsExist = await QuizAttemptsRepo.getFirstFinishedAttempt(quizId);
+    if(!attemptsExist){
+      return res.status(404).json({success: false, message: 'No attempts yet'})
+    }
+    return res.status(200).json({success: true});
+
+  }catch(error){
+    next(error);
+  }
+
+});
+
 //get metrics for dashboard
 router.get('/:quizId/metrics', verifyToken, async(req, res, next) => {
   const quizId = Number(req.params.quizId);

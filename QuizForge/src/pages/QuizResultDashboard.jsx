@@ -9,10 +9,10 @@ import { AuthContext } from '../components/AuthProvider';
 export default function QuizResultDashboard () {
 
   const [metrics, setMetrics] = useState([
-    {label: 'Total Takers', value: 'No data yet', sub: 'unique students'},
-    {label: 'Average Score', value: 'No data yet', sub: 'quiz average'},
-    {label: 'Highest Score', value: 'No data yet', sub: 'No data yet'},
-    {label: 'Lowest Score', value: 'No data yet', sub: 'quiz minimum'},
+    {label: 'Total Takers', value: 'No Data Yet', sub: 'unique students'},
+    {label: 'Average Score', value: 'No Data Yet', sub: 'quiz average'},
+    {label: 'Highest Score', value: 'No Data Yet', sub: 'No Data Yet'},
+    {label: 'Lowest Score', value: 'No Data Yet', sub: 'quiz minimum'},
   ]);
   const [students, setStudents] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -58,6 +58,17 @@ export default function QuizResultDashboard () {
   useEffect(() => {
     async function fetchDashboardData(){
       try{
+        //check if there are attempts first
+        const existRes = await authFetch(`http://localhost:3000/api/quizzes/${quizId}/attempts`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const attemptsExist = await existRes.json();
+        if(!attemptsExist.success){
+          console.log(attemptsExist.error || attemptsExist.message);
+          return;
+        }
+
         const [metricRes, studentsRes, questionsRes, scoreRes] = await Promise.all([
           authFetch(`http://localhost:3000/api/quizzes/${quizId}/metrics`, {
             method: 'GET',

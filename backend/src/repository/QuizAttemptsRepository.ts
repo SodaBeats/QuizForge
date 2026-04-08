@@ -44,6 +44,17 @@ export const QuizAttemptsRepo = {
     return attempt ?? null;
   },
 
+  //get first finished attempt
+  async getFirstFinishedAttempt(quizId: number){
+    const result = await db.query.quiz_attempts_db
+      .findFirst({ where: and(
+        eq(quiz_attempts_db.quiz_id, quizId),
+        eq(quiz_attempts_db.status, 'completed')
+      )});
+    
+    return result ?? null;
+  },
+
   //delete attempt
   async deleteAttempt(userId: number, quizId: number){
     const [deletedAttempt] = await db.delete(quiz_attempts_db)
@@ -112,7 +123,7 @@ export const QuizAttemptsRepo = {
         lowestScore: quiz_attempts_db.score,
       })
       .from(quiz_attempts_db)
-      .where(eq(quiz_attempts_db.quiz_id, quizId))
+      .where(and(eq(quiz_attempts_db.quiz_id, quizId), eq(quiz_attempts_db.status, 'completed')))
       .orderBy(asc(quiz_attempts_db.score))
       .limit(1);
 
