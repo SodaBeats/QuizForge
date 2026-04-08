@@ -11,11 +11,11 @@ export const QuestionsRepository = {
 
   //insert question to db
   async insertQuestionToDb(data: QuestionInputData){
-    const [inserted] = await db.insert(questions_db).values(data).returning({
-      documentId: questions_db.document_id,
-      questionId: questions_db.id
-    });
-    return inserted ?? null;
+    const [inserted] = await db.insert(questions_db).values(data).returning();
+    return inserted ? {
+      documentId: inserted.document_id,
+      questionId: inserted.id
+    } : null;
   },
 
   //get all questions related to document Id
@@ -39,9 +39,8 @@ export const QuestionsRepository = {
     const [updated] = await db.update(questions_db)
       .set(data)
       .where (eq(questions_db.id, qId))
-      .returning({qId: questions_db.id});
-    return updated ?? null;
-  },
+      .returning();
+    return updated ? {qId: updated.id} : null;  },
 
   //update question data but return all
   async updateQuestionReturning(data: QuestionUpdateData, qId: number){
@@ -56,8 +55,8 @@ export const QuestionsRepository = {
   async deleteQuestionById(qId: number){
     const [deleted] = await db.delete(questions_db)
       .where(eq(questions_db.id, qId))
-      .returning({qId: questions_db.id});
-    return deleted ?? null;
+      .returning();
+    return deleted ? {qId: deleted.id} : null;
   },
 
   //get questions by quiz id

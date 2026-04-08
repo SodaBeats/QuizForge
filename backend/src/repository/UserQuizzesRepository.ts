@@ -11,8 +11,8 @@ export const UserQuizzesRepository = {
 
   //insert quiz to table
   async insertNewQuiz(data: QuizInputData){
-    const [quiz] = await db.insert(quizzes_db).values(data).returning({id: quizzes_db.id});
-    return quiz ?? null;
+    const [quiz] = await db.insert(quizzes_db).values(data).returning();
+    return quiz ? {id: quiz.id} : null;
   },
 
   //get all quizzes related to user
@@ -44,7 +44,7 @@ export const UserQuizzesRepository = {
   //update quiz and return all data
   async updateQuizDataReturnAll(data: QuizUpdateData, quizId: number){
     const [updated] = await db.update(quizzes_db).set(data).where(eq(quizzes_db.id, quizId)).returning();
-    return updated;
+    return updated ?? null;
   },
 
   // get quiz data and attempt count
@@ -72,6 +72,25 @@ export const UserQuizzesRepository = {
       .groupBy(quizzes_db.id);
 
     return result;
+  },
+
+  //get quiz by token, return quiz id
+  async getQuizByToken(token: string | string[]){
+    const actualToken = Array.isArray(token) ? token[0] : token;
+    if(!actualToken) return null;
+
+    const [result] = await db.select({id: quizzes_db.id})
+      .from(quizzes_db)
+      .where(eq(quizzes_db.share_token, actualToken.toLowerCase()));
+    return result?.id ??  null;
+  },
+
+  //get quiz by id, return user id
+  async getQuizById(quizId: number){
+    if(!quizId || Number.isNaN(quizId)) return null;
+
+    const [result] = await db.select({userId: quizzes_db.user_id}).from(quizzes_db).where(eq(quizzes_db.id, quizId));
+    return result?.userId ??  null;
   },
 
   

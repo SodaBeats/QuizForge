@@ -21,7 +21,11 @@ export default function QuizzesPage (){
   useEffect(()=>{
     authFetch(`http://localhost:3000/api/quizzes`)
     .then(res => res.json())
-    .then(data => setQuizzes(data));
+    .then(data => setQuizzes(Array.isArray(data) ? data : []))
+    .catch(error => {
+      console.error('Failed to fetch quizzes', error);
+      toast.error('Failed to load quizzes');
+    });
   },[authFetch]);
 
   const handleDeleteQuiz = (quizId) => {
@@ -63,7 +67,7 @@ export default function QuizzesPage (){
       const result = await response.json();
 
       if(!result.success){
-        toast.error(result.message || result.errors.map(e=>e.msg).join(', '));
+        toast.error(result.message || result.errors?.map(e=>e.msg).join(', ') || 'Update Failed');
         console.error(result.message);
         setQuestions(originalQuestions);
       }
@@ -116,8 +120,9 @@ export default function QuizzesPage (){
       const result = await response.json();
 
       if(!result.success){
-        toast.error(result.message || result.errors.map(e => e.msg).join(', '));
+        toast.error(result.message || result.errors?.map(e => e.msg).join(', ') || 'Update Failed');
         setQuizzes(originalQuizzes);
+        return;
       }
       
       toast.success('Quiz Updated!');
@@ -149,7 +154,7 @@ export default function QuizzesPage (){
         {selectedQuizId ? (
           <>
             <QuizzesMetaData 
-              key={selectedQuiz.id}
+              quizKey={selectedQuiz.id}
               quiz={selectedQuiz}
               onUpdateQuizMeta={handleQuizMetaUpdate}
             />

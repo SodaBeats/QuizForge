@@ -42,14 +42,16 @@ router.post('/',
 
     const insertedQuestion = await QuestionsRepository.insertQuestionToDb(formattedData);
 
-    res.status(200).json({
-      success: true, 
-      documentId: insertedQuestion?.documentId, 
-      questionId: insertedQuestion?.questionId
+    if (!insertedQuestion) {
+      return res.status(500).json({ success: false, message: 'Failed to create question' });
+    }
+
+    return res.status(201).json({
+      success: true
     });
     
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
@@ -74,10 +76,10 @@ router.get('/', verifyToken, async(req, res, next)=>{
       return res.status(404).json({success: false, message: 'No questions found'});
     }
 
-    res.status(200).json(questions);
+    return res.status(200).json(questions);
 
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
@@ -127,10 +129,10 @@ router.patch('/:id',
       return res.status(404).json({success: false, message: 'Question not found'});
     }
 
-    res.status(200).json({success: true});
+    return res.status(200).json({success: true});
 
   }catch(error){
-    next(error);
+    return next(error);
   }
 });
 
@@ -159,7 +161,7 @@ router.delete('/:id', verifyToken, async(req, res, next)=>{
       return res.status(200).json({ success: true, message: 'Question Deleted!' });
     }
   }catch(error){
-    next(error);
+    return next(error);
   }
 
 });

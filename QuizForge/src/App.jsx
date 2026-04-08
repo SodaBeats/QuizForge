@@ -9,19 +9,19 @@ import QuizzesPage from "./pages/QuizzesPage";
 import StudentTokenPage from "./pages/StudentTokenPage";
 import StudentQuizPage from "./pages/StudentQuizPage";
 import RootRedirector from "./components/RootRedirector";
+import QuizResultDashboard from './pages/QuizResultDashboard';
 
 function ProtectedRoute ({children}){
   const { token, userInfo } = useContext(AuthContext);
-  if (token && userInfo.role === 'teacher') {
+  if (token && userInfo?.role === 'teacher') {
     return children;
   }else{
     return <Navigate to='/login' />;
   }
 }
-
 function StudentRoute ({children}) {
   const { token, userInfo } = useContext(AuthContext);
-  if(token && userInfo.role === 'student'){
+  if(token && userInfo?.role === 'student'){
     return children;
   }else{
     return <Navigate to = '/login' />;
@@ -43,6 +43,11 @@ export default function App() {
         <Route path="/teacher/quizzes" element = {
           <ProtectedRoute>
             <QuizzesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/quizzes/:quizId" element = {
+          <ProtectedRoute>
+            <QuizResultDashboard />
           </ProtectedRoute>
         } />
         <Route path='/student' element = {

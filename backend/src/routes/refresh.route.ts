@@ -20,7 +20,7 @@ router.post('/', async (req, res, next)=>{
     const userInfo = jwt.verify(newAccessToken, process.env.JWT_SECRET);
 
     //send the new access token back to the frontend
-    res.status(200).json({ success: true, accessToken: newAccessToken, user: userInfo });
+    return res.status(200).json({ success: true, accessToken: newAccessToken, user: userInfo });
 
   }
   catch(error){
@@ -30,7 +30,7 @@ router.post('/', async (req, res, next)=>{
         return res.status(401).json({message: 'Invalid or expired refresh token'});
       }
     }
-    next(error);
+    return next(error);
   }
 
 });

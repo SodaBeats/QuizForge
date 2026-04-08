@@ -4,7 +4,7 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
 
   // 1. Initialize state with total seconds
   // Using a fallback of 0 if time_limit isn't provided
-  const timeLimitSeconds = (quiz.timeLimit || 0) * 60;
+  const timeLimitSeconds = (quiz?.timeLimit || 0) * 60;
   const [now, setNow] = useState(() => Date.now());
   const finishTime = new Date(attemptStart).getTime() + timeLimitSeconds * 1000;
   const remainingMs = Math.max(0, finishTime - now);
@@ -46,7 +46,7 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
     <div className="w-72 border-l border-gray-700 bg-gray-900 p-6 hidden lg:flex flex-col gap-8">
       {/* Timer Section */}
       <>
-        <h2 className="text-m text-white-500 font-bold mb-2">{`Attempt: ${attemptCount + 1} of ${maxAttempts}`}</h2>
+        <h2 className="text-m text-white-500 font-bold mb-2">{`Attempt: ${attemptCount} of ${maxAttempts}`}</h2>
       </>
       <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 text-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Time Remaining</p>

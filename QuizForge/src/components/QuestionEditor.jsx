@@ -88,7 +88,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         setManualQuestion({
           documentId: selectedFile?.id,
           questionText: '',
-          questionType: 'multiple-choice',
+          questionType: manualQuestion.questionType,
           optionA: '',
           optionB: '',
           optionC: '',
@@ -212,7 +212,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                         setManualQuestion({
                           documentId: selectedFile?.id,
                           questionText: '',
-                          questionType: 'multiple-choice',
+                          questionType: manualQuestion.questionType,
                           optionA: '',
                           optionB: '',
                           optionC: '',
@@ -253,7 +253,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                         setManualQuestion({
                           documentId: selectedFile?.id,
                           questionText: '',
-                          questionType: 'multiple-choice',
+                          questionType: manualQuestion.questionType,
                           optionA: '',
                           optionB: '',
                           optionC: '',
@@ -283,7 +283,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                       setManualQuestion({
                         documentId: selectedFile?.id,
                         questionText: '',
-                        questionType: 'multiple-choice',
+                        questionType: manualQuestion.questionType,
                         optionA: '',
                         optionB: '',
                         optionC: '',
