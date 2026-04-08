@@ -88,10 +88,6 @@ export default function QuizResultDashboard () {
           }),
         ]);
 
-        if (!metricRes.ok || !studentsRes.ok || !questionsRes.ok || !scoreRes.ok) {
-          throw new Error('One or more API requests failed');
-        }
-
         const [metrics, students, questions, scores] = await Promise.all([
           metricRes.json(),
           studentsRes.json(),

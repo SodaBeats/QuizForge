@@ -11,7 +11,12 @@ export const AttemptAnswersRepo = {
   //record what answer user chose for a question
   async insertAttemptAnswer(data: AttemptAnswersInsertData[], tx: QueryClient = db){
     if(data.length === 0) return;
-    await tx.insert(attempt_answers_db).values(data)
+    await tx
+      .insert(attempt_answers_db)
+      .values(data)
+      .onConflictDoNothing({
+        target: [attempt_answers_db.attempt_id, attempt_answers_db.question_id]
+      });
   },
 
   //get percentage of how many got a question right

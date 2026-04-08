@@ -38,7 +38,7 @@ router.patch('/', verifyToken, async(req, res, next)=> {
   
   try{
     await db.transaction(async(tx) => {
-      await QuizAttemptsRepo.updateAttempt(formattedData, quiz.id, attemptId, tx);
+      await QuizAttemptsRepo.updateAttempt(formattedData, quiz.id, attemptId, userId, tx);
       await AttemptAnswersRepo.insertAttemptAnswer(formattedAttemptAnswers, tx);
     });
     return res.status(200).json({success: true, message: 'Attempt received!'});

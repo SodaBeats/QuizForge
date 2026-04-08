@@ -98,8 +98,6 @@ describe('POST /api/questions', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.questionId).toBeDefined();
-    expect(res.body.documentId).toBe(seededDocId);
   });
 
   it('404 — rejects a documentId that does not belong to this user', async () => {

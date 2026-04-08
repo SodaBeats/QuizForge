@@ -21,10 +21,13 @@ export const QuizAttemptsRepo = {
   },
 
   //update attempt
-  async updateAttempt(data: AttemptUpdateData, quizId: number, attemptId: number, tx: QueryClient = db){
+  async updateAttempt(data: AttemptUpdateData, quizId: number, attemptId: number, userId: number, tx: QueryClient = db){
     await tx.update(quiz_attempts_db)
       .set(data).where(and(
-        eq(quiz_attempts_db.quiz_id, quizId), eq(quiz_attempts_db.id, attemptId)
+        eq(quiz_attempts_db.quiz_id, quizId),
+        eq(quiz_attempts_db.id, attemptId),
+        eq(quiz_attempts_db.user_id, userId),
+        eq(quiz_attempts_db.status, 'in-progress')
       ));
   },
 
@@ -79,7 +82,10 @@ export const QuizAttemptsRepo = {
         average: avg(quiz_attempts_db.score).mapWith(Number)
       })
       .from(quiz_attempts_db)
-      .where(eq(quiz_attempts_db.quiz_id, quizId));
+      .where(and(
+        eq(quiz_attempts_db.quiz_id, quizId),
+        eq(quiz_attempts_db.status, 'completed')
+      ));
 
     if(!result) return null;
 
