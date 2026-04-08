@@ -195,7 +195,7 @@ describe('POST /api/quizzes', () => {
       .set(authHeader(studentToken))
       .send(payload);
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(403);
     expect(res.body.message).toMatch(/unauthorized/i);
   });
 
@@ -313,8 +313,9 @@ describe('POST /api/student/quiz-access', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.quiz).toBeDefined();
-    expect(Array.isArray(res.body.questions)).toBe(true);
+    expect(res.body.shareToken).toBeDefined();
+    expect(res.body.maxAttempts).toBeDefined();
+    expect(res.body.totalAttempts).toBeDefined();
     expect(res.body.attemptId).toBeDefined();
   });
 
@@ -349,10 +350,20 @@ describe('PATCH /api/student/quiz-submit', () => {
       .set(authHeader(studentToken))
       .send({ token: seededQuizShareToken });
 
-    const { quiz, questions, attemptId } = accessRes.body;
-
     expect(accessRes.status).toBe(200);
+
+    //access quiz to get questions
+    const quizRes = await request(app)
+      .get(`/api/student/quiz-access/${seededQuizShareToken}`)
+      .set(authHeader(studentToken))
+    
+    const { quiz, questions, attemptId, attemptStart } = quizRes.body;
+    
+    expect(quizRes.status).toBe(200);
+    expect(quiz).toBeDefined();
     expect(questions).toBeDefined();
+    expect(attemptStart).toBeDefined();
+    expect(attemptId).toBeDefined();
 
     // Build an answers object: { [questionId]: selectedAnswer }
     const answers: Record<string, string> = {};

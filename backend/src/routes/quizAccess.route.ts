@@ -51,6 +51,7 @@ router.post('/',
 
     return res.status(200).json({
       success: true,
+      attemptId: attempt.attemptId,
       message: "Quiz Found!",
       shareToken: quiz.shareToken,
       maxAttempts: quiz.maxAttempts,
