@@ -37,11 +37,6 @@ function difficultyTextClass(pct) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-/*function ScoreDistributionGraph(){
-  const options = {};
-  return <Bar options={options} data={} />;
-}*/
-
 function MetricCard({ label, value, sub, }) {
   return (
     <div className={`flex-1 min-w-0 bg-gray-800 rounded-xl p-4 flex flex-col justify-between`}>
@@ -159,7 +154,7 @@ export default function ResultsMainPanel({METRICS = [], DIFFICULTY = [], SCORES 
             <h2 className="text-sm font-semibold text-white">Score Distribution</h2>
             <p className="text-xs text-gray-500 mt-0.5">Number of students per score range</p>
           </div>
-          {/* Placeholder body */}
+          {/* Bar Graph */}
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="relative w-full h-full">
               <BarGraph data={SCORES} />
