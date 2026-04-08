@@ -105,7 +105,7 @@ function BarGraph({data}){
   const barData = {
     labels: ["0-20", "21-40", "41-60", "61-80", "81-100"],
     datasets: [{
-      label: "Student Per Score Range",
+      label: "Students Per Score Range",
       data: data.length>0 ? data : [0,0,0,0,0],
       backgroundColor: "#3b82f6",
       borderWidth: 1,

@@ -46,11 +46,12 @@ export const QuizAttemptsRepo = {
 
   //get first finished attempt
   async getFirstFinishedAttempt(quizId: number){
-    const result = await db.query.quiz_attempts_db
-      .findFirst({ where: and(
-        eq(quiz_attempts_db.quiz_id, quizId),
-        eq(quiz_attempts_db.status, 'completed')
-      )});
+    const [result] = await db
+      .select()
+      .from(quiz_attempts_db)
+      .where(and(eq(quiz_attempts_db.quiz_id, quizId), eq(quiz_attempts_db.status, 'completed')))
+      .orderBy(asc(quiz_attempts_db.created_at))
+      .limit(1);
     
     return result ?? null;
   },
