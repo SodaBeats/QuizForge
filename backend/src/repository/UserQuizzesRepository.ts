@@ -22,7 +22,6 @@ export const UserQuizzesRepository = {
           quizTitle: quizzes_db.quiz_title,
           description: quizzes_db.quiz_description,
           shareToken: quizzes_db.share_token,
-          timeLimit: quizzes_db.time_limit,
           maxAttempts: quizzes_db.max_attempts,
           dueDate: quizzes_db.due_date,
           status: quizzes_db.status,
@@ -55,7 +54,6 @@ export const UserQuizzesRepository = {
         quizTitle: quizzes_db.quiz_title,
         quizDescription: quizzes_db.quiz_description,
         shareToken: quizzes_db.share_token,
-        timeLimit: quizzes_db.time_limit,
         maxAttempts: quizzes_db.max_attempts,
         dueDate: quizzes_db.due_date,
         totalAttempts: count(quiz_attempts_db.id)

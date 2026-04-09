@@ -16,7 +16,6 @@ export default function StudentQuizPage(){
   //get data passed from the last page using LOCATION.STATE
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState(null);
-  const [attemptStart, setAttemptStart] = useState(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [attemptId, setAttemptId] = useState(null);
   const [maxAttempts, setMaxAttempts] = useState(0);
@@ -25,7 +24,7 @@ export default function StudentQuizPage(){
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [fetchErr, setFetchErr] = useState(null);
-  const canPrev = true;
+  const canPrev = false;
   const canNext = true;
   const selectedQuestion = questions?.[selectedQuestionIndex] || null;
   const navigate = useNavigate();
@@ -43,7 +42,6 @@ export default function StudentQuizPage(){
         }
         setQuiz(data.quiz);
         setQuestions(data.questions);
-        setAttemptStart(data.attemptStart);
         setAttemptId(data.attemptId);
         setMaxAttempts(data.quiz.maxAttempts);
         setAttemptCount(data.totalAttempts);
@@ -78,6 +76,14 @@ export default function StudentQuizPage(){
       newSet.add(selectedQuestion.id);
       return newSet;
     });
+  };
+
+  const handleTimeout = () => {
+    if (selectedQuestionIndex < questions.length - 1) {
+      setSelectedQuestionIndex(prev => prev + 1);
+    } else {
+      handleQuizSubmit();
+    }
   };
 
   const handleQuizSubmit = async()=> {
@@ -175,9 +181,9 @@ export default function StudentQuizPage(){
 
         {/* The Timer Sidebar (Right) */}
         <StudentTimeLimit
-          quiz={quiz}
-          handleAutoSubmit={handleQuizSubmit}
-          attemptStart={attemptStart}
+          key={selectedQuestionIndex}
+          timeLimit={selectedQuestion?.timeLimit || 0}
+          onTimeout={handleTimeout}
           attemptCount={attemptCount}
           maxAttempts={maxAttempts}
         />

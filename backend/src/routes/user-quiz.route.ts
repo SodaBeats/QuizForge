@@ -34,7 +34,6 @@ router.post('/',
     quiz_title: req.body.quizTitle,
     quiz_description: req.body.description,
     share_token: req.body.shareToken,
-    time_limit: req.body.timeLimit,
     max_attempts: req.body.maxAttempts,
     due_date: new Date(req.body.dueDate),
     status: req.body.status
@@ -94,12 +93,16 @@ router.get('/', verifyToken, async(req, res, next)=>{
 //get all questions related to selected quiz
 router.get('/questions', verifyToken, async(req, res, next) => {
   const {quizId} = req.query;
-  
   if(!quizId){
     return res.status(400).json({success: false, message: 'You must select a quiz'});
   }
   
   try{
+    const quizOwnerId = await UserQuizzesRepository.getQuizById(Number(quizId));
+    if(!quizOwnerId || quizOwnerId !== req.user.id){
+      return res.status(404).json({success: false, message: 'Quiz not found'});
+    }
+    
     const questionList = await QuestionsRepository.getQuestionsRelatedToQuiz(Number(quizId));
 
     if(questionList.length<1){

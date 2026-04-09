@@ -4,6 +4,7 @@ export type Question = {
   documentId: number,
   questionText: string,
   questionType: QuestionType,
+  timeLimit: number, // in seconds
   correctAnswer: string | null,
   optionA: string | null,
   optionB: string | null,
