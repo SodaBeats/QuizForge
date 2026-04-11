@@ -53,7 +53,7 @@ export default async function globalSetup() {
       password_hash: student2Hash, role: 'student'
     }).returning();
 
-    console.log(`[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id}), Studnet 2 (${student2?.id})`);
+    console.log(`[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id}), Student 2 (${student2?.id})`);
 
   } finally {
     // Close its own pool — not db.ts's pool

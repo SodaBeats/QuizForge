@@ -390,7 +390,7 @@ describe('GET api/quizzes/:quizId/metrics', () => {
   it('200 - returns metrics for valid role', async () => {
     // Now get metrics with proper role and even with 0 score/average
     const res = await request(app)
-      .get('api/quizzes/:quizId/metrics')
+      .get(`/api/quizzes/${metricsQuizId}/metrics`)
       .set(authHeader(teacherToken))
 
     expect(res.status).toBe(200);
@@ -402,9 +402,9 @@ describe('GET api/quizzes/:quizId/metrics', () => {
     expect(res.body.lowestScore).toBeDefined();
   });
 
-  it('403 - Rejects unauthenticated request', async () => {
+  it('403 - Rejects unauthorized request (student)', async () => {
     const res = await request(app)
-      .get('api/quizzes/:quizId/metrics')
+      .get(`/api/quizzes/${metricsQuizId}/metrics`)
       .set(authHeader(studentToken))
 
     expect(res.status).toBe(403);
@@ -496,7 +496,7 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
       .set(authHeader(student2Token))
       .send({ token: metricsQuizShareToken });
 
-    expect(accessRes.status).toBe(200);
+    expect(accessRes2.status).toBe(200);
 
     //access quiz to get questions
     const quizRes = await request(app)
@@ -514,9 +514,9 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
     //access quiz to get questions
     const quizRes2 = await request(app)
       .get(`/api/student/quiz-access/${metricsQuizShareToken}`)
-      .set(authHeader(studentToken))
+      .set(authHeader(student2Token))
     
-    const { quiz2, questions2, attemptId2, attemptStart2 } = quizRes.body;
+    const { quiz: quiz2, questions: questions2, attemptId: attemptId2, attemptStart:attemptStart2 } = quizRes2.body;
     
     expect(quizRes2.status).toBe(200);
     expect(quiz2).toBeDefined();
@@ -531,7 +531,7 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
     }
     const answers2: Record<string, string> = {};
     for (const x of questions2){
-      answers[x.id] = 'true';
+      answers2[x.id] = 'true';
     }
 
     //submit quiz and record score
@@ -564,7 +564,7 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
 
   it('200 - returns ranking for valid role', async () => {
     const res = await request(app)
-      .get('api/quizzes/:quizId/students')
+      .get(`/api/quizzes/${metricsQuizId}/students`)
       .set(authHeader(teacherToken))
 
     expect(res.status).toBe(200);
@@ -575,9 +575,9 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
     expect(res.body.data.length).toBe(2);
   });
 
-  it('403 - Rejects unauthenticated request', async () => {
+  it('403 - Rejects unauthorized request', async () => {
     const res = await request(app)
-      .get('api/quizzes/:quizId/students')
+      .get(`/api/quizzes/${metricsQuizId}/students`)
       .set(authHeader(studentToken))
 
     expect(res.status).toBe(403);
