@@ -33,6 +33,7 @@ export default async function globalSetup() {
 
     const teacherHash = await bcrypt.hash('TeacherPass1!', 1);
     const studentHash = await bcrypt.hash('StudentPass1!', 1);
+    const student2Hash = await bcrypt.hash('Student2Pass2!', 1);
 
     const [teacher] = await db.insert(users).values({
       first_name: 'Test', last_name: 'Teacher',
@@ -46,7 +47,13 @@ export default async function globalSetup() {
       password_hash: studentHash, role: 'student',
     }).returning();
 
-    console.log(`[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id})`);
+    const [student2] = await db.insert(users).values({
+      first_name: 'Test', last_name: 'Student 2',
+      email: 'student2@test.com',
+      password_hash: student2Hash, role: 'student'
+    }).returning();
+
+    console.log(`[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id}), Studnet 2 (${student2?.id})`);
 
   } finally {
     // Close its own pool — not db.ts's pool

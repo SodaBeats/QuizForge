@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function StudentTimeLimit({timeLimit, onTimeout, attemptCount, maxAttempts}) {
 
   // 1. Initialize state
   const [startTime] = useState(()=>Date.now());
   const [now, setNow] = useState(() => Date.now());
+  const hasTimedOut = useRef(false);
 
   // Set start time on mount (when question changes, component remounts)
 
@@ -27,11 +28,12 @@ export default function StudentTimeLimit({timeLimit, onTimeout, attemptCount, ma
 
   // Auto-advance when time runs out
   const handleTimeout = useCallback(async()=> {
-    await onTimeout();
+    onTimeout();
   }, [onTimeout]);
 
   useEffect(()=>{
-    if(timeLimit > 0 && remainingSeconds === 0){
+    if(timeLimit > 0 && remainingSeconds === 0 && !hasTimedOut.current){
+      hasTimedOut.current = true;
       handleTimeout();
     }
   }, [timeLimit, handleTimeout, remainingSeconds]);

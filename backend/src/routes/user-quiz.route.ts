@@ -96,6 +96,9 @@ router.get('/questions', verifyToken, async(req, res, next) => {
   if(!quizId){
     return res.status(400).json({success: false, message: 'You must select a quiz'});
   }
+  if(req.user.role !== 'teacher'){
+    return res.status(403).json({success: false, message: 'Unauthorized action'});
+  }
   
   try{
     const quizOwnerId = await UserQuizzesRepository.getQuizById(Number(quizId));
@@ -239,7 +242,6 @@ router.get('/:quizId/questions', verifyToken, async(req, res, next) => {
   }catch(error){
     next(error);
   }
-
 });
 
 //get all quiz taker score

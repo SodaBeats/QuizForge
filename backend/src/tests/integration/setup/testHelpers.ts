@@ -57,6 +57,11 @@ export const STUDENT_CREDS = {
   password: 'StudentPass1!',
 };
 
+export const STUDENT2_CREDS = {
+  email: 'student2@test.com',
+  password: 'Student2Pass2!',
+};
+
 // ── authHeader ────────────────────────────────────────────────────────────────
 // Convenience wrapper — pass directly into supertest's .set()
 
