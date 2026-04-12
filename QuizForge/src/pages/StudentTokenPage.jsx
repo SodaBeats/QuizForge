@@ -1,4 +1,3 @@
-
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
@@ -10,44 +9,48 @@ export default function StudentTokenPage() {
   const { authFetch } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmitToken = async(token)=> {
-    try{
-      const quizAndQuestionsRes = await authFetch(`http://localhost:3000/api/student/quiz-access`, {
-        method: 'POST',
-        body: JSON.stringify({token: token}),
-        credentials: 'include'
-      })
+  const handleSubmitToken = async (token) => {
+    try {
+      const quizAndQuestionsRes = await authFetch(
+        `http://localhost:3000/api/student/quiz-access`,
+        {
+          method: "POST",
+          body: JSON.stringify({ token: token }),
+          credentials: "include",
+        },
+      );
 
       const quizAndQuestions = await quizAndQuestionsRes.json();
 
-      if(!quizAndQuestions.success){
+      if (!quizAndQuestions.success) {
         toast.error(quizAndQuestions.message || "Access Denied");
         return;
       }
-      
+
       //stop user if already used up all attempts
       if (quizAndQuestions.totalAttempts >= quizAndQuestions.maxAttempts) {
-        toast.error(`You have used up all ${quizAndQuestions.maxAttempts} available attempts`);
+        toast.error(
+          `You have used up all ${quizAndQuestions.maxAttempts} available attempts`,
+        );
         return;
       }
 
-      toast.success('Quiz found! Starting...');
+      toast.success("Quiz found! Starting...");
       setIsModalOpen(false);
 
       //navigate to quiz page
       navigate(`/student/quiz/${quizAndQuestions.shareToken}`);
-      
-    }catch(error){
-      alert('Something went wrong with token verification');
+    } catch (error) {
+      alert("Something went wrong with token verification");
       console.error(error);
     }
   };
 
-  return(
+  return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       <QuizTokenModal
         isOpen={isModalOpen}
-        onClose={()=>setIsModalOpen(false)}
+        onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmitToken}
       />
       {!isModalOpen && (

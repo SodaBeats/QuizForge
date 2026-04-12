@@ -1,7 +1,4 @@
-import express, { type NextFunction, type Request, type Response } from 'express';
-import { eq, and } from 'drizzle-orm';
-import { db } from '../db/db.js'
-import { uploaded_files } from '../db/schema.js';
+import express from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 

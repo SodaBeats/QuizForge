@@ -40,8 +40,8 @@ app.use('/api/upload', uploadRoutes); // teacher route: file uploads
 app.use('/api/questions', questionRoute);// teacer route: manually made questions
 app.use('/api/documents', documentRoute);// teacher route: getting/deleting documents
 app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
-app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and getting quiz
-app.use('/api/student/quiz-submit', quizSubmitRoute);//student route: submitting quiz attempt
+app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
+app.use('/api/student/quiz-submit', quizSubmitRoute);//student route: fetch quiz data and submitting quiz attempt
 
 //Auth
 app.use('/auth/login', loginRoute);

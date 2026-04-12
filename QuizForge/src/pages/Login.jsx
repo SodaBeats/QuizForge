@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-import toast from 'react-hot-toast';
-import { AuthContext } from '../components/AuthProvider';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import toast from "react-hot-toast";
+import { AuthContext } from "../components/AuthProvider";
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('student'); // ← Add role state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("student"); // ← Add role state
   const [loading, setLoading] = useState(false);
   const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -21,63 +21,66 @@ export default function LogInComponent() {
 
     // Validation
     if (!email || !password) {
-      alert('Please fill in all fields');
+      alert("Please fill in all fields");
       return;
     }
 
     if (!isLogin && (!firstName || !lastName)) {
-      alert('Please enter your first and last name');
+      alert("Please enter your first and last name");
       return;
     }
 
     if (!isLogin && password !== confirmPassword) {
-      alert('Passwords do not match');
+      alert("Passwords do not match");
       return;
     }
     setLoading(true);
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/signup';
-      
-      const body = isLogin 
+      const endpoint = isLogin ? "/auth/login" : "/auth/signup";
+
+      const body = isLogin
         ? { email: email.toLocaleLowerCase(), password: password }
-        : { first_name: firstName.trim(), last_name: lastName.trim(), email: email.toLocaleLowerCase().trim(), password: password, role: role }; // ← Include role
+        : {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            email: email.toLocaleLowerCase().trim(),
+            password: password,
+            role: role,
+          }; // ← Include role
 
       const response = await fetch(`http://localhost:3000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(body)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
 
-      if(!data.success){
-        toast.error(data.message || data.error || 'Authentication failed');
+      if (!data.success) {
+        toast.error(data.message || data.error || "Authentication failed");
         return;
       }
-      if (isLogin && data.user.role === 'teacher') {
+      if (isLogin && data.user.role === "teacher") {
         setToken(data.accessToken);
         setUserInfo(data.user);
-        navigate('/teacher');
-      }
-      else if(isLogin && data.user.role === 'student'){
-        setToken(data.accessToken),
-        setUserInfo(data.user);
-        navigate('/student');
-      }
-      else{
-        alert(data.message || 'Something wrong with login');
+        navigate("/teacher");
+      } else if (isLogin && data.user.role === "student") {
+        (setToken(data.accessToken), setUserInfo(data.user));
+        navigate("/student");
+      } else {
+        alert(data.message || "Something wrong with login");
         setIsLogin(true);
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
-    }finally{
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -86,7 +89,7 @@ export default function LogInComponent() {
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold text-white mb-6 text-center">
-          {isLogin ? 'Login' : 'Sign Up'}
+          {isLogin ? "Login" : "Sign Up"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,22 +125,22 @@ export default function LogInComponent() {
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => setRole('student')}
+                    onClick={() => setRole("student")}
                     className={`flex-1 py-2 rounded font-semibold transition duration-200 ${
-                      role === 'student'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      role === "student"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                   >
                     Student
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRole('teacher')}
+                    onClick={() => setRole("teacher")}
                     className={`flex-1 py-2 rounded font-semibold transition duration-200 ${
-                      role === 'teacher'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      role === "teacher"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                   >
                     Teacher
@@ -173,7 +176,9 @@ export default function LogInComponent() {
 
           {!isLogin && (
             <div>
-              <label className="block text-gray-300 mb-2">Confirm Password</label>
+              <label className="block text-gray-300 mb-2">
+                Confirm Password
+              </label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -190,7 +195,7 @@ export default function LogInComponent() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition duration-200"
           >
-            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
+            {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
 
@@ -200,7 +205,7 @@ export default function LogInComponent() {
             onClick={() => setIsLogin(!isLogin)}
             className="text-blue-500 hover:text-blue-400 font-semibold"
           >
-            {isLogin ? 'Sign Up' : 'Login'}
+            {isLogin ? "Sign Up" : "Login"}
           </button>
         </p>
       </div>
