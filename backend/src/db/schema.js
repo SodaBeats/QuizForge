@@ -18,6 +18,7 @@ export const questions_db = pgTable('questions_db', {
     .references(() => uploaded_files.id, { onDelete: 'cascade' }),
   question_text: text('question_text').notNull(),
   question_type: varchar('question_type', { length: 50 }).notNull(),
+  time_limit: integer('time_limit').default(30), // in seconds
   correct_answer: text('correct_answer'),
   option_a: text('option_a'),
   option_b: text('option_b'),

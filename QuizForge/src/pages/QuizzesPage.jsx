@@ -1,83 +1,91 @@
+import { useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { AuthContext } from "../components/AuthProvider";
+import QuizzesSidebar from "../components/QuizzesSideBar";
+import TopBar from "../components/TopBar";
+import QuizzesMetaData from "../components/QuizzesMetadata";
+import QuizzesQuestionList from "../components/QuizzesQuestionList";
 
-import { useContext, useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { AuthContext } from '../components/AuthProvider';
-import QuizzesSidebar from '../components/QuizzesSideBar';
-import TopBar from '../components/TopBar';
-import QuizzesMetaData from '../components/QuizzesMetadata';
-import QuizzesQuestionList from '../components/QuizzesQuestionList';
-
-export default function QuizzesPage (){
-
+export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
-  
+
   const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
 
   //get quizzes related to user
-  useEffect(()=>{
+  useEffect(() => {
     authFetch(`http://localhost:3000/api/quizzes`)
-    .then(res => res.json())
-    .then(data => setQuizzes(Array.isArray(data) ? data : []))
-    .catch(error => {
-      console.error('Failed to fetch quizzes', error);
-      toast.error('Failed to load quizzes');
-    });
-  },[authFetch]);
+      .then((res) => res.json())
+      .then((data) => setQuizzes(Array.isArray(data) ? data : []))
+      .catch((error) => {
+        console.error("Failed to fetch quizzes", error);
+        toast.error("Failed to load quizzes");
+      });
+  }, [authFetch]);
 
   const handleDeleteQuiz = (quizId) => {
-    setQuizzes(quizzes.filter(q => q.id !== quizId));
+    setQuizzes(quizzes.filter((q) => q.id !== quizId));
     if (selectedQuizId === quizId) {
       setSelectedQuizId(null);
     }
   };
 
   //get all questions related to quiz
-  const handleSelectedQuiz = async(chosenQuizId)=>{
-    try{
-      const response = await authFetch(`http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`)
+  const handleSelectedQuiz = async (chosenQuizId) => {
+    try {
+      const response = await authFetch(
+        `http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`,
+      );
       const result = await response.json();
 
-      if(!result.success){
+      if (!result.success) {
         alert(`Something went wrong: ${result.message}`);
         return;
       }
 
       setQuestions(result.questionList);
-    }catch(error){
+    } catch (error) {
       console.error(error);
       alert(`something went wrong while fetching questions`);
     }
   };
 
-  const handleQuestionUpdate = async(quizId, editingQuestion) => {
+  const handleQuestionUpdate = async (quizId, editingQuestion) => {
     const originalQuestions = [...questions];
-    setQuestions((prev)=> prev.map((q)=> q.id === editingQuestion.id ? editingQuestion : q));
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === editingQuestion.id ? editingQuestion : q)),
+    );
 
-    try{
-      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,{
-        method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(editingQuestion),
-        credentials: 'include'
-      });
+    try {
+      const response = await authFetch(
+        `http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingQuestion),
+          credentials: "include",
+        },
+      );
       const result = await response.json();
 
-      if(!result.success){
-        toast.error(result.message || result.errors?.map(e=>e.msg).join(', ') || 'Update Failed');
+      if (!result.success) {
+        toast.error(
+          result.message ||
+            result.errors?.map((e) => e.msg).join(", ") ||
+            "Update Failed",
+        );
         console.error(result.message);
         setQuestions(originalQuestions);
       }
 
       setEditingQuestion(null);
-
-    }catch(error){
+    } catch (error) {
       setQuestions(originalQuestions);
       alert(`Network error`);
-      console.error('Network error: ',error);
+      console.error("Network error: ", error);
     }
   };
 
@@ -91,49 +99,57 @@ export default function QuizzesPage (){
     return changes;
   };
 
-  const handleQuizMetaUpdate = async(quizToChange) => {
-
+  const handleQuizMetaUpdate = async (quizToChange) => {
     //make copy of original quizzes list
     const originalQuizzes = [...quizzes];
 
     //make copy of original quiz currently editing
-    const originalQuiz = originalQuizzes.find((originalQuiz) => originalQuiz.id === quizToChange.id);
+    const originalQuiz = originalQuizzes.find(
+      (originalQuiz) => originalQuiz.id === quizToChange.id,
+    );
 
     const changes = getChanges(originalQuiz, quizToChange);
 
-    if(Object.keys(changes).length === 0){
-      toast.error('No changes to save');
+    if (Object.keys(changes).length === 0) {
+      toast.error("No changes to save");
       return;
     }
 
-    setQuizzes((prev) => prev.map((q) => q.id === quizToChange.id ? quizToChange : q));
+    setQuizzes((prev) =>
+      prev.map((q) => (q.id === quizToChange.id ? quizToChange : q)),
+    );
     setSelectedQuizId(quizToChange.id);
 
-    try{
-      const response = await authFetch(`http://localhost:3000/api/quizzes/${quizToChange.id}`, {
-        method: 'PATCH',
-        headers: {'Content-type':'application/json'},
-        body: JSON.stringify(quizToChange),
-        credentials: 'include'
-      })
+    try {
+      const response = await authFetch(
+        `http://localhost:3000/api/quizzes/${quizToChange.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-type": "application/json" },
+          body: JSON.stringify(quizToChange),
+          credentials: "include",
+        },
+      );
 
       const result = await response.json();
 
-      if(!result.success){
-        toast.error(result.message || result.errors?.map(e => e.msg).join(', ') || 'Update Failed');
+      if (!result.success) {
+        toast.error(
+          result.message ||
+            result.errors?.map((e) => e.msg).join(", ") ||
+            "Update Failed",
+        );
         setQuizzes(originalQuizzes);
         return;
       }
-      
-      toast.success('Quiz Updated!');
 
-    }catch(error){
-      alert('Error editing quiz information');
-      console.error('Error: ', error);
+      toast.success("Quiz Updated!");
+    } catch (error) {
+      alert("Error editing quiz information");
+      console.error("Error: ", error);
       setQuizzes(originalQuizzes);
     }
   };
-
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -141,11 +157,10 @@ export default function QuizzesPage (){
       <TopBar />
 
       <div className="flex-1 flex overflow-hidden">
-
         {/* Main Content Area */}
 
-        <QuizzesSidebar 
-          quizzes = {quizzes}
+        <QuizzesSidebar
+          quizzes={quizzes}
           selectedQuizId={selectedQuizId}
           setSelectedQuizId={setSelectedQuizId}
           onDeleteQuiz={handleDeleteQuiz}
@@ -153,12 +168,12 @@ export default function QuizzesPage (){
         />
         {selectedQuizId ? (
           <>
-            <QuizzesMetaData 
+            <QuizzesMetaData
               quizKey={selectedQuiz.id}
               quiz={selectedQuiz}
               onUpdateQuizMeta={handleQuizMetaUpdate}
             />
-            <QuizzesQuestionList 
+            <QuizzesQuestionList
               questions={questions}
               selectedQuiz={selectedQuiz}
               onUpdateQuestion={handleQuestionUpdate}
@@ -171,7 +186,6 @@ export default function QuizzesPage (){
             Select a quiz to view details
           </div>
         )}
-
       </div>
     </div>
   );

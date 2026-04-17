@@ -21,7 +21,6 @@ function SideBar({
     quizTitle: '',
     description: '',
     shareToken: '', // Will be filled by backend
-    timeLimit: 0,
     maxAttempts: 0,
     dueDate: '',
     status: 'Draft'
@@ -60,13 +59,8 @@ function SideBar({
       toast.error('Due date and title are required');
       return;
     }
-    const timeLimit = Number(shareData.timeLimit);
     const maxAttempts = Number(shareData.maxAttempts);
 
-    if(typeof(timeLimit) !== 'number' || isNaN(timeLimit) || timeLimit <= 0){
-      toast.error('Time limit must be a valid number');
-      return;
-    }
     if(typeof(maxAttempts) !== 'number' || isNaN(maxAttempts) || maxAttempts <=0){
       toast.error('Max attempts must be a valid number');
       return;
@@ -91,7 +85,6 @@ function SideBar({
           quizTitle: shareData.quizTitle,
           description: shareData.description,
           shareToken: shareData.shareToken,
-          timeLimit: timeLimit,
           maxAttempts: maxAttempts,
           dueDate: finalDueDate,
           status: shareData.status,
@@ -115,7 +108,6 @@ function SideBar({
         quizTitle: '',
         description: '',
         shareToken: '',
-        timeLimit: 0,
         maxAttempts: 0,
         dueDate: '',
         status: 'Draft',
@@ -345,21 +337,6 @@ function SideBar({
 
               {/* Time Limit and Max Attempts - Side by Side */}
               <div className="grid grid-cols-2 gap-4">
-                {/* Time Limit */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Time Limit (min)
-                  </label>
-                  <input
-                    type="number"
-                    value={shareData.timeLimit}
-                    onChange={(e) => setShareData(prev => ({ ...prev, timeLimit: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="10"
-                    min="1"
-                  />
-                </div>
-
                 {/* Max Attempts */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -374,8 +351,21 @@ function SideBar({
                     min="1"
                   />
                 </div>
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={shareData.status || 'draft'}
+                    onChange={(e) => setShareData(prev => ({ ...prev, status: e.target.value.toLowerCase() }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
               </div>
-
               {/* Due Date and Status - Side by Side */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Due Date */}
@@ -390,21 +380,6 @@ function SideBar({
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm
                       focus:outline-none focus:border-blue-500"
                   />
-                </div>
-
-                {/* Status */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={shareData.status || 'draft'}
-                    onChange={(e) => setShareData(prev => ({ ...prev, status: e.target.value.toLowerCase() }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                  </select>
                 </div>
               </div>
             </div>
@@ -427,7 +402,6 @@ function SideBar({
                     quizTitle: '',
                     description: '',
                     shareToken: '',
-                    timeLimit: 0,
                     maxAttempts: 0,
                     dueDate: '',
                     status: 'Draft'

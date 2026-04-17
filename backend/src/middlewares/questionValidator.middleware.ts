@@ -12,6 +12,10 @@ export const questionInputValidator = [
   body('optionC').optional().trim(),
   body('optionD').optional().trim(),
   body('correctAnswer').optional().trim().isString().toLowerCase(),
+  body('timeLimit')
+  .trim()
+  .notEmpty().withMessage('Time Limit is required')
+  .isInt({ min: 5 }).withMessage('Time limit must at least be 5 seconds'),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){

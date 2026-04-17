@@ -1,18 +1,20 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
-export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, maxAttempts, attemptStart}) {
+export default function StudentTimeLimit({timeLimit, onTimeout, attemptCount, maxAttempts}) {
 
-  // 1. Initialize state with total seconds
-  // Using a fallback of 0 if time_limit isn't provided
-  const timeLimitSeconds = (quiz?.timeLimit || 0) * 60;
+  // 1. Initialize state
+  const [startTime] = useState(()=>Date.now());
   const [now, setNow] = useState(() => Date.now());
-  const finishTime = new Date(attemptStart).getTime() + timeLimitSeconds * 1000;
+  const hasTimedOut = useRef(false);
+
+  // Set start time on mount (when question changes, component remounts)
+
+  const finishTime = startTime + timeLimit * 1000;
   const remainingMs = Math.max(0, finishTime - now);
   const remainingSeconds = Math.floor(remainingMs / 1000);
 
-
   useEffect(()=>{
-    if(timeLimitSeconds<=0) return;
+    if(timeLimit <= 0) return;
 
     //set up interval
     const intervalId = setInterval(()=>{
@@ -22,20 +24,19 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
     //cleanup: stops timer when user leaves page
     return () => clearInterval(intervalId);
 
-  }, [timeLimitSeconds]);
+  }, [timeLimit]);
 
-  // Auto-submit when time runs out
-  const onQuizTimeLimit = useCallback(async()=> {
-
-    await handleAutoSubmit();
-
-  }, [handleAutoSubmit]);
+  // Auto-advance when time runs out
+  const handleTimeout = useCallback(async()=> {
+    onTimeout();
+  }, [onTimeout]);
 
   useEffect(()=>{
-    if(timeLimitSeconds > 0 && remainingSeconds === 0){
-      onQuizTimeLimit();
+    if(timeLimit > 0 && remainingSeconds === 0 && !hasTimedOut.current){
+      hasTimedOut.current = true;
+      handleTimeout();
     }
-  }, [timeLimitSeconds, onQuizTimeLimit, remainingSeconds]);
+  }, [timeLimit, handleTimeout, remainingSeconds]);
 
   //formatting time before display
   const minutes = Math.floor(remainingSeconds/60);
@@ -50,7 +51,7 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
       </>
       <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 text-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">Time Remaining</p>
-        <div className={`text-4xl font-mono font-bold ${remainingSeconds < 60 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+        <div className={`text-4xl font-mono font-bold ${remainingSeconds < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
           {formattedTime}
         </div>
       </div>
@@ -62,7 +63,7 @@ export default function StudentTimeLimit({quiz, handleAutoSubmit, attemptCount, 
           <ul className="text-xs text-gray-400 space-y-2 list-disc pl-4">
             <li>Answers are saved automatically.</li>
             <li>You can go back to change answers.</li>
-            <li>The quiz auto-submits when time expires.</li>
+            <li>The question auto-advances when time expires.</li>
           </ul>
         </div>
       </div>

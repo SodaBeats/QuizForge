@@ -9,7 +9,7 @@
 //   PATCH  /api/student/quiz-submit             — student submits quiz
 
 import request from 'supertest';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db, pool } from '../../db/db.js';
 import app from '../../server.js';
 import {
@@ -24,6 +24,7 @@ import {
   authHeader,
   TEACHER_CREDS,
   STUDENT_CREDS,
+  STUDENT2_CREDS,
   generateShareToken,
 } from './setup/testHelpers.js';
 
@@ -32,12 +33,17 @@ let teacherToken: string;
 let teacherId: number;
 let studentToken: string;
 let studentId: number;
+let student2Token: string;
+let student2Id: number;
 
 let seededDocId: number;
+let metricsDocId: number;
 let seededQuestionId: number;
+let metricsQuestionId: number;
 let seededQuizId: number;
+let metricsQuizId: number;
 let seededQuizShareToken: string;
-let createdQuizId: number;
+let metricsQuizShareToken: string;
 
 // ── Helper: a future due date ─────────────────────────────────────────────────
 const futureDueDate = () =>
@@ -48,7 +54,6 @@ const futureDueDate = () =>
 const buildQuizPayload = (questionIds: number[], fileId: number) => ({
   quizTitle: 'Integration Test Quiz',
   description: 'A quiz created by the integration test suite',
-  timeLimit: 30,
   maxAttempts: 2,
   dueDate: futureDueDate(),
   status: 'published',
@@ -70,6 +75,10 @@ beforeAll(async () => {
   const studentResult = await loginAs(STUDENT_CREDS.email, STUDENT_CREDS.password);
   studentToken = studentResult.accessToken;
   studentId = studentResult.userId;
+
+  const student2Result = await loginAs(STUDENT2_CREDS.email, STUDENT2_CREDS.password);
+  student2Token = student2Result.accessToken;
+  student2Id = student2Result.userId;
 
   // Seed a document
   const [doc] = await db
@@ -101,6 +110,7 @@ beforeAll(async () => {
       option_b: 'Venus',
       option_c: 'Earth',
       option_d: 'Mars',
+      time_limit: 12
     })
     .returning();
   
@@ -120,7 +130,6 @@ beforeAll(async () => {
       quiz_title: 'Seeded Quiz',
       quiz_description: 'Used by GET/PATCH/access/submit tests',
       share_token: shareToken,
-      time_limit: 30,
       max_attempts: 3,
       status: 'published',
       due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -141,10 +150,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if(createdQuizId){
-    await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, createdQuizId));
-    await db.delete(quizzes_db).where(eq(quizzes_db.id, createdQuizId));
-  }
   await db.delete(quiz_attempts_db).where(eq(quiz_attempts_db.user_id, studentId));
   await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, seededQuizId));
   await db.delete(quizzes_db).where(eq(quizzes_db.id, seededQuizId));
@@ -167,10 +172,6 @@ describe('POST /api/quizzes', () => {
       .post('/api/quizzes')
       .set(authHeader(teacherToken))
       .send(payload);
-
-    if(res.body.id){
-      createdQuizId = res.body.id;
-    }
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -266,6 +267,339 @@ describe('GET /api/quizzes/questions', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GET /api/quizzes/:quizId/metrics
+// — get quiz metrics [total takers, quiz average, highest score, highest scorer, lowest score]
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GET api/quizzes/:quizId/metrics', () => {
+
+  beforeAll( async () => {
+    // Seed a document
+    const [metricsDoc] = await db
+      .insert(uploaded_files)
+      .values({
+        user_id: teacherId,
+        filename: 'quiz_test_doc.docx',
+        file_path: '/fake/quiz_test_doc.docx',
+        file_hash: 'quizhash002',
+        extracted_text: 'Quiz test document text for metrics test.',
+      })
+      .returning();
+
+    if(!metricsDoc){
+      throw new Error('Failed to seed metrics document');
+    }
+
+    metricsDocId = metricsDoc.id;
+
+    // Seed a question
+    const [metricsQuestion] = await db
+      .insert(questions_db)
+      .values({
+        document_id: metricsDocId,
+        question_text: 'Is this a test?',
+        question_type: 'true-false',
+        correct_answer: 'true',
+        time_limit: 10
+      })
+      .returning();
+
+    if(!metricsQuestion){
+      throw new Error('Failed to seed metrics question');
+    }
+
+    metricsQuestionId = metricsQuestion.id;
+
+    // Seed a quiz + assign the question to it
+    const shareToken = generateShareToken();
+
+    const [metricsQuiz] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'Metrics Quiz',
+        quiz_description: 'Used by GET api/quizzes/quizId/metrics',
+        share_token: shareToken,
+        max_attempts: 3,
+        status: 'published',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+
+    if(!metricsQuiz){
+      throw new Error('Failed to seed quiz');
+    }
+
+    metricsQuizId = metricsQuiz.id;
+    metricsQuizShareToken = metricsQuiz.share_token;
+
+    await db.insert(quiz_questions_db).values({
+      quiz_id: metricsQuizId,
+      question_id: metricsQuestionId,
+    });
+
+    //first access quiz to make attempt
+    const accessRes = await request(app)
+      .post('/api/student/quiz-access')
+      .set(authHeader(studentToken))
+      .send({ token: metricsQuizShareToken });
+
+    expect(accessRes.status).toBe(200);
+
+    //access quiz to get questions
+    const quizRes = await request(app)
+      .get(`/api/student/quiz-access/${metricsQuizShareToken}`)
+      .set(authHeader(studentToken))
+    
+    const { quiz, questions, attemptId, attemptStart } = quizRes.body;
+    
+    expect(quizRes.status).toBe(200);
+    expect(quiz).toBeDefined();
+    expect(questions).toBeDefined();
+    expect(attemptStart).toBeDefined();
+    expect(attemptId).toBeDefined();
+
+    // Build an answers object: { [questionId]: selectedAnswer }
+    const answers: Record<string, string> = {};
+    for (const q of questions) {
+      answers[q.id] = 'false'; // just pick option A for every question
+    }
+
+    //submit quiz and record score
+    const submitRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send({ quiz, questions, answers, attemptId });
+
+    expect(submitRes.status).toBe(200);
+    expect(submitRes.body.success).toBe(true);
+    expect(submitRes.body.message).toMatch(/attempt received/i);
+  });
+
+  afterAll(async () => {
+    await db.delete(quiz_attempts_db).where(and(
+      eq(quiz_attempts_db.quiz_id, metricsQuizId),
+      eq(quiz_attempts_db.user_id, studentId)
+    ));
+    await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, metricsQuizId));
+    await db.delete(quizzes_db).where(eq(quizzes_db.id, metricsQuizId));
+    await db.delete(questions_db).where(eq(questions_db.document_id, metricsDocId));
+    await db.delete(uploaded_files).where(eq(uploaded_files.id, metricsDocId));
+  });
+
+  it('200 - returns metrics for valid role', async () => {
+    // Now get metrics with proper role and even with 0 score/average
+    const res = await request(app)
+      .get(`/api/quizzes/${metricsQuizId}/metrics`)
+      .set(authHeader(teacherToken))
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.totalTakers).toBe(1);
+    expect(res.body.quizAverage).toBeDefined();
+    expect(res.body.highestScore).toBeDefined();
+    expect(res.body.highestScorer).toBeDefined();
+    expect(res.body.lowestScore).toBeDefined();
+  });
+
+  it('403 - Rejects unauthorized request (student)', async () => {
+    const res = await request(app)
+      .get(`/api/quizzes/${metricsQuizId}/metrics`)
+      .set(authHeader(studentToken))
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/Unauthorized action/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/quizzes/:quizId/students
+// — get student ranking
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GET /api/quizzes/:quizId/students', ()=> {
+  beforeAll( async () => {
+    // Seed a document
+    const [metricsDoc] = await db
+      .insert(uploaded_files)
+      .values({
+        user_id: teacherId,
+        filename: 'quiz_test_doc.docx',
+        file_path: '/fake/quiz_test_doc.docx',
+        file_hash: 'quizhash002',
+        extracted_text: 'Quiz test document text for metrics test.',
+      })
+      .returning();
+
+    if(!metricsDoc){
+      throw new Error('Failed to seed metrics document');
+    }
+
+    metricsDocId = metricsDoc.id;
+
+    // Seed a question
+    const [metricsQuestion] = await db
+      .insert(questions_db)
+      .values({
+        document_id: metricsDocId,
+        question_text: 'Is this a test?',
+        question_type: 'true-false',
+        correct_answer: 'true',
+        time_limit: 10
+      })
+      .returning();
+
+    if(!metricsQuestion){
+      throw new Error('Failed to seed metrics question');
+    }
+
+    metricsQuestionId = metricsQuestion.id;
+
+    // Seed a quiz + assign the question to it
+    const shareToken = generateShareToken();
+
+    const [metricsQuiz] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'Metrics Quiz',
+        quiz_description: 'Used by GET api/quizzes/quizId/metrics',
+        share_token: shareToken,
+        max_attempts: 3,
+        status: 'published',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+
+    if(!metricsQuiz){
+      throw new Error('Failed to seed quiz');
+    }
+
+    metricsQuizId = metricsQuiz.id;
+    metricsQuizShareToken = metricsQuiz.share_token;
+
+    await db.insert(quiz_questions_db).values({
+      quiz_id: metricsQuizId,
+      question_id: metricsQuestionId,
+    });
+
+    //first access quiz to make attempt
+    const accessRes = await request(app)
+      .post('/api/student/quiz-access')
+      .set(authHeader(studentToken))
+      .send({ token: metricsQuizShareToken });
+
+    expect(accessRes.status).toBe(200);
+
+    const accessRes2 = await request(app)
+      .post('/api/student/quiz-access')
+      .set(authHeader(student2Token))
+      .send({ token: metricsQuizShareToken });
+
+    expect(accessRes2.status).toBe(200);
+
+    //access quiz to get questions
+    const quizRes = await request(app)
+      .get(`/api/student/quiz-access/${metricsQuizShareToken}`)
+      .set(authHeader(studentToken))
+    
+    const { quiz, questions, attemptId, attemptStart } = quizRes.body;
+    
+    expect(quizRes.status).toBe(200);
+    expect(quiz).toBeDefined();
+    expect(questions).toBeDefined();
+    expect(attemptStart).toBeDefined();
+    expect(attemptId).toBeDefined();
+
+    //access quiz to get questions
+    const quizRes2 = await request(app)
+      .get(`/api/student/quiz-access/${metricsQuizShareToken}`)
+      .set(authHeader(student2Token))
+    
+    const { quiz: quiz2, questions: questions2, attemptId: attemptId2, attemptStart:attemptStart2 } = quizRes2.body;
+    
+    expect(quizRes2.status).toBe(200);
+    expect(quiz2).toBeDefined();
+    expect(questions2).toBeDefined();
+    expect(attemptStart2).toBeDefined();
+    expect(attemptId2).toBeDefined();
+
+    // Build an answers object: { [questionId]: selectedAnswer }
+    const answers: Record<string, string> = {};
+    for (const q of questions) {
+      answers[q.id] = 'false';
+    }
+    const answers2: Record<string, string> = {};
+    for (const x of questions2){
+      answers2[x.id] = 'true';
+    }
+
+    //submit quiz and record score
+    const submitRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send({ quiz, questions, answers, attemptId });
+
+    expect(submitRes.status).toBe(200);
+    expect(submitRes.body.success).toBe(true);
+    expect(submitRes.body.message).toMatch(/attempt received/i);
+
+    const submitRes2 = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(student2Token))
+      .send({
+        quiz: quiz2,
+        questions: questions2,
+        answers: answers2,
+        attemptId: attemptId2
+      });
+
+    expect(submitRes2.status).toBe(200);
+    expect(submitRes2.body.success).toBe(true);
+    expect(submitRes2.body.message).toMatch(/attempt received/i);
+  });
+
+  afterAll(async () => {
+    await db.delete(quiz_attempts_db).where(eq(quiz_attempts_db.quiz_id, metricsQuizId));
+    await db.delete(quiz_questions_db).where(eq(quiz_questions_db.quiz_id, metricsQuizId));
+    await db.delete(quizzes_db).where(eq(quizzes_db.id, metricsQuizId));
+    await db.delete(questions_db).where(eq(questions_db.document_id, metricsDocId));
+    await db.delete(uploaded_files).where(eq(uploaded_files.id, metricsDocId));
+  });
+
+  it('200 - returns ranking for valid role', async () => {
+    const res = await request(app)
+      .get(`/api/quizzes/${metricsQuizId}/students`)
+      .set(authHeader(teacherToken))
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toBeDefined();
+    expect(res.body.data).toBeInstanceOf(Array);
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data.length).toBe(2);
+  });
+
+  it('403 - Rejects unauthorized request', async () => {
+    const res = await request(app)
+      .get(`/api/quizzes/${metricsQuizId}/students`)
+      .set(authHeader(studentToken))
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/Unauthorized action/i);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TO DO:
+// GET /api/quizzes/:quizId/questions
+// GET /api/quizzes/:quizId/score
+// — get question correction rate
+// — get score ranking
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PATCH /api/quizzes/:id  — update quiz metadata
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -278,7 +612,6 @@ describe('PATCH /api/quizzes/:id', () => {
       .send({
         quizTitle: 'Updated Quiz Title',
         description: 'Updated description',
-        timeLimit: 45,
         maxAttempts: 2,
         dueDate: futureDueDate(),
         status: 'published',

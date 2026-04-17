@@ -28,6 +28,7 @@ const validQuestion = () => ({
   optionB: '3',
   optionC: '5',
   optionD: '6',
+  timeLimit: 20
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ beforeAll(async () => {
       option_b: 'Correct',
       option_c: 'Also Wrong',
       option_d: 'Still Wrong',
+      time_limit: 20
     })
     .returning();
 
@@ -184,6 +186,7 @@ describe('PATCH /api/questions/:id', () => {
       optionC: 'C option — correct',
       optionD: 'D option',
       documentId: seededDocId,
+      timeLimit: 122
     };
 
     const res = await request(app)
@@ -235,6 +238,7 @@ describe('DELETE /api/questions/:id', () => {
         option_b: 'No',
         option_c: 'Maybe',
         option_d: 'Never',
+        time_limit: 12
       })
       .returning();
 

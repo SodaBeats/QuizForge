@@ -37,7 +37,8 @@ router.post('/',
       option_a: req.body.optionA,
       option_b: req.body.optionB,
       option_c: req.body.optionC,
-      option_d: req.body.optionD
+      option_d: req.body.optionD,
+      time_limit: req.body.timeLimit,
     };
 
     const insertedQuestion = await QuestionsRepository.insertQuestionToDb(formattedData);
@@ -93,6 +94,7 @@ router.patch('/:id',
   const {
     questionText,
     questionType,
+    timeLimit,
     correctAnswer,
     optionA,
     optionB,
@@ -116,6 +118,7 @@ router.patch('/:id',
       document_id: documentId,
       question_text: questionText,
       question_type: questionType,
+      time_limit: timeLimit,
       correct_answer: correctAnswer,
       option_a: optionA,
       option_b: optionB,

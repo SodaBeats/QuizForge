@@ -90,28 +90,6 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Time Limit */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 block mb-2">
-              Time Limit (minutes)
-            </label>
-            <input
-              type="number"
-              name="timeLimit"
-              min="0"
-              placeholder="e.g. 30"
-              value={editingQuiz.timeLimit || ''}
-              onChange={(e) =>
-                setEditingQuiz({
-                  ...editingQuiz,
-                  timeLimit: e.target.value === '' ? null : Number(e.target.value),
-                })
-              }
-              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
-                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-            />
-          </div>
-
           {/* Due Date */}
           <div>
             <label className="text-sm font-semibold text-gray-400 block mb-2">

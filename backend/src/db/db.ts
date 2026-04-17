@@ -27,6 +27,11 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
+// Prevent idle connection drops from crashing the process (common with Neon)
+pool.on('error', (err) => {
+  console.error('[pg pool] Idle client error:', err.message);
+});
+
 const db = drizzle(pool, { schema });
 
 export { db, pool };

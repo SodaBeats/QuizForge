@@ -65,6 +65,7 @@ export const QuestionsRepository = {
           id: questions_db.id,
           questionText: questions_db.question_text,
           questionType: questions_db.question_type,
+          timeLimit: questions_db.time_limit,
           correctAnswer: questions_db.correct_answer,
           optionA: questions_db.option_a,
           optionB: questions_db.option_b,

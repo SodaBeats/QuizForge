@@ -8,7 +8,6 @@ export const quizInputValidator = [
   body('quizTitle').trim().notEmpty().withMessage('Quiz title is required'),
   body('description').optional().trim(),
   body('shareToken').trim().notEmpty().withMessage('Share token is required').isAlphanumeric().toLowerCase(),
-  body('timeLimit').trim().notEmpty().withMessage('Time limit is required').isInt({min: 1}).withMessage('Time limit must be a valid number'),
   body('maxAttempts').optional().trim().isInt({min:1}).withMessage('Max attempts must be a valid number'),
   body('dueDate').trim().notEmpty().withMessage('Due date is required').isISO8601().withMessage('Invalid date format')
     .custom((value)=>{
