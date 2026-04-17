@@ -66,7 +66,8 @@ export default function LogInComponent() {
         setUserInfo(data.user);
         navigate("/teacher");
       } else if (isLogin && data.user.role === "student") {
-        (setToken(data.accessToken), setUserInfo(data.user));
+        setToken(data.accessToken);
+        setUserInfo(data.user);
         navigate("/student");
       } else {
         alert(data.message || "Something wrong with login");

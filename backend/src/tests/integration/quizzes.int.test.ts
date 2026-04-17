@@ -547,7 +547,12 @@ describe('GET /api/quizzes/:quizId/students', ()=> {
     const submitRes2 = await request(app)
       .patch('/api/student/quiz-submit')
       .set(authHeader(student2Token))
-      .send({ quiz2, questions2, answers2, attemptId2 });
+      .send({
+        quiz: quiz2,
+        questions: questions2,
+        answers: answers2,
+        attemptId: attemptId2
+      });
 
     expect(submitRes2.status).toBe(200);
     expect(submitRes2.body.success).toBe(true);

@@ -68,7 +68,7 @@ export default function QuizMakerSkeleton() {
       const response = await authFetch("http://localhost:3000/api/upload", {
         method: "POST",
         body: data,
-        credentails: "include",
+        credentials: "include",
       });
 
       if (!response.ok) {

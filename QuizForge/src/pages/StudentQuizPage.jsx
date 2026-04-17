@@ -190,7 +190,7 @@ export default function StudentQuizPage() {
         {/* The Timer Sidebar (Right) */}
         <StudentTimeLimit
           key={selectedQuestionIndex}
-          timeLimit={selectedQuestion?.timeLimit || 0}
+          timeLimit={selectedQuestion?.timeLimit ?? null}
           onTimeout={handleTimeout}
           attemptCount={attemptCount}
           maxAttempts={maxAttempts}
