@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean, unique, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar, integer, uuid, boolean, unique, index, vector } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 
 export const uploaded_files = pgTable('uploaded_files', {
@@ -128,7 +128,7 @@ export const attempt_answers_db = pgTable('attempt_answers_db', {
   is_correct: boolean('is_correct').notNull().default(false),
 
   created_at: timestamp('created_at').defaultNow().notNull(),
-}, (table) => ({
+  }, (table) => ({
   // Speed up the dashboard query — you'll always filter by quiz_id
   // when building the difficulty ranking
   quizIdIndex: index('attempt_answers_quiz_id_idx').on(table.quiz_id),
@@ -140,6 +140,20 @@ export const attempt_answers_db = pgTable('attempt_answers_db', {
   uniqueAttemptQuestion: unique('unique_attempt_question').on(table.attempt_id, table.question_id),
 }));
 
+// document chunks table with vector
+export const document_chunks_db = pgTable("document_chunks_db", {
+  id: serial("id").primaryKey(),
+  document_id: integer('document_id')
+    .references(() => uploaded_files.id, { onDelete: 'cascade' })
+    .notNull(),
+  user_id: integer("user_id")
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  content: text("content").notNull(),
+  embedding: vector("embedding", { dimensions: 1024 }).notNull(),
+}, (table) => [
+  index("embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops"))
+]);
 
 
 // --RELATIONS
