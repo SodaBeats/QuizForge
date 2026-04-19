@@ -6,7 +6,10 @@ export const textUtilities = {
     let chunkArray: string[] = [];
 
     paragraphs.forEach((paragraph) => {
-      const wordCount = paragraph.split(/\s+/).length;
+      const trimmed = paragraph.trim();
+      if (!trimmed) return;
+
+      const wordCount = trimmed.split(/\s+/).length;
 
       if (wordCount <= 400) {
         chunkArray.push(paragraph);
@@ -24,14 +27,14 @@ export const textUtilities = {
           sentenceChunk.push(s);
 
           if (runningCount >= 400) {
-            chunkArray.push(sentenceChunk.join('.'));
+            chunkArray.push(sentenceChunk.join(' '));
             sentenceChunk = [];
             runningCount = 0;
           }
         });
 
         if (sentenceChunk.length > 0) {
-          chunkArray.push(sentenceChunk.join('.'));
+          chunkArray.push(sentenceChunk.join(' '));
         }
       }
     });
@@ -48,7 +51,7 @@ export const textUtilities = {
 
         // 2. Fix "Split Words"
         // Sometimes "Example" becomes "Ex- ample" due to line breaks
-        .replace(/(\w+)-\s+\n(\w+)/g, '$1$2')
+        .replace(/(\w+)-\s*\n\s*(\w+)/g, '$1$2')
 
         // 4. Fix sentence endings
         // Ensures there is exactly one space after a period/question mark

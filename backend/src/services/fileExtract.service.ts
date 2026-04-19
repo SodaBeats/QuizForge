@@ -54,10 +54,14 @@ export const extractText = async (
     const insertedFile =
       await UploadedFilesRepository.insertFileToDb(formattedData);
 
+    if (!insertedFile) {
+      throw new Error('Failed to insert file to database');
+    }
+
     return {
       success: true,
-      fileId: insertedFile?.id,
-      fileName: insertedFile?.filename,
+      fileId: insertedFile.id,
+      fileName: insertedFile.filename,
       content: cleanedText,
       type: file.mimetype,
     };
