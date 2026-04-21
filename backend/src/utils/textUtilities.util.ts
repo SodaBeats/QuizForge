@@ -2,22 +2,29 @@
 
 export const textUtilities = {
   textChunker(text: string) {
-    const paragraphs = text.split(/\n\s*\n/);
+    const paragraphs: string[] = text.split(/\n\s*\n/);
     let chunkArray: string[] = [];
 
-    paragraphs.forEach((paragraph) => {
-      const trimmed = paragraph.trim();
+    for (let i = 0; i < paragraphs.length; i++) {
+      const current = paragraphs[i] as string;
+      const trimmed = current.trim();
       if (!trimmed) return;
 
       const wordCount = trimmed.split(/\s+/).length;
 
-      if (wordCount <= 400) {
-        chunkArray.push(paragraph);
-        return;
+      if (wordCount < 30 && i + 1 < paragraphs.length) {
+        const next = paragraphs[i + 1] as string;
+        paragraphs[i + 1] = trimmed + ' ' + next.trim();
+        continue;
+      }
+
+      if (wordCount <= 500) {
+        chunkArray.push(paragraphs[i] as string);
+        continue;
       } else {
         const sentenceRegex =
           /(?<!\b(?:Dr|Mr|Mrs|Ms|Sr|Jr|St|e\.g|i\.e)\.)(?<=[.!?])\s+/i;
-        const sentences = paragraph.split(sentenceRegex);
+        const sentences = (paragraphs[i] as string).split(sentenceRegex);
         let sentenceChunk: string[] = [];
         let runningCount = 0;
 
@@ -37,7 +44,7 @@ export const textUtilities = {
           chunkArray.push(sentenceChunk.join(' '));
         }
       }
-    });
+    }
 
     return chunkArray;
   },

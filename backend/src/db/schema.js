@@ -150,7 +150,7 @@ export const document_chunks_db = pgTable("document_chunks_db", {
     .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
   content: text("content").notNull(),
-  embedding: vector("embedding", { dimensions: 1024 }).notNull(),
+  embedding: vector("embedding", { dimensions: 1024 }),
 }, (table) => [
   index("embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops"))
 ]);

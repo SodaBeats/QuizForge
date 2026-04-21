@@ -1,8 +1,10 @@
 import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
+//import ollama from 'ollama';
 import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
+import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 
 export const extractText = async (
   file: UploadedFileInterface | null | undefined,
@@ -34,9 +36,6 @@ export const extractText = async (
     //clean text format
     const cleanedText = textUtilities.cleanExtractedText(extractedText);
 
-    //chunk for vector database storage (RAG)
-    const chunks = textUtilities.textChunker(cleanedText);
-
     //store the needed values into variables for ease of use
     const fileName = file.originalname;
     const fileHash = file.fileHash;
@@ -58,6 +57,33 @@ export const extractText = async (
       throw new Error('Failed to insert file to database');
     }
 
+    //chunk for vector database storage (RAG)
+    const chunks = textUtilities.textChunker(cleanedText);
+
+    // make embeddings for the chunks
+    if (chunks && chunks.length > 0) {
+      try {
+        /*const batch = await ollama.embed({
+          model: 'mxbai-embed-large:latest',
+          input: chunks,
+        });*/
+        const dataToInsert = chunks.map((chunk, index) => {
+          /*const vector = batch.embeddings[index];
+          if (!vector) {
+            throw new Error(`Embedding failed for chunk at index ${index}`);
+          }*/
+          return {
+            document_id: insertedFile.id,
+            user_id: userId,
+            content: chunk,
+            embedding: null,
+          };
+        });
+        await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert);
+      } catch (error) {
+        console.error(error);
+      }
+    }
     return {
       success: true,
       fileId: insertedFile.id,
