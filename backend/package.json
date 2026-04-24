@@ -30,7 +30,8 @@
     "multer": "^2.0.2",
     "ollama": "^0.6.3",
     "pdf-extraction": "^1.0.2",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

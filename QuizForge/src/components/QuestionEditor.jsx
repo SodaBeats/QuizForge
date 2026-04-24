@@ -10,6 +10,7 @@ export default function QuestionEditor({
 }) {
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [manualQuestion, setManualQuestion] = useState({
     //question usestate
     documentId: selectedFile?.id,
@@ -25,6 +26,7 @@ export default function QuestionEditor({
   const [generateOptions, setGenerateOptions] = useState({
     questionType: "multiple-choice",
     timeLimit: 60,
+    questionAmount: 5,
   });
 
   useEffect(() => {
@@ -130,6 +132,7 @@ export default function QuestionEditor({
   };
 
   const handleGenerate = async () => {
+    setLoading(true);
     try {
       const response = await authFetch(
         "http://localhost:3000/api/questions/generate",
@@ -152,7 +155,8 @@ export default function QuestionEditor({
         toast.error("Something went wrong while generating questions");
         console.error(result.error || result.message || "IDK fam");
       }
-      console.log(result);
+      setQuestions(result.questions);
+      setLoading(false);
     } catch (error) {
       console.error(error);
       alert("Something went wrong, please try again later");
@@ -509,6 +513,24 @@ export default function QuestionEditor({
               </>
               <>
                 <label className="block text-sm font-medium mb-1">
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  value={generateOptions.questionAmount}
+                  onChange={(e) =>
+                    setGenerateOptions({
+                      ...generateOptions,
+                      questionAmount: Number(e.target.value) || 5,
+                    })
+                  }
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  min="1"
+                  placeholder="Enter number of questions"
+                />
+              </>
+              <>
+                <label className="block text-sm font-medium mb-1">
                   Time Limit per Question (seconds)
                 </label>
                 <input
@@ -527,10 +549,11 @@ export default function QuestionEditor({
               </>
               <div className="flex space-x-2 mt-4">
                 <button
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleGenerate}
+                  disabled={loading}
                 >
-                  Generate
+                  {loading ? "Generating..." : "Generate"}
                 </button>
                 <button
                   onClick={() => setAddMode(null)}
