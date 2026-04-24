@@ -55,7 +55,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: backend/package-lock.json
 
       # ── 3. Install dependencies ───────────────────────────────────────────
@@ -65,7 +65,15 @@ jobs:
         working-directory: backend
         run: npm install
 
-      # ── 4. Push schema to test DB ─────────────────────────────────────────
+      # ── 4. Enable pgvector extension ─────────────────────────────────────
+      # WHAT: Installs the pgvector extension into the test database
+      # WHY:  The postgres:16 image includes pgvector but it's not enabled
+      #       by default. The vector column in document_chunks_db requires
+      #       it to exist before drizzle-kit push runs.
+      - name: Enable pgvector extension
+        run: psql postgresql://postgres:postgres@localhost:5432/quizforge_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      # ── 5. Push schema to test DB ─────────────────────────────────────────
       # WHAT: Runs drizzle-kit push against the Postgres container
       # WHY:  The container starts completely empty — no tables yet.
       #       This creates all your tables before the tests run.
