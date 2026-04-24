@@ -28,7 +28,7 @@ export default async function globalSetup() {
     await db.execute(sql`
       TRUNCATE TABLE 
         "quiz_attempts_db", "quiz_questions_db", "quizzes_db",
-        "questions_db", "uploaded_files", "refresh_tokens", "users", "attempt_answers_db, "document_chunks_db"
+        "questions_db", "uploaded_files", "refresh_tokens", "users", "attempt_answers_db", "document_chunks_db"
       RESTART IDENTITY CASCADE;
     `);
 
