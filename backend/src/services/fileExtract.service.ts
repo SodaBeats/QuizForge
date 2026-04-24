@@ -1,28 +1,30 @@
 import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
-import { cleanExtractedText } from './textCleaner.service.js';
-import type { UploadedFileInterface } from '../types/file.js'; //TO DO: MAKE UNIT TEST FOR 
+//import ollama from 'ollama';
+import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
+import { textUtilities } from '../utils/textUtilities.util.js';
+import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 
-export const extractText = async(
+export const extractText = async (
   file: UploadedFileInterface | null | undefined,
-  userId: number
-  ) => {
-
-  try{
-
-    if(!file){
+  userId: number,
+) => {
+  try {
+    if (!file) {
       throw new Error('no file uploaded');
     }
 
     let extractedText = '';
 
     //Use appropriate library depending on Mimetype
-    if(file.mimetype === 'application/pdf'){
+    if (file.mimetype === 'application/pdf') {
       const data = await pdf(file.buffer);
       extractedText = data.text;
-    }
-    else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    } else if (
+      file.mimetype ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
       const result = await mammoth.extractRawText({ buffer: file.buffer });
       extractedText = result.value;
     }
@@ -31,7 +33,8 @@ export const extractText = async(
       throw new Error('No text extracted from file');
     }
 
-    const cleanedText = cleanExtractedText(extractedText);
+    //clean text format
+    const cleanedText = textUtilities.cleanExtractedText(extractedText);
 
     //store the needed values into variables for ease of use
     const fileName = file.originalname;
@@ -44,23 +47,54 @@ export const extractText = async(
       file_path: 'temporary_input',
       file_hash: fileHash,
       extracted_text: cleanedText,
-    }
+    };
 
     //when inserting to database, use schema property names
-    const insertedFile = await UploadedFilesRepository.insertFileToDb(formattedData);
+    const insertedFile =
+      await UploadedFilesRepository.insertFileToDb(formattedData);
 
-    return{
-      success: true,
-      fileId: insertedFile?.id,
-      fileName: insertedFile?.filename,
-      content: cleanedText,
-      type: file.mimetype
+    if (!insertedFile) {
+      throw new Error('Failed to insert file to database');
     }
 
+    //chunk for vector database storage (RAG)
+    const chunks = textUtilities.textChunker(cleanedText);
+
+    // make embeddings for the chunks
+    if (chunks && chunks.length > 0) {
+      try {
+        /*const batch = await ollama.embed({
+          model: 'mxbai-embed-large:latest',
+          input: chunks,
+        });*/
+        const dataToInsert = chunks.map((chunk, index) => {
+          /*const vector = batch.embeddings[index];
+          if (!vector) {
+            throw new Error(`Embedding failed for chunk at index ${index}`);
+          }*/
+          return {
+            document_id: insertedFile.id,
+            user_id: userId,
+            content: chunk,
+            embedding: null,
+          };
+        });
+        await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return {
+      success: true,
+      fileId: insertedFile.id,
+      fileName: insertedFile.filename,
+      content: cleanedText,
+      type: file.mimetype,
+    };
   } catch (err: unknown) {
     if (err instanceof Error) {
       throw new Error(`File extraction service error: ${err.message}`);
     }
     throw new Error('File extraction service error');
   }
-}
+};

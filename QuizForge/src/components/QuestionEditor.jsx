@@ -1,49 +1,60 @@
 import React, { useState, useEffect, useContext } from "react";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
 
-export default function QuestionEditor({ selectedFile, setQuestions, selectedQuestion, setSelectedQuestionId }) {
-
+export default function QuestionEditor({
+  selectedFile,
+  setQuestions,
+  selectedQuestion,
+  setSelectedQuestionId,
+}) {
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
-  const [manualQuestion, setManualQuestion] = useState({ //question usestate
+  const [loading, setLoading] = useState(false);
+  const [manualQuestion, setManualQuestion] = useState({
+    //question usestate
     documentId: selectedFile?.id,
-    questionText: '',
-    questionType: 'multiple-choice',
-    optionA: '',
-    optionB: '',
-    optionC: '',
-    optionD: '',
-    correctAnswer: '',
+    questionText: "",
+    questionType: "multiple-choice",
+    optionA: "",
+    optionB: "",
+    optionC: "",
+    optionD: "",
+    correctAnswer: "",
     timeLimit: 60,
   });
-  
+  const [generateOptions, setGenerateOptions] = useState({
+    questionType: "multiple-choice",
+    timeLimit: 60,
+    questionAmount: 5,
+  });
+
   useEffect(() => {
     if (selectedQuestion) {
       // eslint-disable-next-line
       setManualQuestion({
         id: selectedQuestion.id,
         documentId: selectedQuestion.document_id,
-        questionText: selectedQuestion.question_text || '',
-        questionType: selectedQuestion.question_type || 'multiple-choice',
-        optionA: selectedQuestion.option_a || '',
-        optionB: selectedQuestion.option_b || '',
-        optionC: selectedQuestion.option_c || '',
-        optionD: selectedQuestion.option_d || '',
-        correctAnswer: selectedQuestion.correct_answer || '',
+        questionText: selectedQuestion.question_text || "",
+        questionType: selectedQuestion.question_type || "multiple-choice",
+        optionA: selectedQuestion.option_a || "",
+        optionB: selectedQuestion.option_b || "",
+        optionC: selectedQuestion.option_c || "",
+        optionD: selectedQuestion.option_d || "",
+        correctAnswer: selectedQuestion.correct_answer || "",
         timeLimit: selectedQuestion.time_limit || 60,
       });
-      setAddMode('edit');
+      setAddMode("edit");
     } else {
       setManualQuestion({
         documentId: selectedFile?.id || null,
-        questionText: '',
-        questionType: 'multiple-choice',
-        optionA: '',
-        optionB: '',
-        optionC: '',
-        optionD: '',
-        correctAnswer: '',
+        questionText: "",
+        questionType: "multiple-choice",
+        optionA: "",
+        optionB: "",
+        optionC: "",
+        optionD: "",
+        correctAnswer: "",
         timeLimit: 60,
       });
       setAddMode(null);
@@ -51,67 +62,104 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
   }, [selectedQuestion, selectedFile?.id]);
 
   //changes question editor depending on which mode you select
-  const handleModeSelect=(mode)=>{
+  const handleModeSelect = (mode) => {
     setAddMode(mode);
   };
 
   //submit generated or manually made questions
-  const handleManualSubmit = async ()=>{
-    try{
-      const endpoint = addMode === 'edit' 
-        ? `http://localhost:3000/api/questions/${manualQuestion.id}`
-        : 'http://localhost:3000/api/questions';
-      
-      const method = addMode === 'edit' ? 'PATCH' : 'POST';
+  const handleManualSubmit = async () => {
+    try {
+      const endpoint =
+        addMode === "edit"
+          ? `http://localhost:3000/api/questions/${manualQuestion.id}`
+          : "http://localhost:3000/api/questions";
 
-      if(!manualQuestion.questionText){
+      const method = addMode === "edit" ? "PATCH" : "POST";
+
+      if (!manualQuestion.questionText) {
         toast.error("Please input a question");
         return;
       }
-      
+
       const response = await authFetch(endpoint, {
         method: method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(manualQuestion)
+        body: JSON.stringify(manualQuestion),
       });
       const result = await response.json();
 
-      if(result.success){
+      if (result.success) {
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `http://localhost:3000/api/questions?documentId=${selectedFile.id}`
+          `http://localhost:3000/api/questions?documentId=${selectedFile.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
-        
+
         // Reset form
         setAddMode(null);
         setManualQuestion({
           documentId: selectedFile?.id,
-          questionText: '',
+          questionText: "",
           questionType: manualQuestion.questionType,
-          optionA: '',
-          optionB: '',
-          optionC: '',
-          optionD: '',
-          correctAnswer: '',
+          optionA: "",
+          optionB: "",
+          optionC: "",
+          optionD: "",
+          correctAnswer: "",
           timeLimit: 60,
         });
         setSelectedQuestionId(null);
-        addMode === 'edit' ? toast.success('Question Updated!') : toast.success('Question Added!');
+        addMode === "edit"
+          ? toast.success("Question Updated!")
+          : toast.success("Question Added!");
       } else {
-        const errorMessage = result.message ?? result.error ?? (
-          Array.isArray(result.errors) ? result.errors.map(e => e.msg).join(', ')
-          : 'Failed to submit question'
-        );
+        const errorMessage =
+          result.message ??
+          result.error ??
+          (Array.isArray(result.errors)
+            ? result.errors.map((e) => e.msg).join(", ")
+            : "Failed to submit question");
         console.error(errorMessage);
         toast.error(`Error: ${errorMessage}`);
       }
-    }catch(error){
-      console.error('Error submitting questions', error);
-      alert('Failed to submit question');
+    } catch (error) {
+      console.error("Error submitting questions", error);
+      alert("Failed to submit question");
+    }
+  };
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const response = await authFetch(
+        "http://localhost:3000/api/questions/generate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            generateOptions,
+            documentId: selectedFile.id,
+          }),
+          credentials: "include",
+        },
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        toast.error("Something went wrong while generating questions");
+        console.error(result.error || result.message || "IDK fam");
+      }
+      setQuestions(result.questions);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong, please try again later");
     }
   };
 
@@ -121,19 +169,28 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
         <div>
           <h2 className="text-sm font-semibold">Question Editor</h2>
           <p className="text-xs text-gray-400">
-            {selectedFile ? `Editing questions for ${selectedFile.name}` : 'No question or file selected'}
+            {selectedFile
+              ? `Editing questions for ${selectedFile.name}`
+              : "No question or file selected"}
           </p>
         </div>
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
         {selectedFile ? (
-          addMode === 'manual' || addMode === 'edit' ? (
+          addMode === "manual" || addMode === "edit" ? (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">Question Type</label>
+                <label className="block text-sm font-medium mb-1">
+                  Question Type
+                </label>
                 <select
                   value={manualQuestion.questionType}
-                  onChange={(e) => setManualQuestion({...manualQuestion, questionType: e.target.value})}
+                  onChange={(e) =>
+                    setManualQuestion({
+                      ...manualQuestion,
+                      questionType: e.target.value,
+                    })
+                  }
                   className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                 >
                   <option value="multiple-choice">Multiple Choice</option>
@@ -142,59 +199,101 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                 </select>
               </div>
               <div>
-                <label className="block text-sm mb-1 text-gray-400">Question Text</label>
+                <label className="block text-sm mb-1 text-gray-400">
+                  Question Text
+                </label>
                 <textarea
                   value={manualQuestion.questionText}
-                  onChange={(e) => setManualQuestion({...manualQuestion, questionText: e.target.value})}
+                  onChange={(e) =>
+                    setManualQuestion({
+                      ...manualQuestion,
+                      questionText: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded h-24 resize-none"
                   placeholder="Enter question..."
                 />
               </div>
-              {manualQuestion.questionType === 'multiple-choice' && (
+              {manualQuestion.questionType === "multiple-choice" && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Option A</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Option A
+                    </label>
                     <input
                       type="text"
                       value={manualQuestion.optionA}
-                      onChange={(e) => setManualQuestion({...manualQuestion, optionA: e.target.value})}
+                      onChange={(e) =>
+                        setManualQuestion({
+                          ...manualQuestion,
+                          optionA: e.target.value,
+                        })
+                      }
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Option B</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Option B
+                    </label>
                     <input
                       type="text"
                       value={manualQuestion.optionB}
-                      onChange={(e) => setManualQuestion({...manualQuestion, optionB: e.target.value})}
+                      onChange={(e) =>
+                        setManualQuestion({
+                          ...manualQuestion,
+                          optionB: e.target.value,
+                        })
+                      }
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Option C</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Option C
+                    </label>
                     <input
                       type="text"
                       value={manualQuestion.optionC}
-                      onChange={(e) => setManualQuestion({...manualQuestion, optionC: e.target.value})}
+                      onChange={(e) =>
+                        setManualQuestion({
+                          ...manualQuestion,
+                          optionC: e.target.value,
+                        })
+                      }
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Option D</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Option D
+                    </label>
                     <input
                       type="text"
                       value={manualQuestion.optionD}
-                      onChange={(e) => setManualQuestion({...manualQuestion, optionD: e.target.value})}
+                      onChange={(e) =>
+                        setManualQuestion({
+                          ...manualQuestion,
+                          optionD: e.target.value,
+                        })
+                      }
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                     />
                   </div>
                   <div className="flex gap-4">
                     <>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Correct Answer</label>
+                        <label className="block text-sm font-medium mb-1">
+                          Correct Answer
+                        </label>
                         <select
                           value={manualQuestion.correctAnswer}
-                          onChange={(e) => setManualQuestion({...manualQuestion, correctAnswer: e.target.value})}
+                          onChange={(e) =>
+                            setManualQuestion({
+                              ...manualQuestion,
+                              correctAnswer: e.target.value,
+                            })
+                          }
                           className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                         >
                           <option value="">Select correct answer...</option>
@@ -207,11 +306,18 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                     </>
                     <>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Time Limit (seconds)</label>
+                        <label className="block text-sm font-medium mb-1">
+                          Time Limit (seconds)
+                        </label>
                         <input
                           type="number"
                           value={manualQuestion.timeLimit}
-                          onChange={(e) => setManualQuestion({...manualQuestion, timeLimit: Number(e.target.value) || 20})}
+                          onChange={(e) =>
+                            setManualQuestion({
+                              ...manualQuestion,
+                              timeLimit: Number(e.target.value) || 20,
+                            })
+                          }
                           className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                           min="0"
                           placeholder="Enter time in seconds"
@@ -224,7 +330,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                       onClick={handleManualSubmit}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
                     >
-                      {addMode === 'edit' ? 'Update' : 'Done'}
+                      {addMode === "edit" ? "Update" : "Done"}
                     </button>
                     <button
                       onClick={() => {
@@ -232,13 +338,13 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                         setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
-                          questionText: '',
+                          questionText: "",
                           questionType: manualQuestion.questionType,
-                          optionA: '',
-                          optionB: '',
-                          optionC: '',
-                          optionD: '',
-                          correctAnswer: '',
+                          optionA: "",
+                          optionB: "",
+                          optionC: "",
+                          optionD: "",
+                          correctAnswer: "",
                           timeLimit: 60,
                         });
                       }}
@@ -249,30 +355,44 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                   </div>
                 </>
               )}
-              {manualQuestion.questionType === 'true-false' && (
+              {manualQuestion.questionType === "true-false" && (
                 <>
                   <div className="flex gap-4">
                     <>
                       <div className="flex-1">
-                      <label className="block text-sm font-medium mb-1">Correct Answer</label>
-                      <select
-                        value={manualQuestion.correctAnswer}
-                        onChange={(e) => setManualQuestion({...manualQuestion, correctAnswer: e.target.value})}
-                        className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
-                      >
-                        <option value="">Select correct answer...</option>
-                        <option value="true">True</option>
-                        <option value="false">False</option>
-                      </select>
-                    </div>
+                        <label className="block text-sm font-medium mb-1">
+                          Correct Answer
+                        </label>
+                        <select
+                          value={manualQuestion.correctAnswer}
+                          onChange={(e) =>
+                            setManualQuestion({
+                              ...manualQuestion,
+                              correctAnswer: e.target.value,
+                            })
+                          }
+                          className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                        >
+                          <option value="">Select correct answer...</option>
+                          <option value="true">True</option>
+                          <option value="false">False</option>
+                        </select>
+                      </div>
                     </>
                     <>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Time Limit (seconds)</label>
+                        <label className="block text-sm font-medium mb-1">
+                          Time Limit (seconds)
+                        </label>
                         <input
                           type="number"
                           value={manualQuestion.timeLimit}
-                          onChange={(e) => setManualQuestion({...manualQuestion, timeLimit: Number(e.target.value) || 20})}
+                          onChange={(e) =>
+                            setManualQuestion({
+                              ...manualQuestion,
+                              timeLimit: Number(e.target.value) || 20,
+                            })
+                          }
                           className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                           min="0"
                           placeholder="Enter time in seconds"
@@ -281,11 +401,11 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                     </>
                   </div>
                   <div className="flex space-x-2 mt-4">
-                    <button 
+                    <button
                       onClick={handleManualSubmit}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
                     >
-                      {addMode === 'edit' ? 'Update' : 'Done'}
+                      {addMode === "edit" ? "Update" : "Done"}
                     </button>
                     <button
                       onClick={() => {
@@ -293,13 +413,13 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                         setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
-                          questionText: '',
+                          questionText: "",
                           questionType: manualQuestion.questionType,
-                          optionA: '',
-                          optionB: '',
-                          optionC: '',
-                          optionD: '',
-                          correctAnswer: '',
+                          optionA: "",
+                          optionB: "",
+                          optionC: "",
+                          optionD: "",
+                          correctAnswer: "",
                           timeLimit: 60,
                         });
                       }}
@@ -310,25 +430,32 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                   </div>
                 </>
               )}
-              {manualQuestion.questionType === 'short-answer' && (
+              {manualQuestion.questionType === "short-answer" && (
                 <>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium mb-1">Time Limit (seconds)</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Time Limit (seconds)
+                    </label>
                     <input
                       type="number"
                       value={manualQuestion.timeLimit}
-                      onChange={(e) => setManualQuestion({...manualQuestion, timeLimit: Number(e.target.value) || 60})}
+                      onChange={(e) =>
+                        setManualQuestion({
+                          ...manualQuestion,
+                          timeLimit: Number(e.target.value) || 60,
+                        })
+                      }
                       className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                       min="0"
                       placeholder="Enter time in seconds"
                     />
                   </div>
                   <div className="flex space-x-2 mt-4">
-                    <button 
+                    <button
                       onClick={handleManualSubmit}
                       className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2"
                     >
-                      {addMode === 'edit' ? 'Update' : 'Done'}
+                      {addMode === "edit" ? "Update" : "Done"}
                     </button>
                     <button
                       onClick={() => {
@@ -336,13 +463,13 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                         setSelectedQuestionId(null);
                         setManualQuestion({
                           documentId: selectedFile?.id,
-                          questionText: '',
+                          questionText: "",
                           questionType: manualQuestion.questionType,
-                          optionA: '',
-                          optionB: '',
-                          optionC: '',
-                          optionD: '',
-                          correctAnswer: '',
+                          optionA: "",
+                          optionB: "",
+                          optionC: "",
+                          optionD: "",
+                          correctAnswer: "",
                           timeLimit: 60,
                         });
                       }}
@@ -354,7 +481,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                 </>
               )}
             </>
-          ) : addMode === 'generate' ? (
+          ) : addMode === "generate" ? (
             <>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Generate Questions</h2>
@@ -365,12 +492,81 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
                   ← Back
                 </button>
               </div>
-              <div className="text-gray-400">Generate mode coming soon...</div>
+              <>
+                <label className="block text-sm font-medium mb-1">
+                  Question Type
+                </label>
+                <select
+                  value={generateOptions.questionType}
+                  onChange={(e) =>
+                    setGenerateOptions({
+                      ...generateOptions,
+                      questionType: e.target.value,
+                    })
+                  }
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                >
+                  <option value="multiple-choice">Multiple Choice</option>
+                  <option value="true-false">True/False</option>
+                  <option value="short-answer">Short Answer</option>
+                </select>
+              </>
+              <>
+                <label className="block text-sm font-medium mb-1">
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  value={generateOptions.questionAmount}
+                  onChange={(e) =>
+                    setGenerateOptions({
+                      ...generateOptions,
+                      questionAmount: Number(e.target.value) || 5,
+                    })
+                  }
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  min="1"
+                  placeholder="Enter number of questions"
+                />
+              </>
+              <>
+                <label className="block text-sm font-medium mb-1">
+                  Time Limit per Question (seconds)
+                </label>
+                <input
+                  type="number"
+                  value={generateOptions.timeLimit}
+                  onChange={(e) =>
+                    setGenerateOptions({
+                      ...generateOptions,
+                      timeLimit: Number(e.target.value) || 60,
+                    })
+                  }
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  min="0"
+                  placeholder="Enter time in seconds"
+                />
+              </>
+              <div className="flex space-x-2 mt-4">
+                <button
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleGenerate}
+                  disabled={loading}
+                >
+                  {loading ? "Generating..." : "Generate"}
+                </button>
+                <button
+                  onClick={() => setAddMode(null)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white rounded px-4 py-2"
+                >
+                  Cancel
+                </button>
+              </div>
             </>
           ) : (
             <div className="space-y-3 text-sm">
               <button
-                onClick={() => handleModeSelect('generate')}
+                onClick={() => handleModeSelect("generate")}
                 className="w-full rounded-lg bg-gray-700 p-4 text-left transition hover:bg-gray-600"
               >
                 <div className="text-base font-semibold text-white">
@@ -382,7 +578,7 @@ export default function QuestionEditor({ selectedFile, setQuestions, selectedQue
               </button>
 
               <button
-                onClick={() => handleModeSelect('manual')}
+                onClick={() => handleModeSelect("manual")}
                 className="w-full rounded-lg bg-gray-700 p-4 text-left transition hover:bg-gray-600"
               >
                 <div className="text-base font-semibold text-white">
