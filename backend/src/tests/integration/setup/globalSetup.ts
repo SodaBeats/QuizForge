@@ -24,6 +24,7 @@ export default async function globalSetup() {
   const db = drizzle(pool, { schema: { users } });
 
   try {
+    await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
     await db.execute(sql`
       TRUNCATE TABLE 
         "quiz_attempts_db", "quiz_questions_db", "quizzes_db",
