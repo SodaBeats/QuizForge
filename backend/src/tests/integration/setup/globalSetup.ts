@@ -27,7 +27,7 @@ export default async function globalSetup() {
     await db.execute(sql`
       TRUNCATE TABLE 
         "quiz_attempts_db", "quiz_questions_db", "quizzes_db",
-        "questions_db", "uploaded_files", "refresh_tokens", "users"
+        "questions_db", "uploaded_files", "refresh_tokens", "users", "attempt_answers_db, "document_chunks_db"
       RESTART IDENTITY CASCADE;
     `);
 
@@ -35,26 +35,42 @@ export default async function globalSetup() {
     const studentHash = await bcrypt.hash('StudentPass1!', 1);
     const student2Hash = await bcrypt.hash('Student2Pass2!', 1);
 
-    const [teacher] = await db.insert(users).values({
-      first_name: 'Test', last_name: 'Teacher',
-      email: 'teacher@test.com',
-      password_hash: teacherHash, role: 'teacher',
-    }).returning();
+    const [teacher] = await db
+      .insert(users)
+      .values({
+        first_name: 'Test',
+        last_name: 'Teacher',
+        email: 'teacher@test.com',
+        password_hash: teacherHash,
+        role: 'teacher',
+      })
+      .returning();
 
-    const [student] = await db.insert(users).values({
-      first_name: 'Test', last_name: 'Student',
-      email: 'student@test.com',
-      password_hash: studentHash, role: 'student',
-    }).returning();
+    const [student] = await db
+      .insert(users)
+      .values({
+        first_name: 'Test',
+        last_name: 'Student',
+        email: 'student@test.com',
+        password_hash: studentHash,
+        role: 'student',
+      })
+      .returning();
 
-    const [student2] = await db.insert(users).values({
-      first_name: 'Test', last_name: 'Student 2',
-      email: 'student2@test.com',
-      password_hash: student2Hash, role: 'student'
-    }).returning();
+    const [student2] = await db
+      .insert(users)
+      .values({
+        first_name: 'Test',
+        last_name: 'Student 2',
+        email: 'student2@test.com',
+        password_hash: student2Hash,
+        role: 'student',
+      })
+      .returning();
 
-    console.log(`[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id}), Student 2 (${student2?.id})`);
-
+    console.log(
+      `[globalSetup] Seeded: Teacher(${teacher?.id}), Student(${student?.id}), Student 2 (${student2?.id})`,
+    );
   } finally {
     // Close its own pool — not db.ts's pool
     await pool.end();
