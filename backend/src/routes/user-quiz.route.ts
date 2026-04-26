@@ -296,7 +296,7 @@ router.patch(
   verifyToken,
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
-    const { questionId } = req.params;
+    const { questionId, quizId } = req.params;
     const { role } = req.user;
 
     if (role !== 'teacher') {
@@ -305,17 +305,24 @@ router.patch(
         .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const dataForDrizzle = {
-      question_text: req.body.questionText,
-      question_type: req.body.questionType,
-      correct_answer: req.body.correctAnswer,
-      option_a: req.body.optionA,
-      option_b: req.body.optionB,
-      option_c: req.body.optionC,
-      option_d: req.body.optionD,
-    };
-
     try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const dataForDrizzle = {
+        question_text: req.body.questionText,
+        question_type: req.body.questionType,
+        correct_answer: req.body.correctAnswer,
+        option_a: req.body.optionA,
+        option_b: req.body.optionB,
+        option_c: req.body.optionC,
+        option_d: req.body.optionD,
+      };
+
       const updatedQuestion = await QuestionsRepository.updateQuestionReturning(
         dataForDrizzle,
         Number(questionId),
@@ -337,23 +344,38 @@ router.patch(
   verifyToken,
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
+    const { role } = req.user;
+    const { id } = req.params;
+
+    if (role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+
     if (Object.keys(req.body).length < 1) {
       return res
         .status(400)
         .json({ success: false, message: 'No changes to be saved' });
     }
 
-    const { id } = req.params;
-    const dataForDrizzle = {
-      quiz_title: req.body.quizTitle,
-      quiz_description: req.body.description,
-      time_limit: req.body.timeLimit,
-      due_date: new Date(req.body.dueDate),
-      max_attempts: req.body.maxAttempts,
-      status: req.body.status,
-    };
-
     try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(id));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const dataForDrizzle = {
+        quiz_title: req.body.quizTitle,
+        quiz_description: req.body.description,
+        time_limit: req.body.timeLimit,
+        due_date: new Date(req.body.dueDate),
+        max_attempts: req.body.maxAttempts,
+        status: req.body.status,
+      };
+
       const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
         dataForDrizzle,
         Number(id),

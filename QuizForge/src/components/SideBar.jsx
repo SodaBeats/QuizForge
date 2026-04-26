@@ -45,6 +45,12 @@ function SideBar({
         },
       );
 
+      if (!response.ok) {
+        throw new Error(
+          `Server responded with: Error ${response.status}: ${response.statusText}`,
+        );
+      }
+
       const deletedQuestion = await response.json();
 
       if (!deletedQuestion.success) {
@@ -106,7 +112,6 @@ function SideBar({
         return;
       }
       setQuestions(result.questionList);
-      console.log(questions);
     } catch (error) {
       console.error(error);
       toast.error(`something went wrong while fetching questions`);
@@ -165,7 +170,10 @@ function SideBar({
                 {currentQuiz.quizTitle}
               </span>
               <button
-                onClick={() => setCurrentQuiz && setCurrentQuiz(null)}
+                onClick={() => {
+                  setCurrentQuiz(null);
+                  setQuestions([]);
+                }}
                 className="ml-2 text-red-400 hover:text-red-600 flex-shrink-0 text-lg leading-none"
               >
                 ×

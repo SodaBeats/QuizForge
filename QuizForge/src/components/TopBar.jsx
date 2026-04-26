@@ -12,6 +12,7 @@ export default function TopBar({
   selectedFile,
   questions,
   setQuizMetadata,
+  quizMetadata,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -25,7 +26,7 @@ export default function TopBar({
     shareToken: "",
     maxAttempts: 0,
     dueDate: "",
-    status: "Draft",
+    status: "draft",
   });
   const menuRef = useRef(null);
   //const fileRef = useRef(null);
@@ -57,26 +58,32 @@ export default function TopBar({
 
   const handleLogout = () => {
     try {
-      setIsLoading(!isLoading);
+      setIsLoading(true);
       logout();
     } catch (error) {
       alert("Error: " + error);
     } finally {
-      setIsLoading(!isLoading);
+      setIsLoading(false);
     }
   };
 
   // open file modal and fetch documents list
   const openFileModal = async () => {
     setShowFileModal(true);
-    const response = await authFetch("http://localhost:3000/api/documents", {
-      credentials: "include",
-    });
-    const documents = await response.json();
-    if (!response.ok) {
-      alert("Error:" + response.error);
+    try {
+      const response = await authFetch("http://localhost:3000/api/documents", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        toast.error("Error:" + response.error);
+        return;
+      }
+      const documents = await response.json();
+      setUserDocuments(documents);
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+      toast.error("Failed to fetch documents");
     }
-    setUserDocuments(documents);
   };
 
   const closeFileModal = () => {
@@ -92,7 +99,7 @@ export default function TopBar({
       shareToken: quizToken,
       maxAttempts: 0,
       dueDate: "",
-      status: "Draft",
+      status: "draft",
     });
     setIsForgeQuizModalOpen(true);
   };
@@ -105,7 +112,7 @@ export default function TopBar({
       shareToken: "",
       maxAttempts: 0,
       dueDate: "",
-      status: "Draft",
+      status: "draft",
     });
   };
 
@@ -153,7 +160,12 @@ export default function TopBar({
       const data = await response.json();
 
       if (!data.success) {
-        toast.error(data.message || data.errors.map((e) => e.msg).join(", "));
+        const errorMsg =
+          data.message ||
+          (Array.isArray(data.errors)
+            ? data.errors.map((e) => e.msg).join(", ")
+            : "Quiz creation failed");
+        toast.error(errorMsg);
         console.error(data);
         return;
       }
@@ -246,13 +258,6 @@ export default function TopBar({
               <button
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded border border-blue-500 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={openForgeQuizModal}
-                title={
-                  !selectedFile
-                    ? "Select a file first"
-                    : questions.length === 0
-                      ? "Add questions first"
-                      : "Create and share a quiz"
-                }
               >
                 Forge Quiz
               </button>

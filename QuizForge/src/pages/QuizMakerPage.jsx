@@ -124,6 +124,7 @@ export default function QuizMakerSkeleton() {
         selectedFile={selectedFile}
         questions={questions}
         setQuizMetadata={setQuizMetadata}
+        quizMetadata={quizMetadata}
       />
 
       {/* Main Content Area */}

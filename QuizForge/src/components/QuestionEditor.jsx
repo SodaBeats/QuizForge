@@ -95,7 +95,7 @@ export default function QuestionEditor({
         ///////// -------------------------- TO DO -------------------------------------////////
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `http://localhost:3000/api/questions?quizId=${quizMetadata.id}`,
+          `http://localhost:3000/api/questions?quizId=${quizMetadata?.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
