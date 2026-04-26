@@ -7,6 +7,7 @@ import { questionInputValidator } from '../middlewares/questionValidator.middlew
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
+import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 
 //establish router
 const router = express.Router();
@@ -17,29 +18,25 @@ router.post(
   verifyToken,
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
-    // make sure the supplied document actually belongs to the user
-    const docIdNum = Number(req.body.documentId);
-    if (Number.isNaN(docIdNum)) {
+    const quizIdNum = Number(req.body.quizId);
+    if (Number.isNaN(quizIdNum)) {
       return res
         .status(400)
-        .json({ success: false, message: 'Invalid documentId' });
+        .json({ success: false, message: 'Invalid quiz id' });
     }
 
     try {
-      //checks if doc exists and is owned by owner. Returns boolean
-      const owner = await UploadedFilesRepository.isDocOwnedByOwnerId(
-        docIdNum,
-        req.user.id,
-      );
-      if (!owner) {
+      //checks if quiz exists and is owned by owner.
+      const owner = await UserQuizzesRepository.getQuizById(quizIdNum);
+      if (!owner || owner.user_id !== req.user.id) {
         return res
           .status(404)
-          .json({ success: false, message: 'Document not found' });
+          .json({ success: false, message: 'Quiz does not exist' });
       }
 
       //format data for database insertion
       const formattedData = {
-        document_id: docIdNum,
+        quiz_id: quizIdNum,
         question_text: req.body.questionText,
         question_type: req.body.questionType,
         correct_answer: req.body.correctAnswer,
@@ -68,7 +65,7 @@ router.post(
   },
 );
 
-router.post('/generate', verifyToken, async (req, res, next) => {
+/*router.post('/generate', verifyToken, async (req, res, next) => {
   const { questionType, timeLimit, questionAmount } = req.body.generateOptions;
   const { documentId } = req.body;
   if (!questionType || !timeLimit || !documentId || !questionAmount) {
@@ -187,12 +184,12 @@ router.post('/generate', verifyToken, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+});*/
 
-// ROUTER FOR GETTING QUESTIONS RELATED TO DOCUMENT
+// ROUTER FOR GETTING QUESTIONS RELATED TO Quiz
 router.get('/', verifyToken, async (req, res, next) => {
-  const docIdNum = Number(req.query.documentId);
-  if (Number.isNaN(docIdNum)) {
+  const quizIdNum = Number(req.query.quizId);
+  if (Number.isNaN(quizIdNum)) {
     return res
       .status(400)
       .json({ success: false, message: 'documentId must be a number' });
@@ -200,19 +197,16 @@ router.get('/', verifyToken, async (req, res, next) => {
 
   try {
     // ensure the document belongs to this user before returning questions
-    const owner = await UploadedFilesRepository.isDocOwnedByOwnerId(
-      docIdNum,
-      req.user.id,
-    );
-    if (!owner) {
+    const quizInfo = await UserQuizzesRepository.getQuizById(quizIdNum);
+    if (!quizInfo || quizInfo.user_id !== req.user.id) {
       return res
         .status(404)
-        .json({ success: false, message: 'Document not found' });
+        .json({ success: false, message: 'Quiz does not exist' });
     }
 
-    //get all questions related to docId
+    //get all questions related to quizId
     const questions =
-      await QuestionsRepository.getAllQuestionsByDocId(docIdNum);
+      await QuestionsRepository.getQuestionsRelatedToQuiz(quizIdNum);
     if (!questions) {
       return res
         .status(404)
@@ -244,27 +238,23 @@ router.patch(
     } = req.body;
 
     try {
-      // make sure the question belongs to this user by joining document ownership
-      const documentId =
-        await QuestionsRepository.checkWhichDocOwnsQuestion(id);
-      if (!documentId) {
+      // make sure the question belongs to this user by joining quiz ownership
+      const quizId = await QuestionsRepository.checkWhichQuizOwnsQuestion(id);
+      if (!quizId) {
         return res
           .status(404)
           .json({ success: false, message: 'Question not found' });
       }
-
-      const owner = await UploadedFilesRepository.isDocOwnedByOwnerId(
-        documentId,
-        req.user.id,
-      );
-      if (!owner) {
+      //check if quiz is owned by user
+      const owner = await UserQuizzesRepository.getQuizById(quizId);
+      if (!owner || owner.user_id !== req.user.id) {
         return res
           .status(404)
-          .json({ success: false, message: 'Question not found' });
+          .json({ success: false, message: 'Quiz does not exist' });
       }
 
       const formattedData = {
-        document_id: documentId,
+        quiz_id: quizId,
         question_text: questionText,
         question_type: questionType,
         time_limit: timeLimit,
@@ -301,23 +291,20 @@ router.delete('/:id', verifyToken, async (req, res, next) => {
       .json({ success: false, message: 'You must select a question' });
   }
   try {
-    // make sure the question belongs to this user by joining document ownership
-    const documentId =
-      await QuestionsRepository.checkWhichDocOwnsQuestion(questionIdNum);
-    if (!documentId) {
+    // make sure the question belongs to this user by joining quiz ownership
+    const quizId =
+      await QuestionsRepository.checkWhichQuizOwnsQuestion(questionIdNum);
+    if (!quizId) {
       return res
         .status(404)
         .json({ success: false, message: 'Question not found' });
     }
-    //check if document is owned by user
-    const owner = await UploadedFilesRepository.isDocOwnedByOwnerId(
-      documentId,
-      req.user.id,
-    );
-    if (!owner) {
+    //check if quiz is owned by user
+    const owner = await UserQuizzesRepository.getQuizById(quizId);
+    if (!owner || owner.user_id !== req.user.id) {
       return res
         .status(404)
-        .json({ success: false, message: 'Question not found' });
+        .json({ success: false, message: 'Quiz does not exist' });
     }
 
     const deletedQuestion =

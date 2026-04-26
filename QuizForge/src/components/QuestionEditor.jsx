@@ -3,17 +3,17 @@ import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
 
 export default function QuestionEditor({
-  selectedFile,
   setQuestions,
   selectedQuestion,
   setSelectedQuestionId,
+  quizMetadata,
 }) {
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [manualQuestion, setManualQuestion] = useState({
     //question usestate
-    documentId: selectedFile?.id,
+    quizId: quizMetadata?.id,
     questionText: "",
     questionType: "multiple-choice",
     optionA: "",
@@ -29,25 +29,26 @@ export default function QuestionEditor({
     questionAmount: 5,
   });
 
+  // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------
   useEffect(() => {
     if (selectedQuestion) {
       // eslint-disable-next-line
       setManualQuestion({
         id: selectedQuestion.id,
-        documentId: selectedQuestion.document_id,
-        questionText: selectedQuestion.question_text || "",
-        questionType: selectedQuestion.question_type || "multiple-choice",
-        optionA: selectedQuestion.option_a || "",
-        optionB: selectedQuestion.option_b || "",
-        optionC: selectedQuestion.option_c || "",
-        optionD: selectedQuestion.option_d || "",
-        correctAnswer: selectedQuestion.correct_answer || "",
-        timeLimit: selectedQuestion.time_limit || 60,
+        quizId: selectedQuestion.quizId,
+        questionText: selectedQuestion.questionText || "",
+        questionType: selectedQuestion.questionType || "multiple-choice",
+        optionA: selectedQuestion.optionA || "",
+        optionB: selectedQuestion.optionB || "",
+        optionC: selectedQuestion.optionC || "",
+        optionD: selectedQuestion.optionD || "",
+        correctAnswer: selectedQuestion.correctAnswer || "",
+        timeLimit: selectedQuestion.timeLimit || 60,
       });
       setAddMode("edit");
     } else {
       setManualQuestion({
-        documentId: selectedFile?.id || null,
+        quizId: quizMetadata?.id || null,
         questionText: "",
         questionType: "multiple-choice",
         optionA: "",
@@ -59,14 +60,14 @@ export default function QuestionEditor({
       });
       setAddMode(null);
     }
-  }, [selectedQuestion, selectedFile?.id]);
+  }, [selectedQuestion, quizMetadata?.id]);
 
-  //changes question editor depending on which mode you select
+  // changes question editor depending on which mode you select ----------------
   const handleModeSelect = (mode) => {
     setAddMode(mode);
   };
 
-  //submit generated or manually made questions
+  // SUBMIT MANUALLY MADE QUESTION ----------------------------------------------
   const handleManualSubmit = async () => {
     try {
       const endpoint =
@@ -91,9 +92,10 @@ export default function QuestionEditor({
       const result = await response.json();
 
       if (result.success) {
+        ///////// -------------------------- TO DO -------------------------------------////////
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `http://localhost:3000/api/questions?documentId=${selectedFile.id}`,
+          `http://localhost:3000/api/questions?quizId=${quizMetadata.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
@@ -101,7 +103,7 @@ export default function QuestionEditor({
         // Reset form
         setAddMode(null);
         setManualQuestion({
-          documentId: selectedFile?.id,
+          quizId: quizMetadata?.id,
           questionText: "",
           questionType: manualQuestion.questionType,
           optionA: "",
@@ -131,6 +133,7 @@ export default function QuestionEditor({
     }
   };
 
+  // GENERATE QUESTIONS BY AI ------------------------------------------------
   const handleGenerate = async () => {
     setLoading(true);
     try {
@@ -143,7 +146,7 @@ export default function QuestionEditor({
           },
           body: JSON.stringify({
             generateOptions,
-            documentId: selectedFile.id,
+            quizId: quizMetadata?.id,
           }),
           credentials: "include",
         },
@@ -169,14 +172,14 @@ export default function QuestionEditor({
         <div>
           <h2 className="text-sm font-semibold">Question Editor</h2>
           <p className="text-xs text-gray-400">
-            {selectedFile
-              ? `Editing questions for ${selectedFile.name}`
-              : "No question or file selected"}
+            {quizMetadata
+              ? `Editing questions for: "${quizMetadata.quizTitle}"`
+              : "No quiz selected"}
           </p>
         </div>
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-4">
-        {selectedFile ? (
+        {quizMetadata ? (
           addMode === "manual" || addMode === "edit" ? (
             <>
               <div>
@@ -337,7 +340,7 @@ export default function QuestionEditor({
                         setAddMode(null);
                         setSelectedQuestionId(null);
                         setManualQuestion({
-                          documentId: selectedFile?.id,
+                          quizId: quizMetadata?.id,
                           questionText: "",
                           questionType: manualQuestion.questionType,
                           optionA: "",
@@ -412,7 +415,7 @@ export default function QuestionEditor({
                         setAddMode(null);
                         setSelectedQuestionId(null);
                         setManualQuestion({
-                          documentId: selectedFile?.id,
+                          quizId: quizMetadata?.id,
                           questionText: "",
                           questionType: manualQuestion.questionType,
                           optionA: "",
@@ -462,7 +465,7 @@ export default function QuestionEditor({
                         setAddMode(null);
                         setSelectedQuestionId(null);
                         setManualQuestion({
-                          documentId: selectedFile?.id,
+                          quizId: quizMetadata?.id,
                           questionText: "",
                           questionType: manualQuestion.questionType,
                           optionA: "",

@@ -1,7 +1,7 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { questions_db, quiz_questions_db } from '../db/schema.js';
+import { questions_db } from '../db/schema.js';
 
 type QuestionInputData = InferInsertModel<typeof questions_db>;
 type QuestionUpdateData = Partial<QuestionInputData>;
@@ -12,7 +12,6 @@ export const QuestionsRepository = {
     const [inserted] = await db.insert(questions_db).values(data).returning();
     return inserted
       ? {
-          documentId: inserted.document_id,
           questionId: inserted.id,
         }
       : null;
@@ -24,21 +23,21 @@ export const QuestionsRepository = {
     return insert.length > 0 ? insert : null;
   },
 
-  //get all questions related to document Id
-  async getAllQuestionsByDocId(docId: number) {
+  //get all questions related to quiz Id
+  async getAllQuestionsByQuizId(quizId: number) {
     const questions = await db.query.questions_db.findMany({
-      where: eq(questions_db.document_id, docId),
+      where: eq(questions_db.quiz_id, quizId),
     });
     return questions ?? null;
   },
 
-  //check which document owns the question
-  async checkWhichDocOwnsQuestion(qId: number) {
+  //check which quiz owns the question
+  async checkWhichQuizOwnsQuestion(qId: number) {
     const [question] = await db
-      .select({ documentId: questions_db.document_id })
+      .select()
       .from(questions_db)
       .where(eq(questions_db.id, qId));
-    return question?.documentId ?? null;
+    return question ? question.quiz_id : null;
   },
 
   //update question data
@@ -47,8 +46,19 @@ export const QuestionsRepository = {
       .update(questions_db)
       .set(data)
       .where(eq(questions_db.id, qId))
-      .returning();
-    return updated ? { qId: updated.id } : null;
+      .returning({
+        id: questions_db.id,
+        quizId: questions_db.quiz_id,
+        questionText: questions_db.question_text,
+        questionType: questions_db.question_type,
+        timeLimit: questions_db.time_limit,
+        correctAnswer: questions_db.correct_answer,
+        optionA: questions_db.option_a,
+        optionB: questions_db.option_b,
+        optionC: questions_db.option_c,
+        optionD: questions_db.option_d,
+      });
+    return updated ?? null;
   },
 
   //update question data but return all
@@ -75,6 +85,7 @@ export const QuestionsRepository = {
     const questionsList = await db
       .select({
         id: questions_db.id,
+        quizId: questions_db.quiz_id,
         questionText: questions_db.question_text,
         questionType: questions_db.question_type,
         timeLimit: questions_db.time_limit,
@@ -85,11 +96,7 @@ export const QuestionsRepository = {
         optionD: questions_db.option_d,
       })
       .from(questions_db)
-      .innerJoin(
-        quiz_questions_db,
-        eq(questions_db.id, quiz_questions_db.question_id),
-      )
-      .where(eq(quiz_questions_db.quiz_id, quizId));
+      .where(eq(questions_db.quiz_id, quizId));
 
     return questionsList ?? null;
   },

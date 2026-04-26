@@ -42,7 +42,7 @@ export default function QuizzesPage() {
       const result = await response.json();
 
       if (!result.success) {
-        alert(`Something went wrong: ${result.message}`);
+        toast.error(result.message);
         return;
       }
 

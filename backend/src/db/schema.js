@@ -13,9 +13,9 @@ export const uploaded_files = pgTable('uploaded_files', {
 
 export const questions_db = pgTable('questions_db', {
   id: serial('id').primaryKey(),
-  document_id: integer('document_id')
+  quiz_id: integer('quiz_id')
     .notNull()
-    .references(() => uploaded_files.id, { onDelete: 'cascade' }),
+    .references(() => quizzes_db.id, { onDelete: 'cascade' }),
   question_text: text('question_text').notNull(),
   question_type: varchar('question_type', { length: 50 }).notNull(),
   time_limit: integer('time_limit').default(30), // in seconds
@@ -55,8 +55,7 @@ export const quizzes_db = pgTable('quizzes_db', {
     .notNull(),
   quiz_title: varchar('quiz_title', { length: 255 }).notNull(),
   quiz_description: text('quiz_description'),
-  share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
-  time_limit: integer('time_limit').default(0),
+  share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 6)`),
   max_attempts: integer('max_attempts').default(1).notNull(),
   status: text('status').notNull().default('draft'),
   due_date: timestamp('due_date', { withTimezone: true }).notNull(),

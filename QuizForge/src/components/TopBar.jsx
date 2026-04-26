@@ -1,19 +1,38 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
+import toast from "react-hot-toast";
 
-export default function TopBar({ handleFileUpload, isUploading, setSelectedFileId, selectedFileId, setUploadedFiles}) {
-
+export default function TopBar({
+  handleFileUpload,
+  isUploading,
+  setSelectedFileId,
+  selectedFileId,
+  setUploadedFiles,
+  selectedFile,
+  questions,
+  setQuizMetadata,
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [userDocuments, setUserDocuments] = useState([]);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
+  const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
+  const [forgeQuizData, setForgeQuizData] = useState({
+    quizTitle: "",
+    description: "",
+    shareToken: "",
+    maxAttempts: 0,
+    dueDate: "",
+    status: "Draft",
+  });
   const menuRef = useRef(null);
   //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
 
   const location = useLocation();
-  const showFileButton = location.pathname === '/teacher';
+  const showFileButton = location.pathname === "/teacher";
 
   const navigate = useNavigate();
 
@@ -24,40 +43,38 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
         setIsProfileMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if(file){
+    if (file) {
       handleFileUpload(file);
       setShowFileModal(false);
     }
-  }
+  };
 
   const handleLogout = () => {
-    try{
+    try {
       setIsLoading(!isLoading);
       logout();
-    }
-    catch(error){
-      alert('Error: ' + error);
-    }
-    finally{
+    } catch (error) {
+      alert("Error: " + error);
+    } finally {
       setIsLoading(!isLoading);
     }
   };
 
   // open file modal and fetch documents list
-  const openFileModal = async() => {
+  const openFileModal = async () => {
     setShowFileModal(true);
-    const response = await authFetch('http://localhost:3000/api/documents', {
-      credentials: 'include'
+    const response = await authFetch("http://localhost:3000/api/documents", {
+      credentials: "include",
     });
     const documents = await response.json();
-    if(!response.ok){
-      alert('Error:'+ response.error)
+    if (!response.ok) {
+      alert("Error:" + response.error);
     }
     setUserDocuments(documents);
   };
@@ -66,50 +83,150 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
     setShowFileModal(false);
   };
 
+  const openForgeQuizModal = () => {
+    // Pre-fill with selected file name
+    const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setForgeQuizData({
+      quizTitle: selectedFile?.name || "",
+      description: "",
+      shareToken: quizToken,
+      maxAttempts: 0,
+      dueDate: "",
+      status: "Draft",
+    });
+    setIsForgeQuizModalOpen(true);
+  };
+
+  const closeForgeQuizModal = () => {
+    setIsForgeQuizModalOpen(false);
+    setForgeQuizData({
+      quizTitle: "",
+      description: "",
+      shareToken: "",
+      maxAttempts: 0,
+      dueDate: "",
+      status: "Draft",
+    });
+  };
+
+  const handleForgeQuiz = async () => {
+    // Validate required fields
+    if (
+      !forgeQuizData.dueDate ||
+      !forgeQuizData.quizTitle ||
+      !forgeQuizData.maxAttempts ||
+      !forgeQuizData.status
+    ) {
+      toast.error("Please input all required fields");
+      return;
+    }
+
+    const maxAttempts = Number(forgeQuizData.maxAttempts);
+    if (
+      typeof maxAttempts !== "number" ||
+      isNaN(maxAttempts) ||
+      maxAttempts <= 0
+    ) {
+      toast.error("Max attempts must be a valid number");
+      return;
+    }
+
+    setIsCreatingQuiz(true);
+
+    try {
+      const finalDueDate = new Date(forgeQuizData.dueDate).toISOString();
+
+      const response = await authFetch("http://localhost:3000/api/quizzes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizTitle: forgeQuizData.quizTitle,
+          description: forgeQuizData.description,
+          shareToken: forgeQuizData.shareToken,
+          maxAttempts: maxAttempts,
+          dueDate: finalDueDate,
+          status: forgeQuizData.status,
+        }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        toast.error(data.message || data.errors.map((e) => e.msg).join(", "));
+        console.error(data);
+        return;
+      }
+      console.log(data.quiz);
+
+      setQuizMetadata(data.quiz);
+      toast.success(data.message);
+      closeForgeQuizModal();
+    } catch (error) {
+      console.error("Error creating quiz: ", error);
+      toast.error(`Error: ${error.message || "Something went wrong"}`);
+    } finally {
+      setIsCreatingQuiz(false);
+    }
+  };
+
   const handleSelectDocument = async (doc) => {
     // close modal and select immediately
     setShowFileModal(false);
     setSelectedFileId(doc.id);
 
     // ensure parent has an entry for this doc (without copying any large content)
-    setUploadedFiles(prev => prev.some(f => f.id === doc.id) ? prev : [
-      ...prev,
-      {
-        id: doc.id,
-        name: doc.title || String(doc.id),
-        nickname: doc.title || String(doc.id),
-        content: null
-      }
-    ]);
+    setUploadedFiles((prev) =>
+      prev.some((f) => f.id === doc.id)
+        ? prev
+        : [
+            ...prev,
+            {
+              id: doc.id,
+              name: doc.title || String(doc.id),
+              nickname: doc.title || String(doc.id),
+              content: null,
+            },
+          ],
+    );
 
     // fetch full content on demand and merge into parent state
     try {
-      const resp = await authFetch(`http://localhost:3000/api/documents/${doc.id}`, {
-        credentials: 'include'
-      });
+      const resp = await authFetch(
+        `http://localhost:3000/api/documents/${doc.id}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!resp.ok) {
         throw new Error(`HTTP error! status: ${resp.status}`);
       }
       const full = await resp.json();
 
-      if (!full.success){
-        alert('Error: ' + full.error);
+      if (!full.success) {
+        alert("Error: " + full.error);
         return;
       }
 
-      setUploadedFiles(prev => prev.map(f => f.id === doc.id ? { ...f, content: full.content ?? f.content } : f));
+      setUploadedFiles((prev) =>
+        prev.map((f) =>
+          f.id === doc.id ? { ...f, content: full.content ?? f.content } : f,
+        ),
+      );
       //setUploadedFiles(prev => prev.map(f => f.id === doc.id ? { ...f, content: full.content ?? f.content, name: full.title ?? f.name } : f));
-
     } catch (err) {
-      console.error('Document selection error: ', err);
-      alert('Failed to select document. Please try again later');
+      console.error("Document selection error: ", err);
+      alert("Failed to select document. Please try again later");
     }
   };
 
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">
       {/* LEFT SIDE: Logo */}
-      <Link to= '/teacher' className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">
+      <Link
+        to="/teacher"
+        className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors"
+      >
         QuizForge
       </Link>
 
@@ -117,75 +234,260 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
       <div className="flex items-center gap-4">
         {/* Files Section */}
         {showFileButton && (
-          <div className="flex items-center">
-            <button 
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600 transition-colors"
-              onClick={openFileModal}
-            >
-              Files
-            </button>
-            
-            <input 
-              type="file"
-              id="file-upload"
-              className="hidden"
-              accept=".pdf,.txt,.docx,.doc"
-              onChange={(e) => {handleFileChange(e);}}
-            />
+          <>
+            <div className="flex items-center gap-2">
+              <button
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600 transition-colors"
+                onClick={openFileModal}
+              >
+                Files
+              </button>
 
-            {/* Modal Logic Remains the Same */}
-            {showFileModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-white">My Documents</h2>
-                    <button
-                      onClick={closeFileModal}
-                      className="text-gray-400 hover:text-white text-2xl leading-none"
-                    >
-                      ×
-                    </button>
+              <button
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded border border-blue-500 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={openForgeQuizModal}
+                title={
+                  !selectedFile
+                    ? "Select a file first"
+                    : questions.length === 0
+                      ? "Add questions first"
+                      : "Create and share a quiz"
+                }
+              >
+                Forge Quiz
+              </button>
+
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                accept=".pdf,.txt,.docx,.doc"
+                onChange={(e) => {
+                  handleFileChange(e);
+                }}
+              />
+
+              {/* Modal Logic Remains the Same */}
+              {showFileModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-bold text-white">
+                        My Documents
+                      </h2>
+                      <button
+                        onClick={closeFileModal}
+                        className="text-gray-400 hover:text-white text-2xl leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 mb-6">
+                      {userDocuments.length > 0 ? (
+                        userDocuments.map((doc) => (
+                          <div
+                            key={doc.id}
+                            onClick={() => handleSelectDocument(doc)}
+                            className={`p-3 rounded cursor-pointer border transition-colors text-white ${
+                              selectedFileId === doc.id
+                                ? "bg-blue-600 border-blue-500"
+                                : "bg-gray-700 hover:bg-gray-600 border-gray-600"
+                            }`}
+                          >
+                            <span className="truncate">{doc.title || doc}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-400 text-center py-4">
+                          No documents found
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="border-t border-gray-700 pt-4">
+                      <button
+                        onClick={() =>
+                          document.getElementById("file-upload").click()
+                        }
+                        disabled={isUploading}
+                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isUploading ? "Uploading..." : "Upload New Document"}
+                      </button>
+                    </div>
                   </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
-                  <div className="space-y-2 mb-6">
-                    {userDocuments.length > 0 ? (
-                      userDocuments.map((doc) => (
-                        <div
-                          key={doc.id}
-                          onClick={() => handleSelectDocument(doc)}
-                          className={`p-3 rounded cursor-pointer border transition-colors text-white ${
-                            selectedFileId === doc.id
-                              ? 'bg-blue-600 border-blue-500'
-                              : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
-                          }`}
-                        >
-                          <span className="truncate">{doc.title || doc}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-400 text-center py-4">No documents found</p>
-                    )}
-                  </div>
+        {/* Forge Quiz Modal */}
+        {isForgeQuizModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-lg p-6 w-[500px] max-w-full mx-4">
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                Forge Quiz
+              </h2>
 
-                  <div className="border-t border-gray-700 pt-4">
+              <div className="space-y-4">
+                {/* Quiz Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Quiz Title
+                  </label>
+                  <input
+                    type="text"
+                    value={forgeQuizData.quizTitle}
+                    onChange={(e) =>
+                      setForgeQuizData((prev) => ({
+                        ...prev,
+                        quizTitle: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    placeholder="Enter quiz title"
+                  />
+                </div>
+
+                {/* Quiz Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={forgeQuizData.description}
+                    onChange={(e) =>
+                      setForgeQuizData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
+                    rows="3"
+                    placeholder="Enter quiz description"
+                  />
+                </div>
+
+                {/* Share Token */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Share Token
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={forgeQuizData.shareToken}
+                      readOnly
+                      className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-400"
+                      placeholder="Generating token..."
+                    />
                     <button
-                      onClick={() => document.getElementById('file-upload').click()}
-                      disabled={isUploading}
-                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        navigator.clipboard.writeText(forgeQuizData.shareToken);
+                        toast.success("Token copied to clipboard!", {
+                          duration: 2000,
+                          style: {
+                            background: "#10B981",
+                            color: "#fff",
+                          },
+                        });
+                      }}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      disabled={!forgeQuizData.shareToken}
                     >
-                      {isUploading ? 'Uploading...' : 'Upload New Document'}
+                      Copy
                     </button>
                   </div>
                 </div>
+
+                {/* Max Attempts and Status - Side by Side */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Max Attempts */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Max Attempts
+                    </label>
+                    <input
+                      type="number"
+                      value={forgeQuizData.maxAttempts}
+                      onChange={(e) =>
+                        setForgeQuizData((prev) => ({
+                          ...prev,
+                          maxAttempts: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      placeholder="2"
+                      min="1"
+                    />
+                  </div>
+                  {/* Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={forgeQuizData.status || "draft"}
+                      onChange={(e) =>
+                        setForgeQuizData((prev) => ({
+                          ...prev,
+                          status: e.target.value.toLowerCase(),
+                        }))
+                      }
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Due Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Due Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={forgeQuizData.dueDate}
+                    onChange={(e) =>
+                      setForgeQuizData((prev) => ({
+                        ...prev,
+                        dueDate: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
               </div>
-            )}
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleForgeQuiz}
+                  disabled={isCreatingQuiz}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCreatingQuiz ? "Creating Quiz..." : "Create Quiz"}
+                </button>
+                <button
+                  onClick={closeForgeQuizModal}
+                  disabled={isCreatingQuiz}
+                  className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         {/* PROFILE DROPDOWN */}
         <div className="relative" ref={menuRef}>
           <button
-            onClick={()=>setIsProfileMenuOpen(!isProfileMenuOpen)}
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-700 
               hover:border-blue-400 flex items-center justify-center overflow-hidden transition-all"
           >
@@ -194,28 +496,35 @@ export default function TopBar({ handleFileUpload, isUploading, setSelectedFileI
           </button>
           {isProfileMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-2 z-50">
-              <button 
+              <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => { /* Navigate to Dashboard */ setIsProfileMenuOpen(false); }}
+                onClick={() => {
+                  /* Navigate to Dashboard */ setIsProfileMenuOpen(false);
+                }}
               >
                 Dashboard
               </button>
               <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => { navigate('/teacher/quizzes'); setIsProfileMenuOpen(!isProfileMenuOpen); }}
+                onClick={() => {
+                  navigate("/teacher/quizzes");
+                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                }}
               >
                 Quizzes
               </button>
-              <button 
+              <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => { /* Navigate to Students */ setIsProfileMenuOpen(false); }}
+                onClick={() => {
+                  /* Navigate to Students */ setIsProfileMenuOpen(false);
+                }}
               >
                 Classes
               </button>
-              
+
               <div className="border-t border-gray-700 my-1"></div>
-              
-              <button 
+
+              <button
                 className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 transition-colors"
                 onClick={handleLogout}
               >
