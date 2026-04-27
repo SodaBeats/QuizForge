@@ -10,9 +10,7 @@ export default function TopBar({
   selectedFileId,
   setUploadedFiles,
   selectedFile,
-  questions,
   setQuizMetadata,
-  quizMetadata,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -70,6 +68,9 @@ export default function TopBar({
   // open file modal and fetch documents list
   const openFileModal = async () => {
     setShowFileModal(true);
+    if (userDocuments && userDocuments.length > 0) {
+      return;
+    }
     try {
       const response = await authFetch("http://localhost:3000/api/documents", {
         credentials: "include",
@@ -225,7 +226,6 @@ export default function TopBar({
           f.id === doc.id ? { ...f, content: full.content ?? f.content } : f,
         ),
       );
-      //setUploadedFiles(prev => prev.map(f => f.id === doc.id ? { ...f, content: full.content ?? f.content, name: full.title ?? f.name } : f));
     } catch (err) {
       console.error("Document selection error: ", err);
       alert("Failed to select document. Please try again later");

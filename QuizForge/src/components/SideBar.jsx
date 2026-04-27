@@ -165,7 +165,7 @@ function SideBar({
             Current Quiz
           </div>
           {currentQuiz ? (
-            <div className="flex items-center justify-between bg-blue-700 rounded px-2 py-1">
+            <div className="flex items-center justify-between w-full bg-blue-700 px-3 py-2 group">
               <span className="text-sm text-white truncate flex-1">
                 {currentQuiz.quizTitle}
               </span>
@@ -174,7 +174,7 @@ function SideBar({
                   setCurrentQuiz(null);
                   setQuestions([]);
                 }}
-                className="ml-2 text-red-400 hover:text-red-600 flex-shrink-0 text-lg leading-none"
+                className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
               >
                 ×
               </button>

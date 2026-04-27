@@ -14,4 +14,5 @@ export type Question = {
 export enum QuestionType {
   MultipleChoice = 'multiple-choice',
   TrueFalse = 'true-false',
+  ShortAnswer = 'short-answer',
 }

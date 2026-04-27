@@ -12,7 +12,7 @@ export const textUtilities = {
 
       const wordCount = trimmed.split(/\s+/).length;
 
-      if (wordCount < 30 && i + 1 < paragraphs.length) {
+      if (wordCount < 250 && i + 1 < paragraphs.length) {
         const next = paragraphs[i + 1] as string;
         paragraphs[i + 1] = trimmed + ' ' + next.trim();
         continue;
@@ -66,5 +66,9 @@ export const textUtilities = {
 
         .trim()
     );
+  },
+
+  cleanAiOutput(chunks: string[]) {
+    return chunks.map((chunk) => chunk.replace(/\n+/g, ' ').trim());
   },
 };
