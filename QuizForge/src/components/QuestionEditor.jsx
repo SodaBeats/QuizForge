@@ -27,6 +27,7 @@ export default function QuestionEditor({
     questionType: "multiple-choice",
     timeLimit: 60,
     questionAmount: 5,
+    sources: [],
   });
 
   // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------

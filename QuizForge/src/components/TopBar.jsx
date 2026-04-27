@@ -12,6 +12,7 @@ export default function TopBar({
   selectedFile,
   setQuizMetadata,
 }) {
+  //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [userDocuments, setUserDocuments] = useState([]);
@@ -51,13 +52,14 @@ export default function TopBar({
     if (file) {
       handleFileUpload(file);
       setShowFileModal(false);
+      setUserDocuments([]);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       setIsLoading(true);
-      logout();
+      await logout();
     } catch (error) {
       alert("Error: " + error);
     } finally {
@@ -76,7 +78,7 @@ export default function TopBar({
         credentials: "include",
       });
       if (!response.ok) {
-        toast.error("Error:" + response.error);
+        toast.error("Error: " + response.statusText);
         return;
       }
       const documents = await response.json();

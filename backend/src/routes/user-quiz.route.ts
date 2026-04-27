@@ -309,7 +309,7 @@ router.patch(
       const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
       if (!quizInfo || quizInfo.user_id !== req.user.id) {
         return res
-          .status(403)
+          .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
 
@@ -363,7 +363,7 @@ router.patch(
       const quizInfo = await UserQuizzesRepository.getQuizById(Number(id));
       if (!quizInfo || quizInfo.user_id !== req.user.id) {
         return res
-          .status(403)
+          .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
 

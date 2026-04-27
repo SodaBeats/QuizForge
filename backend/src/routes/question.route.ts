@@ -67,7 +67,7 @@ router.post(
 
 /*router.post('/generate', verifyToken, async (req, res, next) => {
   const { questionType, timeLimit, questionAmount } = req.body.generateOptions;
-  const { documentId } = req.body;
+  const { quizId } = req.body;
   if (!questionType || !timeLimit || !documentId || !questionAmount) {
     return res.status(400).json({
       success: false,
