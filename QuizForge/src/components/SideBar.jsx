@@ -26,6 +26,8 @@ function SideBar({
     }
   };
 
+  console.log(questions);
+
   const handleQuestionDelete = async (questionId) => {
     //store question list as backup
     const previousQuestions = [...questions];
@@ -197,7 +199,7 @@ function SideBar({
           </div>
           <div className="space-y-1">
             {currentQuiz ? (
-              questions.map((question) => (
+              questions?.map((question) => (
                 <div
                   key={question.id}
                   className={`py-1 px-2 rounded text-sm flex items-center justify-between group ${
@@ -210,7 +212,7 @@ function SideBar({
                     className="cursor-pointer truncate flex-1"
                     onClick={() => setSelectedQuestionId(question.id)}
                   >
-                    {question.questionText}
+                    {question.questionText || question.question_text}
                   </div>
                   <button
                     onClick={(e) => {

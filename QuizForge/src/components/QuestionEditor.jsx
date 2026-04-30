@@ -11,6 +11,8 @@ export default function QuestionEditor({
   const { authFetch } = useContext(AuthContext);
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [showSourcesDropdown, setShowSourcesDropdown] = useState(false);
   const [manualQuestion, setManualQuestion] = useState({
     //question usestate
     quizId: quizMetadata?.id,
@@ -28,6 +30,7 @@ export default function QuestionEditor({
     timeLimit: 60,
     questionAmount: 5,
     sources: [],
+    topic: "",
   });
 
   // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------
@@ -63,8 +66,40 @@ export default function QuestionEditor({
     }
   }, [selectedQuestion, quizMetadata?.id]);
 
+  // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
+  const fetchDocuments = async () => {
+    try {
+      const response = await authFetch("http://localhost:3000/api/documents");
+      const data = await response.json();
+      setDocuments(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      setDocuments([]);
+    }
+  };
+
+  // TOGGLE DOCUMENT SELECTION FOR SOURCES ------------------------------------
+  const handleToggleSource = (docId) => {
+    setGenerateOptions((prev) => {
+      const currentSources = prev.sources;
+      const normalizedDocId = Number(docId);
+      const isSelected = currentSources.some(
+        (id) => Number(id) === normalizedDocId,
+      );
+      return {
+        ...prev,
+        sources: isSelected
+          ? currentSources.filter((id) => Number(id) !== normalizedDocId)
+          : [...currentSources, normalizedDocId],
+      };
+    });
+  };
+
   // changes question editor depending on which mode you select ----------------
   const handleModeSelect = (mode) => {
+    if (mode === "generate") {
+      fetchDocuments();
+    }
     setAddMode(mode);
   };
 
@@ -93,7 +128,6 @@ export default function QuestionEditor({
       const result = await response.json();
 
       if (result.success) {
-        ///////// -------------------------- TO DO -------------------------------------////////
         // Refetch questions from the server
         const questionsResponse = await authFetch(
           `http://localhost:3000/api/questions?quizId=${quizMetadata?.id}`,
@@ -147,7 +181,7 @@ export default function QuestionEditor({
           },
           body: JSON.stringify({
             generateOptions,
-            quizId: quizMetadata?.id,
+            quizId: quizMetadata.id,
           }),
           credentials: "include",
         },
@@ -158,12 +192,19 @@ export default function QuestionEditor({
       if (!result.success) {
         toast.error("Something went wrong while generating questions");
         console.error(result.error || result.message || "IDK fam");
+        return;
       }
-      setQuestions(result.questions);
-      setLoading(false);
+
+      setQuestions((prevQuestions) => [
+        ...(Array.isArray(prevQuestions) ? prevQuestions : []),
+        ...(Array.isArray(result.questions) ? result.questions : []),
+      ]);
+      toast.success("Generated questions added successfully");
     } catch (error) {
       console.error(error);
       alert("Something went wrong, please try again later");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -497,6 +538,21 @@ export default function QuestionEditor({
                 </button>
               </div>
               <>
+                <label className="block text-sm font-medium mb-1">Topic</label>
+                <input
+                  type="text"
+                  value={generateOptions.topic}
+                  onChange={(e) =>
+                    setGenerateOptions({
+                      ...generateOptions,
+                      topic: e.target.value,
+                    })
+                  }
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  placeholder="Enter the topic for questions (e.g., 'Biology: Cell Division')"
+                />
+              </>
+              <>
                 <label className="block text-sm font-medium mb-1">
                   Question Type
                 </label>
@@ -550,6 +606,53 @@ export default function QuestionEditor({
                   min="0"
                   placeholder="Enter time in seconds"
                 />
+              </>
+              <>
+                <label className="block text-sm font-medium mb-1">
+                  Context Sources
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSourcesDropdown(!showSourcesDropdown)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-left flex justify-between items-center"
+                  >
+                    <span className="text-gray-300">
+                      {generateOptions.sources &&
+                      generateOptions.sources.length > 0
+                        ? `${generateOptions.sources.length} document(s) selected`
+                        : "Select documents..."}
+                    </span>
+                    <span className="text-gray-400">▼</span>
+                  </button>
+                  {showSourcesDropdown && (
+                    <div className="absolute top-full left-0 right-0 bg-gray-700 border border-gray-600 rounded mt-1 z-10 max-h-48 overflow-y-auto">
+                      {documents.length > 0 ? (
+                        documents.map((doc) => (
+                          <label
+                            key={doc.id}
+                            className="flex items-center px-3 py-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(generateOptions.sources || []).some(
+                                (id) => Number(id) === Number(doc.id),
+                              )}
+                              onChange={() => handleToggleSource(doc.id)}
+                              className="mr-2 w-4 h-4 cursor-pointer"
+                            />
+                            <span className="text-gray-200 text-sm">
+                              {doc.title}
+                            </span>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-gray-400 text-sm">
+                          No documents available
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
               <div className="flex space-x-2 mt-4">
                 <button
