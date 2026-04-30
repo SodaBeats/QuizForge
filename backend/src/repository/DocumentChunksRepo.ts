@@ -46,6 +46,9 @@ export const DocumentChunksRepo = {
     sources: number[],
     userId: number,
   ) {
+    if (sources.length <= 0) {
+      return null;
+    }
     // Threshold
     const similarity = sql<number>`${document_chunks_db.embedding} <=> ${JSON.stringify(queryEmbedding)}`;
 

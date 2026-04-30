@@ -36,7 +36,6 @@ export default function QuestionEditor({
   // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------
   useEffect(() => {
     if (selectedQuestion) {
-      // eslint-disable-next-line
       setManualQuestion({
         id: selectedQuestion.id,
         quizId: selectedQuestion.quizId,

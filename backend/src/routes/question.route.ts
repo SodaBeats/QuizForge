@@ -5,7 +5,6 @@ import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
-import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
@@ -71,11 +70,9 @@ router.post('/generate', verifyToken, async (req, res, next) => {
   const { questionType, timeLimit, questionAmount, sources, topic } =
     req.body.generateOptions;
   const { quizId } = req.body;
-  let jsonSchema;
+  let rawParsed;
   let parsedQuestions;
   const groq = new Groq();
-
-  console.log(req.body);
 
   if (!questionType || !timeLimit || !quizId || !questionAmount) {
     return res.status(400).json({
@@ -129,15 +126,6 @@ router.post('/generate', verifyToken, async (req, res, next) => {
         )
         .nullable(),
     });
-
-    // choose schema based on question type
-    if (questionType === 'multiple-choice') {
-      jsonSchema = multipleChoiceSchema.toJSONSchema();
-    } else if (questionType === 'true-false') {
-      jsonSchema = trueFalseSchema.toJSONSchema();
-    } else {
-      jsonSchema = shortAnswerSchema.toJSONSchema();
-    }
 
     // embed the topic for RAG
     const embeddedUserQueryResponse = await ollama.embed({
@@ -219,7 +207,7 @@ router.post('/generate', verifyToken, async (req, res, next) => {
           role: 'user',
           content: `Generate ${questionAmount} ${questionType} questions on <topic>${topic}</topic> using the information inside the document tags below. Only respond in the specified JSON format.
           
-          <document>${contextString}<document>`,
+          <document>${contextString}</document>`,
         },
       ],
     });
@@ -233,18 +221,20 @@ router.post('/generate', verifyToken, async (req, res, next) => {
         message: 'Failed to get a response from groq API',
       });
     }
+    try {
+      rawParsed = JSON.parse(response.choices[0].message.content);
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to parse LLM response to JSON',
+      });
+    }
     if (questionType === 'multiple-choice') {
-      parsedQuestions = multipleChoiceSchema.safeParse(
-        JSON.parse(response.choices[0].message.content),
-      );
+      parsedQuestions = multipleChoiceSchema.safeParse(rawParsed);
     } else if (questionType === 'true-false') {
-      parsedQuestions = trueFalseSchema.safeParse(
-        JSON.parse(response.choices[0].message.content),
-      );
+      parsedQuestions = trueFalseSchema.safeParse(rawParsed);
     } else {
-      parsedQuestions = shortAnswerSchema.safeParse(
-        JSON.parse(response.choices[0].message.content),
-      );
+      parsedQuestions = shortAnswerSchema.safeParse(rawParsed);
     }
 
     if (
@@ -262,7 +252,7 @@ router.post('/generate', verifyToken, async (req, res, next) => {
         ...q,
         question_type: questionType,
         time_limit: timeLimit,
-        quiz_id: quizId,
+        quiz_id: Number(quizId),
       };
     });
     const insertedQuestions = await QuestionsRepository.insertQuestionsToDb(

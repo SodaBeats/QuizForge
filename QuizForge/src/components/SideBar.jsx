@@ -26,8 +26,6 @@ function SideBar({
     }
   };
 
-  console.log(questions);
-
   const handleQuestionDelete = async (questionId) => {
     //store question list as backup
     const previousQuestions = [...questions];

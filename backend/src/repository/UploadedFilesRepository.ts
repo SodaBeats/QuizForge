@@ -15,7 +15,7 @@ export const UploadedFilesRepository = {
     return result;
   },
 
-  //get all documents title and id by owner id
+  //get document info (id, userId, title, filePath, fileHash, createdAt) by owner id
   async getDocInfoByOwner(userId: number) {
     return await db
       .select({
