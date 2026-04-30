@@ -10,6 +10,7 @@ export const UserQuizzesRepository = {
   //insert quiz to table
   async insertNewQuiz(data: QuizInputData) {
     const [quiz] = await db.insert(quizzes_db).values(data).returning({
+      id: quizzes_db.id,
       userId: quizzes_db.user_id,
       quizTitle: quizzes_db.quiz_title,
       quizDescription: quizzes_db.quiz_description,

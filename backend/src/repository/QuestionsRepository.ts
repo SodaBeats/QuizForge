@@ -19,7 +19,18 @@ export const QuestionsRepository = {
 
   //insert arrays of questions
   async insertQuestionsToDb(data: QuestionInputData[]) {
-    const insert = await db.insert(questions_db).values(data).returning();
+    const insert = await db.insert(questions_db).values(data).returning({
+      id: questions_db.id,
+      quizId: questions_db.quiz_id,
+      questionText: questions_db.question_text,
+      questionType: questions_db.question_type,
+      timeLimit: questions_db.time_limit,
+      correctAnswer: questions_db.correct_answer,
+      optionA: questions_db.option_a,
+      optionB: questions_db.option_b,
+      optionC: questions_db.option_c,
+      optionD: questions_db.option_d,
+    });
     return insert.length > 0 ? insert : null;
   },
 

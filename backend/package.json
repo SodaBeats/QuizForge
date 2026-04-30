@@ -32,6 +32,7 @@
     "ollama": "^0.6.3",
     "pdf-extraction": "^1.0.2",
     "pg": "^8.20.0",
+    "tiktoken": "^1.0.22",
     "zod": "^4.3.6"
   },
   "devDependencies": {

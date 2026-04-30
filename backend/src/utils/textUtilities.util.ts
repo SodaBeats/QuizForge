@@ -1,4 +1,4 @@
-// TO DO: PRACTICE CHUNKING LOGIC
+import tiktoken from 'tiktoken';
 
 export const textUtilities = {
   textChunker(text: string) {
@@ -12,7 +12,7 @@ export const textUtilities = {
 
       const wordCount = trimmed.split(/\s+/).length;
 
-      if (wordCount < 250 && i + 1 < paragraphs.length) {
+      if (wordCount < 50 && i + 1 < paragraphs.length) {
         const next = paragraphs[i + 1] as string;
         paragraphs[i + 1] = trimmed + ' ' + next.trim();
         continue;
@@ -70,5 +70,10 @@ export const textUtilities = {
 
   cleanAiOutput(chunks: string[]) {
     return chunks.map((chunk) => chunk.replace(/\n+/g, ' ').trim());
+  },
+
+  countTokenEstimateFromString(text: string) {
+    // return the number of token in a string
+    return Math.ceil(text.length / 4);
   },
 };
