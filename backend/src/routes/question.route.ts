@@ -84,48 +84,54 @@ router.post('/generate', verifyToken, async (req, res, next) => {
   try {
     console.log('generating...');
 
-    const multipleChoiceSchema = z.object({
-      canCreateQuiz: z.boolean(),
-      reason: z.string().optional(),
-      questions: z
-        .array(
-          z.object({
-            question_text: z.string(),
-            option_a: z.string().optional(),
-            option_b: z.string().optional(),
-            option_c: z.string().optional(),
-            option_d: z.string().optional(),
-            correct_answer: z.enum(['a', 'b', 'c', 'd']),
-          }),
-        )
-        .nullable(),
-    });
+    const multipleChoiceSchema = z
+      .object({
+        canCreateQuiz: z.boolean(),
+        reason: z.string().optional(),
+        questions: z
+          .array(
+            z.object({
+              question_text: z.string(),
+              option_a: z.string().optional(),
+              option_b: z.string().optional(),
+              option_c: z.string().optional(),
+              option_d: z.string().optional(),
+              correct_answer: z.enum(['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D']),
+            }),
+          )
+          .nullable(),
+      })
+      .strip();
 
-    const trueFalseSchema = z.object({
-      canCreateQuiz: z.boolean(),
-      reason: z.string().optional(),
-      questions: z
-        .array(
-          z.object({
-            question_text: z.string(),
-            correct_answer: z.enum(['true', 'false']),
-          }),
-        )
-        .nullable(),
-    });
+    const trueFalseSchema = z
+      .object({
+        canCreateQuiz: z.boolean(),
+        reason: z.string().optional(),
+        questions: z
+          .array(
+            z.object({
+              question_text: z.string(),
+              correct_answer: z.enum(['true', 'false']),
+            }),
+          )
+          .nullable(),
+      })
+      .strip();
 
-    const shortAnswerSchema = z.object({
-      canCreateQuiz: z.boolean(),
-      reason: z.string().optional(),
-      questions: z
-        .array(
-          z.object({
-            question_text: z.string(),
-            correct_answer: z.string().optional(),
-          }),
-        )
-        .nullable(),
-    });
+    const shortAnswerSchema = z
+      .object({
+        canCreateQuiz: z.boolean(),
+        reason: z.string().optional(),
+        questions: z
+          .array(
+            z.object({
+              question_text: z.string(),
+              correct_answer: z.string().optional(),
+            }),
+          )
+          .nullable(),
+      })
+      .strip();
 
     // embed the topic for RAG
     const embeddedUserQueryResponse = await ollama.embed({
@@ -160,7 +166,7 @@ router.post('/generate', verifyToken, async (req, res, next) => {
     const tokenEstimate =
       textUtilities.countTokenEstimateFromString(contextString);
 
-    if (tokenEstimate >= 9000) {
+    if (tokenEstimate >= 8000) {
       return res.status(400).json({
         success: false,
         message: 'Exceeded token limit',
@@ -191,8 +197,8 @@ router.post('/generate', verifyToken, async (req, res, next) => {
             # GENERATION RULES
             Follow these instructions strictly based on the question type:
             ## 1. multiple-choice
-            - Required: [question_text, correct_answer, option_a, option_b, option_c, option_d]
-            - Constraint: For the correct_answer, only choose the letter of the correct answer from option_a, option_b, option_c, option_d.
+            - Required: [question_text, correct_answer_text, correct_answer, option_a, option_b, option_c, option_d]
+            - Constraint: Be sure to create the "correct_answer_text" first, then "option_a", "option_b", "option_c", "option_d", and finally the correct letter for "correct_answer".
 
             ## 2. true-false
             - Required: [question_text, correct_answer]
@@ -237,11 +243,16 @@ router.post('/generate', verifyToken, async (req, res, next) => {
       parsedQuestions = shortAnswerSchema.safeParse(rawParsed);
     }
 
+    console.log(
+      `[RAW RESPONSE FROM LLM]: ${response.choices[0].message.content}`,
+    );
+
     if (
       !parsedQuestions.success ||
       !parsedQuestions.data.questions ||
       parsedQuestions.data.questions.length < 1
     ) {
+      console.log(parsedQuestions.error);
       return res.status(500).json({
         success: false,
         message: 'The LLM returned an unexpected format',

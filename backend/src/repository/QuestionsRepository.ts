@@ -19,7 +19,10 @@ export const QuestionsRepository = {
 
   //insert arrays of questions
   async insertQuestionsToDb(data: QuestionInputData[]) {
-    const insert = await db.insert(questions_db).values(data).returning({
+    const cleanData = data.map((prev) => {
+      return { ...prev, correct_answer: prev.correct_answer?.toLowerCase() };
+    });
+    const insert = await db.insert(questions_db).values(cleanData).returning({
       id: questions_db.id,
       quizId: questions_db.quiz_id,
       questionText: questions_db.question_text,
