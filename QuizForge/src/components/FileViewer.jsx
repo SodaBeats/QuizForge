@@ -8,7 +8,7 @@ export default function FileViewer({ fileContent, selectedFile }) {
         <p className="text-xs text-gray-400">PDF/text viewer</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4 bg-gray-900">
-        <div className="font-mono text-gray-100 text-sm whitespace-pre-wrap bg-slate-950 p-4 rounded-md">
+        <div className="font-mono text-gray-100 text-sm whitespace-pre-wrap">
           {fileContent || "No file selected"}
         </div>
       </div>
