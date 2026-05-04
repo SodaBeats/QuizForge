@@ -11,9 +11,9 @@ const groq = new Groq();
 
 export const getShortAnsScoreObject = async (
   questions: ScoreableQuestion[],
-  answers: Record<string, string> = {},
+  answers: Record<string, string> | null,
 ): Promise<Record<string, number>> => {
-  if (!answers || questions.length === 0) {
+  if (!answers || Object.keys(answers).length === 0 || questions.length === 0) {
     return {};
   }
 
@@ -48,9 +48,9 @@ export const getShortAnsScoreObject = async (
     
                   # SAMPLE OUTPUT
                     {
-                      12: 9,
-                      13: 7,
-                      14: 9
+                      "12": 9,
+                      "13": 7,
+                      "14": 9
                     }
                 `,
         },

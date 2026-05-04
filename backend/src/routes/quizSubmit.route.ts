@@ -39,7 +39,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
   });
 
   // get total score for 'multiple-choice' and 'true-false' questions
-  const normalQuestionsScore = await getScore(questions, answers);
+  const normalQuestionsScore = await getScore(normalQuestions, answers);
   // get score array for 'short-answer' questions
   const shortAnsQuestionsScoreObject: Record<string, number> =
     await getShortAnsScoreObject(shortAnsQuestions, shortQuestionsAnswers);
@@ -58,7 +58,8 @@ router.patch('/', verifyToken, async (req, res, next) => {
   const maxPossibleScore =
     normalQuestions.length * 1 + shortAnsQuestions.length * 10;
   const rawScore = normalQuestionsScore + shortAnsQuestionsRawScore;
-  const percentileScore = (rawScore / maxPossibleScore) * 100;
+  const percentileScore =
+    maxPossibleScore > 0 ? (rawScore / maxPossibleScore) * 100 : 0;
 
   const formattedData = {
     score: percentileScore,

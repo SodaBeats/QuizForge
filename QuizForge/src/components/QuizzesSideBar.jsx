@@ -27,10 +27,9 @@ export default function QuizzesSidebar({
                     : "bg-gray-800 hover:bg-gray-700 text-gray-300"
                 }`}
                 onClick={() => {
-                  selectedQuizId === null
-                    ? setSelectedQuizId(quiz.id)
-                    : setSelectedQuizId(null);
-                  onSelectQuiz(quiz.id);
+                  const newId = selectedQuizId === quiz.id ? null : quiz.id;
+                  setSelectedQuizId(newId);
+                  onSelectQuiz(newId);
                 }}
               >
                 <div className="flex-1 truncate">

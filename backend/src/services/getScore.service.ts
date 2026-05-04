@@ -25,7 +25,7 @@ type ScoreableQuestion = Pick<
 // main function --------------------------------------------------------------
 export const getScore = async (
   questions: ScoreableQuestion[],
-  answers: Record<string, string> = {},
+  answers: Record<string, string> | null,
 ) => {
   if (!answers || questions.length === 0) {
     return 0;
