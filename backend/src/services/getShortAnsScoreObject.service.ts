@@ -12,9 +12,9 @@ const groq = new Groq();
 export const getShortAnsScoreObject = async (
   questions: ScoreableQuestion[],
   answers: Record<string, string> = {},
-) => {
+): Promise<Record<string, number>> => {
   if (!answers || questions.length === 0) {
-    return 0;
+    return {};
   }
 
   try {
@@ -27,7 +27,7 @@ export const getShortAnsScoreObject = async (
     });
     let rawParsed;
 
-    const shortAnswerScoreSchema = z.record(z.string(), z.string());
+    const shortAnswerScoreSchema = z.record(z.string(), z.number());
 
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',

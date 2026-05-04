@@ -2,7 +2,7 @@ import express from 'express';
 import { db } from '../db/db.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { getScore } from '../services/getScore.service.js';
-import { getShortAnsScoreObject } from '../services/getShortAnsScoreObject.router.js';
+import { getShortAnsScoreObject } from '../services/getShortAnsScoreObject.service.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 import type { Question } from '../types/questionType.js';
@@ -22,12 +22,12 @@ router.patch('/', verifyToken, async (req, res, next) => {
       .json({ success: false, message: 'Missing required fields' });
   }
 
-  // separate short-answer questions
+  // separate short-answer questions to a new array
   const shortAnsQuestions = questions.filter((q: Question) => {
     return q.questionType === 'short-answer';
   });
 
-  // remove short-answer question IDs from answers object
+  // separate 'short-answer' answers and delete from 'answers'
   for (const q of shortAnsQuestions) {
     shortQuestionsAnswers[q.id] = answers[q.id];
     delete answers[q.id];
@@ -41,10 +41,8 @@ router.patch('/', verifyToken, async (req, res, next) => {
   // get total score for 'multiple-choice' and 'true-false' questions
   const normalQuestionsScore = await getScore(questions, answers);
   // get score array for 'short-answer' questions
-  const shortAnsQuestionsScoreObject = await getShortAnsScoreObject(
-    shortAnsQuestions,
-    shortQuestionsAnswers,
-  );
+  const shortAnsQuestionsScoreObject: Record<string, number> =
+    await getShortAnsScoreObject(shortAnsQuestions, shortQuestionsAnswers);
 
   // get total score for 'short-answer' questions
   const shortAnsQuestionsRawScore = Object.values(
@@ -69,7 +67,6 @@ router.patch('/', verifyToken, async (req, res, next) => {
     max_possible_score: maxPossibleScore,
   };
 
-  // CHECKPOINT ----------------------------------------------------------------- TO DO
   const formattedAttemptAnswers = questions.map((q: Question) => {
     return {
       quiz_id: quiz.id,
@@ -84,6 +81,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
 
   const formattedShortAnsAttemptAnswers = shortAnsQuestions.map(
     (q: Question) => {
+      const score = shortAnsQuestionsScoreObject[q.id.toString()] ?? 0;
       return {
         quiz_id: quiz.id,
         attempt_id: attemptId,
@@ -91,8 +89,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
         question_id: q.id,
         chosen_answer: shortQuestionsAnswers[q.id] ?? null,
         correct_answer: 'placeholder',
-        is_correct:
-          shortAnsQuestionsScoreObject[q.id.toString()] > 7 ? true : false,
+        is_correct: score >= 7,
       };
     },
   );
@@ -107,6 +104,10 @@ router.patch('/', verifyToken, async (req, res, next) => {
         tx,
       );
       await AttemptAnswersRepo.insertAttemptAnswer(formattedAttemptAnswers, tx);
+      await AttemptAnswersRepo.insertAttemptAnswer(
+        formattedShortAnsAttemptAnswers,
+        tx,
+      );
     });
     return res
       .status(200)
