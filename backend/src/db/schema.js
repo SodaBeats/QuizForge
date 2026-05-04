@@ -96,7 +96,10 @@ export const quiz_attempts_db = pgTable("quiz_attempts_db", {
   
   // The result data
   score: integer("score").default(0),
+
+  raw_score: integer("raw_score").default(0),
   
+  max_possible_score: integer("max_possible_score").default(0),
   // Helpful metadata
   status: text("status").default('completed'), // 'in-progress' or 'completed'
 
