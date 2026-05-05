@@ -86,14 +86,14 @@ router.patch('/', verifyToken, async (req, res, next) => {
 
   const formattedShortAnsAttemptAnswers = shortAnsQuestions.map(
     (q: Question) => {
-      const score = shortAnsQuestionsScoreObject[q.id] ?? 0;
+      const score = shortAnsQuestionsScoreObject[q.id.toString()] ?? 0;
       return {
         quiz_id: quiz.id,
         attempt_id: attemptId,
         user_id: userId,
         question_id: q.id,
         chosen_answer: shortQuestionsAnswers[q.id.toString()] ?? null,
-        correct_answer: 'placeholder',
+        correct_answer: q.correctAnswer,
         is_correct: score >= 7,
       };
     },

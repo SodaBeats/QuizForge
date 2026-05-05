@@ -12,6 +12,7 @@ import { textUtilities } from '../utils/textUtilities.util.js';
 
 //establish router
 const router = express.Router();
+const groq = new Groq();
 
 // ROUTER FOR MAKING QUESTIONS
 router.post(
@@ -72,7 +73,6 @@ router.post('/generate', verifyToken, async (req, res, next) => {
   const { quizId } = req.body;
   let rawParsed;
   let parsedQuestions;
-  const groq = new Groq();
 
   if (!questionType || !timeLimit || !quizId || !questionAmount) {
     return res.status(400).json({
@@ -126,7 +126,7 @@ router.post('/generate', verifyToken, async (req, res, next) => {
           .array(
             z.object({
               question_text: z.string(),
-              correct_answer: z.string().optional(),
+              correct_answer: z.string(),
             }),
           )
           .nullable(),
@@ -203,8 +203,7 @@ router.post('/generate', verifyToken, async (req, res, next) => {
             - Constraint: correct_answer must be exactly "true" or "false".
 
             ## 3. short-answer
-            - Required: [question_text]
-            - Constraint: correct_answer can just be 'placeholder'.
+            - Required: [question_text, correct_answer]
             `,
         },
         {
