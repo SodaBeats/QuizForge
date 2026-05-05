@@ -29,7 +29,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
 
   // separate 'short-answer' answers and delete from 'answers'
   for (const q of shortAnsQuestions) {
-    shortQuestionsAnswers[q.id] = answers[q.id];
+    shortQuestionsAnswers[q.id.toString()] = answers[q.id] ?? '';
     delete answers[q.id];
   }
 
@@ -52,6 +52,10 @@ router.patch('/', verifyToken, async (req, res, next) => {
     return sum + numericVal;
   }, 0);
 
+  //console.log(`[shortAnsQuestions]:`, shortAnsQuestions);
+  //console.log(`[shortQuestionsAnswers]:`, shortQuestionsAnswers);
+  //console.log(`[shortAnsQuestionsScoreObject]: `, shortAnsQuestionsScoreObject);
+
   // calculate max possible score based on question point
   // (multiple-choice, true-false = 1 pt)
   // (short-answer = 10 pts)
@@ -59,7 +63,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
     normalQuestions.length * 1 + shortAnsQuestions.length * 10;
   const rawScore = normalQuestionsScore + shortAnsQuestionsRawScore;
   const percentileScore =
-    maxPossibleScore > 0 ? (rawScore / maxPossibleScore) * 100 : 0;
+    maxPossibleScore > 0 ? Math.floor((rawScore / maxPossibleScore) * 100) : 0;
 
   const formattedData = {
     score: percentileScore,
@@ -68,7 +72,7 @@ router.patch('/', verifyToken, async (req, res, next) => {
     max_possible_score: maxPossibleScore,
   };
 
-  const formattedAttemptAnswers = questions.map((q: Question) => {
+  const formattedAttemptAnswers = normalQuestions.map((q: Question) => {
     return {
       quiz_id: quiz.id,
       attempt_id: attemptId,
@@ -82,13 +86,13 @@ router.patch('/', verifyToken, async (req, res, next) => {
 
   const formattedShortAnsAttemptAnswers = shortAnsQuestions.map(
     (q: Question) => {
-      const score = shortAnsQuestionsScoreObject[q.id.toString()] ?? 0;
+      const score = shortAnsQuestionsScoreObject[q.id] ?? 0;
       return {
         quiz_id: quiz.id,
         attempt_id: attemptId,
         user_id: userId,
         question_id: q.id,
-        chosen_answer: shortQuestionsAnswers[q.id] ?? null,
+        chosen_answer: shortQuestionsAnswers[q.id.toString()] ?? null,
         correct_answer: 'placeholder',
         is_correct: score >= 7,
       };

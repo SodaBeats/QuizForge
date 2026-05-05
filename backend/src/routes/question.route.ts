@@ -173,8 +173,6 @@ router.post('/generate', verifyToken, async (req, res, next) => {
       });
     }
 
-    console.log(contextString);
-
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
@@ -243,16 +241,12 @@ router.post('/generate', verifyToken, async (req, res, next) => {
       parsedQuestions = shortAnswerSchema.safeParse(rawParsed);
     }
 
-    console.log(
-      `[RAW RESPONSE FROM LLM]: ${response.choices[0].message.content}`,
-    );
-
     if (
       !parsedQuestions.success ||
       !parsedQuestions.data.questions ||
       parsedQuestions.data.questions.length < 1
     ) {
-      console.log(parsedQuestions.error);
+      console.error(parsedQuestions.error);
       return res.status(500).json({
         success: false,
         message: 'The LLM returned an unexpected format',
