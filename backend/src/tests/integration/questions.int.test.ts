@@ -10,13 +10,21 @@ import request from 'supertest';
 import { eq } from 'drizzle-orm';
 import app from '../../server.js';
 import { db, pool } from '../../db/db.js';
-import { uploaded_files, questions_db } from '../../db/schema.js';
-import { loginAs, authHeader, TEACHER_CREDS } from './setup/testHelpers.js';
+import { questions_db, quizzes_db } from '../../db/schema.js';
+import {
+  loginAs,
+  authHeader,
+  TEACHER_CREDS,
+  generateShareToken,
+  STUDENT_CREDS,
+} from './setup/testHelpers.js';
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 let teacherToken: string;
 let teacherId: number;
-let seededDocId: number;
+let studentToken: string;
+let studentId: number;
+let seededQuizId: number;
 let seededQuestionId: number;
 
 // ── Reusable valid question payload ──────────────────────────────────────────
@@ -28,7 +36,7 @@ const validQuestion = () => ({
   optionB: '3',
   optionC: '5',
   optionD: '6',
-  timeLimit: 20
+  timeLimit: 20,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,42 +47,47 @@ beforeAll(async () => {
   const result = await loginAs(TEACHER_CREDS.email, TEACHER_CREDS.password);
   teacherToken = result.accessToken;
   teacherId = result.userId;
+  const result2 = await loginAs(STUDENT_CREDS.email, STUDENT_CREDS.password);
+  studentToken = result2.accessToken;
+  studentId = result2.userId;
 
   // Seed a document (questions are always linked to a document)
-  const [doc] = await db
-    .insert(uploaded_files)
+  const [quiz] = await db
+    .insert(quizzes_db)
     .values({
       user_id: teacherId,
-      filename: 'questions_test_doc.pdf',
-      file_path: '/fake/questions_test_doc.pdf',
-      file_hash: 'qhash001',
-      extracted_text: 'Some document text.',
+      quiz_title: 'sample quiz',
+      quiz_description: 'sample description',
+      share_token: generateShareToken(),
+      max_attempts: 6,
+      status: 'published',
+      due_date: new Date(Date.now() + 24 * 60 * 60 * 1000),
     })
     .returning();
 
-  if(!doc){
-    throw new Error('Failed to seed document');
+  if (!quiz) {
+    throw new Error('Failed to seed quiz');
   }
 
-  seededDocId = doc.id;
+  seededQuizId = quiz.id;
 
   // Seed one question so GET/PATCH/DELETE tests have something to work with
   const [question] = await db
     .insert(questions_db)
     .values({
-      document_id: seededDocId,
+      quiz_id: seededQuizId,
       question_text: 'Pre-seeded question?',
       question_type: 'multiple_choice',
-      correct_answer: 'B',
+      correct_answer: 'b',
       option_a: 'Wrong',
       option_b: 'Correct',
       option_c: 'Also Wrong',
       option_d: 'Still Wrong',
-      time_limit: 20
+      time_limit: 20,
     })
     .returning();
 
-  if(!question){
+  if (!question) {
     throw new Error('Failed to seed question');
   }
 
@@ -82,8 +95,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await db.delete(uploaded_files).where(eq(uploaded_files.id, seededDocId));
-  if(pool) await pool.end();
+  await db.delete(quizzes_db).where(eq(quizzes_db.id, seededQuizId));
+  if (pool) await pool.end();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -91,22 +104,21 @@ afterAll(async () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/questions', () => {
-
-  it('200 — creates a question linked to an owned document', async () => {
+  it('200 — creates a question linked to an owned quiz', async () => {
     const res = await request(app)
       .post('/api/questions')
       .set(authHeader(teacherToken))
-      .send({ ...validQuestion(), documentId: seededDocId });
+      .send({ ...validQuestion(), quizId: seededQuizId });
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
   });
 
-  it('404 — rejects a documentId that does not belong to this user', async () => {
+  it('404 — rejects a quizId that does not belong to this user', async () => {
     const res = await request(app)
       .post('/api/questions')
       .set(authHeader(teacherToken))
-      .send({ ...validQuestion(), documentId: 999999 });
+      .send({ ...validQuestion(), quizId: 999999 });
 
     expect(res.status).toBe(404);
   });
@@ -116,7 +128,7 @@ describe('POST /api/questions', () => {
     const res = await request(app)
       .post('/api/questions')
       .set(authHeader(teacherToken))
-      .send({ documentId: seededDocId, questionType: 'multiple_choice' });
+      .send({ quizId: seededQuizId, questionType: 'multiple_choice' });
 
     expect(res.status).toBe(400);
   });
@@ -124,21 +136,20 @@ describe('POST /api/questions', () => {
   it('401 — rejects requests with no token', async () => {
     const res = await request(app)
       .post('/api/questions')
-      .send({ ...validQuestion(), documentId: seededDocId });
+      .send({ ...validQuestion(), quizId: seededQuizId });
 
     expect(res.status).toBe(401);
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/questions?documentId=
+// GET /api/questions?quizId=
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('GET /api/questions', () => {
-
-  it('200 — returns questions for a document owned by the teacher', async () => {
+  it('200 — returns questions for a quiz owned by the teacher', async () => {
     const res = await request(app)
-      .get(`/api/questions?documentId=${seededDocId}`)
+      .get(`/api/questions?quizId=${seededQuizId}`)
       .set(authHeader(teacherToken));
 
     expect(res.status).toBe(200);
@@ -146,26 +157,32 @@ describe('GET /api/questions', () => {
     expect(res.body.length).toBeGreaterThan(0);
   });
 
-  it('404 — returns 404 for a documentId that does not exist', async () => {
+  it('404 — returns 404 for a quizId that does not exist', async () => {
     const res = await request(app)
-      .get('/api/questions?documentId=999999')
+      .get('/api/questions?quizId=999999')
       .set(authHeader(teacherToken));
 
     expect(res.status).toBe(404);
   });
 
-  it('400 — returns 400 when documentId is not a number', async () => {
+  it('400 — returns 400 when quizId is not a number', async () => {
     const res = await request(app)
-      .get('/api/questions?documentId=abc')
+      .get('/api/questions?quizId=abc')
       .set(authHeader(teacherToken));
 
     expect(res.status).toBe(400);
   });
 
+  it('404 - returns 404 when user is not the owner', async () => {
+    const res = await request(app)
+      .get(`/api/questions?quizId=${seededQuizId}`)
+      .set(authHeader(studentToken));
+
+    expect(res.status).toBe(404);
+  });
+
   it('401 — rejects requests with no token', async () => {
-    const res = await request(app).get(
-      `/api/questions?documentId=${seededDocId}`
-    );
+    const res = await request(app).get(`/api/questions?quizId=${seededQuizId}`);
     expect(res.status).toBe(401);
   });
 });
@@ -175,7 +192,6 @@ describe('GET /api/questions', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('PATCH /api/questions/:id', () => {
-
   it('200 — updates an owned question successfully', async () => {
     const updated = {
       questionText: 'Updated question text?',
@@ -185,8 +201,8 @@ describe('PATCH /api/questions/:id', () => {
       optionB: 'B option',
       optionC: 'C option — correct',
       optionD: 'D option',
-      documentId: seededDocId,
-      timeLimit: 122
+      quizId: seededQuizId,
+      timeLimit: 122,
     };
 
     const res = await request(app)
@@ -202,7 +218,7 @@ describe('PATCH /api/questions/:id', () => {
     const res = await request(app)
       .patch('/api/questions/999999')
       .set(authHeader(teacherToken))
-      .send({ ...validQuestion(), documentId: seededDocId });
+      .send({ ...validQuestion(), quizId: seededQuizId });
 
     expect(res.status).toBe(404);
   });
@@ -210,7 +226,7 @@ describe('PATCH /api/questions/:id', () => {
   it('401 — rejects requests with no token', async () => {
     const res = await request(app)
       .patch(`/api/questions/${seededQuestionId}`)
-      .send({ ...validQuestion(), documentId: seededDocId });
+      .send({ ...validQuestion(), quizId: seededQuizId });
 
     expect(res.status).toBe(401);
   });
@@ -221,16 +237,14 @@ describe('PATCH /api/questions/:id', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('DELETE /api/questions/:id', () => {
-
   // Seed a fresh question per test so deletion doesn't affect other suites
   let questionToDeleteId: number;
 
   beforeEach(async () => {
-
     const [q] = await db
       .insert(questions_db)
       .values({
-        document_id: seededDocId,
+        quiz_id: seededQuizId,
         question_text: 'Temporary question to delete',
         question_type: 'multiple_choice',
         correct_answer: 'A',
@@ -238,11 +252,11 @@ describe('DELETE /api/questions/:id', () => {
         option_b: 'No',
         option_c: 'Maybe',
         option_d: 'Never',
-        time_limit: 12
+        time_limit: 12,
       })
       .returning();
 
-    if(!q){
+    if (!q) {
       throw new Error('Failed to seed question');
     }
 
@@ -251,7 +265,9 @@ describe('DELETE /api/questions/:id', () => {
 
   afterEach(async () => {
     //clean up seeded question
-    await db.delete(questions_db).where(eq(questions_db.id, questionToDeleteId));
+    await db
+      .delete(questions_db)
+      .where(eq(questions_db.id, questionToDeleteId));
   });
 
   it('200 — deletes an owned question successfully', async () => {
@@ -274,7 +290,7 @@ describe('DELETE /api/questions/:id', () => {
 
   it('401 — rejects requests with no token', async () => {
     const res = await request(app).delete(
-      `/api/questions/${questionToDeleteId}`
+      `/api/questions/${questionToDeleteId}`,
     );
     expect(res.status).toBe(401);
   });
