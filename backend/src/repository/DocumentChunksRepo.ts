@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, and, count } from 'drizzle-orm';
+import { eq, and, count, sql, inArray } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { document_chunks_db } from '../db/schema.js';
 
@@ -38,5 +38,39 @@ export const DocumentChunksRepo = {
       );
 
     return counted?.count ?? null;
+  },
+
+  // fetch relevant chunks based on embedding, documentIds, and userId
+  async getRelevantChunksWithSources(
+    queryEmbedding: number[],
+    sources: number[],
+    userId: number,
+  ) {
+    if (sources.length <= 0) {
+      return null;
+    }
+    // Threshold
+    const similarity = sql<number>`${document_chunks_db.embedding} <=> ${JSON.stringify(queryEmbedding)}`;
+
+    const result = await db
+      .select({
+        id: document_chunks_db.id,
+        documentId: document_chunks_db.document_id,
+        userId: document_chunks_db.user_id,
+        content: document_chunks_db.content,
+        distance: similarity,
+      })
+      .from(document_chunks_db)
+      .where(
+        and(
+          eq(document_chunks_db.user_id, userId),
+          inArray(document_chunks_db.document_id, sources),
+          sql`${similarity} < 0.4`, // reject bad matches
+        ),
+      )
+      .orderBy(similarity)
+      .limit(5);
+
+    return result.length > 0 ? result : null;
   },
 };

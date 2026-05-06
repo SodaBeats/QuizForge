@@ -13,13 +13,14 @@ export default function QuizMakerSkeleton() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [questions, setQuestions] = useState([]);
+  const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
 
   //determine which file is selected
   const selectedFile =
     uploadedFiles?.find((f) => f.id === selectedFileId) || null;
   const selectedQuestion =
-    questions?.find((q) => q.id === selectedQuestionId) || null;
+    questions?.find((q) => q.id === selectedQuestionId) ?? null;
 
   //load file from local storage and remove after 1 minute
   const STATE_KEY = "quizForgeState";
@@ -111,17 +112,6 @@ export default function QuizMakerSkeleton() {
     }
   }, [uploadedFiles]);
 
-  //gets the questions related to the selected document
-  useEffect(() => {
-    if (!selectedFileId) return;
-    authFetch(
-      `http://localhost:3000/api/questions?documentId=${selectedFileId}`,
-    )
-      .then((res) => res.json())
-      .then((data) => setQuestions(data));
-    //eslint-disable-next-line
-  }, [selectedFileId]);
-
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       {/* Top Bar */}
@@ -131,6 +121,10 @@ export default function QuizMakerSkeleton() {
         setSelectedFileId={setSelectedFileId}
         selectedFileId={selectedFileId}
         setUploadedFiles={setUploadedFiles}
+        selectedFile={selectedFile}
+        questions={questions}
+        setQuizMetadata={setQuizMetadata}
+        quizMetadata={quizMetadata}
       />
 
       {/* Main Content Area */}
@@ -147,6 +141,8 @@ export default function QuizMakerSkeleton() {
           selectedQuestion={selectedQuestion}
           questions={questions}
           setQuestions={setQuestions}
+          currentQuiz={quizMetadata}
+          setCurrentQuiz={setQuizMetadata}
         />
 
         {/* Middle: Source File Viewer */}
@@ -164,6 +160,7 @@ export default function QuizMakerSkeleton() {
           questions={questions}
           setQuestions={setQuestions}
           selectedQuestion={selectedQuestion}
+          quizMetadata={quizMetadata}
         />
       </div>
     </div>

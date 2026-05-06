@@ -86,6 +86,10 @@ export default function StudentQuizPage() {
 
   const handleQuizSubmit = async () => {
     try {
+      //console.log("questions: ", questions);
+      //console.log("answers: ", answers);
+      //console.log("quiz: ", quiz);
+      //console.log("attemptId: ", attemptId);
       const response = await authFetch(
         "http://localhost:3000/api/student/quiz-submit",
         {
@@ -97,7 +101,7 @@ export default function StudentQuizPage() {
       );
 
       const result = await response.json();
-      console.log(result);
+      //console.log(result);
 
       if (!result.success) {
         console.log(

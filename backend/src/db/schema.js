@@ -13,9 +13,9 @@ export const uploaded_files = pgTable('uploaded_files', {
 
 export const questions_db = pgTable('questions_db', {
   id: serial('id').primaryKey(),
-  document_id: integer('document_id')
+  quiz_id: integer('quiz_id')
     .notNull()
-    .references(() => uploaded_files.id, { onDelete: 'cascade' }),
+    .references(() => quizzes_db.id, { onDelete: 'cascade' }),
   question_text: text('question_text').notNull(),
   question_type: varchar('question_type', { length: 50 }).notNull(),
   time_limit: integer('time_limit').default(30), // in seconds
@@ -56,7 +56,6 @@ export const quizzes_db = pgTable('quizzes_db', {
   quiz_title: varchar('quiz_title', { length: 255 }).notNull(),
   quiz_description: text('quiz_description'),
   share_token: varchar('share_token', { length: 12 }).unique().notNull().default(sql`substring(md5(random()::text), 1, 12)`),
-  time_limit: integer('time_limit').default(0),
   max_attempts: integer('max_attempts').default(1).notNull(),
   status: text('status').notNull().default('draft'),
   due_date: timestamp('due_date', { withTimezone: true }).notNull(),
@@ -97,7 +96,10 @@ export const quiz_attempts_db = pgTable("quiz_attempts_db", {
   
   // The result data
   score: integer("score").default(0),
+
+  raw_score: integer("raw_score").default(0),
   
+  max_possible_score: integer("max_possible_score").default(0),
   // Helpful metadata
   status: text("status").default('completed'), // 'in-progress' or 'completed'
 
@@ -152,7 +154,8 @@ export const document_chunks_db = pgTable("document_chunks_db", {
   content: text("content").notNull(),
   embedding: vector("embedding", { dimensions: 1024 }),
 }, (table) => [
-  index("embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops"))
+  index("embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+  index("document_chunks_user_document_idx").on(table.user_id, table.document_id)
 ]);
 
 

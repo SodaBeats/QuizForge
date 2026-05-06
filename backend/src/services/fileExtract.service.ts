@@ -1,6 +1,6 @@
 import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
-//import ollama from 'ollama';
+import ollama from 'ollama';
 import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
@@ -17,7 +17,7 @@ export const extractText = async (
 
     let extractedText = '';
 
-    //Use appropriate library depending on Mimetype
+    // Use appropriate library depending on Mimetype
     if (file.mimetype === 'application/pdf') {
       const data = await pdf(file.buffer);
       extractedText = data.text;
@@ -27,20 +27,24 @@ export const extractText = async (
     ) {
       const result = await mammoth.extractRawText({ buffer: file.buffer });
       extractedText = result.value;
+    } else {
+      throw new Error(
+        `Unsupported file type: ${file.mimetype}. Supported types: PDF, DOCX`,
+      );
     }
 
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
     }
 
-    //clean text format
+    // clean text format
     const cleanedText = textUtilities.cleanExtractedText(extractedText);
 
-    //store the needed values into variables for ease of use
+    // store the needed values into variables for ease of use
     const fileName = file.originalname;
     const fileHash = file.fileHash;
 
-    //format data for database insert
+    // format data for database insert
     const formattedData = {
       user_id: userId,
       filename: fileName,
@@ -53,37 +57,39 @@ export const extractText = async (
     const insertedFile =
       await UploadedFilesRepository.insertFileToDb(formattedData);
 
-    if (!insertedFile) {
+    if (!insertedFile || !insertedFile.id || !insertedFile.filename) {
       throw new Error('Failed to insert file to database');
     }
 
-    //chunk for vector database storage (RAG)
-    const chunks = textUtilities.textChunker(cleanedText);
+    // chunk text for RAG
+    const chunks = textUtilities.seniorChunker(cleanedText);
+    if (!chunks || chunks.length < 1) {
+      throw new Error('Failed to chunk document');
+    }
 
     // make embeddings for the chunks
-    if (chunks && chunks.length > 0) {
-      try {
-        /*const batch = await ollama.embed({
-          model: 'mxbai-embed-large:latest',
-          input: chunks,
-        });*/
-        const dataToInsert = chunks.map((chunk, index) => {
-          /*const vector = batch.embeddings[index];
-          if (!vector) {
-            throw new Error(`Embedding failed for chunk at index ${index}`);
-          }*/
-          return {
-            document_id: insertedFile.id,
-            user_id: userId,
-            content: chunk,
-            embedding: null,
-          };
-        });
-        await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert);
-      } catch (error) {
-        console.error(error);
-      }
+    const batch = await ollama.embed({
+      model: 'mxbai-embed-large:latest',
+      input: chunks,
+    });
+    if (!batch.embeddings || batch.embeddings.length !== chunks.length) {
+      throw new Error(
+        `Embedding count mismatch: expected ${chunks.length}, got ${batch.embeddings?.length || 0}`,
+      );
     }
+
+    // insert chunked texts with their corresponding embedding
+    const dataToInsert = chunks.map((chunk, index) => {
+      const vector = batch.embeddings[index];
+      return {
+        document_id: insertedFile.id,
+        user_id: userId,
+        content: chunk,
+        embedding: vector,
+      };
+    });
+    await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert);
+
     return {
       success: true,
       fileId: insertedFile.id,
@@ -92,6 +98,7 @@ export const extractText = async (
       type: file.mimetype,
     };
   } catch (err: unknown) {
+    console.error(err);
     if (err instanceof Error) {
       throw new Error(`File extraction service error: ${err.message}`);
     }

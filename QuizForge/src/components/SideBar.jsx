@@ -1,161 +1,121 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "./AuthProvider";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 function SideBar({
-  uploadedFiles, 
+  uploadedFiles,
   setUploadedFiles,
-  selectedFileId, 
+  selectedFileId,
   setSelectedFileId,
-  selectedFile,
   selectedQuestionId,
   setSelectedQuestionId,
   questions,
-  setQuestions}) {
-
+  setQuestions,
+  currentQuiz,
+  setCurrentQuiz,
+}) {
   const { authFetch } = useContext(AuthContext);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [shareData, setShareData] = useState({
-    quizTitle: '',
-    description: '',
-    shareToken: '', // Will be filled by backend
-    maxAttempts: 0,
-    dueDate: '',
-    status: 'Draft'
-  });
+  const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
+  const [availableQuizzes, setAvailableQuizzes] = useState([]);
+  const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(false);
 
-  const handleFileDelete = async(fileId) => {
-
-    setUploadedFiles(prev => prev.filter(f=>f.id !== fileId));
-    if(selectedFileId === fileId){
+  const handleFileDelete = async (fileId) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
+    if (selectedFileId === fileId) {
       setSelectedFileId(null);
     }
   };
 
-  // Open modal
-  const openShareModal = async () => {
-    setIsMenuOpen(false);
-    setIsShareModalOpen(true);
-
-    //Pre-fill with file name
-    if (selectedFile) {
-      setShareData(prev => ({ ...prev, quizTitle: selectedFile?.name }));
-    }
-
-    const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
-      setShareData(prev => ({ 
-      ...prev, 
-      quizTitle: selectedFile?.name || '',
-      shareToken: quizToken
-    }));
-  };
-
-  // Handle share quiz
-  const handleShareQuiz = async () => {
-    //setup a default due date if user did not set it
-    if(!shareData.dueDate || !shareData.quizTitle){
-      toast.error('Due date and title are required');
-      return;
-    }
-    const maxAttempts = Number(shareData.maxAttempts);
-
-    if(typeof(maxAttempts) !== 'number' || isNaN(maxAttempts) || maxAttempts <=0){
-      toast.error('Max attempts must be a valid number');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const finalDueDate = new Date(shareData.dueDate).toISOString();
-      const questionIds = questions.map((q)=> {return q.id;});
-
-      if(!questionIds){
-        toast.error('There are no questions');
-        return;
-      }
-
-      const response = await authFetch('http://localhost:3000/api/quizzes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileId: selectedFileId,
-          quizTitle: shareData.quizTitle,
-          description: shareData.description,
-          shareToken: shareData.shareToken,
-          maxAttempts: maxAttempts,
-          dueDate: finalDueDate,
-          status: shareData.status,
-          questionIds: questionIds
-        }),
-        credentials: 'include'
-      });
-      
-      const data = await response.json();
-      
-      if(!data.success){
-        toast.error(data.message || data.errors.map(e=>e.msg).join(', '));
-        console.error(data);
-        return;
-      }
-
-      console.log('done');
-      toast.success(data.message);
-
-      setShareData({
-        quizTitle: '',
-        description: '',
-        shareToken: '',
-        maxAttempts: 0,
-        dueDate: '',
-        status: 'Draft',
-      });
-      setIsShareModalOpen(false);
-      
-    } catch (error) {
-      console.error('Error sharing quiz: ', error);
-      alert(`Error: ${error.message || 'Something went wrong'}`);
-    }finally{
-      setIsLoading(false);
-    }
-
-  };
-
-  const handleQuestionDelete = async(questionId) => {
-    
+  const handleQuestionDelete = async (questionId) => {
     //store question list as backup
     const previousQuestions = [...questions];
     //store selected question as backup
     const previousSelectedQuestionId = selectedQuestionId;
 
-    setQuestions(prev => prev.filter(q =>q.id !== questionId));
-    if(questionId === selectedQuestionId){
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    if (questionId === selectedQuestionId) {
       setSelectedQuestionId(null);
     }
-    try{
+    try {
+      const response = await authFetch(
+        `http://localhost:3000/api/questions/${questionId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
 
-      const response = await authFetch(`http://localhost:3000/api/questions/${questionId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      })
+      if (!response.ok) {
+        throw new Error(
+          `Server responded with: Error ${response.status}: ${response.statusText}`,
+        );
+      }
 
       const deletedQuestion = await response.json();
-      
-      if(!deletedQuestion.success){
-        throw new Error(`Failed to delete question: ${deletedQuestion.message}`)
+
+      if (!deletedQuestion.success) {
+        throw new Error(
+          `Failed to delete question: ${deletedQuestion.message}`,
+        );
       }
 
       toast.success(deletedQuestion.message);
-
-    }catch(error){
+    } catch (error) {
       console.error(error.message, error.status);
       setQuestions(previousQuestions);
       setSelectedQuestionId(previousSelectedQuestionId);
-      alert('Something went wrong with the question deletion.');
+      alert("Something went wrong with the question deletion.");
     }
+  };
 
+  const openSelectQuizModal = async () => {
+    setIsLoadingQuizzes(true);
+    try {
+      const response = await authFetch("http://localhost:3000/api/quizzes", {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setAvailableQuizzes(data);
+      } else if (data.quizzes && Array.isArray(data.quizzes)) {
+        setAvailableQuizzes(data.quizzes);
+      } else {
+        setAvailableQuizzes([]);
+      }
+      setIsSelectQuizModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching quizzes:", error);
+      toast.error("Failed to fetch quizzes");
+    } finally {
+      setIsLoadingQuizzes(false);
+    }
+  };
+
+  const closeSelectQuizModal = () => {
+    setIsSelectQuizModalOpen(false);
+  };
+
+  const handleSelectQuiz = async (quiz) => {
+    setCurrentQuiz(quiz);
+    closeSelectQuizModal();
+    try {
+      const response = await authFetch(
+        `http://localhost:3000/api/quizzes/questions?quizId=${quiz.id}`,
+        {
+          credentials: "include",
+        },
+      );
+      const result = await response.json();
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+      setQuestions(result.questionList);
+    } catch (error) {
+      console.error(error);
+      toast.error(`something went wrong while fetching questions`);
+    }
   };
 
   return (
@@ -167,10 +127,12 @@ function SideBar({
           <div className="space-y-1">
             {uploadedFiles.length > 0 ? (
               uploadedFiles.map((file) => (
-                <div 
+                <div
                   key={file.id}
                   className={`py-1 px-2 rounded text-sm flex items-center justify-between group ${
-                    selectedFileId === file.id ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
+                    selectedFileId === file.id
+                      ? "bg-blue-600"
+                      : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
                   <div
@@ -196,58 +158,59 @@ function SideBar({
             )}
           </div>
         </div>
-        
+
+        {/* Current Quiz - Small Section */}
+        <div className="border-b border-gray-700 p-3 bg-blue-900 bg-opacity-40">
+          <div className="text-sm font-semibold text-gray-400 mb-3">
+            Current Quiz
+          </div>
+          {currentQuiz ? (
+            <div className="flex items-center justify-between w-full bg-blue-700 px-3 py-2 group">
+              <span className="text-sm text-white truncate flex-1">
+                {currentQuiz.quizTitle}
+              </span>
+              <button
+                onClick={() => {
+                  setCurrentQuiz(null);
+                  setQuestions([]);
+                }}
+                className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={openSelectQuizModal}
+              disabled={isLoadingQuizzes}
+              className="text-xs text-blue-400 hover:text-blue-300 underline disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingQuizzes ? "Loading..." : "Select a quiz"}
+            </button>
+          )}
+        </div>
+
         {/* Question List - 70% */}
         <div className="flex-1 p-4 overflow-y-auto">
           <div className="flex flex-row items-center justify-between mb-2">
             <div className="text-sm font-semibold text-gray-400">Questions</div>
-            {/*Burger Menu*/}
-            <div className="relative">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-1 hover:bg-gray-700 rounded transition-colors"
-              >
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              {/* Dropdown Menu */}
-              {isMenuOpen && (
-                <div className="absolute right-0 mt-1 w-32 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10">
-                  <button
-                    onClick={openShareModal}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-t-lg transition-colors"
-                  >
-                    Share Quiz
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(!isMenuOpen);
-                      // TODO: Export logic
-                      console.log('Export');
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-b-lg transition-colors"
-                  >
-                    Export
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
           <div className="space-y-1">
-            {selectedFile ? (
-              questions.map((question)=>(
+            {currentQuiz ? (
+              questions?.map((question) => (
                 <div
                   key={question.id}
                   className={`py-1 px-2 rounded text-sm flex items-center justify-between group ${
-                    selectedQuestionId === question.id ? 'bg-blue-600' : 'bg-gray-800 hover:bg-gray-700'
+                    selectedQuestionId === question.id
+                      ? "bg-blue-600"
+                      : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
                   <div
                     className="cursor-pointer truncate flex-1"
                     onClick={() => setSelectedQuestionId(question.id)}
                   >
-                    {question.question_text}
+                    {question.questionText || question.question_text}
                   </div>
                   <button
                     onClick={(e) => {
@@ -260,156 +223,50 @@ function SideBar({
                   </button>
                 </div>
               ))
-            ):(
+            ) : (
               <div className="space-y-1">
-                <div className="py-1 px-2 rounded">No Questions</div>
+                <div className="text-gray-500 text-sm">No Questions</div>
               </div>
             )}
           </div>
         </div>
       </div>
-      {/* Share Quiz Modal */}
-      {isShareModalOpen && (
+
+      {/* Select Quiz Modal */}
+      {isSelectQuizModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-[500px] max-w-full mx-4">
-            <h2 className="text-xl font-semibold mb-4">Share Quiz</h2>
-            
-            <div className="space-y-4">
-              {/* Quiz Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Quiz Title
-                </label>
-                <input
-                  type="text"
-                  value={shareData.quizTitle}
-                  onChange={(e) => setShareData(prev => ({ ...prev, quizTitle: e.target.value }))}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter quiz title"
-                />
-              </div>
+          <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-white">
+              Select a Quiz
+            </h2>
 
-              {/* Quiz Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={shareData.description}
-                  onChange={(e) => setShareData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
-                  rows="3"
-                  placeholder="Enter quiz description"
-                />
-              </div>
-
-              {/* Share Token */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Share Token
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={shareData.shareToken}
-                    readOnly
-                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-400"
-                    placeholder="Generating token..."
-                  />
+            <div className="space-y-2">
+              {availableQuizzes.length > 0 ? (
+                availableQuizzes.map((quiz) => (
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(shareData.shareToken);
-                      toast.success('Token copied to clipboard!', {
-                        duration: 2000,
-                        style: {
-                          background: '#10B981',
-                          color: '#fff',
-                        },
-                      });
-                    }}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                    disabled={!shareData.shareToken}
+                    key={quiz.id}
+                    onClick={() => handleSelectQuiz(quiz)}
+                    className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
                   >
-                    Copy
+                    <div className="font-medium truncate">{quiz.quizTitle}</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      Token: {quiz.shareToken}
+                    </div>
                   </button>
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-6">
+                  No quizzes available
                 </div>
-              </div>
-
-              {/* Time Limit and Max Attempts - Side by Side */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Max Attempts */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Max Attempts
-                  </label>
-                  <input
-                    type="number"
-                    value={shareData.maxAttempts}
-                    onChange={(e) => setShareData(prev => ({ ...prev, maxAttempts: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                    placeholder="2"
-                    min="1"
-                  />
-                </div>
-                {/* Status */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={shareData.status || 'draft'}
-                    onChange={(e) => setShareData(prev => ({ ...prev, status: e.target.value.toLowerCase() }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                  </select>
-                </div>
-              </div>
-              {/* Due Date and Status - Side by Side */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Due Date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={shareData.dueDate}
-                    onChange={(e) => setShareData(prev => ({ ...prev, dueDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm
-                      focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-2 mt-6">
               <button
-                onClick={async () => {
-                  handleShareQuiz();
-                }}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                {isLoading ? 'Creating Quiz...' : 'Create Quiz'}
-              </button>
-              <button
-                onClick={() => {
-                  setIsShareModalOpen(false);
-                  // Reset form
-                  setShareData({
-                    quizTitle: '',
-                    description: '',
-                    shareToken: '',
-                    maxAttempts: 0,
-                    dueDate: '',
-                    status: 'Draft'
-                  });
-                }}
+                onClick={closeSelectQuizModal}
                 className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
               >
-                Cancel
+                Close
               </button>
             </div>
           </div>
@@ -419,4 +276,3 @@ function SideBar({
   );
 }
 export default SideBar;
-
