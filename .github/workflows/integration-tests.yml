@@ -40,6 +40,7 @@ jobs:
       JWT_SECRET: test_jwt_secret_for_ci
       REFRESH_TOKEN_SECRET: test_refresh_secret_for_ci
       NODE_ENV: test
+      GROQ_API_KEY: test_groq_api_key
 
     steps:
       # ── 1. Checkout code ──────────────────────────────────────────────────
