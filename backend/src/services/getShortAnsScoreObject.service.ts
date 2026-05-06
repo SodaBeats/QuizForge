@@ -23,7 +23,7 @@ export const getShortAnsScoreObject = async (
         questionId: q.id,
         question: q.questionText,
         correctAnswer: q.correctAnswer,
-        answer: answers[q.id],
+        answer: answers[q.id] ?? '',
       };
     });
     const stringifiedFormat = JSON.stringify(formatForLlm, null, 2);

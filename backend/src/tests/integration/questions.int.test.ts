@@ -104,7 +104,7 @@ afterAll(async () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/questions', () => {
-  it('200 — creates a question linked to an owned quiz', async () => {
+  it('201 — creates a question linked to an owned quiz', async () => {
     const res = await request(app)
       .post('/api/questions')
       .set(authHeader(teacherToken))
