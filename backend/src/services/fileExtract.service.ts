@@ -5,6 +5,7 @@ import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
+import { db } from '../db/db.js';
 
 export const extractText = async (
   file: UploadedFileInterface | null | undefined,
@@ -32,7 +33,6 @@ export const extractText = async (
         `Unsupported file type: ${file.mimetype}. Supported types: PDF, DOCX`,
       );
     }
-
     if (!extractedText || extractedText.trim() === '') {
       throw new Error('No text extracted from file');
     }
@@ -43,8 +43,7 @@ export const extractText = async (
     // store the needed values into variables for ease of use
     const fileName = file.originalname;
     const fileHash = file.fileHash;
-
-    // format data for database insert
+    // format file data for database insert
     const formattedData = {
       user_id: userId,
       filename: fileName,
@@ -52,14 +51,6 @@ export const extractText = async (
       file_hash: fileHash,
       extracted_text: cleanedText,
     };
-
-    //when inserting to database, use schema property names
-    const insertedFile =
-      await UploadedFilesRepository.insertFileToDb(formattedData);
-
-    if (!insertedFile || !insertedFile.id || !insertedFile.filename) {
-      throw new Error('Failed to insert file to database');
-    }
 
     // chunk text for RAG
     const chunks = textUtilities.seniorChunker(cleanedText);
@@ -78,22 +69,39 @@ export const extractText = async (
       );
     }
 
-    // insert chunked texts with their corresponding embedding
-    const dataToInsert = chunks.map((chunk, index) => {
-      const vector = batch.embeddings[index];
+    const transactionResult = await db.transaction(async (tx) => {
+      const insertedFile = await UploadedFilesRepository.insertFileToDb(
+        formattedData,
+        tx,
+      );
+
+      if (!insertedFile || !insertedFile.id || !insertedFile.filename) {
+        throw new Error('Failed to insert file to database');
+      }
+
+      // insert chunked texts with their corresponding embedding
+      const dataToInsert = chunks.map((chunk, index) => {
+        const vector = batch.embeddings[index];
+        return {
+          document_id: insertedFile.id,
+          user_id: userId,
+          content: chunk,
+          embedding: vector,
+        };
+      });
+
+      await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert, tx);
+
       return {
-        document_id: insertedFile.id,
-        user_id: userId,
-        content: chunk,
-        embedding: vector,
+        id: insertedFile.id,
+        filename: insertedFile.filename,
       };
     });
-    await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert);
 
     return {
       success: true,
-      fileId: insertedFile.id,
-      fileName: insertedFile.filename,
+      fileId: transactionResult.id,
+      fileName: transactionResult.filename,
       content: cleanedText,
       type: file.mimetype,
     };

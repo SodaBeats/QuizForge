@@ -1,13 +1,16 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq, and, count, sql, inArray } from 'drizzle-orm';
-import { db } from '../db/db.js';
+import { db, type QueryClient } from '../db/db.js';
 import { document_chunks_db } from '../db/schema.js';
 
 type DocumentChunksInsertData = InferInsertModel<typeof document_chunks_db>;
 
 export const DocumentChunksRepo = {
   //insert chunks with embeddings
-  async insertToDocumentChunksDb(data: DocumentChunksInsertData[]) {
+  async insertToDocumentChunksDb(
+    data: DocumentChunksInsertData[],
+    tx: QueryClient = db,
+  ) {
     await db.insert(document_chunks_db).values(data);
   },
 

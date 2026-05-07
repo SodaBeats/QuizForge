@@ -1,13 +1,13 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq, and } from 'drizzle-orm';
-import { db } from '../db/db.js';
+import { db, type QueryClient } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 
 type UploadData = InferInsertModel<typeof uploaded_files>;
 
 export const UploadedFilesRepository = {
   //insert uploaded file to uploaded_files table
-  async insertFileToDb(uploadData: UploadData) {
+  async insertFileToDb(uploadData: UploadData, tx: QueryClient = db) {
     const [result] = await db
       .insert(uploaded_files)
       .values(uploadData)
