@@ -39,7 +39,7 @@ export const UploadedFilesRepository = {
 
   async countDocumentsOwned(userId: number) {
     return await db
-      .select({ totalDocuments: countDistinct(uploaded_files.user_id) ?? 0 })
+      .select({ totalDocuments: countDistinct(uploaded_files.id) ?? 0 })
       .from(uploaded_files)
       .where(eq(uploaded_files.user_id, userId));
   },
