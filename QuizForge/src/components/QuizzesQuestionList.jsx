@@ -1,12 +1,16 @@
-
 // QuizQuestionsList.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
-const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuestion, setEditingQuestion }) => {
-
-  useEffect(()=>{
+const QuestionList = ({
+  questions,
+  onUpdateQuestion,
+  selectedQuiz,
+  editingQuestion,
+  setEditingQuestion,
+}) => {
+  useEffect(() => {
     setEditingQuestion(null);
-  },[selectedQuiz, setEditingQuestion]);
+  }, [selectedQuiz, setEditingQuestion]);
 
   // Handle opening the editor
   const handleEditClick = (question) => {
@@ -18,11 +22,11 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
     return (
       <div className="flex-1 h-full bg-gray-900 flex flex-col p-6 overflow-y-auto">
         <div className="flex items-center mb-6">
-          <button 
+          <button
             onClick={() => setEditingQuestion(null)}
             className="text-gray-400 hover:text-white mr-4 transition-colors"
           >
-            ← Back to List
+            ←
           </button>
           <h3 className="text-xl font-bold text-white">Edit Question</h3>
         </div>
@@ -30,22 +34,36 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
         <div className="space-y-6 max-w-2xl">
           {/* Question Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Question Text</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Question Text
+            </label>
             <textarea
               className="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-blue-500 outline-none"
               rows="3"
               value={editingQuestion.questionText}
-              onChange={(e) => setEditingQuestion({...editingQuestion, questionText: e.target.value})}
+              onChange={(e) =>
+                setEditingQuestion({
+                  ...editingQuestion,
+                  questionText: e.target.value,
+                })
+              }
             />
           </div>
 
           {/* Question Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Type</label>
-            <select 
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Type
+            </label>
+            <select
               className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
               value={editingQuestion.questionType}
-              onChange={(e) => setEditingQuestion({...editingQuestion, questionType: e.target.value})}
+              onChange={(e) =>
+                setEditingQuestion({
+                  ...editingQuestion,
+                  questionType: e.target.value,
+                })
+              }
             >
               <option value="multiple-choice">Multiple Choice</option>
               <option value="true-false">True / False</option>
@@ -53,16 +71,23 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
           </div>
 
           {/* Options A-D (Only if Multiple Choice) */}
-          {editingQuestion.questionType === 'multiple-choice' && (
+          {editingQuestion.questionType === "multiple-choice" && (
             <div className="grid grid-cols-2 gap-4">
-              {['A', 'B', 'C', 'D'].map((letter) => (
+              {["A", "B", "C", "D"].map((letter) => (
                 <div key={letter}>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Option {letter}</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Option {letter}
+                  </label>
                   <input
                     type="text"
                     className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-blue-400 outline-none"
-                    value={editingQuestion[`option${letter}`] || ''}
-                    onChange={(e) => setEditingQuestion({...editingQuestion, [`option${letter}`]: e.target.value})}
+                    value={editingQuestion[`option${letter}`] || ""}
+                    onChange={(e) =>
+                      setEditingQuestion({
+                        ...editingQuestion,
+                        [`option${letter}`]: e.target.value,
+                      })
+                    }
                   />
                 </div>
               ))}
@@ -70,12 +95,19 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
           )}
 
           {/* Correct Answer */}
-          {editingQuestion.questionType === 'multiple-choice' ? (
+          {editingQuestion.questionType === "multiple-choice" ? (
             <>
-              <label className="block text-sm font-medium mb-1">Correct Answer</label>
+              <label className="block text-sm font-medium mb-1">
+                Correct Answer
+              </label>
               <select
                 value={editingQuestion.correctAnswer}
-                onChange={(e) => setEditingQuestion({...editingQuestion, correctAnswer: e.target.value})}
+                onChange={(e) =>
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    correctAnswer: e.target.value,
+                  })
+                }
                 className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
               >
                 <option value="">Select correct answer...</option>
@@ -87,10 +119,17 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
             </>
           ) : (
             <>
-              <label className="block text-sm font-medium mb-1">Correct Answer</label>
+              <label className="block text-sm font-medium mb-1">
+                Correct Answer
+              </label>
               <select
                 value={editingQuestion.correctAnswer}
-                onChange={(e) => setEditingQuestion({...editingQuestion, correctAnswer: e.target.value})}
+                onChange={(e) =>
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    correctAnswer: e.target.value,
+                  })
+                }
                 className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
               >
                 <option value="">Select correct answer...</option>
@@ -99,7 +138,7 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
               </select>
             </>
           )}
-          <button 
+          <button
             onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-all mt-4"
           >
@@ -128,9 +167,14 @@ const QuestionList = ({ questions, onUpdateQuestion, selectedQuiz, editingQuesti
               >
                 <div className="flex justify-between items-center">
                   <div className="text-sm text-gray-300">
-                    <span className="font-semibold text-blue-400">Q{index + 1}:</span> {question.questionText}
+                    <span className="font-semibold text-blue-400">
+                      Q{index + 1}:
+                    </span>{" "}
+                    {question.questionText}
                   </div>
-                  <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">Edit →</span>
+                  <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Edit →
+                  </span>
                 </div>
               </div>
             ))}
