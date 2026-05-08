@@ -13,7 +13,7 @@ router.get('/', verifyToken, async (req, res, next) => {
       Number(limit),
       Number(offset),
     );
-    const [totalDocuments] = await UploadedFilesRepository.countDocumentsOwned(
+    const totalDocuments = await UploadedFilesRepository.countDocumentsOwned(
       req.user.id,
     );
     return res.status(200).json({ documents: documents, totalDocuments });

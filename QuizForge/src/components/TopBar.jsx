@@ -82,7 +82,7 @@ export default function TopBar({
       return;
     }
     try {
-      setPage(1);
+      setPage(0);
       const response = await authFetch(
         `http://localhost:3000/api/documents?limit=5&offset=0`,
         {
@@ -94,9 +94,9 @@ export default function TopBar({
         return;
       }
       const result = await response.json();
-      console.log("Fetched documents:", result.totalDocuments.totalDocuments);
+      console.log("Fetched documents:", result.totalDocuments);
       setUserDocuments(result.documents);
-      setTotalDocuments(result.totalDocuments.totalDocuments);
+      setTotalDocuments(result.totalDocuments);
     } catch (error) {
       console.error("Error fetching documents: ", error);
       toast.error("Failed to fetch documents");
