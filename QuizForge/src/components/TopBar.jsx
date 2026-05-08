@@ -12,6 +12,9 @@ export default function TopBar({
   selectedFile,
   setQuizMetadata,
 }) {
+  // -------------------------------------------------------------------------------------
+  //  STATES AND VARIABLES
+  // -------------------------------------------------------------------------------------
   //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
@@ -27,14 +30,19 @@ export default function TopBar({
     dueDate: "",
     status: "draft",
   });
+  let page = 0;
+  let totalDocuments = 0;
   const menuRef = useRef(null);
   //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
 
   const location = useLocation();
   const showFileButton = location.pathname === "/teacher";
-
   const navigate = useNavigate();
+
+  // -------------------------------------------------------------------------------------
+  //  FUNCTIONS
+  // -------------------------------------------------------------------------------------
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -74,15 +82,20 @@ export default function TopBar({
       return;
     }
     try {
-      const response = await authFetch("http://localhost:3000/api/documents", {
-        credentials: "include",
-      });
+      page++;
+      const response = await authFetch(
+        `http://localhost:3000/api/documents?limit=5&offset=0`,
+        {
+          credentials: "include",
+        },
+      );
       if (!response.ok) {
         toast.error("Error: " + response.statusText);
         return;
       }
-      const documents = await response.json();
-      setUserDocuments(documents);
+      const result = await response.json();
+      setUserDocuments(result.documents);
+      totalDocuments = result.totalDocuments;
     } catch (error) {
       console.error("Error fetching documents: ", error);
       toast.error("Failed to fetch documents");
@@ -91,6 +104,26 @@ export default function TopBar({
 
   const closeFileModal = () => {
     setShowFileModal(false);
+  };
+
+  const fetchMoreDocuments = async () => {
+    page++;
+    const offset = (page - 1) * 5;
+    const response = await authFetch(
+      `http://localhost:3000/api/documents?limit=5&offset=${offset}`,
+      {
+        credentials: "include",
+      },
+    );
+    if (!response.ok) {
+      toast.error("Error: " + response.statusText);
+      return;
+    }
+    const documents = await response.json();
+    setUserDocuments((prev) => ({
+      ...prev,
+      documents,
+    }));
   };
 
   const openForgeQuizModal = () => {
@@ -233,6 +266,10 @@ export default function TopBar({
       alert("Failed to select document. Please try again later");
     }
   };
+
+  // -------------------------------------------------------------------------------------
+  //  COMPONENT RETURN
+  // -------------------------------------------------------------------------------------
 
   return (
     <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">

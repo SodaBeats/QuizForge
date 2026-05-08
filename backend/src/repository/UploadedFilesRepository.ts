@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, asc, desc, countDistinct } from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 
@@ -16,7 +16,11 @@ export const UploadedFilesRepository = {
   },
 
   //get document info (id, userId, title, filePath, fileHash, createdAt) by owner id
-  async getDocInfoByOwner(userId: number) {
+  async getDocInfoByOwner(
+    userId: number,
+    limit: number = 0,
+    offset: number = 0,
+  ) {
     return await db
       .select({
         id: uploaded_files.id,
@@ -26,6 +30,16 @@ export const UploadedFilesRepository = {
         fileHash: uploaded_files.file_hash,
         createdAt: uploaded_files.created_at,
       })
+      .from(uploaded_files)
+      .where(eq(uploaded_files.user_id, userId))
+      .orderBy(desc(uploaded_files.created_at))
+      .limit(limit)
+      .offset(offset);
+  },
+
+  async countDocumentsOwned(userId: number) {
+    return await db
+      .select({ totalDocuments: countDistinct(uploaded_files.user_id) ?? 0 })
       .from(uploaded_files)
       .where(eq(uploaded_files.user_id, userId));
   },
