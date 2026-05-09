@@ -19,6 +19,7 @@ export default function TopBar({
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [userDocuments, setUserDocuments] = useState([]);
+  const [documentsPerPage, setDocumentsPerPage] = useState({});
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
@@ -97,6 +98,7 @@ export default function TopBar({
       console.log("Fetched documents:", result.totalDocuments);
       setUserDocuments(result.documents);
       setTotalDocuments(result.totalDocuments);
+      setDocumentsPerPage((prev) => ({ ...prev, [page]: result.documents }));
     } catch (error) {
       console.error("Error fetching documents: ", error);
       toast.error("Failed to fetch documents");
@@ -106,12 +108,15 @@ export default function TopBar({
   const closeFileModal = () => {
     setShowFileModal(false);
     setPage(0);
-    setUserDocuments([]);
-    setTotalDocuments(0);
+    //setUserDocuments([]);
+    //setTotalDocuments(0);
   };
 
   const fetchMoreDocuments = async () => {
     const newPage = page + 1;
+
+    if (documentsPerPage[newPage]) return;
+
     const offset = newPage * 5;
     const response = await authFetch(
       `http://localhost:3000/api/documents?limit=5&offset=${offset}`,
@@ -126,11 +131,15 @@ export default function TopBar({
     const result = await response.json();
     setPage(newPage);
     setUserDocuments(result.documents);
+    setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
   };
 
   const fetchPreviousDocuments = async () => {
     if (page <= 0) return;
     const newPage = page - 1;
+
+    if (documentsPerPage[newPage]) return;
+
     const offset = newPage * 5;
     const response = await authFetch(
       `http://localhost:3000/api/documents?limit=5&offset=${offset}`,
@@ -575,7 +584,7 @@ export default function TopBar({
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".pdf,.txt,.docx,.doc"
+                accept=".pdf,.docx"
                 onChange={(e) => {
                   handleFileChange(e);
                 }}
