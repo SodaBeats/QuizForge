@@ -48,12 +48,15 @@ export default function LogInComponent() {
             role: role,
           }; // ← Include role
 
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_HOST}${endpoint}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body),
+        },
+      );
 
       const data = await response.json();
 

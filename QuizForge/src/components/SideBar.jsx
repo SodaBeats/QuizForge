@@ -38,7 +38,7 @@ function SideBar({
     }
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/questions/${questionId}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/questions/${questionId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -71,9 +71,12 @@ function SideBar({
   const openSelectQuizModal = async () => {
     setIsLoadingQuizzes(true);
     try {
-      const response = await authFetch("http://localhost:3000/api/quizzes", {
-        credentials: "include",
-      });
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`,
+        {
+          credentials: "include",
+        },
+      );
       const data = await response.json();
       if (Array.isArray(data)) {
         setAvailableQuizzes(data);
@@ -100,7 +103,7 @@ function SideBar({
     closeSelectQuizModal();
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/questions?quizId=${quiz.id}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/questions?quizId=${quiz.id}`,
         {
           credentials: "include",
         },

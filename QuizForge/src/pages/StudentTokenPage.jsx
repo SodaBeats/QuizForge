@@ -12,7 +12,7 @@ export default function StudentTokenPage() {
   const handleSubmitToken = async (token) => {
     try {
       const quizAndQuestionsRes = await authFetch(
-        `http://localhost:3000/api/student/quiz-access`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-access`,
         {
           method: "POST",
           body: JSON.stringify({ token: token }),

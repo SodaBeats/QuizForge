@@ -34,10 +34,14 @@ const QuestionList = ({
         <div className="space-y-6 max-w-2xl">
           {/* Question Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label
+              htmlFor="question-text"
+              className="block text-sm font-medium text-gray-400 mb-2"
+            >
               Question Text
             </label>
             <textarea
+              id="question-text"
               className="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-blue-500 outline-none"
               rows="3"
               value={editingQuestion.questionText}
@@ -144,6 +148,7 @@ const QuestionList = ({
                 Correct Answer
               </label>
               <input
+                type="text"
                 value={editingQuestion.correctAnswer}
                 onChange={(e) =>
                   setEditingQuestion({
@@ -152,7 +157,7 @@ const QuestionList = ({
                   })
                 }
                 className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
-              ></input>
+              />
             </>
           )}
           <button

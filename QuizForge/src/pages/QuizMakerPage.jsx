@@ -66,11 +66,14 @@ export default function QuizMakerSkeleton() {
     data.append("file", file);
 
     try {
-      const response = await authFetch("http://localhost:3000/api/upload", {
-        method: "POST",
-        body: data,
-        credentials: "include",
-      });
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/upload`,
+        {
+          method: "POST",
+          body: data,
+          credentials: "include",
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

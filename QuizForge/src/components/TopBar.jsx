@@ -61,6 +61,7 @@ export default function TopBar({
     if (file) {
       handleFileUpload(file);
       setShowFileModal(false);
+      setDocumentsPerPage({});
       setUserDocuments([]);
     }
   };
@@ -80,13 +81,12 @@ export default function TopBar({
   const openFileModal = async () => {
     setShowFileModal(true);
     if (documentsPerPage[0]) {
-      setUserDocuments(documentsPerPage[0]);
       return;
     }
     try {
       setPage(0);
       const response = await authFetch(
-        `http://localhost:3000/api/documents?limit=5&offset=0`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=0`,
         {
           credentials: "include",
         },
@@ -96,9 +96,8 @@ export default function TopBar({
         return;
       }
       const result = await response.json();
-      console.log("Fetched documents:", result.totalDocuments);
-      setUserDocuments(result.documents);
       setTotalDocuments(result.totalDocuments);
+      setUserDocuments(result.documents);
       setDocumentsPerPage((prev) => ({ ...prev, [0]: result.documents }));
     } catch (error) {
       console.error("Error fetching documents: ", error);
@@ -109,7 +108,7 @@ export default function TopBar({
   const closeFileModal = () => {
     setShowFileModal(false);
     setPage(0);
-    //setUserDocuments([]);
+    setUserDocuments([]);
     //setTotalDocuments(0);
   };
 
@@ -118,25 +117,29 @@ export default function TopBar({
 
     if (documentsPerPage[newPage]) {
       setPage(newPage);
-      setUserDocuments(documentsPerPage[newPage]);
       return;
     }
 
-    const offset = newPage * 5;
-    const response = await authFetch(
-      `http://localhost:3000/api/documents?limit=5&offset=${offset}`,
-      {
-        credentials: "include",
-      },
-    );
-    if (!response.ok) {
-      toast.error("Error: " + response.statusText);
-      return;
+    try {
+      const offset = newPage * 5;
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=${offset}`,
+        {
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        toast.error("Error: " + response.statusText);
+        return;
+      }
+      const result = await response.json();
+      setPage(newPage);
+      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
+      setUserDocuments(result.documents);
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+      toast.error("Failed to fetch documents");
     }
-    const result = await response.json();
-    setPage(newPage);
-    setUserDocuments(result.documents);
-    setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
   };
 
   const fetchPreviousDocuments = async () => {
@@ -145,25 +148,28 @@ export default function TopBar({
 
     if (documentsPerPage[newPage]) {
       setPage(newPage);
-      setUserDocuments(documentsPerPage[newPage]);
       return;
     }
 
-    const offset = newPage * 5;
-    const response = await authFetch(
-      `http://localhost:3000/api/documents?limit=5&offset=${offset}`,
-      {
-        credentials: "include",
-      },
-    );
-    if (!response.ok) {
-      toast.error("Error: " + response.statusText);
-      return;
+    try {
+      const offset = newPage * 5;
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=${offset}`,
+        {
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        toast.error("Error: " + response.statusText);
+        return;
+      }
+      const result = await response.json();
+      setPage(newPage);
+      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
+    } catch (error) {
+      console.error("Error fetching documents: ", error);
+      toast.error("Failed to fetch documents");
     }
-    const result = await response.json();
-    setPage(newPage);
-    setUserDocuments(result.documents);
-    setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
   };
 
   const openForgeQuizModal = () => {
@@ -219,19 +225,22 @@ export default function TopBar({
     try {
       const finalDueDate = new Date(forgeQuizData.dueDate).toISOString();
 
-      const response = await authFetch("http://localhost:3000/api/quizzes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quizTitle: forgeQuizData.quizTitle,
-          description: forgeQuizData.description,
-          shareToken: forgeQuizData.shareToken,
-          maxAttempts: maxAttempts,
-          dueDate: finalDueDate,
-          status: forgeQuizData.status,
-        }),
-        credentials: "include",
-      });
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            quizTitle: forgeQuizData.quizTitle,
+            description: forgeQuizData.description,
+            shareToken: forgeQuizData.shareToken,
+            maxAttempts: maxAttempts,
+            dueDate: finalDueDate,
+            status: forgeQuizData.status,
+          }),
+          credentials: "include",
+        },
+      );
 
       const data = await response.json();
 
@@ -281,7 +290,7 @@ export default function TopBar({
     // fetch full content on demand and merge into parent state
     try {
       const resp = await authFetch(
-        `http://localhost:3000/api/documents/${doc.id}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/documents/${doc.id}`,
         {
           credentials: "include",
         },
@@ -316,7 +325,6 @@ export default function TopBar({
     fetchMoreDocuments,
     fetchPreviousDocuments,
     isUploading,
-    userDocuments,
     totalDocuments,
     selectedFileId,
     page,
@@ -347,7 +355,9 @@ export default function TopBar({
                       : "bg-gray-700 hover:bg-gray-600 border-gray-600"
                   }`}
                 >
-                  <span className="truncate">{doc.title || doc}</span>
+                  <span className="truncate">
+                    {doc.title || `Document ${doc.id}` || "Untitled"}
+                  </span>
                 </div>
               ))
             ) : (
@@ -609,7 +619,6 @@ export default function TopBar({
                   fetchMoreDocuments={fetchMoreDocuments}
                   fetchPreviousDocuments={fetchPreviousDocuments}
                   isUploading={isUploading}
-                  userDocuments={userDocuments}
                   totalDocuments={totalDocuments}
                   selectedFileId={selectedFileId}
                   page={page}

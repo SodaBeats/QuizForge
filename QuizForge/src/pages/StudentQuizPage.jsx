@@ -32,7 +32,9 @@ export default function StudentQuizPage() {
   useEffect(() => {
     if (!quizToken || !authFetch) return;
 
-    authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
+    authFetch(
+      `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-access/${quizToken}`,
+    )
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) {
@@ -91,7 +93,7 @@ export default function StudentQuizPage() {
       //console.log("quiz: ", quiz);
       //console.log("attemptId: ", attemptId);
       const response = await authFetch(
-        "http://localhost:3000/api/student/quiz-submit",
+        `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-submit`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -126,7 +128,7 @@ export default function StudentQuizPage() {
   const deleteAttempt = async () => {
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/student/quiz-access/${quizToken}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-access/${quizToken}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },

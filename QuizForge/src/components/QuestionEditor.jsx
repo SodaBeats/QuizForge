@@ -68,7 +68,9 @@ export default function QuestionEditor({
   // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
   const fetchDocuments = async () => {
     try {
-      const response = await authFetch("http://localhost:3000/api/documents");
+      const response = await authFetch(
+        `${import.meta.env.VITE_BACKEND_HOST}/api/documents`,
+      );
       const data = await response.json();
       setDocuments(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -107,8 +109,8 @@ export default function QuestionEditor({
     try {
       const endpoint =
         addMode === "edit"
-          ? `http://localhost:3000/api/questions/${manualQuestion.id}`
-          : "http://localhost:3000/api/questions";
+          ? `${import.meta.env.VITE_BACKEND_HOST}/api/questions/${manualQuestion.id}`
+          : `${import.meta.env.VITE_BACKEND_HOST}/api/questions`;
 
       const method = addMode === "edit" ? "PATCH" : "POST";
 
@@ -129,7 +131,7 @@ export default function QuestionEditor({
       if (result.success) {
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `http://localhost:3000/api/questions?quizId=${quizMetadata?.id}`,
+          `${import.meta.env.VITE_BACKEND_HOST}/api/questions?quizId=${quizMetadata?.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
@@ -172,7 +174,7 @@ export default function QuestionEditor({
     setLoading(true);
     try {
       const response = await authFetch(
-        "http://localhost:3000/api/questions/generate",
+        `${import.meta.env.VITE_BACKEND_HOST}/api/questions/generate`,
         {
           method: "POST",
           headers: {

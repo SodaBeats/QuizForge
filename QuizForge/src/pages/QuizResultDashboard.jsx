@@ -79,7 +79,7 @@ export default function QuizResultDashboard() {
       try {
         //check if there are attempts first
         const existRes = await authFetch(
-          `http://localhost:3000/api/quizzes/${quizId}/attempts`,
+          `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/attempts`,
           {
             method: "GET",
             credentials: "include",
@@ -93,22 +93,34 @@ export default function QuizResultDashboard() {
 
         const [metricRes, studentsRes, questionsRes, scoreRes] =
           await Promise.all([
-            authFetch(`http://localhost:3000/api/quizzes/${quizId}/metrics`, {
-              method: "GET",
-              credentials: "include",
-            }),
-            authFetch(`http://localhost:3000/api/quizzes/${quizId}/students`, {
-              method: "GET",
-              credentials: "include",
-            }),
-            authFetch(`http://localhost:3000/api/quizzes/${quizId}/questions`, {
-              method: "GET",
-              credentials: "include",
-            }),
-            authFetch(`http://localhost:3000/api/quizzes/${quizId}/score`, {
-              method: "GET",
-              credentials: "include",
-            }),
+            authFetch(
+              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/metrics`,
+              {
+                method: "GET",
+                credentials: "include",
+              },
+            ),
+            authFetch(
+              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/students`,
+              {
+                method: "GET",
+                credentials: "include",
+              },
+            ),
+            authFetch(
+              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/questions`,
+              {
+                method: "GET",
+                credentials: "include",
+              },
+            ),
+            authFetch(
+              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/score`,
+              {
+                method: "GET",
+                credentials: "include",
+              },
+            ),
           ]);
 
         const [metrics, students, questions, scores] = await Promise.all([

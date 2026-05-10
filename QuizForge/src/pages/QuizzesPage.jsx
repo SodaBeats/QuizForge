@@ -17,7 +17,7 @@ export default function QuizzesPage() {
 
   //get quizzes related to user
   useEffect(() => {
-    authFetch(`http://localhost:3000/api/quizzes`)
+    authFetch(`${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`)
       .then((res) => res.json())
       .then((data) => setQuizzes(Array.isArray(data) ? data : []))
       .catch((error) => {
@@ -37,7 +37,7 @@ export default function QuizzesPage() {
   const handleSelectedQuiz = async (chosenQuizId) => {
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/questions?quizId=${chosenQuizId}`,
       );
       const result = await response.json();
 
@@ -61,7 +61,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/${quizToChange.id}`,
+        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizToChange.id}`,
         {
           method: "PATCH",
           headers: { "Content-type": "application/json" },
