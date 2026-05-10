@@ -67,6 +67,7 @@ const QuestionList = ({
             >
               <option value="multiple-choice">Multiple Choice</option>
               <option value="true-false">True / False</option>
+              <option value="short-answer">Short Answer</option>
             </select>
           </div>
 
@@ -117,7 +118,7 @@ const QuestionList = ({
                 <option value="d">D</option>
               </select>
             </>
-          ) : (
+          ) : editingQuestion.questionType === "true-false" ? (
             <>
               <label className="block text-sm font-medium mb-1">
                 Correct Answer
@@ -136,6 +137,22 @@ const QuestionList = ({
                 <option value="true">True</option>
                 <option value="false">False</option>
               </select>
+            </>
+          ) : (
+            <>
+              <label className="block text-sm font-medium mb-1">
+                Correct Answer
+              </label>
+              <input
+                value={editingQuestion.correctAnswer}
+                onChange={(e) =>
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    correctAnswer: e.target.value,
+                  })
+                }
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+              ></input>
             </>
           )}
           <button

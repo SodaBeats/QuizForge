@@ -79,7 +79,8 @@ export default function TopBar({
   // open file modal and fetch documents list
   const openFileModal = async () => {
     setShowFileModal(true);
-    if (userDocuments && userDocuments.length > 0) {
+    if (documentsPerPage[0]) {
+      setUserDocuments(documentsPerPage[0]);
       return;
     }
     try {
@@ -98,7 +99,7 @@ export default function TopBar({
       console.log("Fetched documents:", result.totalDocuments);
       setUserDocuments(result.documents);
       setTotalDocuments(result.totalDocuments);
-      setDocumentsPerPage((prev) => ({ ...prev, [page]: result.documents }));
+      setDocumentsPerPage((prev) => ({ ...prev, [0]: result.documents }));
     } catch (error) {
       console.error("Error fetching documents: ", error);
       toast.error("Failed to fetch documents");
@@ -115,7 +116,11 @@ export default function TopBar({
   const fetchMoreDocuments = async () => {
     const newPage = page + 1;
 
-    if (documentsPerPage[newPage]) return;
+    if (documentsPerPage[newPage]) {
+      setPage(newPage);
+      setUserDocuments(documentsPerPage[newPage]);
+      return;
+    }
 
     const offset = newPage * 5;
     const response = await authFetch(
@@ -138,7 +143,11 @@ export default function TopBar({
     if (page <= 0) return;
     const newPage = page - 1;
 
-    if (documentsPerPage[newPage]) return;
+    if (documentsPerPage[newPage]) {
+      setPage(newPage);
+      setUserDocuments(documentsPerPage[newPage]);
+      return;
+    }
 
     const offset = newPage * 5;
     const response = await authFetch(
@@ -154,6 +163,7 @@ export default function TopBar({
     const result = await response.json();
     setPage(newPage);
     setUserDocuments(result.documents);
+    setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
   };
 
   const openForgeQuizModal = () => {
@@ -310,6 +320,7 @@ export default function TopBar({
     totalDocuments,
     selectedFileId,
     page,
+    documentsPerPage,
   }) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -325,8 +336,8 @@ export default function TopBar({
           </div>
 
           <div className="space-y-2 mb-6">
-            {userDocuments.length > 0 ? (
-              userDocuments.map((doc) => (
+            {documentsPerPage[page] && documentsPerPage[page].length > 0 ? (
+              documentsPerPage[page].map((doc) => (
                 <div
                   key={doc.id}
                   onClick={() => handleSelectDocument(doc)}
@@ -341,7 +352,7 @@ export default function TopBar({
               ))
             ) : (
               <p className="text-gray-400 text-center py-4">
-                No documents found
+                {documentsPerPage[page] ? "No documents found" : "Loading..."}
               </p>
             )}
           </div>
@@ -602,6 +613,7 @@ export default function TopBar({
                   totalDocuments={totalDocuments}
                   selectedFileId={selectedFileId}
                   page={page}
+                  documentsPerPage={documentsPerPage}
                 />
               )}
             </div>

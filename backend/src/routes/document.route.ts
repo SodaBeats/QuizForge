@@ -16,6 +16,7 @@ router.get('/', verifyToken, async (req, res, next) => {
     const totalDocuments = await UploadedFilesRepository.countDocumentsOwned(
       req.user.id,
     );
+    console.log('[DOCUMENT ROUTE.GET]: RAN');
     return res.status(200).json({ documents: documents, totalDocuments });
   } catch (err) {
     return next(err);
