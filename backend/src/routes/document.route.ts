@@ -5,13 +5,28 @@ import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.j
 const router = express.Router();
 
 router.get('/', verifyToken, async (req, res, next) => {
-  const { limit, offset } = req.query;
+  const limit = Number(req.query.limit) || 5;
+  const offset = Number(req.query.offset) || 0;
+  const MAX_LIMIT = 100;
+
+  if (
+    isNaN(limit) ||
+    isNaN(offset) ||
+    limit < 0 ||
+    offset < 0 ||
+    limit > MAX_LIMIT
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Invalid pagination parameters' });
+  }
+
   try {
     //get all documents by user ID
     const documents = await UploadedFilesRepository.getDocInfoByOwner(
       req.user.id,
-      Number(limit),
-      Number(offset),
+      limit,
+      offset,
     );
     const totalDocuments = await UploadedFilesRepository.countDocumentsOwned(
       req.user.id,

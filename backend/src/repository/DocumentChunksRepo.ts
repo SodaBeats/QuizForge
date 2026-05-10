@@ -11,7 +11,7 @@ export const DocumentChunksRepo = {
     data: DocumentChunksInsertData[],
     tx: QueryClient = db,
   ) {
-    await db.insert(document_chunks_db).values(data);
+    await tx.insert(document_chunks_db).values(data);
   },
 
   //get chunks

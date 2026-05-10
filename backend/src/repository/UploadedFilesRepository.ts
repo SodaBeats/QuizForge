@@ -8,7 +8,7 @@ type UploadData = InferInsertModel<typeof uploaded_files>;
 export const UploadedFilesRepository = {
   //insert uploaded file to uploaded_files table
   async insertFileToDb(uploadData: UploadData, tx: QueryClient = db) {
-    const [result] = await db
+    const [result] = await tx
       .insert(uploaded_files)
       .values(uploadData)
       .returning();

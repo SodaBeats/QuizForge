@@ -25,7 +25,7 @@ interface AppError extends Error {
 //allowing react and express to communicate
 app.use(
   cors({
-    origin: 'http://localhost:5173', // React dev server
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // React dev server
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -39,7 +39,7 @@ app.use('/api', healthRoutes);
 
 //API
 app.use('/api/upload', uploadRoutes); // teacher route: file uploads
-app.use('/api/questions', questionRoute); // teacer route: manually made questions
+app.use('/api/questions', questionRoute); // teacher route: manually made questions
 app.use('/api/documents', documentRoute); // teacher route: getting/deleting documents
 app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
