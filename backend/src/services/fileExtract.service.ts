@@ -20,8 +20,8 @@ export const extractText = async (
 
     // Use appropriate library depending on Mimetype
     if (file.mimetype === 'application/pdf') {
-      const data = await pdf(file.buffer);
-      extractedText = data.text;
+      const result = await pdf(file.buffer);
+      extractedText = result.text;
     } else if (
       file.mimetype ===
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
