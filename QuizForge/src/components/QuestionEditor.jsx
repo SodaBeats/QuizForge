@@ -33,6 +33,9 @@ export default function QuestionEditor({
     topic: "",
   });
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------
   useEffect(() => {
     if (selectedQuestion) {
@@ -68,9 +71,7 @@ export default function QuestionEditor({
   // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
   const fetchDocuments = async () => {
     try {
-      const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/documents`,
-      );
+      const response = await authFetch(`${backendHost}/api/documents`);
       const data = await response.json();
       setDocuments(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -109,8 +110,8 @@ export default function QuestionEditor({
     try {
       const endpoint =
         addMode === "edit"
-          ? `${import.meta.env.VITE_BACKEND_HOST}/api/questions/${manualQuestion.id}`
-          : `${import.meta.env.VITE_BACKEND_HOST}/api/questions`;
+          ? `${backendHost}/api/questions/${manualQuestion.id}`
+          : `${backendHost}/api/questions`;
 
       const method = addMode === "edit" ? "PATCH" : "POST";
 
@@ -131,7 +132,7 @@ export default function QuestionEditor({
       if (result.success) {
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `${import.meta.env.VITE_BACKEND_HOST}/api/questions?quizId=${quizMetadata?.id}`,
+          `${backendHost}/api/questions?quizId=${quizMetadata?.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
@@ -174,7 +175,7 @@ export default function QuestionEditor({
     setLoading(true);
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/questions/generate`,
+        `${backendHost}/api/questions/generate`,
         {
           method: "POST",
           headers: {

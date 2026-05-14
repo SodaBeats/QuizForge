@@ -28,6 +28,9 @@ export default function StudentQuizPage() {
   const selectedQuestion = questions?.[selectedQuestionIndex] || null;
   const navigate = useNavigate();
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   //fetch from backend in case quiz data is lost from state
   useEffect(() => {
     if (!quizToken || !authFetch) return;
@@ -93,7 +96,7 @@ export default function StudentQuizPage() {
       //console.log("quiz: ", quiz);
       //console.log("attemptId: ", attemptId);
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-submit`,
+        `${backendHost}/api/student/quiz-submit`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -128,7 +131,7 @@ export default function StudentQuizPage() {
   const deleteAttempt = async () => {
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-access/${quizToken}`,
+        `${backendHost}/api/student/quiz-access/${quizToken}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },

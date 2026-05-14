@@ -13,6 +13,9 @@ export default function QuizzesPage() {
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
 
   //get quizzes related to user
@@ -37,7 +40,7 @@ export default function QuizzesPage() {
   const handleSelectedQuiz = async (chosenQuizId) => {
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/questions?quizId=${chosenQuizId}`,
+        `${backendHost}/api/quizzes/questions?quizId=${chosenQuizId}`,
       );
       const result = await response.json();
 
@@ -61,7 +64,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
+        `${backendHost}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -122,7 +125,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizToChange.id}`,
+        `${backendHost}/api/quizzes/${quizToChange.id}`,
         {
           method: "PATCH",
           headers: { "Content-type": "application/json" },

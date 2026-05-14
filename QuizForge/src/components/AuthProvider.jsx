@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
 
@@ -15,9 +15,13 @@ export function AuthProvider({ children }) {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const refreshPromiseRef = useRef(null);
+
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
 
   useEffect(() => {
-    silentRefresh();
+    silentRefresh(); //eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -55,6 +59,7 @@ export function AuthProvider({ children }) {
       //if the refresh token is also invalid, navigate to login
       if (!response.ok) {
         logout();
+        return;
       }
 
       const data = await response.json();
@@ -74,32 +79,44 @@ export function AuthProvider({ children }) {
 
   const authFetch = useCallback(
     async (url, options = {}) => {
-      //get custom headers inside options and add authz
-      const headers = {
-        ...options.headers,
-        authorization: `Bearer ${token}`,
-      };
+      try {
+        //get custom headers inside options and add authz
+        const headers = {
+          ...options.headers,
+          authorization: `Bearer ${token}`,
+        };
 
-      //only add JSON content-type if not sending FormData
-      if (!(options.body instanceof FormData)) {
-        headers["Content-Type"] = "application/json";
-      }
-
-      let response = await fetch(url, { ...options, headers });
-
-      // 2. If the token expired (401 error), try to refresh it
-      if (response.status === 401) {
-        console.log("Token expired, attempting to refresh...");
-        const newToken = await silentRefresh(); // Call your refresh logic
-
-        if (newToken) {
-          // Retry with the fresh token
-          headers["authorization"] = `Bearer ${newToken}`;
-          response = await fetch(url, { ...options, headers });
+        //only add JSON content-type if not sending FormData
+        if (!(options.body instanceof FormData)) {
+          headers["Content-Type"] = "application/json";
         }
-      }
 
-      return response;
+        let response = await fetch(url, { ...options, headers });
+
+        // 2. If the token expired (401 error), try to refresh it
+        if (response.status === 401) {
+          console.log("Token expired, attempting to refresh...");
+
+          // prevent multiple simultaneous refresh calls
+          if (!refreshPromiseRef.current) {
+            refreshPromiseRef.current = silentRefresh().finally(() => {
+              refreshPromiseRef.current = null;
+            });
+          }
+          const newToken = await refreshPromiseRef.current; // Call your refresh logic
+
+          if (newToken) {
+            // Retry with the fresh token
+            headers["authorization"] = `Bearer ${newToken}`;
+            response = await fetch(url, { ...options, headers });
+          }
+        }
+
+        return response;
+      } catch (error) {
+        console.error("authFetch error: ", error);
+        throw error;
+      }
     },
     [token, silentRefresh],
   );

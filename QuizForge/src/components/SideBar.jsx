@@ -19,6 +19,9 @@ function SideBar({
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
   const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(false);
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   const handleFileDelete = async (fileId) => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
     if (selectedFileId === fileId) {
@@ -38,7 +41,7 @@ function SideBar({
     }
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/questions/${questionId}`,
+        `${backendHost}/api/questions/${questionId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -71,12 +74,14 @@ function SideBar({
   const openSelectQuizModal = async () => {
     setIsLoadingQuizzes(true);
     try {
-      const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`,
-        {
-          credentials: "include",
-        },
-      );
+      const response = await authFetch(`${backendHost}/api/quizzes`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(
+          `Quiz Selection Error ${response.status}: ${response.statusText}`,
+        );
+      }
       const data = await response.json();
       if (Array.isArray(data)) {
         setAvailableQuizzes(data);
@@ -103,7 +108,7 @@ function SideBar({
     closeSelectQuizModal();
     try {
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/questions?quizId=${quiz.id}`,
+        `${backendHost}/api/quizzes/questions?quizId=${quiz.id}`,
         {
           credentials: "include",
         },

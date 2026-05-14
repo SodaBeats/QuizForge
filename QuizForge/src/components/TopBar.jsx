@@ -33,6 +33,10 @@ export default function TopBar({
     dueDate: "",
     status: "draft",
   });
+
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   const menuRef = useRef(null);
   //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
@@ -86,7 +90,7 @@ export default function TopBar({
     try {
       setPage(0);
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=0`,
+        `${backendHost}/api/documents?limit=5&offset=0`,
         {
           credentials: "include",
         },
@@ -123,7 +127,7 @@ export default function TopBar({
     try {
       const offset = newPage * 5;
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=${offset}`,
+        `${backendHost}/api/documents?limit=5&offset=${offset}`,
         {
           credentials: "include",
         },
@@ -154,7 +158,7 @@ export default function TopBar({
     try {
       const offset = newPage * 5;
       const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/documents?limit=5&offset=${offset}`,
+        `${backendHost}/api/documents?limit=5&offset=${offset}`,
         {
           credentials: "include",
         },
@@ -225,22 +229,19 @@ export default function TopBar({
     try {
       const finalDueDate = new Date(forgeQuizData.dueDate).toISOString();
 
-      const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quizTitle: forgeQuizData.quizTitle,
-            description: forgeQuizData.description,
-            shareToken: forgeQuizData.shareToken,
-            maxAttempts: maxAttempts,
-            dueDate: finalDueDate,
-            status: forgeQuizData.status,
-          }),
-          credentials: "include",
-        },
-      );
+      const response = await authFetch(`${backendHost}/api/quizzes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizTitle: forgeQuizData.quizTitle,
+          description: forgeQuizData.description,
+          shareToken: forgeQuizData.shareToken,
+          maxAttempts: maxAttempts,
+          dueDate: finalDueDate,
+          status: forgeQuizData.status,
+        }),
+        credentials: "include",
+      });
 
       const data = await response.json();
 
@@ -289,12 +290,9 @@ export default function TopBar({
 
     // fetch full content on demand and merge into parent state
     try {
-      const resp = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/documents/${doc.id}`,
-        {
-          credentials: "include",
-        },
-      );
+      const resp = await authFetch(`${backendHost}/api/documents/${doc.id}`, {
+        credentials: "include",
+      });
       if (!resp.ok) {
         throw new Error(`HTTP error! status: ${resp.status}`);
       }

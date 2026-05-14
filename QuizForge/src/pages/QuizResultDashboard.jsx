@@ -20,6 +20,9 @@ export default function QuizResultDashboard() {
   const { quizId } = useParams();
   const navigate = useNavigate();
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   //--HELPER FUNCTIONS -------------------------------------
   function buildMetrics(data) {
     return [

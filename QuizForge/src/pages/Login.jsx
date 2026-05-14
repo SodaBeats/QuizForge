@@ -16,6 +16,9 @@ export default function LogInComponent() {
   const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -48,15 +51,12 @@ export default function LogInComponent() {
             role: role,
           }; // ← Include role
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_HOST}${endpoint}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(body),
-        },
-      );
+      const response = await fetch(`${backendHost}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
 
       const data = await response.json();
 

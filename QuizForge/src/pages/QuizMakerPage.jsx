@@ -16,6 +16,9 @@ export default function QuizMakerSkeleton() {
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
 
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
+
   //determine which file is selected
   const selectedFile =
     uploadedFiles?.find((f) => f.id === selectedFileId) || null;
@@ -66,14 +69,11 @@ export default function QuizMakerSkeleton() {
     data.append("file", file);
 
     try {
-      const response = await authFetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/api/upload`,
-        {
-          method: "POST",
-          body: data,
-          credentials: "include",
-        },
-      );
+      const response = await authFetch(`${backendHost}/api/upload`, {
+        method: "POST",
+        body: data,
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
