@@ -6,15 +6,18 @@ import TopBar from "../components/TopBar";
 import QuizzesMetaData from "../components/QuizzesMetadata";
 import QuizzesQuestionList from "../components/QuizzesQuestionList";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+if (!backendHost) {
+  console.error("Missing VITE_BACKEND_HOST env variable");
+  // navigate('/error')
+}
+
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
 

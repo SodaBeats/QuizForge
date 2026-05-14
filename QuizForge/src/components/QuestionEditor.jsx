@@ -2,6 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+if (!backendHost) {
+  console.error("Missing VITE_BACKEND_HOST env variable");
+  // navigate('/error')
+}
+
 export default function QuestionEditor({
   setQuestions,
   selectedQuestion,
@@ -32,9 +38,6 @@ export default function QuestionEditor({
     sources: [],
     topic: "",
   });
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   // CHANGE EDITOR VALUES BASED ON SELECTED QUESTION ------------------------
   useEffect(() => {

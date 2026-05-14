@@ -18,11 +18,16 @@ export function AuthProvider({ children }) {
   const refreshPromiseRef = useRef(null);
 
   const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   useEffect(() => {
-    silentRefresh(); //eslint-disable-next-line
-  }, []);
+    if (!backendHost) {
+      console.error("Missing VITE_BACKEND_HOST env variable");
+      // navigate('/error');
+      return;
+    }
+    console.log("AuthProvider useeffect infinite loop alert");
+    silentRefresh(); // eslint-disable-next-line
+  }, [silentRefresh]);
 
   useEffect(() => {
     console.log("Auth Provider re-rendered");
@@ -109,6 +114,8 @@ export function AuthProvider({ children }) {
             // Retry with the fresh token
             headers["authorization"] = `Bearer ${newToken}`;
             response = await fetch(url, { ...options, headers });
+          } else {
+            throw new Error("Session expired");
           }
         }
 

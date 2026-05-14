@@ -6,6 +6,12 @@ import ResultsLeaderboard from "../components/ResultsLeaderboard";
 import ResultsMainPanel from "../components/ResultsMainPanel";
 import { AuthContext } from "../components/AuthProvider";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+if (!backendHost) {
+  console.error("Missing VITE_BACKEND_HOST env variable");
+  // navigate('/error')
+}
+
 export default function QuizResultDashboard() {
   const [metrics, setMetrics] = useState([
     { label: "Total Takers", value: "No Data Yet", sub: "unique students" },
@@ -19,9 +25,6 @@ export default function QuizResultDashboard() {
   const { authFetch, logout } = useContext(AuthContext);
   const { quizId } = useParams();
   const navigate = useNavigate();
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   //--HELPER FUNCTIONS -------------------------------------
   function buildMetrics(data) {

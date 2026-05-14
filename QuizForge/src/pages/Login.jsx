@@ -4,6 +4,12 @@ import { useContext } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+if (!backendHost) {
+  console.error("Missing VITE_BACKEND_HOST env variable");
+  // navigate('/error')
+}
+
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
   const [firstName, setFirstName] = useState("");
@@ -15,9 +21,6 @@ export default function LogInComponent() {
   const [loading, setLoading] = useState(false);
   const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
