@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import { appRateLimiter } from './middlewares/appRateLimiter.middleware.js';
+import { ipRateLimiter } from './middlewares/appRateLimiter.middleware.js';
 import cors from 'cors';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
@@ -34,7 +34,7 @@ app.use(
 );
 
 // App Rate Limiter
-app.use(appRateLimiter(60000, 1000));
+app.use(ipRateLimiter(60000, 500));
 
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)

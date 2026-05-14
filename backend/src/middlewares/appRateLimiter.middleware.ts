@@ -1,25 +1,37 @@
-import { Redis } from 'ioredis';
+import { redis } from './redis.js';
 import type { Request, Response, NextFunction } from 'express';
 
-export function appRateLimiter(windowSizeMillisec: number, limit: number) {
-  const redis = new Redis();
+export function ipRateLimiter(windowSizeMillisec: number, limit: number) {
   const windowSizeSeconds = Math.floor(windowSizeMillisec / 1000);
-  const requestCap = limit;
+
+  // lua script for atomicity
+  const luaScript = `
+    local current = redis.call("INCR", KEYS[1])
+    if current == 1 then
+      redis.call("EXPIRE", KEYS[1], ARGV[1])
+    end
+    return current
+  `;
 
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const counter = await redis.incr('reqTotal');
-      console.log('The rate limiter code is running');
-      if (counter === 1) {
-        await redis.expire('reqTotal', windowSizeSeconds);
-      }
-      if (counter > requestCap) {
-        console.log('exceeded');
+      const clientIp = (req.ip ?? 'unknown').replace(/^::ffff:/, '');
+      const clientKey = `ratelimit:${clientIp}`;
+
+      const counter = (await redis.eval(
+        luaScript,
+        1,
+        clientKey,
+        windowSizeSeconds,
+      )) as number;
+
+      if (counter > limit) {
         return res.status(429).json({
           success: false,
           message: 'Too many requests, try again later',
         });
       }
+
       next();
     } catch (error) {
       console.error('Inner redis error: ', error);
