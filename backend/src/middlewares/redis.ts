@@ -17,8 +17,22 @@ redis.on('ready', () => {
   console.log('Redis connection established');
 });
 process.on('SIGTERM', async () => {
-  await redis.quit();
+  try {
+    console.log('Received "SIGTERM" signal, closing Redis connection...');
+    await redis.quit();
+  } catch (err) {
+    console.error('Error during Redis shutdown: ', err);
+  } finally {
+    process.exit(0);
+  }
 });
 process.on('SIGINT', async () => {
-  await redis.quit();
+  try {
+    console.log('Received "SIGINT" signal, closing Redis connection...');
+    await redis.quit();
+  } catch (err) {
+    console.error('Error during Redis shutdown: ', err);
+  } finally {
+    process.exit(0);
+  }
 });
