@@ -7,10 +7,6 @@ import QuizzesMetaData from "../components/QuizzesMetadata";
 import QuizzesQuestionList from "../components/QuizzesQuestionList";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-if (!backendHost) {
-  console.error("Missing VITE_BACKEND_HOST env variable");
-  // navigate('/error')
-}
 
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
@@ -23,7 +19,8 @@ export default function QuizzesPage() {
 
   //get quizzes related to user
   useEffect(() => {
-    authFetch(`${import.meta.env.VITE_BACKEND_HOST}/api/quizzes`)
+    if (!backendHost) return;
+    authFetch(`${backendHost}/api/quizzes`)
       .then((res) => res.json())
       .then((data) => setQuizzes(Array.isArray(data) ? data : []))
       .catch((error) => {
@@ -31,6 +28,12 @@ export default function QuizzesPage() {
         toast.error("Failed to load quizzes");
       });
   }, [authFetch]);
+
+  if (!backendHost) {
+    console.error("Missing VITE_BACKEND_HOST env variable");
+    toast.error("Something went wrong");
+    return <Navigate to="/error" replace />;
+  }
 
   const handleDeleteQuiz = (quizId) => {
     setQuizzes(quizzes.filter((q) => q.id !== quizId));

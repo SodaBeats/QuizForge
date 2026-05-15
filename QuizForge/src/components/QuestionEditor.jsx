@@ -3,10 +3,6 @@ import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-if (!backendHost) {
-  console.error("Missing VITE_BACKEND_HOST env variable");
-  // navigate('/error')
-}
 
 export default function QuestionEditor({
   setQuestions,
@@ -212,6 +208,10 @@ export default function QuestionEditor({
       setLoading(false);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="flex-1 flex flex-col">

@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
 export default function TopBar({
   handleFileUpload,
   isUploading,
@@ -33,9 +35,6 @@ export default function TopBar({
     dueDate: "",
     status: "draft",
   });
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   const menuRef = useRef(null);
   //const fileRef = useRef(null);
@@ -565,6 +564,11 @@ export default function TopBar({
       </div>
     );
   }
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
+
   // -------------------------------------------------------------------------------------
   //  MAIN COMPONENT
   // -------------------------------------------------------------------------------------

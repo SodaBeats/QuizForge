@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
@@ -5,6 +6,7 @@ import LoadingScreen from "./LoadingScreen";
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
 export { AuthContext };
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 //make component called AuthProvider
 //children is a prop = whatever components you wrap inside <AuthProvider>
@@ -16,22 +18,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const refreshPromiseRef = useRef(null);
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-  useEffect(() => {
-    if (!backendHost) {
-      console.error("Missing VITE_BACKEND_HOST env variable");
-      // navigate('/error');
-      return;
-    }
-    console.log("AuthProvider useeffect infinite loop alert");
-    silentRefresh(); // eslint-disable-next-line
-  }, [silentRefresh]);
-
-  useEffect(() => {
-    console.log("Auth Provider re-rendered");
-  });
 
   // Logout function to clear token
   const logout = useCallback(async () => {
@@ -81,6 +67,22 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   }, [logout, navigate]);
+
+  useEffect(() => {
+    console.log("AuthProvider useeffect infinite loop alert");
+    if (!backendHost) {
+      console.error("Missing VITE_BACKEND_HOST env variable");
+      toast.error("Something went wrong, please try again later");
+      setLoading(false);
+      navigate("/error");
+      return;
+    }
+    silentRefresh();
+  }, [silentRefresh, navigate]);
+
+  useEffect(() => {
+    console.log("Auth Provider re-rendered");
+  });
 
   const authFetch = useCallback(
     async (url, options = {}) => {

@@ -7,10 +7,6 @@ import ResultsMainPanel from "../components/ResultsMainPanel";
 import { AuthContext } from "../components/AuthProvider";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-if (!backendHost) {
-  console.error("Missing VITE_BACKEND_HOST env variable");
-  // navigate('/error')
-}
 
 export default function QuizResultDashboard() {
   const [metrics, setMetrics] = useState([
@@ -81,11 +77,13 @@ export default function QuizResultDashboard() {
 
   //--DATA FETCH --------------------------------------------
   useEffect(() => {
+    if (!backendHost) return;
+    console.log("QuizResultDashboard useeffect inf loop alert");
     async function fetchDashboardData() {
       try {
         //check if there are attempts first
         const existRes = await authFetch(
-          `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/attempts`,
+          `${backendHost}/api/quizzes/${quizId}/attempts`,
           {
             method: "GET",
             credentials: "include",
@@ -99,34 +97,22 @@ export default function QuizResultDashboard() {
 
         const [metricRes, studentsRes, questionsRes, scoreRes] =
           await Promise.all([
-            authFetch(
-              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/metrics`,
-              {
-                method: "GET",
-                credentials: "include",
-              },
-            ),
-            authFetch(
-              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/students`,
-              {
-                method: "GET",
-                credentials: "include",
-              },
-            ),
-            authFetch(
-              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/questions`,
-              {
-                method: "GET",
-                credentials: "include",
-              },
-            ),
-            authFetch(
-              `${import.meta.env.VITE_BACKEND_HOST}/api/quizzes/${quizId}/score`,
-              {
-                method: "GET",
-                credentials: "include",
-              },
-            ),
+            authFetch(`${backendHost}/api/quizzes/${quizId}/metrics`, {
+              method: "GET",
+              credentials: "include",
+            }),
+            authFetch(`${backendHost}/api/quizzes/${quizId}/students`, {
+              method: "GET",
+              credentials: "include",
+            }),
+            authFetch(`${backendHost}/api/quizzes/${quizId}/questions`, {
+              method: "GET",
+              credentials: "include",
+            }),
+            authFetch(`${backendHost}/api/quizzes/${quizId}/score`, {
+              method: "GET",
+              credentials: "include",
+            }),
           ]);
 
         const [metrics, students, questions, scores] = await Promise.all([
@@ -185,6 +171,10 @@ export default function QuizResultDashboard() {
     }
     fetchDashboardData();
   }, [quizId, authFetch, navigate, logout]);
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">

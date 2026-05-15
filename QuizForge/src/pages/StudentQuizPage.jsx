@@ -8,6 +8,8 @@ import StudentQuizWindow from "../components/StudentQuizWindow";
 import StudentTimeLimit from "../components/StudentTimeLimit";
 import LoadingScreen from "../components/LoadingScreen";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
 export default function StudentQuizPage() {
   const { quizToken } = useParams();
   const { authFetch } = useContext(AuthContext);
@@ -28,16 +30,12 @@ export default function StudentQuizPage() {
   const selectedQuestion = questions?.[selectedQuestionIndex] || null;
   const navigate = useNavigate();
 
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
-
   //fetch from backend in case quiz data is lost from state
   useEffect(() => {
+    if (!backendHost) return;
     if (!quizToken || !authFetch) return;
 
-    authFetch(
-      `${import.meta.env.VITE_BACKEND_HOST}/api/student/quiz-access/${quizToken}`,
-    )
+    authFetch(`${backendHost}/api/student/quiz-access/${quizToken}`)
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) {
@@ -170,6 +168,10 @@ export default function StudentQuizPage() {
         </div>
       </div>
     );
+  }
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
   }
 
   return (

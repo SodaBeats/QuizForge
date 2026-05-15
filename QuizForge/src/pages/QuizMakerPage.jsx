@@ -7,6 +7,8 @@ import SideBar from "../components/SideBar";
 import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
 export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
@@ -15,9 +17,6 @@ export default function QuizMakerSkeleton() {
   const [questions, setQuestions] = useState([]);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   //determine which file is selected
   const selectedFile =
@@ -29,6 +28,7 @@ export default function QuizMakerSkeleton() {
   const STATE_KEY = "quizForgeState";
   const TTL = 1000 * 60; //1minute
   useEffect(() => {
+    if (!backendHost) return;
     try {
       const savedState = localStorage.getItem(STATE_KEY);
       if (!savedState) return;
@@ -104,6 +104,7 @@ export default function QuizMakerSkeleton() {
 
   //save uploaded file into local storage
   useEffect(() => {
+    if (!backendHost) return;
     if (uploadedFiles.length > 0) {
       localStorage.setItem(
         STATE_KEY,
@@ -114,6 +115,10 @@ export default function QuizMakerSkeleton() {
       );
     }
   }, [uploadedFiles]);
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">

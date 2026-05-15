@@ -2,6 +2,8 @@ import { useContext, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
 function SideBar({
   uploadedFiles,
   setUploadedFiles,
@@ -18,9 +20,6 @@ function SideBar({
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
   const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(false);
-
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-  if (!backendHost) throw new Error("Missing backend host");
 
   const handleFileDelete = async (fileId) => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
@@ -125,6 +124,10 @@ function SideBar({
       toast.error(`something went wrong while fetching questions`);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <>
