@@ -12,8 +12,7 @@ export default function ErrorPage() {
         </p>
         <h1 className="text-3xl font-semibold mb-2">Something went wrong</h1>
         <p className="text-slate-600 mb-6">
-          We couldn't load the page. Please try again or return to the login
-          screen.
+          We couldn't load the page. Please try again later
         </p>
         {/*<button
           type="button"
