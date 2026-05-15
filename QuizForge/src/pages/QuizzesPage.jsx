@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import QuizzesSidebar from "../components/QuizzesSideBar";
@@ -28,12 +29,6 @@ export default function QuizzesPage() {
         toast.error("Failed to load quizzes");
       });
   }, [authFetch]);
-
-  if (!backendHost) {
-    console.error("Missing VITE_BACKEND_HOST env variable");
-    toast.error("Something went wrong");
-    return <Navigate to="/error" replace />;
-  }
 
   const handleDeleteQuiz = (quizId) => {
     setQuizzes(quizzes.filter((q) => q.id !== quizId));
@@ -159,6 +154,10 @@ export default function QuizzesPage() {
       setQuizzes(originalQuizzes);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">

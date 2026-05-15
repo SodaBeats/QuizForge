@@ -1,5 +1,5 @@
 import { useEffect, useContext, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import TopBar from "../components/TopBar";
 import ResultsLeaderboard from "../components/ResultsLeaderboard";

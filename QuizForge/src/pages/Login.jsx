@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
@@ -17,13 +17,6 @@ export default function LogInComponent() {
   const [loading, setLoading] = useState(false);
   const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  if (!backendHost) {
-    console.error("Missing VITE_BACKEND_HOST env variable");
-    toast.error("Something went wrong, please try again later");
-    navigate("/error");
-    return;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,6 +87,10 @@ export default function LogInComponent() {
       setLoading(false);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">

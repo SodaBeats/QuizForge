@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import StudentTopbar from "../components/StudentTopbar";
