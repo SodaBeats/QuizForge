@@ -5,7 +5,7 @@ export default function ErrorPage() {
   //const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-xl border border-slate-200 p-8 text-center">
         <p className="text-6xl mb-4" aria-hidden="true">
           😵
