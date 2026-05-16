@@ -1,10 +1,7 @@
 import { redis } from './redis.js';
 import type { Request, Response, NextFunction } from 'express';
 
-export function ipRateLimiter(windowSizeMillisec: number, limit: number) {
-  const windowSizeSeconds = Math.floor(windowSizeMillisec / 1000);
-
-  // lua script for atomicity
+export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
   const luaScript = `
     local current = redis.call("INCR", KEYS[1])
     if current == 1 then
@@ -12,18 +9,17 @@ export function ipRateLimiter(windowSizeMillisec: number, limit: number) {
     end
     return current
   `;
-
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const clientIp = (req.ip ?? 'unknown').replace(/^::ffff:/, '');
-      const clientKey = `ratelimit:${clientIp}`;
-
+      const clientKey = `ratelimit:user:${req.user.id}`;
       const counter = (await redis.eval(
         luaScript,
         1,
         clientKey,
-        windowSizeSeconds,
+        windowSizeSec,
       )) as number;
+
+      console.log(`userBasedRateLimiter Count: ${counter}`);
 
       if (counter > limit) {
         return res.status(429).json({
@@ -33,11 +29,12 @@ export function ipRateLimiter(windowSizeMillisec: number, limit: number) {
       }
 
       next();
-    } catch (error) {
-      console.error('Inner redis error: ', error);
-      return res
-        .status(500)
-        .json({ success: false, message: 'Redis error, try again later' });
+    } catch (err) {
+      console.error('Inner redis error: ', err);
+      res.status(500).json({
+        success: false,
+        message: 'Something went wrong with the user-based limiter',
+      });
     }
   };
 }

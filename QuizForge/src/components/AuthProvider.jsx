@@ -1,4 +1,3 @@
-import toast from "react-hot-toast";
 import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
@@ -72,7 +71,6 @@ export function AuthProvider({ children }) {
     console.log("AuthProvider useeffect infinite loop alert");
     if (!backendHost) {
       console.error("Missing VITE_BACKEND_HOST env variable");
-      toast.error("Something went wrong, please try again later");
       setLoading(false);
       navigate("/error");
       return;

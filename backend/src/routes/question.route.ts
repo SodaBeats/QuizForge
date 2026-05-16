@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
+import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
@@ -18,6 +19,7 @@ const groq = new Groq();
 router.post(
   '/',
   verifyToken,
+  userBasedRateLimiter(5, 5),
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const quizIdNum = Number(req.body.quizId);
@@ -67,119 +69,132 @@ router.post(
   },
 );
 
-router.post('/generate', verifyToken, async (req, res, next) => {
-  const { questionType, timeLimit, questionAmount, sources, topic } =
-    req.body.generateOptions;
-  const { quizId } = req.body;
-  let rawParsed;
-  let parsedQuestions;
+router.post(
+  '/generate',
+  verifyToken,
+  userBasedRateLimiter(5, 1),
+  async (req, res, next) => {
+    const { questionType, timeLimit, questionAmount, sources, topic } =
+      req.body.generateOptions;
+    const { quizId } = req.body;
+    let rawParsed;
+    let parsedQuestions;
 
-  if (!questionType || !timeLimit || !quizId || !questionAmount) {
-    return res.status(400).json({
-      success: false,
-      message: 'Incomplete data',
-    });
-  }
-
-  try {
-    console.log('generating...');
-
-    const multipleChoiceSchema = z
-      .object({
-        canCreateQuiz: z.boolean(),
-        reason: z.string().optional(),
-        questions: z
-          .array(
-            z.object({
-              question_text: z.string(),
-              option_a: z.string().optional(),
-              option_b: z.string().optional(),
-              option_c: z.string().optional(),
-              option_d: z.string().optional(),
-              correct_answer: z.enum(['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D']),
-            }),
-          )
-          .nullable(),
-      })
-      .strip();
-
-    const trueFalseSchema = z
-      .object({
-        canCreateQuiz: z.boolean(),
-        reason: z.string().optional(),
-        questions: z
-          .array(
-            z.object({
-              question_text: z.string(),
-              correct_answer: z.enum(['true', 'false']),
-            }),
-          )
-          .nullable(),
-      })
-      .strip();
-
-    const shortAnswerSchema = z
-      .object({
-        canCreateQuiz: z.boolean(),
-        reason: z.string().optional(),
-        questions: z
-          .array(
-            z.object({
-              question_text: z.string(),
-              correct_answer: z.string(),
-            }),
-          )
-          .nullable(),
-      })
-      .strip();
-
-    // embed the topic for RAG
-    const embeddedUserQueryResponse = await ollama.embed({
-      model: 'mxbai-embed-large:latest',
-      input: `Represent this sentence for searching relevant passages: ${topic}`,
-    });
-    const embeddedUserQuery = embeddedUserQueryResponse.embeddings[0];
-    if (!embeddedUserQuery || embeddedUserQuery.length < 1) {
-      return res
-        .status(500)
-        .json({ success: false, message: 'Failed to embed user query' });
-    }
-
-    // fetch relevant document chunks
-    const relevantChunks =
-      await DocumentChunksRepo.getRelevantChunksWithSources(
-        embeddedUserQuery,
-        sources,
-        req.user.id,
-      );
-    if (!relevantChunks || relevantChunks.length < 1) {
-      return res.status(500).json({
-        success: false,
-        message: 'Could not retrieve relevant documents',
-      });
-    }
-
-    const contextString = relevantChunks
-      .map((chunk, index) => `[Chunk ${index + 1}]: ${chunk.content}`)
-      .join('\n\n');
-
-    const tokenEstimate =
-      textUtilities.countTokenEstimateFromString(contextString);
-
-    if (tokenEstimate >= 8000) {
+    if (!questionType || !timeLimit || !quizId || !questionAmount) {
       return res.status(400).json({
         success: false,
-        message: 'Exceeded token limit',
+        message: 'Incomplete data',
       });
     }
 
-    const response = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-      messages: [
-        {
-          role: 'system',
-          content: `
+    try {
+      console.log('generating...');
+
+      const multipleChoiceSchema = z
+        .object({
+          canCreateQuiz: z.boolean(),
+          reason: z.string().optional(),
+          questions: z
+            .array(
+              z.object({
+                question_text: z.string(),
+                option_a: z.string().optional(),
+                option_b: z.string().optional(),
+                option_c: z.string().optional(),
+                option_d: z.string().optional(),
+                correct_answer: z.enum([
+                  'a',
+                  'A',
+                  'b',
+                  'B',
+                  'c',
+                  'C',
+                  'd',
+                  'D',
+                ]),
+              }),
+            )
+            .nullable(),
+        })
+        .strip();
+
+      const trueFalseSchema = z
+        .object({
+          canCreateQuiz: z.boolean(),
+          reason: z.string().optional(),
+          questions: z
+            .array(
+              z.object({
+                question_text: z.string(),
+                correct_answer: z.enum(['true', 'false']),
+              }),
+            )
+            .nullable(),
+        })
+        .strip();
+
+      const shortAnswerSchema = z
+        .object({
+          canCreateQuiz: z.boolean(),
+          reason: z.string().optional(),
+          questions: z
+            .array(
+              z.object({
+                question_text: z.string(),
+                correct_answer: z.string(),
+              }),
+            )
+            .nullable(),
+        })
+        .strip();
+
+      // embed the topic for RAG
+      const embeddedUserQueryResponse = await ollama.embed({
+        model: 'mxbai-embed-large:latest',
+        input: `Represent this sentence for searching relevant passages: ${topic}`,
+      });
+      const embeddedUserQuery = embeddedUserQueryResponse.embeddings[0];
+      if (!embeddedUserQuery || embeddedUserQuery.length < 1) {
+        return res
+          .status(500)
+          .json({ success: false, message: 'Failed to embed user query' });
+      }
+
+      // fetch relevant document chunks
+      const relevantChunks =
+        await DocumentChunksRepo.getRelevantChunksWithSources(
+          embeddedUserQuery,
+          sources,
+          req.user.id,
+        );
+      if (!relevantChunks || relevantChunks.length < 1) {
+        return res.status(500).json({
+          success: false,
+          message: 'Could not retrieve relevant documents',
+        });
+      }
+
+      const contextString = relevantChunks
+        .map((chunk, index) => `[Chunk ${index + 1}]: ${chunk.content}`)
+        .join('\n\n');
+
+      const tokenEstimate =
+        textUtilities.countTokenEstimateFromString(contextString);
+
+      if (tokenEstimate >= 8000) {
+        return res.status(400).json({
+          success: false,
+          message: 'Exceeded token limit',
+        });
+      }
+
+      const response = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content: `
             # PERSONA
             You are a specialized Quiz Generation Engine.
 
@@ -205,117 +220,124 @@ router.post('/generate', verifyToken, async (req, res, next) => {
             ## 3. short-answer
             - Required: [question_text, correct_answer]
             `,
-        },
-        {
-          role: 'user',
-          content: `Generate ${questionAmount} ${questionType} questions on <topic>${topic}</topic> using the information inside the document tags below. Only respond in the specified JSON format.
+          },
+          {
+            role: 'user',
+            content: `Generate ${questionAmount} ${questionType} questions on <topic>${topic}</topic> using the information inside the document tags below. Only respond in the specified JSON format.
           
           <document>${contextString}</document>`,
-        },
-      ],
-    });
+          },
+        ],
+      });
 
-    /*const parsedQuestions = questionSchema.safeParse(
+      /*const parsedQuestions = questionSchema.safeParse(
       JSON.parse(ollamaResponse.message.content),
     );*/
-    if (!response || !response.choices[0]?.message.content) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to get a response from groq API',
-      });
-    }
-    try {
-      rawParsed = JSON.parse(response.choices[0].message.content);
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to parse LLM response to JSON',
-      });
-    }
-    if (questionType === 'multiple-choice') {
-      parsedQuestions = multipleChoiceSchema.safeParse(rawParsed);
-    } else if (questionType === 'true-false') {
-      parsedQuestions = trueFalseSchema.safeParse(rawParsed);
-    } else {
-      parsedQuestions = shortAnswerSchema.safeParse(rawParsed);
-    }
+      if (!response || !response.choices[0]?.message.content) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to get a response from groq API',
+        });
+      }
+      try {
+        rawParsed = JSON.parse(response.choices[0].message.content);
+      } catch (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to parse LLM response to JSON',
+        });
+      }
+      if (questionType === 'multiple-choice') {
+        parsedQuestions = multipleChoiceSchema.safeParse(rawParsed);
+      } else if (questionType === 'true-false') {
+        parsedQuestions = trueFalseSchema.safeParse(rawParsed);
+      } else {
+        parsedQuestions = shortAnswerSchema.safeParse(rawParsed);
+      }
 
-    if (
-      !parsedQuestions.success ||
-      !parsedQuestions.data.questions ||
-      parsedQuestions.data.questions.length < 1
-    ) {
-      console.error(parsedQuestions.error);
-      return res.status(500).json({
-        success: false,
-        message: 'The LLM returned an unexpected format',
+      if (
+        !parsedQuestions.success ||
+        !parsedQuestions.data.questions ||
+        parsedQuestions.data.questions.length < 1
+      ) {
+        console.error(parsedQuestions.error);
+        return res.status(500).json({
+          success: false,
+          message: 'The LLM returned an unexpected format',
+        });
+      }
+      const questionsArrayToInsert = parsedQuestions.data.questions.map((q) => {
+        return {
+          ...q,
+          question_type: questionType,
+          time_limit: timeLimit,
+          quiz_id: Number(quizId),
+        };
       });
-    }
-    const questionsArrayToInsert = parsedQuestions.data.questions.map((q) => {
-      return {
-        ...q,
-        question_type: questionType,
-        time_limit: timeLimit,
-        quiz_id: Number(quizId),
-      };
-    });
-    const insertedQuestions = await QuestionsRepository.insertQuestionsToDb(
-      questionsArrayToInsert,
-    );
-    if (!insertedQuestions || insertedQuestions.length < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to insert generated questions',
-      });
-    }
+      const insertedQuestions = await QuestionsRepository.insertQuestionsToDb(
+        questionsArrayToInsert,
+      );
+      if (!insertedQuestions || insertedQuestions.length < 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Failed to insert generated questions',
+        });
+      }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Questions Generated!',
-      questions: insertedQuestions,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+      return res.status(200).json({
+        success: true,
+        message: 'Questions Generated!',
+        questions: insertedQuestions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // ROUTER FOR GETTING QUESTIONS RELATED TO Quiz
-router.get('/', verifyToken, async (req, res, next) => {
-  const quizIdNum = Number(req.query.quizId);
-  if (Number.isNaN(quizIdNum)) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'documentId must be a number' });
-  }
-
-  try {
-    // ensure the document belongs to this user before returning questions
-    const quizInfo = await UserQuizzesRepository.getQuizById(quizIdNum);
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/',
+  verifyToken,
+  userBasedRateLimiter(10, 50),
+  async (req, res, next) => {
+    const quizIdNum = Number(req.query.quizId);
+    if (Number.isNaN(quizIdNum)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz does not exist' });
+        .status(400)
+        .json({ success: false, message: 'documentId must be a number' });
     }
 
-    //get all questions related to quizId
-    const questions =
-      await QuestionsRepository.getQuestionsRelatedToQuiz(quizIdNum);
-    if (!questions) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'No questions found' });
-    }
+    try {
+      // ensure the document belongs to this user before returning questions
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizIdNum);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz does not exist' });
+      }
 
-    return res.status(200).json(questions);
-  } catch (error) {
-    return next(error);
-  }
-});
+      //get all questions related to quizId
+      const questions =
+        await QuestionsRepository.getQuestionsRelatedToQuiz(quizIdNum);
+      if (!questions) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'No questions found' });
+      }
+
+      return res.status(200).json(questions);
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 // ROUTER FOR EDITING QUESTIONS
 router.patch(
   '/:id',
   verifyToken,
+  userBasedRateLimiter(5, 5),
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const id = Number(req.params.id);
@@ -376,44 +398,49 @@ router.patch(
   },
 );
 
-router.delete('/:id', verifyToken, async (req, res, next) => {
-  const questionIdNum = Number(req.params.id);
-  if (Number.isNaN(questionIdNum)) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'You must select a question' });
-  }
-  try {
-    // make sure the question belongs to this user by joining quiz ownership
-    const quizId =
-      await QuestionsRepository.checkWhichQuizOwnsQuestion(questionIdNum);
-    if (!quizId) {
+router.delete(
+  '/:id',
+  verifyToken,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const questionIdNum = Number(req.params.id);
+    if (Number.isNaN(questionIdNum)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Question not found' });
+        .status(400)
+        .json({ success: false, message: 'You must select a question' });
     }
-    //check if quiz is owned by user
-    const owner = await UserQuizzesRepository.getQuizById(quizId);
-    if (!owner || owner.user_id !== req.user.id) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Quiz does not exist' });
-    }
+    try {
+      // make sure the question belongs to this user by joining quiz ownership
+      const quizId =
+        await QuestionsRepository.checkWhichQuizOwnsQuestion(questionIdNum);
+      if (!quizId) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Question not found' });
+      }
+      //check if quiz is owned by user
+      const owner = await UserQuizzesRepository.getQuizById(quizId);
+      if (!owner || owner.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz does not exist' });
+      }
 
-    const deletedQuestion =
-      await QuestionsRepository.deleteQuestionById(questionIdNum);
-    if (!deletedQuestion) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Question not found' });
-    } else {
-      return res
-        .status(200)
-        .json({ success: true, message: 'Question Deleted!' });
+      const deletedQuestion =
+        await QuestionsRepository.deleteQuestionById(questionIdNum);
+      if (!deletedQuestion) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Question not found' });
+      } else {
+        return res
+          .status(200)
+          .json({ success: true, message: 'Question Deleted!' });
+      }
+    } catch (error) {
+      return next(error);
     }
-  } catch (error) {
-    return next(error);
-  }
-});
+  },
+);
 
 export default router;

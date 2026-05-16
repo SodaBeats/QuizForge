@@ -1,6 +1,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { quizInputValidator } from '../middlewares/quizInputValidator.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
@@ -15,6 +16,7 @@ const router = express.Router();
 router.post(
   '/',
   verifyToken,
+  userBasedRateLimiter(3, 3),
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { quizTitle } = req.body;
@@ -61,239 +63,288 @@ router.post(
 );
 
 // ROUTER FOR GETTING ALL QUIZ RELATED TO USER ----------------------------------------
-router.get('/', verifyToken, async (req, res, next) => {
-  const userId = req.user.id;
-  try {
-    //count all questions assigned to a quiz
-    const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(userId);
-    if (!userQuizzes || userQuizzes.length < 1) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'This user does not have quizzes.' });
-    }
+router.get(
+  '/',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const userId = req.user.id;
+    try {
+      //count all questions assigned to a quiz
+      const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(userId);
+      if (!userQuizzes || userQuizzes.length < 1) {
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: 'This user does not have quizzes.',
+          });
+      }
 
-    return res.status(200).json(userQuizzes);
-  } catch (error) {
-    next(error);
-  }
-});
+      return res.status(200).json(userQuizzes);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // ROUTER FOR GETTING ALL QUESTIONS RELATED TO QUIZ ------------------------------------
-router.get('/questions', verifyToken, async (req, res, next) => {
-  const { quizId } = req.query;
-  if (!quizId) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'You must select a quiz' });
-  }
-  if (req.user.role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/questions',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const { quizId } = req.query;
+    if (!quizId) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'You must select a quiz' });
+    }
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const questionList = await QuestionsRepository.getQuestionsRelatedToQuiz(
-      Number(quizId),
-    );
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
 
-    if (questionList.length < 1) {
-      return res.status(404).json({
-        success: false,
-        message: 'There are no questions in this quiz',
-      });
+      const questionList = await QuestionsRepository.getQuestionsRelatedToQuiz(
+        Number(quizId),
+      );
+
+      if (questionList.length < 1) {
+        return res.status(404).json({
+          success: false,
+          message: 'There are no questions in this quiz',
+        });
+      }
+
+      return res.status(200).json({ success: true, questionList });
+    } catch (error) {
+      return next(error);
     }
-
-    return res.status(200).json({ success: true, questionList });
-  } catch (error) {
-    return next(error);
-  }
-});
+  },
+);
 
 // ROUTER TO CHECK IF QUIZ HAS ATTEMPTS ----------------------------------------------
-router.get('/:quizId/attempts', verifyToken, async (req, res, next) => {
-  const quizId = Number(req.params.quizId);
-  if (Number.isNaN(quizId)) {
-    return res.status(400).json({ success: false, message: 'Invalid Quiz ID' });
-  }
-  if (req.user.role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/:quizId/attempts',
+  verifyToken,
+  userBasedRateLimiter(3, 3),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    if (Number.isNaN(quizId)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
     }
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
 
-    const attemptsExist =
-      await QuizAttemptsRepo.getFirstFinishedAttempt(quizId);
-    if (!attemptsExist) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'No attempts yet' });
+      const attemptsExist =
+        await QuizAttemptsRepo.getFirstFinishedAttempt(quizId);
+      if (!attemptsExist) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'No attempts yet' });
+      }
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      next(error);
     }
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 // ROUTER TO GET METRICS FOR DASHBOARD ----------------------------------------------
-router.get('/:quizId/metrics', verifyToken, async (req, res, next) => {
-  const quizId = Number(req.params.quizId);
-  const { role } = req.user;
-  if (Number.isNaN(quizId)) {
-    return res.status(400).json({ success: false, message: 'Invalid Quiz ID' });
-  }
-  if (role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/:quizId/metrics',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const { role } = req.user;
+    if (Number.isNaN(quizId)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const [totalTakersAndAverage, highestScoreAndUser, lowestScore] =
-      await Promise.all([
-        QuizAttemptsRepo.getTotalTakersAndAverage(quizId),
-        QuizAttemptsRepo.getHighestScoreAndName(quizId),
-        QuizAttemptsRepo.getLowestScore(quizId),
-      ]);
-    const lowestScoreValue = lowestScore ?? 0;
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
 
-    return res.status(200).json({
-      success: true,
-      totalTakers: totalTakersAndAverage?.totalTakers ?? 0,
-      quizAverage: totalTakersAndAverage?.average ?? 0,
-      highestScore: highestScoreAndUser?.highestScore ?? 0,
-      highestScorer: highestScoreAndUser
-        ? `${highestScoreAndUser.name} ${highestScoreAndUser.lastName}`
-        : null,
-      lowestScore: lowestScoreValue,
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+      const [totalTakersAndAverage, highestScoreAndUser, lowestScore] =
+        await Promise.all([
+          QuizAttemptsRepo.getTotalTakersAndAverage(quizId),
+          QuizAttemptsRepo.getHighestScoreAndName(quizId),
+          QuizAttemptsRepo.getLowestScore(quizId),
+        ]);
+      const lowestScoreValue = lowestScore ?? 0;
+
+      return res.status(200).json({
+        success: true,
+        totalTakers: totalTakersAndAverage?.totalTakers ?? 0,
+        quizAverage: totalTakersAndAverage?.average ?? 0,
+        highestScore: highestScoreAndUser?.highestScore ?? 0,
+        highestScorer: highestScoreAndUser
+          ? `${highestScoreAndUser.name} ${highestScoreAndUser.lastName}`
+          : null,
+        lowestScore: lowestScoreValue,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 // ROUTER TO GET STUDENT RANKING FOR DASHBOARD -----------------------------------------
-router.get('/:quizId/students', verifyToken, async (req, res, next) => {
-  const quizId = Number(req.params.quizId);
-  const { role } = req.user;
-  if (Number.isNaN(quizId)) {
-    return res.status(400).json({ success: false, message: 'Invalid Quiz ID' });
-  }
-  if (role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/:quizId/students',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const { role } = req.user;
+    if (Number.isNaN(quizId)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const studentRanking = await QuizAttemptsRepo.getStudentRanking(quizId);
-    const studentRankingWithCombinedName = studentRanking.map((s) => {
-      return {
-        id: s.studentId,
-        name: `${s.name} ${s.lastName}`,
-        score: s.score,
-      };
-    });
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
 
-    return res.status(200).json({
-      success: true,
-      data: studentRankingWithCombinedName,
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+      const studentRanking = await QuizAttemptsRepo.getStudentRanking(quizId);
+      const studentRankingWithCombinedName = studentRanking.map((s) => {
+        return {
+          id: s.studentId,
+          name: `${s.name} ${s.lastName}`,
+          score: s.score,
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: studentRankingWithCombinedName,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 // GET QUESTION CORRECTION RATE RANKING FOR DASHBOARD ----------------------------------
-router.get('/:quizId/questions', verifyToken, async (req, res, next) => {
-  const quizId = Number(req.params.quizId);
-  const { role } = req.user;
-  if (Number.isNaN(quizId)) {
-    return res.status(400).json({ success: false, message: 'Invalid Quiz ID' });
-  }
-  if (role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+router.get(
+  '/:quizId/questions',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const { role } = req.user;
+    if (Number.isNaN(quizId)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const questionsRanking =
-      await AttemptAnswersRepo.getQuestionCorrectionRate(quizId);
-    return res.status(200).json({ success: true, data: questionsRanking });
-  } catch (error) {
-    next(error);
-  }
-});
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const questionsRanking =
+        await AttemptAnswersRepo.getQuestionCorrectionRate(quizId);
+      return res.status(200).json({ success: true, data: questionsRanking });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // GET ALL QUIZ TAKER SCORE -------------------------------------------------------------
-router.get('/:quizId/score', verifyToken, async (req, res, next) => {
-  const quizId = Number(req.params.quizId);
-  const { role } = req.user;
+router.get(
+  '/:quizId/score',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const { role } = req.user;
 
-  if (Number.isNaN(quizId)) {
-    return res.status(400).json({ success: false, message: 'Invalid Quiz ID' });
-  }
-  if (role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ success: false, message: 'Unauthorized action' });
-  }
-
-  try {
-    const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
-    if (!quizInfo || quizInfo.user_id !== req.user.id) {
+    if (Number.isNaN(quizId)) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Quiz not found' });
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const userScores = await QuizAttemptsRepo.getBestAttemptsPerUser(quizId);
-    return res.status(200).json({ success: true, data: userScores });
-  } catch (error) {
-    next(error);
-  }
-});
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const userScores = await QuizAttemptsRepo.getBestAttemptsPerUser(quizId);
+      return res.status(200).json({ success: true, data: userScores });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // ROUTER FOR QUESTION UPDATES ------------------------------------------------------
 router.patch(
   '/:quizId/question/:questionId',
   verifyToken,
+  userBasedRateLimiter(5, 5),
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { questionId, quizId } = req.params;
@@ -342,6 +393,7 @@ router.patch(
 router.patch(
   '/:id',
   verifyToken,
+  userBasedRateLimiter(5, 5),
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { role } = req.user;

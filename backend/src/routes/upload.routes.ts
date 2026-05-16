@@ -1,24 +1,26 @@
 import express from 'express';
 import type { Request, Response } from 'express';
+import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { upload } from '../middlewares/upload.middleware.js';
 import { fileHashMiddleware } from '../middlewares/fileHash.middleware.js';
 import { extractText } from '../services/fileExtract.service.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
-
 
 //establish router
 const router = express.Router();
 
 //Express.Multer.File is a TYPE, like a drawing that specifies what a file must have
 //This line of code extends that drawing to include fileHash
-interface FileWithHash extends Express.Multer.File{
+interface FileWithHash extends Express.Multer.File {
   fileHash: string;
 }
 
-router.post('/',
+router.post(
+  '/',
   verifyToken,
-  upload.single('file'),         // multer middleware to process file
-  fileHashMiddleware,           // middleware to generate file hash
+  userBasedRateLimiter(3, 1),
+  upload.single('file'), // multer middleware to process file
+  fileHashMiddleware, // middleware to generate file hash
   async (req, res: Response, next) => {
     // we'll narrow the type once inside
     const file = req.file as FileWithHash;
@@ -46,12 +48,12 @@ router.post('/',
 
       //extract text from file and insert into db
       const extractedText = await extractText(fileObj, req.user.id);
-      
+
       return res.status(200).json(extractedText);
     } catch (err) {
       return next(err);
     }
-  }
+  },
 );
 
 export default router;
