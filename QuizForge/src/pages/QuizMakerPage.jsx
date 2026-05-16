@@ -1,11 +1,14 @@
 import React, { useContext } from "react";
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
 import SideBar from "../components/SideBar";
 import FileViewer from "../components/FileViewer";
 import QuestionEditor from "../components/QuestionEditor";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -26,6 +29,7 @@ export default function QuizMakerSkeleton() {
   const STATE_KEY = "quizForgeState";
   const TTL = 1000 * 60; //1minute
   useEffect(() => {
+    if (!backendHost) return;
     try {
       const savedState = localStorage.getItem(STATE_KEY);
       if (!savedState) return;
@@ -38,7 +42,7 @@ export default function QuizMakerSkeleton() {
       }
     } catch {
       localStorage.removeItem(STATE_KEY);
-    }
+    } // eslint-disable-next-line
   }, []);
 
   //handle uploaded file
@@ -49,7 +53,7 @@ export default function QuizMakerSkeleton() {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/pdf", // .docx
     ];
-    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please upload a DOCX or PDF file");
@@ -58,7 +62,7 @@ export default function QuizMakerSkeleton() {
 
     // 2. Check File Size
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File is too large. Maximum size is 5MB.`);
+      toast.error(`File is too large. Maximum size is 2MB.`);
       return;
     }
 
@@ -66,7 +70,7 @@ export default function QuizMakerSkeleton() {
     data.append("file", file);
 
     try {
-      const response = await authFetch("http://localhost:3000/api/upload", {
+      const response = await authFetch(`${backendHost}/api/upload`, {
         method: "POST",
         body: data,
         credentials: "include",
@@ -101,6 +105,7 @@ export default function QuizMakerSkeleton() {
 
   //save uploaded file into local storage
   useEffect(() => {
+    if (!backendHost) return;
     if (uploadedFiles.length > 0) {
       localStorage.setItem(
         STATE_KEY,
@@ -111,6 +116,10 @@ export default function QuizMakerSkeleton() {
       );
     }
   }, [uploadedFiles]);
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">

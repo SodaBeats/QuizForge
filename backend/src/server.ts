@@ -1,10 +1,11 @@
-import express from "express";
-import type { Request, Response, NextFunction} from 'express';
-import cors from "cors";
-import multer from "multer";
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { ipRateLimiter } from './middlewares/appRateLimiter.middleware.js';
+import cors from 'cors';
+import multer from 'multer';
 import cookieParser from 'cookie-parser';
-import healthRoutes from "./routes/health.js";
-import uploadRoutes from "./routes/upload.routes.js";
+import healthRoutes from './routes/health.js';
+import uploadRoutes from './routes/upload.routes.js';
 import questionRoute from './routes/question.route.js';
 import loginRoute from './routes/login.route.js';
 import signupRoute from './routes/signup.route.js';
@@ -17,31 +18,36 @@ import quizSubmitRoute from './routes/quizSubmit.route.js';
 
 const app = express();
 
-interface AppError extends Error{
+interface AppError extends Error {
   status?: number;
   code?: string;
 }
 
 //allowing react and express to communicate
-app.use(cors({
-  origin: "http://localhost:5173", // React dev server
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // React dev server
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
+
+// Ip-based Rate Limiter
+app.use(ipRateLimiter(60000, 1000));
 
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
 
-app.use("/api",healthRoutes);
+app.use('/api', healthRoutes);
 
 //API
 app.use('/api/upload', uploadRoutes); // teacher route: file uploads
-app.use('/api/questions', questionRoute);// teacer route: manually made questions
-app.use('/api/documents', documentRoute);// teacher route: getting/deleting documents
+app.use('/api/questions', questionRoute); // teacher route: manually made questions
+app.use('/api/documents', documentRoute); // teacher route: getting/deleting documents
 app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
-app.use('/api/student/quiz-submit', quizSubmitRoute);//student route: fetch quiz data and submitting quiz attempt
+app.use('/api/student/quiz-submit', quizSubmitRoute); //student route: fetch quiz data and submitting quiz attempt
 
 //Auth
 app.use('/auth/login', loginRoute);
@@ -50,7 +56,7 @@ app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
 //Central Error Handler
-app.use((err: AppError,req: Request,res: Response,next: NextFunction)=>{
+app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({ error: 'File too large (max 5MB)' });
@@ -63,11 +69,12 @@ app.use((err: AppError,req: Request,res: Response,next: NextFunction)=>{
   if (err.code === 'INVALID_FILE_TYPE') {
     return res.status(400).json({ error: err.message });
   }
+
   console.error(err);
   const status = err.status || 500;
   res.status(status).json({
     message: err.message || 'Internal Server Error',
-    error: err.message
+    error: err.message,
   });
 });
 

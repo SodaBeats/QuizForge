@@ -1,14 +1,14 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, and } from 'drizzle-orm';
-import { db } from '../db/db.js';
+import { eq, and, asc, desc, countDistinct } from 'drizzle-orm';
+import { db, type QueryClient } from '../db/db.js';
 import { uploaded_files } from '../db/schema.js';
 
 type UploadData = InferInsertModel<typeof uploaded_files>;
 
 export const UploadedFilesRepository = {
   //insert uploaded file to uploaded_files table
-  async insertFileToDb(uploadData: UploadData) {
-    const [result] = await db
+  async insertFileToDb(uploadData: UploadData, tx: QueryClient = db) {
+    const [result] = await tx
       .insert(uploaded_files)
       .values(uploadData)
       .returning();
@@ -16,7 +16,11 @@ export const UploadedFilesRepository = {
   },
 
   //get document info (id, userId, title, filePath, fileHash, createdAt) by owner id
-  async getDocInfoByOwner(userId: number) {
+  async getDocInfoByOwner(
+    userId: number,
+    limit: number = 0,
+    offset: number = 0,
+  ) {
     return await db
       .select({
         id: uploaded_files.id,
@@ -27,7 +31,18 @@ export const UploadedFilesRepository = {
         createdAt: uploaded_files.created_at,
       })
       .from(uploaded_files)
+      .where(eq(uploaded_files.user_id, userId))
+      .orderBy(desc(uploaded_files.created_at))
+      .limit(limit)
+      .offset(offset);
+  },
+
+  async countDocumentsOwned(userId: number) {
+    const [result] = await db
+      .select({ totalDocuments: countDistinct(uploaded_files.id) ?? 0 })
+      .from(uploaded_files)
       .where(eq(uploaded_files.user_id, userId));
+    return result ? result.totalDocuments : 0;
   },
 
   //get documents id and extracted text by owner id

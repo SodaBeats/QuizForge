@@ -8,11 +8,13 @@ export default function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const { authFetch } = useContext(AuthContext);
   const navigate = useNavigate();
+  const backendHost = import.meta.env.VITE_BACKEND_HOST;
+  if (!backendHost) throw new Error("Missing backend host");
 
   const handleSubmitToken = async (token) => {
     try {
       const quizAndQuestionsRes = await authFetch(
-        `http://localhost:3000/api/student/quiz-access`,
+        `${backendHost}/api/student/quiz-access`,
         {
           method: "POST",
           body: JSON.stringify({ token: token }),

@@ -30,3 +30,4 @@ dist-ssr
 /backend/src/db/migration/
 /backend/uploads
 /backend/.env.test
+/QuizForge/.env

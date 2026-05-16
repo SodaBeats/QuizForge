@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function QuestionEditor({
   setQuestions,
@@ -68,7 +71,7 @@ export default function QuestionEditor({
   // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
   const fetchDocuments = async () => {
     try {
-      const response = await authFetch("http://localhost:3000/api/documents");
+      const response = await authFetch(`${backendHost}/api/documents`);
       const data = await response.json();
       setDocuments(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -107,8 +110,8 @@ export default function QuestionEditor({
     try {
       const endpoint =
         addMode === "edit"
-          ? `http://localhost:3000/api/questions/${manualQuestion.id}`
-          : "http://localhost:3000/api/questions";
+          ? `${backendHost}/api/questions/${manualQuestion.id}`
+          : `${backendHost}/api/questions`;
 
       const method = addMode === "edit" ? "PATCH" : "POST";
 
@@ -129,7 +132,7 @@ export default function QuestionEditor({
       if (result.success) {
         // Refetch questions from the server
         const questionsResponse = await authFetch(
-          `http://localhost:3000/api/questions?quizId=${quizMetadata?.id}`,
+          `${backendHost}/api/questions?quizId=${quizMetadata?.id}`,
         );
         const updatedQuestions = await questionsResponse.json();
         setQuestions(updatedQuestions);
@@ -172,7 +175,7 @@ export default function QuestionEditor({
     setLoading(true);
     try {
       const response = await authFetch(
-        "http://localhost:3000/api/questions/generate",
+        `${backendHost}/api/questions/generate`,
         {
           method: "POST",
           headers: {
@@ -206,6 +209,10 @@ export default function QuestionEditor({
       setLoading(false);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="flex-1 flex flex-col">

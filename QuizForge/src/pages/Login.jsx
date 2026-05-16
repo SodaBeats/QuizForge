@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -48,7 +50,7 @@ export default function LogInComponent() {
             role: role,
           }; // ← Include role
 
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
+      const response = await fetch(`${backendHost}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -85,6 +87,10 @@ export default function LogInComponent() {
       setLoading(false);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">

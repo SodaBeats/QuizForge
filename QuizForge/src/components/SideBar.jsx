@@ -1,6 +1,9 @@
 import { useContext, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 function SideBar({
   uploadedFiles,
@@ -38,7 +41,7 @@ function SideBar({
     }
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/questions/${questionId}`,
+        `${backendHost}/api/questions/${questionId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -71,9 +74,14 @@ function SideBar({
   const openSelectQuizModal = async () => {
     setIsLoadingQuizzes(true);
     try {
-      const response = await authFetch("http://localhost:3000/api/quizzes", {
+      const response = await authFetch(`${backendHost}/api/quizzes`, {
         credentials: "include",
       });
+      if (!response.ok) {
+        throw new Error(
+          `Quiz Selection Error ${response.status}: ${response.statusText}`,
+        );
+      }
       const data = await response.json();
       if (Array.isArray(data)) {
         setAvailableQuizzes(data);
@@ -100,7 +108,7 @@ function SideBar({
     closeSelectQuizModal();
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/questions?quizId=${quiz.id}`,
+        `${backendHost}/api/quizzes/questions?quizId=${quiz.id}`,
         {
           credentials: "include",
         },
@@ -117,6 +125,10 @@ function SideBar({
       toast.error(`something went wrong while fetching questions`);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <>

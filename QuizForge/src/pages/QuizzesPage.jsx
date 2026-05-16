@@ -1,10 +1,13 @@
 import { useContext, useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import QuizzesSidebar from "../components/QuizzesSideBar";
 import TopBar from "../components/TopBar";
 import QuizzesMetaData from "../components/QuizzesMetadata";
 import QuizzesQuestionList from "../components/QuizzesQuestionList";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
@@ -17,7 +20,8 @@ export default function QuizzesPage() {
 
   //get quizzes related to user
   useEffect(() => {
-    authFetch(`http://localhost:3000/api/quizzes`)
+    if (!backendHost) return;
+    authFetch(`${backendHost}/api/quizzes`)
       .then((res) => res.json())
       .then((data) => setQuizzes(Array.isArray(data) ? data : []))
       .catch((error) => {
@@ -37,7 +41,7 @@ export default function QuizzesPage() {
   const handleSelectedQuiz = async (chosenQuizId) => {
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/questions?quizId=${chosenQuizId}`,
+        `${backendHost}/api/quizzes/questions?quizId=${chosenQuizId}`,
       );
       const result = await response.json();
 
@@ -61,7 +65,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/${quizId}/question/${editingQuestion.id}`,
+        `${backendHost}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -122,7 +126,7 @@ export default function QuizzesPage() {
 
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/quizzes/${quizToChange.id}`,
+        `${backendHost}/api/quizzes/${quizToChange.id}`,
         {
           method: "PATCH",
           headers: { "Content-type": "application/json" },
@@ -150,6 +154,10 @@ export default function QuizzesPage() {
       setQuizzes(originalQuizzes);
     }
   };
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-white">

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import StudentTopbar from "../components/StudentTopbar";
@@ -7,6 +7,8 @@ import StudentSidebar from "../components/StudentSidebar";
 import StudentQuizWindow from "../components/StudentQuizWindow";
 import StudentTimeLimit from "../components/StudentTimeLimit";
 import LoadingScreen from "../components/LoadingScreen";
+
+const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function StudentQuizPage() {
   const { quizToken } = useParams();
@@ -30,9 +32,10 @@ export default function StudentQuizPage() {
 
   //fetch from backend in case quiz data is lost from state
   useEffect(() => {
+    if (!backendHost) return;
     if (!quizToken || !authFetch) return;
 
-    authFetch(`http://localhost:3000/api/student/quiz-access/${quizToken}`)
+    authFetch(`${backendHost}/api/student/quiz-access/${quizToken}`)
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) {
@@ -91,7 +94,7 @@ export default function StudentQuizPage() {
       //console.log("quiz: ", quiz);
       //console.log("attemptId: ", attemptId);
       const response = await authFetch(
-        "http://localhost:3000/api/student/quiz-submit",
+        `${backendHost}/api/student/quiz-submit`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -126,7 +129,7 @@ export default function StudentQuizPage() {
   const deleteAttempt = async () => {
     try {
       const response = await authFetch(
-        `http://localhost:3000/api/student/quiz-access/${quizToken}`,
+        `${backendHost}/api/student/quiz-access/${quizToken}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -165,6 +168,10 @@ export default function StudentQuizPage() {
         </div>
       </div>
     );
+  }
+
+  if (!backendHost) {
+    return <Navigate to="/error" replace />;
   }
 
   return (
