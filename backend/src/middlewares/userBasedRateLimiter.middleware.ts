@@ -19,8 +19,6 @@ export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
         windowSizeSec,
       )) as number;
 
-      console.log(`userBasedRateLimiter Count: ${counter}`);
-
       if (counter > limit) {
         return res.status(429).json({
           success: false,
@@ -31,7 +29,7 @@ export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
       next();
     } catch (err) {
       console.error('Inner redis error: ', err);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Something went wrong with the user-based limiter',
       });

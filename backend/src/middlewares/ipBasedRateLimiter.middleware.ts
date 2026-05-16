@@ -13,7 +13,14 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
 
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const clientIp = (req.ip ?? 'unknown').replace(/^::ffff:/, '');
+      const clientIp = req.ip?.replace(/^::ffff:/, '');
+      if (!clientIp) {
+        console.error('IP address unavailable, blocking request');
+        return res
+          .status(400)
+          .json({ success: false, message: 'Unable to identify client IP' });
+      }
+
       const clientKey = `ratelimit:${clientIp}`;
 
       const counter = (await redis.eval(
