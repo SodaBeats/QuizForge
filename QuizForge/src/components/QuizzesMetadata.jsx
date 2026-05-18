@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { toDatetimeLocal } from "../util/toDateTimeLocal";
 
-//eslint-disable-next-line
-export default function QuizzesMetadata({ quiz, key, onUpdateQuizMeta }) {
+export default function QuizzesMetadata({ quiz, onUpdateQuizMeta }) {
   const [editingQuiz, setEditingQuiz] = useState({ ...quiz });
   const navigate = useNavigate();
 

@@ -101,7 +101,6 @@ function QuizForgeModal({
   closeForgeQuizModal,
   setForgeQuizData,
 }) {
-  console.log("remounted Quizforge modal");
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-6 w-[500px] max-w-full mx-4">
