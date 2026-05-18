@@ -73,12 +73,10 @@ router.get(
       //count all questions assigned to a quiz
       const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(userId);
       if (!userQuizzes || userQuizzes.length < 1) {
-        return res
-          .status(404)
-          .json({
-            success: false,
-            message: 'This user does not have quizzes.',
-          });
+        return res.status(404).json({
+          success: false,
+          message: 'This user does not have quizzes.',
+        });
       }
 
       return res.status(200).json(userQuizzes);
@@ -92,7 +90,7 @@ router.get(
 router.get(
   '/questions',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const { quizId } = req.query;
     if (!quizId) {

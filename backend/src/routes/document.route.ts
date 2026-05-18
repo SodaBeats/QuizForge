@@ -47,7 +47,7 @@ router.get(
 router.get(
   '/:id',
   verifyToken,
-  userBasedRateLimiter(60, 100),
+  userBasedRateLimiter(60, 60),
   async (req, res, next) => {
     // express puts params under the name in the route; here it's "id" not "docId"
     const docIdNum = Number(req.params.id);
