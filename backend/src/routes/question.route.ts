@@ -401,7 +401,7 @@ router.patch(
 router.delete(
   '/:id',
   verifyToken,
-  userBasedRateLimiter(5, 10),
+  userBasedRateLimiter(5, 5),
   async (req, res, next) => {
     const questionIdNum = Number(req.params.id);
     if (Number.isNaN(questionIdNum)) {

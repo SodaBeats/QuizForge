@@ -49,7 +49,7 @@ export const textUtilities = {
     return chunkArray;
   },
 
-  seniorChunker(text: string, minWords = 200, maxWords = 500) {
+  seniorChunker(text: string, minWords = 150, maxWords = 450) {
     // 1. Clean and split into base units (paragraphs)
     const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim() !== '');
     const chunks: string[] = [];
