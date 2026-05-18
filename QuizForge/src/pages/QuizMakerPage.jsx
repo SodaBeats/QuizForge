@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
@@ -24,26 +24,6 @@ export default function QuizMakerSkeleton() {
     uploadedFiles?.find((f) => f.id === selectedFileId) || null;
   const selectedQuestion =
     questions?.find((q) => q.id === selectedQuestionId) ?? null;
-
-  //load file from local storage and remove after 1 minute
-  const STATE_KEY = "quizForgeState";
-  const TTL = 1000 * 60; //1minute
-  useEffect(() => {
-    if (!backendHost) return;
-    try {
-      const savedState = localStorage.getItem(STATE_KEY);
-      if (!savedState) return;
-
-      const { data, savedAt } = JSON.parse(savedState);
-      if (Date.now() - savedAt < TTL) {
-        setUploadedFiles([...data]);
-      } else {
-        localStorage.removeItem(STATE_KEY);
-      }
-    } catch {
-      localStorage.removeItem(STATE_KEY);
-    } // eslint-disable-next-line
-  }, []);
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
@@ -102,20 +82,6 @@ export default function QuizMakerSkeleton() {
       setIsUploading(false);
     }
   };
-
-  //save uploaded file into local storage
-  useEffect(() => {
-    if (!backendHost) return;
-    if (uploadedFiles.length > 0) {
-      localStorage.setItem(
-        STATE_KEY,
-        JSON.stringify({
-          data: uploadedFiles,
-          savedAt: Date.now(),
-        }),
-      );
-    }
-  }, [uploadedFiles]);
 
   if (!backendHost) {
     return <Navigate to="/error" replace />;
