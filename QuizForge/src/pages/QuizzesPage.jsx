@@ -18,7 +18,7 @@ export default function QuizzesPage() {
 
   const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
 
-  //get quizzes related to user
+  //get quizzes related to user on page load
   useEffect(() => {
     if (!backendHost) return;
     authFetch(`${backendHost}/api/quizzes`)
@@ -177,7 +177,7 @@ export default function QuizzesPage() {
         {selectedQuizId ? (
           <>
             <QuizzesMetaData
-              quizKey={selectedQuiz.id}
+              key={selectedQuiz.id}
               quiz={selectedQuiz}
               onUpdateQuizMeta={handleQuizMetaUpdate}
             />

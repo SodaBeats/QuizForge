@@ -73,7 +73,7 @@ export default function QuestionEditor({
     try {
       const response = await authFetch(`${backendHost}/api/documents`);
       const data = await response.json();
-      setDocuments(Array.isArray(data) ? data : []);
+      setDocuments(Array.isArray(data.documents) ? data.documents : []);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
       setDocuments([]);
@@ -192,7 +192,9 @@ export default function QuestionEditor({
       const result = await response.json();
 
       if (!result.success) {
-        toast.error("Something went wrong while generating questions");
+        toast.error(
+          result.message || "Something went wrong while generating questions",
+        );
         console.error(result.error || result.message || "IDK fam");
         return;
       }

@@ -1,13 +1,11 @@
 // QuizMetadata.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { toDatetimeLocal } from '../util/toDateTimeLocal';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { toDatetimeLocal } from "../util/toDateTimeLocal";
 
-//eslint-disable-next-line
-export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
-
-  const [editingQuiz, setEditingQuiz] = useState({...quiz});
+export default function QuizzesMetadata({ quiz, onUpdateQuizMeta }) {
+  const [editingQuiz, setEditingQuiz] = useState({ ...quiz });
   const navigate = useNavigate();
 
   if (!quiz) {
@@ -25,19 +23,21 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
         <input
           type="text"
           name="quizTitle"
-          value={editingQuiz.quizTitle || ''}
-          onChange={(e) => setEditingQuiz({ 
-            ...editingQuiz, 
-            quizTitle: e.target.value 
-          })}
+          value={editingQuiz.quizTitle || ""}
+          onChange={(e) =>
+            setEditingQuiz((prev) => ({
+              ...prev,
+              quizTitle: e.target.value,
+            }))
+          }
           placeholder="Enter Quiz Title..."
           className="w-full bg-transparent text-xl font-semibold text-white mb-2 border-b border-transparent focus:border-blue-500 focus:outline-none transition-all hover:bg-gray-800/50 rounded px-1 -ml-1"
         />
-        
+
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{quiz.questionCount} questions</span>
           <span>•</span>
-          <span>Created {quiz.createdAt || 'Recently'}</span>
+          <span>Created {quiz.createdAt || "Recently"}</span>
         </div>
       </div>
 
@@ -50,7 +50,12 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
           </label>
           <textarea
             value={editingQuiz.description}
-            onChange={(e)=>{setEditingQuiz({...editingQuiz, description: e.target.value})}}
+            onChange={(e) => {
+              setEditingQuiz((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }));
+            }}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
             rows="3"
             placeholder="Enter quiz description"
@@ -65,20 +70,20 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
           <div className="flex gap-2">
             <input
               type="text"
-              value={quiz.shareToken?.toUpperCase() || 'N/A'}
+              value={quiz.shareToken?.toUpperCase() || "N/A"}
               readOnly
               className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-gray-400 text-sm"
             />
             {quiz.shareToken && (
-              <button 
+              <button
                 className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
                 onClick={() => {
                   navigator.clipboard.writeText(quiz.shareToken);
-                  toast.success('Token copied to clipboard!', {
+                  toast.success("Token copied to clipboard!", {
                     duration: 2000,
                     style: {
-                      background: '#10B981',
-                      color: '#fff',
+                      background: "#10B981",
+                      color: "#fff",
                     },
                   });
                 }}
@@ -98,12 +103,12 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
             <input
               type="datetime-local"
               name="dueDate"
-              value={toDatetimeLocal(editingQuiz.dueDate).slice(0,16)}
+              value={toDatetimeLocal(editingQuiz.dueDate).slice(0, 16)}
               onChange={(e) =>
-                setEditingQuiz({
-                  ...editingQuiz,
+                setEditingQuiz((prev) => ({
+                  ...prev,
                   dueDate: e.target.value || null,
-                })
+                }))
               }
               className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
@@ -123,12 +128,13 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
               name="maxAttempts"
               min="1"
               placeholder="e.g. 3"
-              value={editingQuiz.maxAttempts || ''}
+              value={editingQuiz.maxAttempts || ""}
               onChange={(e) =>
-                setEditingQuiz({
-                  ...editingQuiz,
-                  maxAttempts: e.target.value === '' ? null : Number(e.target.value),
-                })
+                setEditingQuiz((prev) => ({
+                  ...prev,
+                  maxAttempts:
+                    e.target.value === "" ? null : Number(e.target.value),
+                }))
               }
               className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
@@ -141,11 +147,13 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
               Status
             </label>
             <select
-              value={editingQuiz.status || 'draft'}
-              onChange={(e) => setEditingQuiz({
-                ...editingQuiz,
-                status: e.target.value
-              })}
+              value={editingQuiz.status || "draft"}
+              onChange={(e) =>
+                setEditingQuiz((prev) => ({
+                  ...prev,
+                  status: e.target.value,
+                }))
+              }
               className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
             >
@@ -158,15 +166,15 @@ export default function QuizzesMetadata({ quiz, quizKey, onUpdateQuizMeta }) {
 
       {/* Actions */}
       <div className="border-t border-gray-700 p-4 space-y-2">
-        <button 
+        <button
           className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors font-medium"
-          onClick={()=>onUpdateQuizMeta(editingQuiz)}
+          onClick={() => onUpdateQuizMeta(editingQuiz)}
         >
           Save Changes
         </button>
-        <button 
+        <button
           className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium"
-          onClick={()=> navigate(`/teacher/quizzes/${quiz.id}`)}
+          onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)}
         >
           View Results
         </button>

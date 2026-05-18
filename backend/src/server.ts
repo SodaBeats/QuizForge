@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import { ipRateLimiter } from './middlewares/appRateLimiter.middleware.js';
+import { ipRateLimiter } from './middlewares/ipBasedRateLimiter.middleware.js';
 import cors from 'cors';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
@@ -34,7 +34,7 @@ app.use(
 );
 
 // Ip-based Rate Limiter
-app.use(ipRateLimiter(60000, 1000));
+app.use(ipRateLimiter(60, 1000));
 
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
@@ -45,7 +45,7 @@ app.use('/api', healthRoutes);
 app.use('/api/upload', uploadRoutes); // teacher route: file uploads
 app.use('/api/questions', questionRoute); // teacher route: manually made questions
 app.use('/api/documents', documentRoute); // teacher route: getting/deleting documents
-app.use('/api/quizzes/', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
+app.use('/api/quizzes', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
 app.use('/api/student/quiz-submit', quizSubmitRoute); //student route: fetch quiz data and submitting quiz attempt
 
