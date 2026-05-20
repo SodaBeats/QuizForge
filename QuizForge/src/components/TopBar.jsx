@@ -1,98 +1,10 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-// -------------------------------------------------------------------------------------
-//  SUB-COMPONENTS
-// -------------------------------------------------------------------------------------
-function FileModal({
-  closeFileModal,
-  handleSelectDocument,
-  fetchMoreDocuments,
-  fetchPreviousDocuments,
-  isUploading,
-  totalDocuments,
-  selectedFileId,
-  page,
-  documentsPerPage,
-  userDocuments,
-}) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">My Documents</h2>
-          <button
-            onClick={closeFileModal}
-            className="text-gray-400 hover:text-white text-2xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="space-y-2 mb-6">
-          {documentsPerPage[page] && documentsPerPage[page].length > 0 ? (
-            documentsPerPage[page].map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => handleSelectDocument(doc)}
-                className={`p-3 rounded cursor-pointer border transition-colors text-white truncate ${
-                  selectedFileId === doc.id
-                    ? "bg-blue-600 border-blue-500"
-                    : "bg-gray-700 hover:bg-gray-600 border-gray-600"
-                }`}
-              >
-                <span className="truncate">
-                  {doc.title || `Document ${doc.id}` || "Untitled"}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 text-center py-4">
-              {documentsPerPage[page] ? "No documents found" : "Loading..."}
-            </p>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalDocuments > 5 && (
-          <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
-            <button
-              onClick={fetchPreviousDocuments}
-              disabled={page === 0}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-              title="Previous page"
-            >
-              ← Prev
-            </button>
-            <span className="text-gray-400 text-sm">Page {page + 1}</span>
-            <button
-              onClick={fetchMoreDocuments}
-              disabled={page * 5 + userDocuments.length >= totalDocuments}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-              title="Next page"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
-        <div className="border-t border-gray-700 pt-4">
-          <button
-            onClick={() => document.getElementById("file-upload").click()}
-            disabled={isUploading}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? "Uploading..." : "Upload New Document"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function QuizForgeModal({
   forgeQuizData,
@@ -278,13 +190,10 @@ export default function TopBar({
   //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
-  const [userDocuments, setUserDocuments] = useState([]);
-  const [documentsPerPage, setDocumentsPerPage] = useState({});
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
   const [page, setPage] = useState(0);
-  const [totalDocuments, setTotalDocuments] = useState(0);
   const [forgeQuizData, setForgeQuizData] = useState({
     quizTitle: "",
     description: "",
@@ -322,8 +231,6 @@ export default function TopBar({
     if (file) {
       handleFileUpload(file);
       setShowFileModal(false);
-      setDocumentsPerPage({});
-      setUserDocuments([]);
     }
   };
 
@@ -341,95 +248,32 @@ export default function TopBar({
   // open file modal and fetch documents list
   const openFileModal = async () => {
     setShowFileModal(true);
-    if (documentsPerPage[0]) {
-      return;
+  };
+
+  const fetchDocs = async (page = 0) => {
+    const offset = page * 5;
+    const response = await authFetch(
+      `${backendHost}/api/documents?limit=5&offset=${offset}`,
+      { credentials: "include" },
+    );
+    if (!response) {
+      throw new Error("Failed to fetch documents");
     }
-    try {
-      setPage(0);
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=0`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setTotalDocuments(result.totalDocuments);
-      setUserDocuments(result.documents);
-      setDocumentsPerPage((prev) => ({ ...prev, [0]: result.documents }));
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
-    }
+    return await response.json();
   };
 
   const closeFileModal = () => {
     setShowFileModal(false);
     setPage(0);
-    setUserDocuments([]);
-    //setTotalDocuments(0);
   };
 
-  const fetchMoreDocuments = async () => {
-    const newPage = page + 1;
-
-    if (documentsPerPage[newPage]) {
-      setPage(newPage);
-      return;
-    }
-
-    try {
-      const offset = newPage * 5;
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=${offset}`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setPage(newPage);
-      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
-      setUserDocuments(result.documents);
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
-    }
+  const fetchMoreDocuments = () => {
+    setPage(page + 1);
   };
 
-  const fetchPreviousDocuments = async () => {
-    if (page <= 0) return;
-    const newPage = page - 1;
-
-    if (documentsPerPage[newPage]) {
-      setPage(newPage);
-      return;
-    }
-
-    try {
-      const offset = newPage * 5;
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=${offset}`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setPage(newPage);
-      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
+  const fetchPreviousDocuments = () => {
+    if (page > 0) {
+      setPage(page - 1);
     }
   };
 
@@ -571,6 +415,147 @@ export default function TopBar({
     }
   };
 
+  // -------------------------------------------------------------------------------------
+  //  SUB-COMPONENTS
+  // -------------------------------------------------------------------------------------
+  function FileModal({
+    closeFileModal,
+    handleSelectDocument,
+    fetchMoreDocuments,
+    fetchPreviousDocuments,
+    isUploading,
+    selectedFileId,
+    page,
+  }) {
+    const { data, isFetching, error } = useQuery({
+      queryKey: ["docFetch", page],
+      queryFn: () => fetchDocs(page),
+      staleTime: 1000 * 60 * 5,
+      refetchOnMount: false,
+    });
+
+    // Get totalDocuments from backend response or compute based on data
+    const totalDocuments = data?.totalDocuments || data?.total || 0;
+
+    if (isFetching) {
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">My Documents</h2>
+              <button
+                onClick={closeFileModal}
+                className="text-gray-400 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-2 mb-6">
+              <p className="text-gray-400 text-center py-4">Fetching...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">My Documents</h2>
+              <button
+                onClick={closeFileModal}
+                className="text-gray-400 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-2 mb-6">
+              <p className="text-gray-400 text-center py-4">
+                Something went wrong while fetching documents
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">My Documents</h2>
+            <button
+              onClick={closeFileModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="space-y-2 mb-6">
+            {data.documents.length > 0 ? (
+              data.documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => handleSelectDocument(doc)}
+                  className={`p-3 rounded cursor-pointer border transition-colors text-white truncate ${
+                    selectedFileId === doc.id
+                      ? "bg-blue-600 border-blue-500"
+                      : "bg-gray-700 hover:bg-gray-600 border-gray-600"
+                  }`}
+                >
+                  <span className="truncate">
+                    {doc.title || `Document ${doc.id}` || "Untitled"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-center py-4">
+                No documents found
+              </p>
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalDocuments > 5 && (
+            <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
+              <button
+                onClick={fetchPreviousDocuments}
+                disabled={page === 0}
+                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+                title="Previous page"
+              >
+                ← Prev
+              </button>
+              <span className="text-gray-400 text-sm">Page {page + 1}</span>
+              <button
+                onClick={fetchMoreDocuments}
+                disabled={
+                  page * 5 + (data?.documents?.length || 0) >= totalDocuments
+                }
+                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+                title="Next page"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
+          <div className="border-t border-gray-700 pt-4">
+            <button
+              onClick={() => document.getElementById("file-upload").click()}
+              disabled={isUploading}
+              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploading ? "Uploading..." : "Upload New Document"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
@@ -627,11 +612,8 @@ export default function TopBar({
                   fetchMoreDocuments={fetchMoreDocuments}
                   fetchPreviousDocuments={fetchPreviousDocuments}
                   isUploading={isUploading}
-                  totalDocuments={totalDocuments}
                   selectedFileId={selectedFileId}
                   page={page}
-                  documentsPerPage={documentsPerPage}
-                  userDocuments={userDocuments}
                 />
               )}
             </div>
