@@ -49,6 +49,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(60, 60),
   async (req, res, next) => {
+    console.log('[DOCUMENT ROUTE.GET/:ID]: RAN');
     // express puts params under the name in the route; here it's "id" not "docId"
     const docIdNum = Number(req.params.id);
     if (!docIdNum) {

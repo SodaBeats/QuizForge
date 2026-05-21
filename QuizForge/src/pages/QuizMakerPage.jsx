@@ -121,10 +121,7 @@ export default function QuizMakerSkeleton() {
         />
 
         {/* Middle: Source File Viewer */}
-        <FileViewer
-          fileContent={selectedFile?.content}
-          selectedFile={selectedFile}
-        />
+        <FileViewer selectedFile={selectedFile} />
 
         {/* Right: Question Editor */}
         <QuestionEditor

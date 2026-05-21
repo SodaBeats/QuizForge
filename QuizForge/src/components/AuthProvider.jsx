@@ -130,7 +130,7 @@ export function AuthProvider({ children }) {
 
   // Don't render children until auth check is complete
   if (loading) {
-    return <LoadingScreen />; // Or your loading component
+    return <LoadingScreen fullScreen />;
   }
 
   return (

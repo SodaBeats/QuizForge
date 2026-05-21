@@ -388,31 +388,6 @@ export default function TopBar({
             },
           ],
     );
-
-    // fetch full content on demand and merge into parent state
-    try {
-      const resp = await authFetch(`${backendHost}/api/documents/${doc.id}`, {
-        credentials: "include",
-      });
-      if (!resp.ok) {
-        throw new Error(`HTTP error! status: ${resp.status}`);
-      }
-      const full = await resp.json();
-
-      if (!full.success) {
-        alert("Error: " + full.error);
-        return;
-      }
-
-      setUploadedFiles((prev) =>
-        prev.map((f) =>
-          f.id === doc.id ? { ...f, content: full.content ?? f.content } : f,
-        ),
-      );
-    } catch (err) {
-      console.error("Document selection error: ", err);
-      alert("Failed to select document. Please try again later");
-    }
   };
 
   // -------------------------------------------------------------------------------------
