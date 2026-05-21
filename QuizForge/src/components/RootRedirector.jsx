@@ -4,14 +4,14 @@ import { AuthContext } from "./AuthProvider";
 import LoadingScreen from "./LoadingScreen";
 
 export default function RootRedirector() {
-  const { isLoading, userInfo } = useContext(AuthContext);
+  const { loading, userInfo } = useContext(AuthContext);
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingScreen fullScreen />;
   }
 
   if (!userInfo) {
-    <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Send them where they belong based on their role

@@ -257,7 +257,10 @@ export default function TopBar({
       { credentials: "include" },
     );
     if (!response) {
-      throw new Error("Failed to fetch documents");
+      throw new Error("Authentication failed or no response received");
+    }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json();
   };

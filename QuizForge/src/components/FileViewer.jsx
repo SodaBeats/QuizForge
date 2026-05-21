@@ -14,6 +14,9 @@ export default function FileViewer({ selectedFile }) {
     const resp = await authFetch(`${backendHost}/api/documents/${id}`, {
       credentials: "include",
     });
+    if (!resp) {
+      throw new Error("Authentication failed or no response received");
+    }
     if (!resp.ok) {
       throw new Error(`HTTP error! status: ${resp.status}`);
     }

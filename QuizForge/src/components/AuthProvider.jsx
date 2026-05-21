@@ -144,6 +144,7 @@ export function AuthProvider({ children }) {
         logout,
         silentRefresh,
         authFetch,
+        loading,
       }}
     >
       {children}
