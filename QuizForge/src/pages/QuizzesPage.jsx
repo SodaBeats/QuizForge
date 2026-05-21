@@ -23,7 +23,9 @@ export default function QuizzesPage() {
     if (!backendHost) return;
     authFetch(`${backendHost}/api/quizzes`)
       .then((res) => res.json())
-      .then((data) => setQuizzes(Array.isArray(data) ? data : []))
+      .then((data) =>
+        setQuizzes(Array.isArray(data.userQuizzes) ? data.userQuizzes : []),
+      )
       .catch((error) => {
         console.error("Failed to fetch quizzes", error);
         toast.error("Failed to load quizzes");

@@ -68,18 +68,34 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
-    const userId = req.user.id;
+    console.log('[QUIZZES ROUTER.GET]: RAN');
+    const limit = Number(req.query.limit) || 20;
+    const offset = Number(req.query.offset) || 0;
+    const MAX_LIMIT = 20;
+
+    if (limit < 0 || offset < 0 || limit > MAX_LIMIT) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid pagination parameters' });
+    }
+
     try {
       //count all questions assigned to a quiz
-      const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(userId);
+      const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(
+        req.user.id,
+        limit,
+        offset,
+      );
       if (!userQuizzes || userQuizzes.length < 1) {
         return res.status(404).json({
           success: false,
           message: 'This user does not have quizzes.',
         });
       }
-
-      return res.status(200).json(userQuizzes);
+      const totalQuizzes = await UserQuizzesRepository.countTotalQuizzes(
+        req.user.id,
+      );
+      return res.status(200).json({ success: true, userQuizzes, totalQuizzes });
     } catch (error) {
       next(error);
     }
