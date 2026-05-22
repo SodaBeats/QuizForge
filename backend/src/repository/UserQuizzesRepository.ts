@@ -25,7 +25,7 @@ export const UserQuizzesRepository = {
   //get all quizzes related to user
   async getAllUserQuizzes(
     userId: number,
-    limit: number = 0,
+    limit: number = 20,
     offset: number = 0,
   ) {
     const quizzes = await db
@@ -46,7 +46,6 @@ export const UserQuizzesRepository = {
       .orderBy(desc(quizzes_db.created_at))
       .limit(limit)
       .offset(offset);
-    console.log(quizzes);
     return quizzes ?? null;
   },
 
@@ -112,7 +111,7 @@ export const UserQuizzesRepository = {
 
   async countTotalQuizzes(userId: number) {
     const [result] = await db
-      .select({ totalQuizzes: count(quizzes_db.id) ?? 0 })
+      .select({ totalQuizzes: count(quizzes_db.id) })
       .from(quizzes_db)
       .where(eq(quizzes_db.user_id, userId));
     return result ? result.totalQuizzes : 0;

@@ -7,6 +7,135 @@ import LoadingScreen from "./LoadingScreen";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
+// ------------------------------------------------------------------------------------
+// SUB COMPONENT
+//-------------------------------------------------------------------------------------
+function SelectQuizModal({
+  page,
+  fetchQuizzes,
+  closeSelectQuizModal,
+  handleSelectQuiz,
+  fetchPreviousQuizzes,
+  fetchMoreQuizzes,
+}) {
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["userQuizzes", page],
+    queryFn: () => fetchQuizzes(page),
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+  });
+
+  const totalQuizzes = data?.totalQuizzes || 0;
+
+  if (isFetching) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Select a Quiz</h2>
+            <button
+              onClick={closeSelectQuizModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="text-center text-gray-400 py-6">
+            <LoadingScreen />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    {
+      console.error(error);
+    }
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Error</h2>
+            <button
+              onClick={closeSelectQuizModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <p>Something went wrong while fetching quizzes</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-white">Select a Quiz</h2>
+          <button
+            onClick={closeSelectQuizModal}
+            className="text-gray-400 hover:text-white text-2xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {data.userQuizzes.length > 0 ? (
+            data.userQuizzes.map((quiz) => (
+              <button
+                key={quiz.id}
+                onClick={() => handleSelectQuiz(quiz)}
+                className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
+              >
+                <div className="font-medium truncate">{quiz.quizTitle}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Token: {quiz.shareToken}
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 py-6">
+              No quizzes available
+            </div>
+          )}
+        </div>
+        {/* pagination controls */}
+        {totalQuizzes > 5 && (
+          <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
+            <button
+              onClick={fetchPreviousQuizzes}
+              disabled={page === 0}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+              title="Previous page"
+            >
+              ← Prev
+            </button>
+            <span className="text-gray-400 text-sm">Page {page + 1}</span>
+            <button
+              onClick={fetchMoreQuizzes}
+              disabled={
+                page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
+              }
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+              title="Next page"
+            >
+              Next →
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SideBar({
   uploadedFiles,
   setUploadedFiles,
@@ -131,129 +260,6 @@ function SideBar({
       toast.error(`something went wrong while fetching questions`);
     }
   };
-  // ------------------------------------------------------------------------------------
-  // SUB COMPONENT
-  //-------------------------------------------------------------------------------------
-  function SelectQuizModal() {
-    const { data, isFetching, error } = useQuery({
-      queryKey: ["userQuizzes", page],
-      queryFn: () => fetchQuizzes(page),
-      staleTime: 1000 * 60 * 5,
-      refetchOnMount: false,
-    });
-
-    const totalQuizzes = data?.totalQuizzes || 0;
-
-    if (isFetching) {
-      return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">
-                Select a Quiz
-              </h2>
-              <button
-                onClick={closeSelectQuizModal}
-                className="text-gray-400 hover:text-white text-2xl leading-none"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="text-center text-gray-400 py-6">
-              <LoadingScreen />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (error) {
-      {
-        console.error(error);
-      }
-      return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Error</h2>
-              <button
-                onClick={closeSelectQuizModal}
-                className="text-gray-400 hover:text-white text-2xl leading-none"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <p>Something went wrong while fetching quizzes</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Select a Quiz</h2>
-            <button
-              onClick={closeSelectQuizModal}
-              className="text-gray-400 hover:text-white text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {data.userQuizzes.length > 0 ? (
-              data.userQuizzes.map((quiz) => (
-                <button
-                  key={quiz.id}
-                  onClick={() => handleSelectQuiz(quiz)}
-                  className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
-                >
-                  <div className="font-medium truncate">{quiz.quizTitle}</div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    Token: {quiz.shareToken}
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="text-center text-gray-400 py-6">
-                No quizzes available
-              </div>
-            )}
-          </div>
-          {/* pagination controls */}
-          {totalQuizzes > 5 && (
-            <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
-              <button
-                onClick={fetchPreviousQuizzes}
-                disabled={page === 0}
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-                title="Previous page"
-              >
-                ← Prev
-              </button>
-              <span className="text-gray-400 text-sm">Page {page + 1}</span>
-              <button
-                onClick={fetchMoreQuizzes}
-                disabled={
-                  page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
-                }
-                className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-                title="Next page"
-              >
-                Next →
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   if (!backendHost) {
     return <Navigate to="/error" replace />;
@@ -377,7 +383,16 @@ function SideBar({
       </div>
 
       {/* Select Quiz Modal */}
-      {isSelectQuizModalOpen && <SelectQuizModal />}
+      {isSelectQuizModalOpen && (
+        <SelectQuizModal
+          page={page}
+          fetchQuizzes={fetchQuizzes}
+          closeSelectQuizModal={closeSelectQuizModal}
+          handleSelectQuiz={handleSelectQuiz}
+          fetchPreviousQuizzes={fetchPreviousQuizzes}
+          fetchMoreQuizzes={fetchMoreQuizzes}
+        />
+      )}
     </>
   );
 }
