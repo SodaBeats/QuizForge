@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
@@ -18,12 +19,6 @@ export default function QuizMakerSkeleton() {
   const [questions, setQuestions] = useState([]);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
-
-  //determine which file is selected
-  const selectedFile =
-    uploadedFiles?.find((f) => f.id === selectedFileId) || null;
-  const selectedQuestion =
-    questions?.find((q) => q.id === selectedQuestionId) ?? null;
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
@@ -83,10 +78,53 @@ export default function QuizMakerSkeleton() {
     }
   };
 
+  const fetchQuestions = async (quizId) => {
+    const response = await authFetch(
+      `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
+      {
+        credentials: "include",
+      },
+    );
+    if (!response || !response.ok) {
+      throw new Error("Failed to fetch questions");
+    }
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(
+        `Failed to fetch questions: ${result.message || result.error}`,
+      );
+    }
+
+    return result;
+  };
+
+  const { data: queryQuestionsData, isFetching } = useQuery({
+    queryKey: ["quizQuestions", quizMetadata?.id],
+    queryFn: () => fetchQuestions(quizMetadata?.id),
+    enabled: !!quizMetadata?.id,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+  });
+
+  //determine which file is selected
+  const selectedFile =
+    uploadedFiles?.find((f) => f.id === selectedFileId) || null;
+
+  const selectedQuestion =
+    queryQuestionsData?.questionList?.find(
+      (q) => q.id === selectedQuestionId,
+    ) ?? null;
+
+  // -------------------------------------------------------------------------------
+  //  ERROR BOUNDARY
+  // -------------------------------------------------------------------------------
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
 
+  // -------------------------------------------------------------------------------
+  // MAIN COMPONENT
+  // -------------------------------------------------------------------------------
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       {/* Top Bar */}
@@ -114,10 +152,11 @@ export default function QuizMakerSkeleton() {
           selectedQuestionId={selectedQuestionId}
           setSelectedQuestionId={setSelectedQuestionId}
           selectedQuestion={selectedQuestion}
-          questions={questions}
+          questions={queryQuestionsData?.questionList}
           setQuestions={setQuestions}
           currentQuiz={quizMetadata}
           setCurrentQuiz={setQuizMetadata}
+          isFetching={isFetching}
         />
 
         {/* Middle: Source File Viewer */}

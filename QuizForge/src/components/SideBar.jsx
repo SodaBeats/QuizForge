@@ -2,14 +2,14 @@ import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LoadingScreen from "./LoadingScreen";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT
-//-------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 function SelectQuizModal({
   page,
   fetchQuizzes,
@@ -147,10 +147,12 @@ function SideBar({
   setQuestions,
   currentQuiz,
   setCurrentQuiz,
+  isFetching,
 }) {
   const { authFetch } = useContext(AuthContext);
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
   const [page, setPage] = useState(0);
+  const queryClient = useQueryClient();
 
   const openSelectQuizModal = async () => {
     setIsSelectQuizModalOpen(true);
@@ -175,7 +177,7 @@ function SideBar({
 
   const handleQuestionDelete = async (questionId) => {
     //store question list as backup
-    const previousQuestions = [...questions];
+    //const previousQuestions = [...questions];
     //store selected question as backup
     const previousSelectedQuestionId = selectedQuestionId;
 
@@ -198,15 +200,13 @@ function SideBar({
         );
       }
 
-      const deletedQuestion = await response.json();
+      const result = await response.json();
 
-      if (!deletedQuestion.success) {
-        throw new Error(
-          `Failed to delete question: ${deletedQuestion.message}`,
-        );
+      if (!result.success) {
+        throw new Error(`Failed to delete question: ${result.message}`);
       }
 
-      toast.success(deletedQuestion.message);
+      toast.success(result.message);
     } catch (error) {
       console.error(error.message, error.status);
       setQuestions(previousQuestions);
@@ -241,7 +241,7 @@ function SideBar({
   const handleSelectQuiz = async (quiz) => {
     setCurrentQuiz(quiz);
     closeSelectQuizModal();
-    try {
+    /*try {
       const response = await authFetch(
         `${backendHost}/api/quizzes/questions?quizId=${quiz.id}`,
         {
@@ -258,7 +258,7 @@ function SideBar({
     } catch (error) {
       console.error(error);
       toast.error(`something went wrong while fetching questions`);
-    }
+    }*/
   };
 
   if (!backendHost) {
@@ -346,8 +346,8 @@ function SideBar({
             <div className="text-sm font-semibold text-gray-400">Questions</div>
           </div>
           <div className="space-y-1">
-            {currentQuiz ? (
-              questions?.map((question) => (
+            {questions ? (
+              questions.map((question) => (
                 <div
                   key={question.id}
                   className={`py-1 px-2 rounded text-sm flex items-center justify-between group ${
@@ -373,6 +373,10 @@ function SideBar({
                   </button>
                 </div>
               ))
+            ) : isFetching ? (
+              <div className="space-y-1">
+                <div className="text-gray-500 text-sm">Fetching...</div>
+              </div>
             ) : (
               <div className="space-y-1">
                 <div className="text-gray-500 text-sm">No Questions</div>
