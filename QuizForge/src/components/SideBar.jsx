@@ -88,7 +88,7 @@ function SelectQuizModal({
         </div>
 
         <div className="space-y-2">
-          {data.userQuizzes.length > 0 ? (
+          {data?.userQuizzes?.length > 0 ? (
             data.userQuizzes.map((quiz) => (
               <button
                 key={quiz.id}
@@ -144,7 +144,6 @@ function SideBar({
   selectedQuestionId,
   setSelectedQuestionId,
   questions,
-  setQuestions,
   currentQuiz,
   setCurrentQuiz,
   isFetching,
@@ -176,15 +175,21 @@ function SideBar({
   };
 
   const handleQuestionDelete = async (questionId) => {
-    //store question list as backup
-    //const previousQuestions = [...questions];
-    //store selected question as backup
     const previousSelectedQuestionId = selectedQuestionId;
+    const queryKey = ["quizQuestions"];
+    const previousQueryData = queryClient.getQueryData(queryKey);
 
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    if (previousQueryData?.questionList) {
+      queryClient.setQueryData(queryKey, (oldData) => ({
+        ...oldData,
+        questionList: oldData.questionList.filter((q) => q.id !== questionId),
+      }));
+    }
+
     if (questionId === selectedQuestionId) {
       setSelectedQuestionId(null);
     }
+
     try {
       const response = await authFetch(
         `${backendHost}/api/questions/${questionId}`,
@@ -193,7 +198,6 @@ function SideBar({
           credentials: "include",
         },
       );
-
       if (!response.ok) {
         throw new Error(
           `Server responded with: Error ${response.status}: ${response.statusText}`,
@@ -201,15 +205,17 @@ function SideBar({
       }
 
       const result = await response.json();
-
       if (!result.success) {
         throw new Error(`Failed to delete question: ${result.message}`);
       }
 
+      await queryClient.invalidateQueries({ queryKey: queryKey });
       toast.success(result.message);
     } catch (error) {
       console.error(error.message, error.status);
-      setQuestions(previousQuestions);
+      if (previousQueryData) {
+        queryClient.setQueryData(queryKey, previousQueryData);
+      }
       setSelectedQuestionId(previousSelectedQuestionId);
       alert("Something went wrong with the question deletion.");
     }
@@ -241,25 +247,11 @@ function SideBar({
   const handleSelectQuiz = async (quiz) => {
     setCurrentQuiz(quiz);
     closeSelectQuizModal();
-    /*try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/questions?quizId=${quiz.id}`,
-        {
-          credentials: "include",
-        },
-      );
-      const result = await response.json();
-
-      if (!result.success) {
-        toast.error(result.message);
-        return;
-      }
-      setQuestions(result.questionList);
-    } catch (error) {
-      console.error(error);
-      toast.error(`something went wrong while fetching questions`);
-    }*/
   };
+
+  // ----------------------------------------------------------------------------
+  // ERROR BOUNDARY
+  // ----------------------------------------------------------------------------
 
   if (!backendHost) {
     return <Navigate to="/error" replace />;
@@ -323,7 +315,6 @@ function SideBar({
               <button
                 onClick={() => {
                   setCurrentQuiz(null);
-                  setQuestions([]);
                 }}
                 className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
               >
