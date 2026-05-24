@@ -3,8 +3,6 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import LoadingScreen from "./LoadingScreen";
-
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // ------------------------------------------------------------------------------------
@@ -30,19 +28,10 @@ function SelectQuizModal({
   if (isFetching) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Select a Quiz</h2>
-            <button
-              onClick={closeSelectQuizModal}
-              className="text-gray-400 hover:text-white text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="text-center text-gray-400 py-6">
-            <LoadingScreen />
+        <div className="bg-gray-800 rounded-lg p-6 w-96 border border-gray-700">
+          <div className="flex flex-col items-center gap-3 text-gray-300">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+            <span>Loading quizzes...</span>
           </div>
         </div>
       </div>

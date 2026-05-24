@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 
 const QuestionList = ({
+  isFetching,
   questions,
   onUpdateQuestion,
   selectedQuiz,
@@ -16,6 +17,17 @@ const QuestionList = ({
   const handleEditClick = (question) => {
     setEditingQuestion({ ...question }); // Clone to avoid direct mutation
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex-1 h-full bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-gray-300">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+          <span>Loading questions...</span>
+        </div>
+      </div>
+    );
+  }
 
   // If we are editing, show the Editor View
   if (editingQuestion) {
