@@ -456,4 +456,36 @@ router.patch(
   },
 );
 
+// DELETE QUIZ
+router.delete(
+  '/:id',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizIdNum = Number(req.params.id);
+    if (Number.isNaN(quizIdNum)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'You must select a question' });
+    }
+    try {
+      const deletedQuiz = await UserQuizzesRepository.deleteQuiz(
+        req.user.id,
+        quizIdNum,
+      );
+      if (!deletedQuiz) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      } else {
+        return res
+          .status(200)
+          .json({ success: true, message: 'Quiz Deleted!' });
+      }
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 export default router;

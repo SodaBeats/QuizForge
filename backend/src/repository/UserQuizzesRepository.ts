@@ -116,4 +116,13 @@ export const UserQuizzesRepository = {
       .where(eq(quizzes_db.user_id, userId));
     return result ? result.totalQuizzes : 0;
   },
+
+  async deleteQuiz(userId: number, quizId: number) {
+    const [result] = await db
+      .delete(quizzes_db)
+      .where(and(eq(quizzes_db.user_id, userId), eq(quizzes_db.id, quizId)))
+      .returning();
+
+    return result ? { quizId: result.id } : null;
+  },
 };

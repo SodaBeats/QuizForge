@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../components/AuthProvider";
 import QuizzesSidebar from "../components/QuizzesSideBar";
 import TopBar from "../components/TopBar";
@@ -12,30 +13,83 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
-  const [quizzes, setQuizzes] = useState([]);
+  //const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const queryClient = useQueryClient();
 
-  const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId);
+  // ---------------------------------------------------------------------
+  // FUNCTIONS
+  // ---------------------------------------------------------------------
 
-  //get quizzes related to user on page load
-  useEffect(() => {
-    if (!backendHost) return;
-    authFetch(`${backendHost}/api/quizzes`)
-      .then((res) => res.json())
-      .then((data) =>
-        setQuizzes(Array.isArray(data.userQuizzes) ? data.userQuizzes : []),
-      )
-      .catch((error) => {
-        console.error("Failed to fetch quizzes", error);
-        toast.error("Failed to load quizzes");
-      });
-  }, [authFetch]);
+  const fetchQuizzes = async () => {
+    const response = await authFetch(`${backendHost}/api/quizzes`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!response || !response.ok) {
+      throw new Error(
+        `Failed to fetch quizzes: ${response?.status} ${response?.statusText}`,
+      );
+    }
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(
+        `Failed to fetch quizzes: ${result.message || result.error}`,
+      );
+    }
+    if (result.success) console.log(result.userQuizzes);
+    return result.userQuizzes;
+  };
 
-  const handleDeleteQuiz = (quizId) => {
-    setQuizzes(quizzes.filter((q) => q.id !== quizId));
+  // FETCH QUIZZES AND STORE IN TANSTACK CACHE
+  const { data: queryQuizzes, isFetching: queryQuizzesFetching } = useQuery({
+    queryKey: ["queryQuizzes"],
+    queryFn: fetchQuizzes,
+    staleTime: 1000 * 60 * 5,
+  });
+  const selectedQuiz =
+    queryQuizzes?.find((q) => q.id === selectedQuizId) || null;
+
+  const handleDeleteQuiz = async (quizId) => {
+    const queryKey = ["queryQuizzes"];
+    const previousSelectedQuizId = selectedQuizId;
+    const previousQuizzesData = queryClient.getQueryData(queryKey);
+
+    if (previousQuizzesData) {
+      queryClient.setQueryData(queryKey, (oldData) =>
+        oldData.filter((q) => q.id !== quizId),
+      );
+    }
     if (selectedQuizId === quizId) {
       setSelectedQuizId(null);
+    }
+    try {
+      const response = await authFetch(`${backendHost}/api/quizzes/${quizId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(
+          `Server responded with: Error ${response.status}: ${response.statusText}`,
+        );
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(
+          `Failed to delete quiz: ${result.message || result.error}`,
+        );
+      }
+
+      toast.success(result.message);
+    } catch (error) {
+      console.error(error.message, error.status);
+      if (previousQuizzesData) {
+        queryClient.setQueryData(queryKey, previousQuizzesData);
+      }
+      setSelectedQuizId(previousSelectedQuizId);
+      alert("Something went wrong with the quiz deletion.");
     }
   };
 
@@ -170,7 +224,8 @@ export default function QuizzesPage() {
         {/* Main Content Area */}
 
         <QuizzesSidebar
-          quizzes={quizzes}
+          isFetching={queryQuizzesFetching}
+          quizzes={queryQuizzes}
           selectedQuizId={selectedQuizId}
           setSelectedQuizId={setSelectedQuizId}
           onDeleteQuiz={handleDeleteQuiz}
