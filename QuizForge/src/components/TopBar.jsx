@@ -23,7 +23,6 @@ function FileModal({
     queryKey: ["docFetch", page],
     queryFn: () => fetchDocs(page),
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
   });
 
   // Get totalDocuments from backend response or compute based on data
@@ -344,9 +343,7 @@ export default function TopBar({
   });
 
   const menuRef = useRef(null);
-  //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
-
   const location = useLocation();
   const showFileButton = location.pathname === "/teacher";
   const navigate = useNavigate();

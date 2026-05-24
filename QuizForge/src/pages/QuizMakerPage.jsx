@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
@@ -19,6 +19,7 @@ export default function QuizMakerSkeleton() {
   const [questions, setQuestions] = useState([]);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
@@ -28,7 +29,7 @@ export default function QuizMakerSkeleton() {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/pdf", // .docx
     ];
-    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+    const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please upload a DOCX or PDF file");
@@ -67,6 +68,7 @@ export default function QuizMakerSkeleton() {
         };
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);
+        await queryClient.invalidateQueries({ queryKey: ["docFetch"] });
       } else {
         alert("Error: " + result.error);
       }
