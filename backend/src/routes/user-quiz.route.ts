@@ -68,7 +68,6 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
-    console.log('[QUIZZES ROUTER.GET]: RAN');
     const limit = Number(req.query.limit) || 20;
     const offset = Number(req.query.offset) || 0;
     const MAX_LIMIT = 20;

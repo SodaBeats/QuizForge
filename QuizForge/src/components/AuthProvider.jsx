@@ -68,7 +68,6 @@ export function AuthProvider({ children }) {
   }, [logout, navigate]);
 
   useEffect(() => {
-    console.log("AuthProvider useeffect infinite loop alert");
     if (!backendHost) {
       console.error("Missing VITE_BACKEND_HOST env variable");
       setLoading(false);

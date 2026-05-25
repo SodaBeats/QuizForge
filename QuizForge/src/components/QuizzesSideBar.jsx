@@ -1,12 +1,19 @@
 // QuizzesSidebar.jsx
+import "./LoadingScreen.css";
 
 export default function QuizzesSidebar({
+  isFetching,
   quizzes,
   setSelectedQuizId,
   selectedQuizId,
-  onSelectQuiz,
   onDeleteQuiz,
 }) {
+  if (isFetching) {
+    <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
+      <div className="spinner"></div>
+    </div>;
+  }
+
   return (
     <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
       {/* Header */}
@@ -29,7 +36,6 @@ export default function QuizzesSidebar({
                 onClick={() => {
                   const newId = selectedQuizId === quiz.id ? null : quiz.id;
                   setSelectedQuizId(newId);
-                  onSelectQuiz(newId);
                 }}
               >
                 <div className="flex-1 truncate">

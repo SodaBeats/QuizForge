@@ -13,8 +13,6 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
-  //const [quizzes, setQuizzes] = useState([]);
-  const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const queryClient = useQueryClient();
 
@@ -38,8 +36,25 @@ export default function QuizzesPage() {
         `Failed to fetch quizzes: ${result.message || result.error}`,
       );
     }
-    if (result.success) console.log(result.userQuizzes);
     return result.userQuizzes;
+  };
+
+  const fetchQuestions = async (quizId) => {
+    const response = await authFetch(
+      `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
+    );
+    if (!response || !response.ok) {
+      throw new Error(
+        `Failed to fetch questions: ${response?.status} ${response?.statusText}`,
+      );
+    }
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(
+        `Failed to fetch questions: ${result.message || result.error}`,
+      );
+    }
+    return result;
   };
 
   // FETCH QUIZZES AND STORE IN TANSTACK CACHE
@@ -93,62 +108,6 @@ export default function QuizzesPage() {
     }
   };
 
-  //get all questions related to quiz
-  const handleSelectedQuiz = async (chosenQuizId) => {
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/questions?quizId=${chosenQuizId}`,
-      );
-      const result = await response.json();
-
-      if (!result.success) {
-        toast.error(result.message);
-        return;
-      }
-
-      setQuestions(result.questionList);
-    } catch (error) {
-      console.error(error);
-      alert(`something went wrong while fetching questions`);
-    }
-  };
-
-  const handleQuestionUpdate = async (quizId, editingQuestion) => {
-    const originalQuestions = [...questions];
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === editingQuestion.id ? editingQuestion : q)),
-    );
-
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingQuestion),
-          credentials: "include",
-        },
-      );
-      const result = await response.json();
-
-      if (!result.success) {
-        toast.error(
-          result.message ||
-            result.errors?.map((e) => e.msg).join(", ") ||
-            "Update Failed",
-        );
-        console.error(result.message);
-        setQuestions(originalQuestions);
-      }
-
-      setEditingQuestion(null);
-    } catch (error) {
-      setQuestions(originalQuestions);
-      alert(`Network error`);
-      console.error("Network error: ", error);
-    }
-  };
-
   const getChanges = (original, draft) => {
     const changes = {};
     for (const key in draft) {
@@ -160,8 +119,10 @@ export default function QuizzesPage() {
   };
 
   const handleQuizMetaUpdate = async (quizToChange) => {
+    const queryKey = ["queryQuizzes"];
+
     //make copy of original quizzes list
-    const originalQuizzes = [...quizzes];
+    const originalQuizzes = queryClient.getQueryData(queryKey);
 
     //make copy of original quiz currently editing
     const originalQuiz = originalQuizzes.find(
@@ -175,7 +136,7 @@ export default function QuizzesPage() {
       return;
     }
 
-    setQuizzes((prev) =>
+    queryClient.setQueryData(queryKey, (prev) =>
       prev.map((q) => (q.id === quizToChange.id ? quizToChange : q)),
     );
     setSelectedQuizId(quizToChange.id);
@@ -190,24 +151,84 @@ export default function QuizzesPage() {
           credentials: "include",
         },
       );
+      if (!response || !response.ok) {
+        throw new Error(`Failed to update quiz`);
+      }
 
       const result = await response.json();
-
       if (!result.success) {
-        toast.error(
-          result.message ||
+        throw new Error(
+          `${
+            result.message ||
             result.errors?.map((e) => e.msg).join(", ") ||
-            "Update Failed",
+            "Update Failed"
+          }`,
         );
-        setQuizzes(originalQuizzes);
-        return;
       }
 
       toast.success("Quiz Updated!");
     } catch (error) {
-      alert("Error editing quiz information");
+      toast.error("Failed to update quiz");
       console.error("Error: ", error);
-      setQuizzes(originalQuizzes);
+      queryClient.setQueryData(queryKey, originalQuizzes);
+      setSelectedQuizId(null);
+    }
+  };
+
+  // get all questions related to quiz
+  const { data: queryQuestions, isFetching: queryQuestionsFetching } = useQuery(
+    {
+      queryKey: ["queryQuestions", selectedQuizId],
+      queryFn: () => {
+        if (!selectedQuizId) {
+          throw new Error(`No quiz selected`);
+        }
+        return fetchQuestions(selectedQuizId);
+      },
+      staleTime: 1000 * 60 * 5,
+      enabled: !!selectedQuizId && selectedQuiz?.questionCount > 0,
+    },
+  );
+
+  // TO DO
+  const handleQuestionUpdate = async (quizId, editingQuestion) => {
+    const queryKey = ["queryQuestions", selectedQuizId];
+    const originalData = queryClient.getQueryData(queryKey);
+
+    queryClient.setQueryData(queryKey, (prev) => ({
+      ...prev,
+      questionList: prev.questionList.map((q) =>
+        q.id === editingQuestion.id ? editingQuestion : q,
+      ),
+    }));
+
+    try {
+      const response = await authFetch(
+        `${backendHost}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingQuestion),
+          credentials: "include",
+        },
+      );
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to update question: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const result = await response.json();
+      if (!result || !result.success) {
+        throw new Error(`Failed to update question: ${result.message}`);
+      }
+
+      toast.success("Question Updated!");
+    } catch (error) {
+      queryClient.setQueryData(queryKey, originalData);
+      toast.error(`${error.message}`);
+      setEditingQuestion(null);
+      console.error("Quesiton update error: ", error);
     }
   };
 
@@ -229,7 +250,6 @@ export default function QuizzesPage() {
           selectedQuizId={selectedQuizId}
           setSelectedQuizId={setSelectedQuizId}
           onDeleteQuiz={handleDeleteQuiz}
-          onSelectQuiz={handleSelectedQuiz}
         />
         {selectedQuizId ? (
           <>
@@ -239,7 +259,8 @@ export default function QuizzesPage() {
               onUpdateQuizMeta={handleQuizMetaUpdate}
             />
             <QuizzesQuestionList
-              questions={questions}
+              isFetching={queryQuestionsFetching}
+              questions={queryQuestions?.questionList}
               selectedQuiz={selectedQuiz}
               onUpdateQuestion={handleQuestionUpdate}
               editingQuestion={editingQuestion}
