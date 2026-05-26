@@ -225,7 +225,7 @@ export default function QuizzesPage() {
       toast.success("Question Updated!");
     } catch (error) {
       queryClient.setQueryData(queryKey, originalData);
-      console.error("Quesiton update error: ", error);
+      console.error("Question update error: ", error);
       toast.error("Something went wrong while updating question");
       setEditingQuestion(null);
     }

@@ -125,7 +125,7 @@ export default function QuestionEditor({
       });
       if (!response || !response.ok) {
         throw new Error(
-          `Failed to submit question: ${response.status} ${response.statusText}`,
+          `Failed to submit question: ${response?.status} ${response?.statusText}`,
         );
       }
       const result = await response.json();
@@ -164,11 +164,6 @@ export default function QuestionEditor({
       ),
     }));
     try {
-      if (!manualQuestion.questionText) {
-        toast.error("Please input a question");
-        return;
-      }
-
       const response = await authFetch(
         `${backendHost}/api/questions/${manualQuestion.id}`,
         {
@@ -182,7 +177,7 @@ export default function QuestionEditor({
       );
       if (!response || !response.ok) {
         throw new Error(
-          `Failed to update question: ${response.status} ${response.statusText}`,
+          `Failed to update question: ${response?.status} ${response?.statusText}`,
         );
       }
       const result = await response.json();
@@ -211,6 +206,7 @@ export default function QuestionEditor({
   // GENERATE QUESTIONS BY AI ------------------------------------------------
   const handleGenerate = async () => {
     setLoading(true);
+    const queryKey = ["quizQuestions", quizMetadata?.id];
     try {
       const response = await authFetch(
         `${backendHost}/api/questions/generate`,
@@ -227,24 +223,36 @@ export default function QuestionEditor({
         },
       );
 
+      if (!response || !response.ok) {
+        throw new Error(
+          `Generation Error: ${response.status} ${response.statusText}`,
+        );
+      }
+
       const result = await response.json();
 
       if (!result.success) {
-        toast.error(
-          result.message || "Something went wrong while generating questions",
-        );
-        console.error(result.error || result.message || "IDK fam");
-        return;
+        throw new Error(result.message || result.error || "Server Error");
       }
 
-      setQuestions((prevQuestions) => [
-        ...(Array.isArray(prevQuestions) ? prevQuestions : []),
-        ...(Array.isArray(result.questions) ? result.questions : []),
-      ]);
+      queryClient.setQueryData(queryKey, (prevData) => {
+        const existingQuestions = Array.isArray(prevData?.questionList)
+          ? prevData.questionList
+          : [];
+        const newQuestions = Array.isArray(result.questions)
+          ? result.questions
+          : [];
+
+        return {
+          ...prevData,
+          questionList: [...existingQuestions, ...newQuestions],
+        };
+      });
+
       toast.success("Generated questions added successfully");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong, please try again later");
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

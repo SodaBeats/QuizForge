@@ -37,7 +37,7 @@ export default function QuizMakerSkeleton() {
 
     // 2. Check File Size
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File is too large. Maximum size is 2MB.`);
+      toast.error(`File is too large. Maximum size is 1MB.`);
       return;
     }
 

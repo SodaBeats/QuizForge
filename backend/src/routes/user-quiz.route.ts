@@ -361,9 +361,8 @@ router.patch(
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { questionId, quizId } = req.params;
-    const { role } = req.user;
 
-    if (role !== 'teacher') {
+    if (req.user.role !== 'teacher') {
       return res
         .status(403)
         .json({ success: false, message: 'Unauthorized action' });
@@ -465,7 +464,12 @@ router.delete(
     if (Number.isNaN(quizIdNum)) {
       return res
         .status(400)
-        .json({ success: false, message: 'You must select a question' });
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
     }
     try {
       const deletedQuiz = await UserQuizzesRepository.deleteQuiz(

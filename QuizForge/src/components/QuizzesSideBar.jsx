@@ -9,9 +9,11 @@ export default function QuizzesSidebar({
   onDeleteQuiz,
 }) {
   if (isFetching) {
-    <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
-      <div className="spinner"></div>
-    </div>;
+    return (
+      <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
   return (
