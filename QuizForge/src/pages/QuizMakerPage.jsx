@@ -102,8 +102,8 @@ export default function QuizMakerSkeleton() {
   const { data: queryQuestionsData, isFetching } = useQuery({
     queryKey: ["quizQuestions", quizMetadata?.id],
     queryFn: () => fetchQuestions(quizMetadata?.id),
-    enabled: !!quizMetadata?.id,
     staleTime: 1000 * 60 * 5,
+    enabled: !!quizMetadata?.id && quizMetadata.questionCount > 0,
   });
 
   //determine which file is selected

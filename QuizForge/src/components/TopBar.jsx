@@ -530,6 +530,9 @@ export default function TopBar({
     return await response.json();
   };
 
+  // ----------------------------------------------------------------------------
+  // ERROR BOUNDARY
+  // ----------------------------------------------------------------------------
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
