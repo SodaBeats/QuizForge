@@ -16,7 +16,6 @@ export default function QuizMakerSkeleton() {
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [questions, setQuestions] = useState([]);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
@@ -105,7 +104,6 @@ export default function QuizMakerSkeleton() {
     queryFn: () => fetchQuestions(quizMetadata?.id),
     enabled: !!quizMetadata?.id,
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
   });
 
   //determine which file is selected
@@ -137,9 +135,7 @@ export default function QuizMakerSkeleton() {
         selectedFileId={selectedFileId}
         setUploadedFiles={setUploadedFiles}
         selectedFile={selectedFile}
-        questions={questions}
         setQuizMetadata={setQuizMetadata}
-        quizMetadata={quizMetadata}
       />
 
       {/* Main Content Area */}
@@ -155,7 +151,6 @@ export default function QuizMakerSkeleton() {
           setSelectedQuestionId={setSelectedQuestionId}
           selectedQuestion={selectedQuestion}
           questions={queryQuestionsData?.questionList}
-          setQuestions={setQuestions}
           currentQuiz={quizMetadata}
           setCurrentQuiz={setQuizMetadata}
           isFetching={isFetching}
@@ -166,13 +161,8 @@ export default function QuizMakerSkeleton() {
 
         {/* Right: Question Editor */}
         <QuestionEditor
-          setSelectedQuestionId={setSelectedQuestionId}
-          selectedQuestionId={selectedQuestionId}
-          selectedFile={selectedFile}
-          selectedFileId={selectedFileId}
-          questions={questions}
-          setQuestions={setQuestions}
           selectedQuestion={selectedQuestion}
+          setSelectedQuestionId={setSelectedQuestionId}
           quizMetadata={quizMetadata}
         />
       </div>

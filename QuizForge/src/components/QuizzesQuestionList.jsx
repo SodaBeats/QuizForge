@@ -113,8 +113,8 @@ const QuestionList = ({
 
           {/* Correct Answer */}
           {editingQuestion.questionType === "multiple-choice" ? (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <select
@@ -133,10 +133,10 @@ const QuestionList = ({
                 <option value="c">C</option>
                 <option value="d">D</option>
               </select>
-            </>
+            </div>
           ) : editingQuestion.questionType === "true-false" ? (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <select
@@ -153,10 +153,10 @@ const QuestionList = ({
                 <option value="true">True</option>
                 <option value="false">False</option>
               </select>
-            </>
+            </div>
           ) : (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <input
@@ -170,7 +170,7 @@ const QuestionList = ({
                 }
                 className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
               />
-            </>
+            </div>
           )}
           <button
             onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}

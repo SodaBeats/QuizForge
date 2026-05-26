@@ -301,6 +301,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(10, 50),
   async (req, res, next) => {
+    console.log('[QUESTION ROUTE.GET]: RAN');
     const quizIdNum = Number(req.query.quizId);
     if (Number.isNaN(quizIdNum)) {
       return res

@@ -190,7 +190,6 @@ export default function QuizzesPage() {
     },
   );
 
-  // TO DO
   const handleQuestionUpdate = async (quizId, editingQuestion) => {
     const queryKey = ["queryQuestions", selectedQuizId];
     const originalData = queryClient.getQueryData(queryKey);
@@ -226,9 +225,9 @@ export default function QuizzesPage() {
       toast.success("Question Updated!");
     } catch (error) {
       queryClient.setQueryData(queryKey, originalData);
-      toast.error(`${error.message}`);
-      setEditingQuestion(null);
       console.error("Quesiton update error: ", error);
+      toast.error("Something went wrong while updating question");
+      setEditingQuestion(null);
     }
   };
 
