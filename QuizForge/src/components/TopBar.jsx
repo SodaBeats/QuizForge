@@ -416,6 +416,20 @@ export default function TopBar({
     setIsForgeQuizModalOpen(true);
   };
 
+  useEffect(() => {
+    if (location.pathname !== "/teacher") {
+      return;
+    }
+
+    if (location.state?.openForgeQuizModal === true) {
+      openForgeQuizModal();
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
+    } // eslint-disable-next-line
+  }, [location.pathname, location.state, navigate]);
+
   const closeForgeQuizModal = () => {
     setIsForgeQuizModalOpen(false);
     setForgeQuizData({
