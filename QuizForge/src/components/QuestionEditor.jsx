@@ -75,7 +75,7 @@ export default function QuestionEditor({
       const response = await authFetch(`${backendHost}/api/documents`);
       if (!response || !response.ok) {
         throw new Error(
-          `Failed to fetch source documents ${response?.status} ${response?.text}`,
+          `Failed to fetch source documents ${response?.status} ${response?.statusText}`,
         );
       }
       const data = await response.json();
@@ -233,7 +233,7 @@ export default function QuestionEditor({
 
       if (!response || !response.ok) {
         throw new Error(
-          `Generation Error: ${response.status} ${response.statusText}`,
+          `Generation Error: ${response?.status} ${response?.statusText}`,
         );
       }
 
