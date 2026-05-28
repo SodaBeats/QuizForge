@@ -188,7 +188,7 @@ router.get(
 router.get(
   '/:quizId/metrics',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -239,7 +239,7 @@ router.get(
 router.get(
   '/:quizId/students',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -285,7 +285,7 @@ router.get(
 router.get(
   '/:quizId/questions',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -321,7 +321,7 @@ router.get(
 router.get(
   '/:quizId/score',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
