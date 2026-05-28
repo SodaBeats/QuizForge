@@ -1,5 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 
@@ -14,12 +15,62 @@ function FileModal({
   fetchMoreDocuments,
   fetchPreviousDocuments,
   isUploading,
-  totalDocuments,
   selectedFileId,
   page,
-  documentsPerPage,
-  userDocuments,
+  fetchDocs,
 }) {
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["docFetch", page],
+    queryFn: () => fetchDocs(page),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Get totalDocuments from backend response or compute based on data
+  const totalDocuments = data?.totalDocuments || data?.total || 0;
+
+  if (isFetching) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">My Documents</h2>
+            <button
+              onClick={closeFileModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+          <div className="space-y-2 mb-6">
+            <p className="text-gray-400 text-center py-4">Fetching...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">My Documents</h2>
+            <button
+              onClick={closeFileModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+          <div className="space-y-2 mb-6">
+            <p className="text-gray-400 text-center py-4">
+              Something went wrong while fetching documents
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
@@ -34,8 +85,8 @@ function FileModal({
         </div>
 
         <div className="space-y-2 mb-6">
-          {documentsPerPage[page] && documentsPerPage[page].length > 0 ? (
-            documentsPerPage[page].map((doc) => (
+          {data.documents.length > 0 ? (
+            data.documents.map((doc) => (
               <div
                 key={doc.id}
                 onClick={() => handleSelectDocument(doc)}
@@ -51,9 +102,7 @@ function FileModal({
               </div>
             ))
           ) : (
-            <p className="text-gray-400 text-center py-4">
-              {documentsPerPage[page] ? "No documents found" : "Loading..."}
-            </p>
+            <p className="text-gray-400 text-center py-4">No documents found</p>
           )}
         </div>
 
@@ -71,7 +120,9 @@ function FileModal({
             <span className="text-gray-400 text-sm">Page {page + 1}</span>
             <button
               onClick={fetchMoreDocuments}
-              disabled={page * 5 + userDocuments.length >= totalDocuments}
+              disabled={
+                page * 5 + (data?.documents?.length || 0) >= totalDocuments
+              }
               className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
               title="Next page"
             >
@@ -278,13 +329,10 @@ export default function TopBar({
   //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
-  const [userDocuments, setUserDocuments] = useState([]);
-  const [documentsPerPage, setDocumentsPerPage] = useState({});
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
   const [page, setPage] = useState(0);
-  const [totalDocuments, setTotalDocuments] = useState(0);
   const [forgeQuizData, setForgeQuizData] = useState({
     quizTitle: "",
     description: "",
@@ -295,9 +343,7 @@ export default function TopBar({
   });
 
   const menuRef = useRef(null);
-  //const fileRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
-
   const location = useLocation();
   const showFileButton = location.pathname === "/teacher";
   const navigate = useNavigate();
@@ -322,8 +368,6 @@ export default function TopBar({
     if (file) {
       handleFileUpload(file);
       setShowFileModal(false);
-      setDocumentsPerPage({});
-      setUserDocuments([]);
     }
   };
 
@@ -341,95 +385,20 @@ export default function TopBar({
   // open file modal and fetch documents list
   const openFileModal = async () => {
     setShowFileModal(true);
-    if (documentsPerPage[0]) {
-      return;
-    }
-    try {
-      setPage(0);
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=0`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setTotalDocuments(result.totalDocuments);
-      setUserDocuments(result.documents);
-      setDocumentsPerPage((prev) => ({ ...prev, [0]: result.documents }));
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
-    }
   };
 
   const closeFileModal = () => {
     setShowFileModal(false);
     setPage(0);
-    setUserDocuments([]);
-    //setTotalDocuments(0);
   };
 
-  const fetchMoreDocuments = async () => {
-    const newPage = page + 1;
-
-    if (documentsPerPage[newPage]) {
-      setPage(newPage);
-      return;
-    }
-
-    try {
-      const offset = newPage * 5;
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=${offset}`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setPage(newPage);
-      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
-      setUserDocuments(result.documents);
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
-    }
+  const fetchMoreDocuments = () => {
+    setPage(page + 1);
   };
 
-  const fetchPreviousDocuments = async () => {
-    if (page <= 0) return;
-    const newPage = page - 1;
-
-    if (documentsPerPage[newPage]) {
-      setPage(newPage);
-      return;
-    }
-
-    try {
-      const offset = newPage * 5;
-      const response = await authFetch(
-        `${backendHost}/api/documents?limit=5&offset=${offset}`,
-        {
-          credentials: "include",
-        },
-      );
-      if (!response.ok) {
-        toast.error("Error: " + response.statusText);
-        return;
-      }
-      const result = await response.json();
-      setPage(newPage);
-      setDocumentsPerPage((prev) => ({ ...prev, [newPage]: result.documents }));
-    } catch (error) {
-      console.error("Error fetching documents: ", error);
-      toast.error("Failed to fetch documents");
+  const fetchPreviousDocuments = () => {
+    if (page > 0) {
+      setPage(page - 1);
     }
   };
 
@@ -446,6 +415,20 @@ export default function TopBar({
     });
     setIsForgeQuizModalOpen(true);
   };
+
+  useEffect(() => {
+    if (location.pathname !== "/teacher") {
+      return;
+    }
+
+    if (location.state?.openForgeQuizModal === true) {
+      openForgeQuizModal();
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
+    } // eslint-disable-next-line
+  }, [location.pathname, location.state, navigate]);
 
   const closeForgeQuizModal = () => {
     setIsForgeQuizModalOpen(false);
@@ -544,33 +527,27 @@ export default function TopBar({
             },
           ],
     );
-
-    // fetch full content on demand and merge into parent state
-    try {
-      const resp = await authFetch(`${backendHost}/api/documents/${doc.id}`, {
-        credentials: "include",
-      });
-      if (!resp.ok) {
-        throw new Error(`HTTP error! status: ${resp.status}`);
-      }
-      const full = await resp.json();
-
-      if (!full.success) {
-        alert("Error: " + full.error);
-        return;
-      }
-
-      setUploadedFiles((prev) =>
-        prev.map((f) =>
-          f.id === doc.id ? { ...f, content: full.content ?? f.content } : f,
-        ),
-      );
-    } catch (err) {
-      console.error("Document selection error: ", err);
-      alert("Failed to select document. Please try again later");
-    }
   };
 
+  const fetchDocs = async (page = 0) => {
+    const offset = page * 5;
+    const limit = 5;
+    const response = await authFetch(
+      `${backendHost}/api/documents?limit=${limit}&offset=${offset}`,
+      { credentials: "include" },
+    );
+    if (!response) {
+      throw new Error("Authentication failed or no response received");
+    }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  };
+
+  // ----------------------------------------------------------------------------
+  // ERROR BOUNDARY
+  // ----------------------------------------------------------------------------
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
@@ -627,11 +604,9 @@ export default function TopBar({
                   fetchMoreDocuments={fetchMoreDocuments}
                   fetchPreviousDocuments={fetchPreviousDocuments}
                   isUploading={isUploading}
-                  totalDocuments={totalDocuments}
                   selectedFileId={selectedFileId}
                   page={page}
-                  documentsPerPage={documentsPerPage}
-                  userDocuments={userDocuments}
+                  fetchDocs={fetchDocs}
                 />
               )}
             </div>

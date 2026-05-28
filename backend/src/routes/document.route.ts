@@ -10,7 +10,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
-    const limit = Number(req.query.limit) || 5;
+    const limit = Number(req.query.limit) || 20;
     const offset = Number(req.query.offset) || 0;
     const MAX_LIMIT = 100;
 
@@ -49,6 +49,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(60, 60),
   async (req, res, next) => {
+    console.log('[DOCUMENT ROUTE.GET/:ID]: RAN');
     // express puts params under the name in the route; here it's "id" not "docId"
     const docIdNum = Number(req.params.id);
     if (!docIdNum) {

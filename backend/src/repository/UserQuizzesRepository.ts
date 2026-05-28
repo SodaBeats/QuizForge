@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, count, and } from 'drizzle-orm';
+import { eq, count, and, desc, countDistinct } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { quizzes_db, quiz_attempts_db, questions_db } from '../db/schema.js';
 
@@ -23,7 +23,11 @@ export const UserQuizzesRepository = {
   },
 
   //get all quizzes related to user
-  async getAllUserQuizzes(userId: number) {
+  async getAllUserQuizzes(
+    userId: number,
+    limit: number = 20,
+    offset: number = 0,
+  ) {
     const quizzes = await db
       .select({
         id: quizzes_db.id,
@@ -38,8 +42,10 @@ export const UserQuizzesRepository = {
       .from(quizzes_db)
       .leftJoin(questions_db, eq(quizzes_db.id, questions_db.quiz_id))
       .where(eq(quizzes_db.user_id, userId))
-      .groupBy(quizzes_db.id);
-
+      .groupBy(quizzes_db.id)
+      .orderBy(desc(quizzes_db.created_at))
+      .limit(limit)
+      .offset(offset);
     return quizzes ?? null;
   },
 
@@ -101,5 +107,22 @@ export const UserQuizzesRepository = {
       .from(quizzes_db)
       .where(eq(quizzes_db.id, quizId));
     return result ?? null;
+  },
+
+  async countTotalQuizzes(userId: number) {
+    const [result] = await db
+      .select({ totalQuizzes: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(eq(quizzes_db.user_id, userId));
+    return result ? result.totalQuizzes : 0;
+  },
+
+  async deleteQuiz(userId: number, quizId: number) {
+    const [result] = await db
+      .delete(quizzes_db)
+      .where(and(eq(quizzes_db.user_id, userId), eq(quizzes_db.id, quizId)))
+      .returning();
+
+    return result ? { quizId: result.id } : null;
   },
 };

@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
@@ -15,35 +16,9 @@ export default function QuizMakerSkeleton() {
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [questions, setQuestions] = useState([]);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const { authFetch } = useContext(AuthContext);
-
-  //determine which file is selected
-  const selectedFile =
-    uploadedFiles?.find((f) => f.id === selectedFileId) || null;
-  const selectedQuestion =
-    questions?.find((q) => q.id === selectedQuestionId) ?? null;
-
-  //load file from local storage and remove after 1 minute
-  const STATE_KEY = "quizForgeState";
-  const TTL = 1000 * 60; //1minute
-  useEffect(() => {
-    if (!backendHost) return;
-    try {
-      const savedState = localStorage.getItem(STATE_KEY);
-      if (!savedState) return;
-
-      const { data, savedAt } = JSON.parse(savedState);
-      if (Date.now() - savedAt < TTL) {
-        setUploadedFiles([...data]);
-      } else {
-        localStorage.removeItem(STATE_KEY);
-      }
-    } catch {
-      localStorage.removeItem(STATE_KEY);
-    } // eslint-disable-next-line
-  }, []);
+  const queryClient = useQueryClient();
 
   //handle uploaded file
   const handleFileUpload = async (file) => {
@@ -53,7 +28,7 @@ export default function QuizMakerSkeleton() {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/pdf", // .docx
     ];
-    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+    const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please upload a DOCX or PDF file");
@@ -62,7 +37,7 @@ export default function QuizMakerSkeleton() {
 
     // 2. Check File Size
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File is too large. Maximum size is 2MB.`);
+      toast.error(`File is too large. Maximum size is 1MB.`);
       return;
     }
 
@@ -92,6 +67,7 @@ export default function QuizMakerSkeleton() {
         };
         setUploadedFiles([...uploadedFiles, newFile]);
         setSelectedFileId(result.fileId);
+        await queryClient.invalidateQueries({ queryKey: ["docFetch"] });
       } else {
         alert("Error: " + result.error);
       }
@@ -103,24 +79,52 @@ export default function QuizMakerSkeleton() {
     }
   };
 
-  //save uploaded file into local storage
-  useEffect(() => {
-    if (!backendHost) return;
-    if (uploadedFiles.length > 0) {
-      localStorage.setItem(
-        STATE_KEY,
-        JSON.stringify({
-          data: uploadedFiles,
-          savedAt: Date.now(),
-        }),
+  const fetchQuestions = async (quizId) => {
+    const response = await authFetch(
+      `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
+      {
+        credentials: "include",
+      },
+    );
+    if (!response || !response.ok) {
+      throw new Error("Failed to fetch questions");
+    }
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(
+        `Failed to fetch questions: ${result.message || result.error}`,
       );
     }
-  }, [uploadedFiles]);
 
+    return result;
+  };
+
+  const { data: queryQuestionsData, isFetching } = useQuery({
+    queryKey: ["quizQuestions", quizMetadata?.id],
+    queryFn: () => fetchQuestions(quizMetadata?.id),
+    staleTime: 1000 * 60 * 5,
+    enabled: !!quizMetadata?.id && quizMetadata.questionCount > 0,
+  });
+
+  //determine which file is selected
+  const selectedFile =
+    uploadedFiles?.find((f) => f.id === selectedFileId) || null;
+
+  const selectedQuestion =
+    queryQuestionsData?.questionList?.find(
+      (q) => q.id === selectedQuestionId,
+    ) ?? null;
+
+  // -------------------------------------------------------------------------------
+  //  ERROR BOUNDARY
+  // -------------------------------------------------------------------------------
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
 
+  // -------------------------------------------------------------------------------
+  // MAIN COMPONENT
+  // -------------------------------------------------------------------------------
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
       {/* Top Bar */}
@@ -131,9 +135,7 @@ export default function QuizMakerSkeleton() {
         selectedFileId={selectedFileId}
         setUploadedFiles={setUploadedFiles}
         selectedFile={selectedFile}
-        questions={questions}
         setQuizMetadata={setQuizMetadata}
-        quizMetadata={quizMetadata}
       />
 
       {/* Main Content Area */}
@@ -148,27 +150,19 @@ export default function QuizMakerSkeleton() {
           selectedQuestionId={selectedQuestionId}
           setSelectedQuestionId={setSelectedQuestionId}
           selectedQuestion={selectedQuestion}
-          questions={questions}
-          setQuestions={setQuestions}
+          questions={queryQuestionsData?.questionList}
           currentQuiz={quizMetadata}
           setCurrentQuiz={setQuizMetadata}
+          isFetching={isFetching}
         />
 
         {/* Middle: Source File Viewer */}
-        <FileViewer
-          fileContent={selectedFile?.content}
-          selectedFile={selectedFile}
-        />
+        <FileViewer selectedFile={selectedFile} />
 
         {/* Right: Question Editor */}
         <QuestionEditor
-          setSelectedQuestionId={setSelectedQuestionId}
-          selectedQuestionId={selectedQuestionId}
-          selectedFile={selectedFile}
-          selectedFileId={selectedFileId}
-          questions={questions}
-          setQuestions={setQuestions}
           selectedQuestion={selectedQuestion}
+          setSelectedQuestionId={setSelectedQuestionId}
           quizMetadata={quizMetadata}
         />
       </div>

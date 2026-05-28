@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "./AuthProvider";
@@ -6,12 +7,12 @@ import { AuthContext } from "./AuthProvider";
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function QuestionEditor({
-  setQuestions,
   selectedQuestion,
   setSelectedQuestionId,
   quizMetadata,
 }) {
   const { authFetch } = useContext(AuthContext);
+  const queryClient = useQueryClient();
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState([]);
@@ -72,7 +73,15 @@ export default function QuestionEditor({
   const fetchDocuments = async () => {
     try {
       const response = await authFetch(`${backendHost}/api/documents`);
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to fetch source documents ${response?.status} ${response?.statusText}`,
+        );
+      }
       const data = await response.json();
+      if (!data || !data.success) {
+        throw new Error(data.message || data.error || "Something went wrong");
+      }
       setDocuments(Array.isArray(data.documents) ? data.documents : []);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
@@ -105,74 +114,107 @@ export default function QuestionEditor({
     setAddMode(mode);
   };
 
-  // SUBMIT MANUALLY MADE QUESTION ----------------------------------------------
-  const handleManualSubmit = async () => {
+  // SUBMIT MANUALLY MADE QUESTION --------------------------------------------
+  const handleManualQuestionSubmit = async () => {
     try {
-      const endpoint =
-        addMode === "edit"
-          ? `${backendHost}/api/questions/${manualQuestion.id}`
-          : `${backendHost}/api/questions`;
-
-      const method = addMode === "edit" ? "PATCH" : "POST";
+      const queryKey = ["quizQuestions", quizMetadata?.id];
 
       if (!manualQuestion.questionText) {
         toast.error("Please input a question");
         return;
       }
 
-      const response = await authFetch(endpoint, {
-        method: method,
+      const response = await authFetch(`${backendHost}/api/questions/`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(manualQuestion),
       });
-      const result = await response.json();
-
-      if (result.success) {
-        // Refetch questions from the server
-        const questionsResponse = await authFetch(
-          `${backendHost}/api/questions?quizId=${quizMetadata?.id}`,
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to submit question: ${response?.status} ${response?.statusText}`,
         );
-        const updatedQuestions = await questionsResponse.json();
-        setQuestions(updatedQuestions);
-
-        // Reset form
-        setAddMode(null);
-        setManualQuestion({
-          quizId: quizMetadata?.id,
-          questionText: "",
-          questionType: manualQuestion.questionType,
-          optionA: "",
-          optionB: "",
-          optionC: "",
-          optionD: "",
-          correctAnswer: "",
-          timeLimit: 60,
-        });
-        setSelectedQuestionId(null);
-        addMode === "edit"
-          ? toast.success("Question Updated!")
-          : toast.success("Question Added!");
-      } else {
-        const errorMessage =
-          result.message ??
-          result.error ??
-          (Array.isArray(result.errors)
-            ? result.errors.map((e) => e.msg).join(", ")
-            : "Failed to submit question");
-        console.error(errorMessage);
-        toast.error(`Error: ${errorMessage}`);
       }
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(`Failed to submit question: ${result.message}`);
+      }
+      queryClient.invalidateQueries({ queryKey });
+      toast.success("Question Added!");
+      setSelectedQuestionId(null);
+      setAddMode(null);
+      setManualQuestion({
+        quizId: quizMetadata?.id,
+        questionText: "",
+        questionType: manualQuestion.questionType,
+        optionA: "",
+        optionB: "",
+        optionC: "",
+        optionD: "",
+        correctAnswer: "",
+        timeLimit: 60,
+      });
     } catch (error) {
-      console.error("Error submitting questions", error);
-      alert("Failed to submit question");
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
+
+  // SUBMIT QUESTION UPDATE ------------------------------------------------------
+  const handleQuestionUpdateSubmit = async () => {
+    const queryKey = ["quizQuestions", quizMetadata?.id];
+    const originalData = queryClient.getQueryData(queryKey);
+    queryClient.setQueryData(queryKey, (prev) => ({
+      ...prev,
+      questionList: prev.questionList.map((q) =>
+        q.id === manualQuestion.id ? manualQuestion : q,
+      ),
+    }));
+    try {
+      const response = await authFetch(
+        `${backendHost}/api/questions/${manualQuestion.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(manualQuestion),
+          credentials: "include",
+        },
+      );
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to update question: ${response?.status} ${response?.statusText}`,
+        );
+      }
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      toast.success("Question Updated!");
+    } catch (error) {
+      queryClient.setQueryData(queryKey, originalData);
+      console.error(`Question update error: ${error}`);
+      setAddMode(null);
+      setSelectedQuestionId(null);
+      toast.error("Something went wrong while updating question");
+    }
+  };
+
+  // SUBMIT MANUALLY MADE QUESTION ----------------------------------------------
+  const handleManualSubmit = async () => {
+    if (addMode === "edit") {
+      await handleQuestionUpdateSubmit();
+    } else {
+      await handleManualQuestionSubmit();
     }
   };
 
   // GENERATE QUESTIONS BY AI ------------------------------------------------
   const handleGenerate = async () => {
     setLoading(true);
+    const queryKey = ["quizQuestions", quizMetadata?.id];
     try {
       const response = await authFetch(
         `${backendHost}/api/questions/generate`,
@@ -189,24 +231,36 @@ export default function QuestionEditor({
         },
       );
 
+      if (!response || !response.ok) {
+        throw new Error(
+          `Generation Error: ${response?.status} ${response?.statusText}`,
+        );
+      }
+
       const result = await response.json();
 
       if (!result.success) {
-        toast.error(
-          result.message || "Something went wrong while generating questions",
-        );
-        console.error(result.error || result.message || "IDK fam");
-        return;
+        throw new Error(result.message || result.error || "Server Error");
       }
 
-      setQuestions((prevQuestions) => [
-        ...(Array.isArray(prevQuestions) ? prevQuestions : []),
-        ...(Array.isArray(result.questions) ? result.questions : []),
-      ]);
+      queryClient.setQueryData(queryKey, (prevData) => {
+        const existingQuestions = Array.isArray(prevData?.questionList)
+          ? prevData.questionList
+          : [];
+        const newQuestions = Array.isArray(result.questions)
+          ? result.questions
+          : [];
+
+        return {
+          ...prevData,
+          questionList: [...existingQuestions, ...newQuestions],
+        };
+      });
+
       toast.success("Generated questions added successfully");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong, please try again later");
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

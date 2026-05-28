@@ -1,12 +1,24 @@
 // QuizzesSidebar.jsx
+import { useNavigate } from "react-router-dom";
+import "./LoadingScreen.css";
 
 export default function QuizzesSidebar({
+  isFetching,
   quizzes,
   setSelectedQuizId,
   selectedQuizId,
-  onSelectQuiz,
   onDeleteQuiz,
 }) {
+  const navigate = useNavigate();
+
+  if (isFetching) {
+    return (
+      <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
       {/* Header */}
@@ -29,7 +41,6 @@ export default function QuizzesSidebar({
                 onClick={() => {
                   const newId = selectedQuizId === quiz.id ? null : quiz.id;
                   setSelectedQuizId(newId);
-                  onSelectQuiz(newId);
                 }}
               >
                 <div className="flex-1 truncate">
@@ -60,7 +71,12 @@ export default function QuizzesSidebar({
 
       {/* Create New Quiz Button */}
       <div className="border-t border-gray-700 p-4">
-        <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+        <button
+          onClick={() =>
+            navigate("/teacher", { state: { openForgeQuizModal: true } })
+          }
+          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+        >
           + Create New Quiz
         </button>
       </div>

@@ -68,18 +68,33 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
-    const userId = req.user.id;
+    const limit = Number(req.query.limit) || 20;
+    const offset = Number(req.query.offset) || 0;
+    const MAX_LIMIT = 20;
+
+    if (limit < 0 || offset < 0 || limit > MAX_LIMIT) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid pagination parameters' });
+    }
+
     try {
       //count all questions assigned to a quiz
-      const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(userId);
+      const userQuizzes = await UserQuizzesRepository.getAllUserQuizzes(
+        req.user.id,
+        limit,
+        offset,
+      );
       if (!userQuizzes || userQuizzes.length < 1) {
         return res.status(404).json({
           success: false,
           message: 'This user does not have quizzes.',
         });
       }
-
-      return res.status(200).json(userQuizzes);
+      const totalQuizzes = await UserQuizzesRepository.countTotalQuizzes(
+        req.user.id,
+      );
+      return res.status(200).json({ success: true, userQuizzes, totalQuizzes });
     } catch (error) {
       next(error);
     }
@@ -173,7 +188,7 @@ router.get(
 router.get(
   '/:quizId/metrics',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -224,7 +239,7 @@ router.get(
 router.get(
   '/:quizId/students',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -270,7 +285,7 @@ router.get(
 router.get(
   '/:quizId/questions',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -306,7 +321,7 @@ router.get(
 router.get(
   '/:quizId/score',
   verifyToken,
-  userBasedRateLimiter(5, 5),
+  userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
     const { role } = req.user;
@@ -346,9 +361,8 @@ router.patch(
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { questionId, quizId } = req.params;
-    const { role } = req.user;
 
-    if (role !== 'teacher') {
+    if (req.user.role !== 'teacher') {
       return res
         .status(403)
         .json({ success: false, message: 'Unauthorized action' });
@@ -434,6 +448,43 @@ router.patch(
       return res
         .status(200)
         .json({ success: true, message: 'Quiz updated!', updatedQuiz });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+// DELETE QUIZ
+router.delete(
+  '/:id',
+  verifyToken,
+  userBasedRateLimiter(5, 5),
+  async (req, res, next) => {
+    const quizIdNum = Number(req.params.id);
+    if (Number.isNaN(quizIdNum)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+    try {
+      const deletedQuiz = await UserQuizzesRepository.deleteQuiz(
+        req.user.id,
+        quizIdNum,
+      );
+      if (!deletedQuiz) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      } else {
+        return res
+          .status(200)
+          .json({ success: true, message: 'Quiz Deleted!' });
+      }
     } catch (error) {
       return next(error);
     }

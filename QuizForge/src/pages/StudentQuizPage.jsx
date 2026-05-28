@@ -148,7 +148,7 @@ export default function StudentQuizPage() {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen fullScreen />;
   }
 
   if (fetchErr) {

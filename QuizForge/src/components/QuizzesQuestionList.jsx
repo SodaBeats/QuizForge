@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 
 const QuestionList = ({
+  isFetching,
   questions,
   onUpdateQuestion,
   selectedQuiz,
@@ -16,6 +17,17 @@ const QuestionList = ({
   const handleEditClick = (question) => {
     setEditingQuestion({ ...question }); // Clone to avoid direct mutation
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex-1 h-full bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-gray-300">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+          <span>Loading questions...</span>
+        </div>
+      </div>
+    );
+  }
 
   // If we are editing, show the Editor View
   if (editingQuestion) {
@@ -101,8 +113,8 @@ const QuestionList = ({
 
           {/* Correct Answer */}
           {editingQuestion.questionType === "multiple-choice" ? (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <select
@@ -121,10 +133,10 @@ const QuestionList = ({
                 <option value="c">C</option>
                 <option value="d">D</option>
               </select>
-            </>
+            </div>
           ) : editingQuestion.questionType === "true-false" ? (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <select
@@ -141,10 +153,10 @@ const QuestionList = ({
                 <option value="true">True</option>
                 <option value="false">False</option>
               </select>
-            </>
+            </div>
           ) : (
-            <>
-              <label className="block text-sm font-medium mb-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Correct Answer
               </label>
               <input
@@ -158,7 +170,7 @@ const QuestionList = ({
                 }
                 className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
               />
-            </>
+            </div>
           )}
           <button
             onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}

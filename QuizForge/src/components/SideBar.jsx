@@ -2,8 +2,128 @@ import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
-
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
+// ------------------------------------------------------------------------------------
+// SUB COMPONENT
+// -------------------------------------------------------------------------------------
+function SelectQuizModal({
+  page,
+  fetchQuizzes,
+  closeSelectQuizModal,
+  handleSelectQuiz,
+  fetchPreviousQuizzes,
+  fetchMoreQuizzes,
+}) {
+  const { data, isFetching, error } = useQuery({
+    queryKey: ["userQuizzes", page],
+    queryFn: () => fetchQuizzes(page),
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+  });
+
+  const totalQuizzes = data?.totalQuizzes || 0;
+
+  if (isFetching) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 w-96 border border-gray-700">
+          <div className="flex flex-col items-center gap-3 text-gray-300">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+            <span>Loading quizzes...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    {
+      console.error(error);
+    }
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Error</h2>
+            <button
+              onClick={closeSelectQuizModal}
+              className="text-gray-400 hover:text-white text-2xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <p>Something went wrong while fetching quizzes</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-white">Select a Quiz</h2>
+          <button
+            onClick={closeSelectQuizModal}
+            className="text-gray-400 hover:text-white text-2xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {data?.userQuizzes?.length > 0 ? (
+            data.userQuizzes.map((quiz) => (
+              <button
+                key={quiz.id}
+                onClick={() => handleSelectQuiz(quiz)}
+                className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
+              >
+                <div className="font-medium truncate">{quiz.quizTitle}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Token: {quiz.shareToken}
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 py-6">
+              No quizzes available
+            </div>
+          )}
+        </div>
+        {/* pagination controls */}
+        {totalQuizzes > 5 && (
+          <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
+            <button
+              onClick={fetchPreviousQuizzes}
+              disabled={page === 0}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+              title="Previous page"
+            >
+              ← Prev
+            </button>
+            <span className="text-gray-400 text-sm">Page {page + 1}</span>
+            <button
+              onClick={fetchMoreQuizzes}
+              disabled={
+                page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
+              }
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
+              title="Next page"
+            >
+              Next →
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function SideBar({
   uploadedFiles,
@@ -13,14 +133,28 @@ function SideBar({
   selectedQuestionId,
   setSelectedQuestionId,
   questions,
-  setQuestions,
   currentQuiz,
   setCurrentQuiz,
+  isFetching,
 }) {
   const { authFetch } = useContext(AuthContext);
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
-  const [availableQuizzes, setAvailableQuizzes] = useState([]);
-  const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(false);
+  const [page, setPage] = useState(0);
+  const queryClient = useQueryClient();
+
+  const openSelectQuizModal = async () => {
+    setIsSelectQuizModalOpen(true);
+  };
+
+  const fetchMoreQuizzes = () => {
+    setPage(page + 1);
+  };
+
+  const fetchPreviousQuizzes = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
+  };
 
   const handleFileDelete = async (fileId) => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
@@ -30,15 +164,21 @@ function SideBar({
   };
 
   const handleQuestionDelete = async (questionId) => {
-    //store question list as backup
-    const previousQuestions = [...questions];
-    //store selected question as backup
     const previousSelectedQuestionId = selectedQuestionId;
+    const queryKey = ["quizQuestions"];
+    const previousQueryData = queryClient.getQueryData(queryKey);
 
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    if (previousQueryData?.questionList) {
+      queryClient.setQueryData(queryKey, (oldData) => ({
+        ...oldData,
+        questionList: oldData.questionList.filter((q) => q.id !== questionId),
+      }));
+    }
+
     if (questionId === selectedQuestionId) {
       setSelectedQuestionId(null);
     }
+
     try {
       const response = await authFetch(
         `${backendHost}/api/questions/${questionId}`,
@@ -47,55 +187,26 @@ function SideBar({
           credentials: "include",
         },
       );
-
       if (!response.ok) {
         throw new Error(
           `Server responded with: Error ${response.status}: ${response.statusText}`,
         );
       }
 
-      const deletedQuestion = await response.json();
-
-      if (!deletedQuestion.success) {
-        throw new Error(
-          `Failed to delete question: ${deletedQuestion.message}`,
-        );
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(`Failed to delete question: ${result.message}`);
       }
 
-      toast.success(deletedQuestion.message);
+      await queryClient.invalidateQueries({ queryKey: queryKey });
+      toast.success(result.message);
     } catch (error) {
       console.error(error.message, error.status);
-      setQuestions(previousQuestions);
+      if (previousQueryData) {
+        queryClient.setQueryData(queryKey, previousQueryData);
+      }
       setSelectedQuestionId(previousSelectedQuestionId);
       alert("Something went wrong with the question deletion.");
-    }
-  };
-
-  const openSelectQuizModal = async () => {
-    setIsLoadingQuizzes(true);
-    try {
-      const response = await authFetch(`${backendHost}/api/quizzes`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(
-          `Quiz Selection Error ${response.status}: ${response.statusText}`,
-        );
-      }
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setAvailableQuizzes(data);
-      } else if (data.quizzes && Array.isArray(data.quizzes)) {
-        setAvailableQuizzes(data.quizzes);
-      } else {
-        setAvailableQuizzes([]);
-      }
-      setIsSelectQuizModalOpen(true);
-    } catch (error) {
-      console.error("Error fetching quizzes:", error);
-      toast.error("Failed to fetch quizzes");
-    } finally {
-      setIsLoadingQuizzes(false);
     }
   };
 
@@ -103,32 +214,41 @@ function SideBar({
     setIsSelectQuizModalOpen(false);
   };
 
+  const fetchQuizzes = async (page = 0) => {
+    const offset = page * 5;
+    const limit = 5;
+    const response = await authFetch(
+      `${backendHost}/api/quizzes?limit=${limit}&offset=${offset}`,
+      {
+        credentials: "include",
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch quizzes");
+    }
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(`Failed to fetch quizzes: ${result.message}`);
+    }
+    return result;
+  };
+
   const handleSelectQuiz = async (quiz) => {
     setCurrentQuiz(quiz);
     closeSelectQuizModal();
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/questions?quizId=${quiz.id}`,
-        {
-          credentials: "include",
-        },
-      );
-      const result = await response.json();
-
-      if (!result.success) {
-        toast.error(result.message);
-        return;
-      }
-      setQuestions(result.questionList);
-    } catch (error) {
-      console.error(error);
-      toast.error(`something went wrong while fetching questions`);
-    }
   };
+
+  // ----------------------------------------------------------------------------
+  // ERROR BOUNDARY
+  // ----------------------------------------------------------------------------
 
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
+
+  // ------------------------------------------------------------------------------------
+  // MAIN COMPONENT
+  //-------------------------------------------------------------------------------------
 
   return (
     <>
@@ -184,7 +304,6 @@ function SideBar({
               <button
                 onClick={() => {
                   setCurrentQuiz(null);
-                  setQuestions([]);
                 }}
                 className="ml-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
               >
@@ -194,10 +313,9 @@ function SideBar({
           ) : (
             <button
               onClick={openSelectQuizModal}
-              disabled={isLoadingQuizzes}
               className="text-xs text-blue-400 hover:text-blue-300 underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoadingQuizzes ? "Loading..." : "Select a quiz"}
+              Select a quiz
             </button>
           )}
         </div>
@@ -208,8 +326,8 @@ function SideBar({
             <div className="text-sm font-semibold text-gray-400">Questions</div>
           </div>
           <div className="space-y-1">
-            {currentQuiz ? (
-              questions?.map((question) => (
+            {questions ? (
+              questions.map((question) => (
                 <div
                   key={question.id}
                   className={`py-1 px-2 rounded text-sm flex items-center justify-between group ${
@@ -235,6 +353,10 @@ function SideBar({
                   </button>
                 </div>
               ))
+            ) : isFetching ? (
+              <div className="space-y-1">
+                <div className="text-gray-500 text-sm">Fetching...</div>
+              </div>
             ) : (
               <div className="space-y-1">
                 <div className="text-gray-500 text-sm">No Questions</div>
@@ -246,43 +368,14 @@ function SideBar({
 
       {/* Select Quiz Modal */}
       {isSelectQuizModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4 text-white">
-              Select a Quiz
-            </h2>
-
-            <div className="space-y-2">
-              {availableQuizzes.length > 0 ? (
-                availableQuizzes.map((quiz) => (
-                  <button
-                    key={quiz.id}
-                    onClick={() => handleSelectQuiz(quiz)}
-                    className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white text-sm"
-                  >
-                    <div className="font-medium truncate">{quiz.quizTitle}</div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      Token: {quiz.shareToken}
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="text-center text-gray-400 py-6">
-                  No quizzes available
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={closeSelectQuizModal}
-                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <SelectQuizModal
+          page={page}
+          fetchQuizzes={fetchQuizzes}
+          closeSelectQuizModal={closeSelectQuizModal}
+          handleSelectQuiz={handleSelectQuiz}
+          fetchPreviousQuizzes={fetchPreviousQuizzes}
+          fetchMoreQuizzes={fetchMoreQuizzes}
+        />
       )}
     </>
   );

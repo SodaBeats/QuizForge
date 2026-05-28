@@ -68,7 +68,6 @@ export function AuthProvider({ children }) {
   }, [logout, navigate]);
 
   useEffect(() => {
-    console.log("AuthProvider useeffect infinite loop alert");
     if (!backendHost) {
       console.error("Missing VITE_BACKEND_HOST env variable");
       setLoading(false);
@@ -130,7 +129,7 @@ export function AuthProvider({ children }) {
 
   // Don't render children until auth check is complete
   if (loading) {
-    return <LoadingScreen />; // Or your loading component
+    return <LoadingScreen fullScreen />;
   }
 
   return (
@@ -144,6 +143,7 @@ export function AuthProvider({ children }) {
         logout,
         silentRefresh,
         authFetch,
+        loading,
       }}
     >
       {children}
