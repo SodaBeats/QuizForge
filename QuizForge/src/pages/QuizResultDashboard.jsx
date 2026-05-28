@@ -42,7 +42,7 @@ function buildMetrics(data) {
     },
     {
       label: "Lowest score",
-      value: `${data.lowestScore}%`,
+      value: data.totalTakers > 0 ? `${data.lowestScore}%` : "No Data",
       sub: "quiz minimum",
     },
   ];
@@ -121,7 +121,7 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
     if (!metrics.success) {
       if (metrics.message === "Unauthorized action") {
         await logout();
-        return DEFAULT_DASHBOARD_DATA.metrics;
+        return DEFAULT_DASHBOARD_DATA;
       }
       throw new Error(
         metrics?.message ||
@@ -133,7 +133,7 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
     if (!students.success) {
       if (students.message === "Unauthorized action") {
         await logout();
-        return DEFAULT_DASHBOARD_DATA.students;
+        return DEFAULT_DASHBOARD_DATA;
       }
       throw new Error(
         students?.message ||
@@ -145,7 +145,7 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
     if (!questions.success) {
       if (questions.message === "Unauthorized action") {
         await logout();
-        return DEFAULT_DASHBOARD_DATA.questions;
+        return DEFAULT_DASHBOARD_DATA;
       }
       throw new Error(
         questions?.message ||
@@ -157,7 +157,7 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
     if (!scores.success) {
       if (scores.message === "Unauthorized action") {
         await logout();
-        return DEFAULT_DASHBOARD_DATA.scoreDistribution;
+        return DEFAULT_DASHBOARD_DATA;
       }
       throw new Error(
         scores?.message ||
