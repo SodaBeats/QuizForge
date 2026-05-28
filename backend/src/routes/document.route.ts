@@ -10,7 +10,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
-    const limit = Number(req.query.limit) || 5;
+    const limit = Number(req.query.limit) || 20;
     const offset = Number(req.query.offset) || 0;
     const MAX_LIMIT = 100;
 

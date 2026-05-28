@@ -517,8 +517,9 @@ export default function TopBar({
 
   const fetchDocs = async (page = 0) => {
     const offset = page * 5;
+    const limit = 5;
     const response = await authFetch(
-      `${backendHost}/api/documents?limit=5&offset=${offset}`,
+      `${backendHost}/api/documents?limit=${limit}&offset=${offset}`,
       { credentials: "include" },
     );
     if (!response) {

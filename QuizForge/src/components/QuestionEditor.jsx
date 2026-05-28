@@ -73,7 +73,15 @@ export default function QuestionEditor({
   const fetchDocuments = async () => {
     try {
       const response = await authFetch(`${backendHost}/api/documents`);
+      if (!response || !response.ok) {
+        throw new Error(
+          `Failed to fetch source documents ${response?.status} ${response?.text}`,
+        );
+      }
       const data = await response.json();
+      if (!data || !data.success) {
+        throw new Error(data.message || data.error || "Something went wrong");
+      }
       setDocuments(Array.isArray(data.documents) ? data.documents : []);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
