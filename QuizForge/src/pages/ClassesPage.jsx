@@ -161,8 +161,15 @@ export default function ClassesPage() {
       }
       const result = await response.json();
       if (!result || !result.success) {
-        throw new Error(result?.message);
+        throw new Error(
+          `${
+            result?.message ||
+            result?.errors?.map((e) => e.msg).join(", ") ||
+            "Failed to create class"
+          }`,
+        );
       }
+      toast.success("Class Created!");
       console.log(result);
     } catch (error) {
       console.error(`Class creation error: ${error}`);
