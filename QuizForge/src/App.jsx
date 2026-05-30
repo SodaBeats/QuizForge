@@ -10,6 +10,7 @@ import StudentTokenPage from "./pages/StudentTokenPage";
 import StudentQuizPage from "./pages/StudentQuizPage";
 import RootRedirector from "./components/RootRedirector";
 import QuizResultDashboard from "./pages/QuizResultDashboard";
+import ClassesPage from "./pages/ClassesPage";
 import ErrorPage from "./pages/ErrorPage";
 
 function ProtectedRoute({ children }) {
@@ -57,6 +58,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <QuizResultDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/classes"
+          element={
+            <ProtectedRoute>
+              <ClassesPage />
             </ProtectedRoute>
           }
         />
