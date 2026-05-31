@@ -142,6 +142,7 @@ export default function ClassesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { authFetch } = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
   // submit class creation form
   async function handleCreateClass(form) {
@@ -159,6 +160,7 @@ export default function ClassesPage() {
           "Failed to create class",
       );
     }
+    await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
   }
 
   async function fetchClasses() {
