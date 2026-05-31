@@ -17,4 +17,18 @@ export const ClassesRepository = {
 
     return result ? result : null;
   },
+
+  // get classes by user id
+  async getUserClasses(userId: number) {
+    const result = await db
+      .select({
+        id: classes_db.id,
+        name: classes_db.class_name,
+        subject: classes_db.class_subject,
+      })
+      .from(classes_db)
+      .where(eq(classes_db.teacher_id, userId));
+
+    return result;
+  },
 };
