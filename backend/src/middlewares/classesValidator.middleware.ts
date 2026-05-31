@@ -4,12 +4,18 @@ import { body, validationResult } from 'express-validator';
 export const classesInputValidator = [
   body('className')
     .trim()
-    .blacklist('<>{}[]')
+    .isLength({ max: 100 })
+    .withMessage('Classname must not exceed 100 characters')
+    .matches(/^[^<>{}[\]]+$/)
+    .withMessage('Class name contains invalid characters')
     .notEmpty()
     .withMessage('Class name is required'),
   body('subject')
     .trim()
-    .blacklist('<>{}[]')
+    .isLength({ max: 100 })
+    .withMessage('Subject must not exceed 100 characters')
+    .matches(/^[^<>{}[\]]+$/)
+    .withMessage('Subject contains invalid characters')
     .notEmpty()
     .withMessage('Subject is required'),
   (req: Request, res: Response, next: NextFunction) => {
