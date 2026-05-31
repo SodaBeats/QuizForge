@@ -6,13 +6,13 @@ import { body, validationResult } from 'express-validator';
 export const quizInputValidator = [
   body('quizTitle')
     .trim()
-    .blacklist('<>{}[]')
+    .blacklist('<>{}\\[\\]')
     .notEmpty()
     .withMessage('Quiz title is required'),
-  body('description').optional().trim().blacklist('<>{}[]'),
+  body('description').optional().trim().blacklist('<>{}\\[\\]'),
   body('shareToken')
     .trim()
-    .blacklist('<>{}[]')
+    .blacklist('<>{}\\[\\]')
     .notEmpty()
     .withMessage('Share token is required')
     .isAlphanumeric()

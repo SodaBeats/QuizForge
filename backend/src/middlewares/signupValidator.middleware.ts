@@ -4,13 +4,13 @@ import { body, validationResult } from 'express-validator';
 export const signupValidator = [
   body('first_name')
     .trim()
-    .blacklist('<>{}[]')
+    .blacklist('<>{}\\[\\]')
     .notEmpty()
     .withMessage('First name is required')
     .escape(),
   body('last_name')
     .trim()
-    .blacklist('<>{}[]')
+    .blacklist('<>{}\\[\\]')
     .notEmpty()
     .withMessage('Last name is required')
     .escape(),

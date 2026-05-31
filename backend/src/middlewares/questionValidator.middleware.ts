@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator';
 export const questionInputValidator = [
   body('questionText')
     .trim()
-    .blacklist('<>{}[]')
+    .blacklist('<>{}\\[\\]')
     .notEmpty()
     .withMessage('Question text is required'),
   body('questionType')

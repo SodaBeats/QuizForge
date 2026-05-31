@@ -60,8 +60,6 @@ router.get(
         students: students.filter((s) => s.classId === c.id),
       }));
 
-      console.log(classArray);
-
       return res.status(200).json({ success: true, classArray });
     } catch (error) {
       next(error);
