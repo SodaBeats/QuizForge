@@ -1,46 +1,14 @@
 // src/pages/ClassesPage.jsx
 
 import { useState, useContext } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
 import ClassesSidebar from "../components/ClassesSidebar";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-const MOCK_CLASSES = [
-  {
-    id: 1,
-    name: "BSCS 1-A",
-    subject: "CS101",
-    students: [
-      { id: "2024-0001", name: "Ana Reyes" },
-      { id: "2024-0002", name: "Ben Santos" },
-      { id: "2024-0003", name: "Cara Lim" },
-      { id: "2024-0004", name: "Dan Cruz" },
-    ],
-  },
-  {
-    id: 2,
-    name: "BSIT 2-B",
-    subject: "IT202",
-    students: [
-      { id: "2023-0011", name: "Gina Tan" },
-      { id: "2023-0012", name: "Hans Uy" },
-      { id: "2023-0013", name: "Iris Ng" },
-    ],
-  },
-  {
-    id: 3,
-    name: "BSCS 3-A",
-    subject: "CS301",
-    students: [
-      { id: "2022-0021", name: "Karen Diaz" },
-      { id: "2022-0022", name: "Leo Ramos" },
-      { id: "2022-0023", name: "Mia Vega" },
-    ],
-  },
-];
 
 // ---------------------------------------------------------------
 // HELPER FUNCTIONS
@@ -57,7 +25,12 @@ function getInitials(name) {
 // ---------------------------------------------------------------
 // SUB COMPONENT
 // ---------------------------------------------------------------
-function CreateClassModal({ onClose, onSubmit }) {
+function CreateClassModal({
+  onClose,
+  onSubmit,
+  isSubmitting,
+  setIsSubmitting,
+}) {
   const [form, setForm] = useState({
     className: "",
     subject: "",
@@ -67,18 +40,28 @@ function CreateClassModal({ onClose, onSubmit }) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.className || !form.subject) {
       toast.error("Incomplete Input");
       return;
     }
-    onSubmit(form);
-    onClose();
+    try {
+      setIsSubmitting(true);
+      await onSubmit(form);
+      setIsSubmitting(false);
+      onClose();
+      setForm({ className: "", subject: "" });
+      toast.success("Class Created!");
+    } catch (error) {
+      console.error(`Classes creation error: ${error}`);
+      setIsSubmitting(false);
+      toast.error(error.message || "Something went wrong while creating class");
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-gray-800 border border-gray-700 rounded-lg w-[420px]">
+      <div className="bg-gray-800 border border-gray-700 rounded-lg w-[420px] relative">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
           <h2 className="text-sm font-semibold text-gray-100">
@@ -102,6 +85,7 @@ function CreateClassModal({ onClose, onSubmit }) {
               name="className"
               value={form.className}
               onChange={handleChange}
+              disabled={isSubmitting}
               placeholder="e.g. BSCS 1-A"
               className="bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500"
             />
@@ -113,6 +97,7 @@ function CreateClassModal({ onClose, onSubmit }) {
               name="subject"
               value={form.subject}
               onChange={handleChange}
+              disabled={isSubmitting}
               placeholder="e.g. Introduction to Programming"
               className="bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500"
             />
@@ -123,18 +108,28 @@ function CreateClassModal({ onClose, onSubmit }) {
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-gray-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-400 bg-gray-700 hover:bg-gray-600 rounded-md"
+            className="px-4 py-2 text-sm text-gray-400 bg-gray-700 hover:bg-gray-600 rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md"
+            className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
             Create class
           </button>
         </div>
       </div>
+      {isSubmitting && (
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
+            <div className="text-sm text-white">Creating...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -144,38 +139,50 @@ function CreateClassModal({ onClose, onSubmit }) {
 // ------------------------------------------------------------------------
 export default function ClassesPage() {
   const [selectedClass, setSelectedClass] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { authFetch } = useContext(AuthContext);
 
   // submit class creation form
   async function handleCreateClass(form) {
-    try {
-      const response = await authFetch(`${backendHost}/api/classes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        credentials: "include",
-      });
-      if (!response || !response.ok) {
-        throw new Error("Failed to create class");
-      }
-      const result = await response.json();
-      if (!result || !result.success) {
-        throw new Error(
-          `${
-            result?.message ||
-            result?.errors?.map((e) => e.msg).join(", ") ||
-            "Failed to create class"
-          }`,
-        );
-      }
-      toast.success("Class Created!");
-      console.log(result);
-    } catch (error) {
-      console.error(`Class creation error: ${error}`);
-      toast.error(error.message || "Something went wrong when creating class");
+    const response = await authFetch(`${backendHost}/api/classes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+      credentials: "include",
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData?.errors?.map((e) => e.msg).join(", ") ||
+          errorData?.message ||
+          "Failed to create class",
+      );
     }
   }
+
+  async function fetchClasses() {
+    const response = await authFetch(`${backendHost}/api/classes`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData?.errors?.map((e) => e.msg).join(", ") ||
+          errorData?.message ||
+          "Failed to fetch class",
+      );
+    }
+    const result = await response.json();
+    return result.classArray;
+  }
+
+  const { data: queryClasses, isFetching: queryClassesIsFetching } = useQuery({
+    queryKey: ["queryClasses"],
+    queryFn: fetchClasses,
+    staleTime: 1000 * 60 * 5,
+  });
 
   // ------------------------------------------------------------------------
   // ERROR BOUNDARY
@@ -191,7 +198,8 @@ export default function ClassesPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <ClassesSidebar
-          classes={MOCK_CLASSES}
+          classes={queryClasses}
+          isFetching={queryClassesIsFetching}
           selectedClassId={selectedClass?.id}
           onSelectClass={setSelectedClass}
           setShowCreateModal={setShowCreateModal}
@@ -208,7 +216,7 @@ export default function ClassesPage() {
                     {selectedClass.name}
                   </h2>
                   <p className="text-xs text-gray-500">
-                    {selectedClass.students.length} Students
+                    {selectedClass.subject}
                   </p>
                 </div>
                 <span>
@@ -248,6 +256,8 @@ export default function ClassesPage() {
             <CreateClassModal
               onClose={() => setShowCreateModal(false)}
               onSubmit={handleCreateClass}
+              isSubmitting={isSubmitting}
+              setIsSubmitting={setIsSubmitting}
             />
           )}
         </div>
