@@ -4,16 +4,22 @@ import { body, validationResult } from 'express-validator';
 export const questionInputValidator = [
   body('questionText')
     .trim()
+    .blacklist('<>{}[]')
     .notEmpty()
     .withMessage('Question text is required'),
   body('questionType')
     .notEmpty()
     .withMessage('Question type must not be empty'),
-  body('optionA').optional().trim(),
-  body('optionB').optional().trim(),
-  body('optionC').optional().trim(),
-  body('optionD').optional().trim(),
-  body('correctAnswer').optional().trim().isString().toLowerCase(),
+  body('optionA').optional().trim().blacklist('<>{}[]'),
+  body('optionB').optional().trim().blacklist('<>{}[]'),
+  body('optionC').optional().trim().blacklist('<>{}[]'),
+  body('optionD').optional().trim().blacklist('<>{}[]'),
+  body('correctAnswer')
+    .optional()
+    .trim()
+    .blacklist('<>{}[]')
+    .isString()
+    .toLowerCase(),
   body('timeLimit')
     .trim()
     .notEmpty()
