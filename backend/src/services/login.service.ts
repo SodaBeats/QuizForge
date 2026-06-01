@@ -4,51 +4,57 @@ import { UserRepository } from '../repository/UserRepository.js';
 import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
 
 interface Data {
-  email: string,
-  password: string
-};
+  email: string;
+  password: string;
+}
 
-export const handleLogin = async(data: Data) => {
-
+export const handleLogin = async (data: Data) => {
   const { email, password } = data;
 
-  try{
-
+  try {
     //check if the account exists
     const existingUser = await UserRepository.selectUserByEmail(email);
 
-    if(!existingUser){
-      const error = new Error ('Invalid Credentials');
+    if (!existingUser) {
+      const error = new Error('Invalid Credentials');
       (error as any).status = 401;
       throw error;
     }
 
     //check if password is valid
-    const isValid = await bcrypt.compare(password, existingUser.password_hash);
-    if(!isValid){
-      const error = new Error ('Invalid Credentials');
+    const isValid = await bcrypt.compare(password, existingUser.passwordHash);
+    if (!isValid) {
+      const error = new Error('Invalid Credentials');
       (error as any).status = 401;
       throw error;
     }
 
     //generate access token
     const accessToken = jwt.sign(
-      {id: existingUser.id, email: existingUser.email, role: existingUser.role},
+      {
+        id: existingUser.id,
+        email: existingUser.email,
+        role: existingUser.role,
+      },
       process.env.JWT_SECRET,
-      {expiresIn: '15m'} //jsonwebtoken would convert this to timestamp
+      { expiresIn: '15m' }, //jsonwebtoken would convert this to timestamp
     );
 
     //generate refresh token
     const refreshToken = jwt.sign(
-      {id: existingUser.id},
+      { id: existingUser.id },
       process.env.REFRESH_TOKEN_SECRET,
-      {expiresIn: '7d'}
+      { expiresIn: '7d' },
     );
 
-    const expiresAt = new Date(Date.now() + 7*24*60*60*1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     //insert refresh token to database
-    await RefreshTokenRepository.insertRefreshToken(existingUser.id, refreshToken, expiresAt);
+    await RefreshTokenRepository.insertRefreshToken(
+      existingUser.id,
+      refreshToken,
+      expiresAt,
+    );
 
     return {
       accessToken: accessToken,
@@ -56,12 +62,11 @@ export const handleLogin = async(data: Data) => {
       user: {
         id: existingUser.id,
         email: existingUser.email,
-        first_name: existingUser.first_name,
-        role: existingUser.role
-      }
+        first_name: existingUser.firstName,
+        role: existingUser.role,
+      },
     };
-  }
-  catch (error){
+  } catch (error) {
     throw error;
   }
 };

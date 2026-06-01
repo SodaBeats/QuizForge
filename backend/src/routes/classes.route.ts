@@ -5,7 +5,7 @@ import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middle
 import { classesInputValidator } from '../middlewares/classesValidator.middleware.js';
 import { ClassesRepository } from '../repository/ClassesRepository.js';
 import { ClassStudentsRepository } from '../repository/ClassStudentsRepo.js';
-import { db } from '../db/db.js';
+import { UserRepository } from '../repository/UserRepository.js';
 
 const router = express.Router();
 
@@ -40,6 +40,7 @@ router.post(
   },
 );
 
+// get user classes and students in each class
 router.get(
   '/',
   verifyToken,
@@ -61,6 +62,54 @@ router.get(
       }));
 
       return res.status(200).json({ success: true, classArray });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// find student by email
+router.get(
+  '/:classId/students/find',
+  verifyToken,
+  userBasedRateLimiter(60, 10),
+  async (req, res, next) => {
+    if (req.user.role !== 'teacher') {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized action',
+      });
+    }
+    const classId = Number(req.params.classId);
+    if (!classId || isNaN(classId))
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid class ID' });
+    const email = req.query.email;
+    if (!email || typeof email !== 'string')
+      return res.status(400).json({ success: false, message: 'Invalid email' });
+
+    try {
+      const student = await UserRepository.selectUserByEmail(email);
+      if (!student)
+        return res
+          .status(404)
+          .json({ success: false, message: 'This user does not exist' });
+      if (student.role === 'teacher' || student.role === 'admin')
+        return res
+          .status(400)
+          .json({ success: false, message: 'Unavaliable email' });
+
+      const inClass = await ClassStudentsRepository.checkIfUserInClass(
+        student.id,
+        classId,
+      );
+      if (inClass)
+        return res
+          .status(400)
+          .json({ success: false, message: 'User is already in class' });
+
+      return res.status(200).json({ success: true });
     } catch (error) {
       next(error);
     }

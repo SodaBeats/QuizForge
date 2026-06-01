@@ -1,34 +1,48 @@
-
 import { eq } from 'drizzle-orm';
-import type {InferInsertModel} from 'drizzle-orm';
+import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { users } from '../db/schema.js';
 
-type UserRegistrationData = Omit<InferInsertModel<typeof users>, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
+type UserRegistrationData = Omit<
+  InferInsertModel<typeof users>,
+  'id' | 'user_id' | 'created_at' | 'updated_at'
+>;
 
 export const UserRepository = {
-
   //find user by email
-  async selectUserByEmail(email: string){
-    const [result] = await db.select().from(users).where(eq(users.email, email));
+  async selectUserByEmail(email: string) {
+    const [result] = await db
+      .select({
+        id: users.id,
+        userId: users.user_id,
+        firstName: users.first_name,
+        lastName: users.last_name,
+        email: users.email,
+        passwordHash: users.password_hash,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.email, email));
     return result ?? null;
   },
 
   //select a user by email (unique)
-  async checkEmailUniqueness(email: string){
+  async checkEmailUniqueness(email: string) {
     const result = await db.select().from(users).where(eq(users.email, email));
     return result;
   },
 
   //register user
-  async registerUser(data: UserRegistrationData){
+  async registerUser(data: UserRegistrationData) {
     await db.insert(users).values(data);
   },
 
   //find user by refresh token
-  async findRefreshTokenOwner(tokenUserId: number){
-    const [result] = await db.select().from(users).where(eq(users.id, tokenUserId));
+  async findRefreshTokenOwner(tokenUserId: number) {
+    const [result] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, tokenUserId));
     return result;
-  }
-
+  },
 };

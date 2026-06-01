@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { eq, inArray, sql, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { classes_students_db, users } from '../db/schema.js';
 
@@ -19,5 +19,19 @@ export const ClassStudentsRepository = {
       .where(inArray(classes_students_db.class_id, classIds));
 
     return result;
+  },
+
+  // check if user is in class, return boolean
+  async checkIfUserInClass(userId: number, classId: number) {
+    const [result] = await db
+      .select()
+      .from(classes_students_db)
+      .where(
+        and(
+          eq(classes_students_db.student_id, userId),
+          eq(classes_students_db.class_id, classId),
+        ),
+      );
+    return result ? true : false;
   },
 };
