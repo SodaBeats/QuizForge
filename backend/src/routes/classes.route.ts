@@ -116,7 +116,6 @@ router.post(
       return res.status(201).json({ success: true, message: 'Student Added!' });
     } catch (error: any) {
       if (error.cause?.code === '23505') {
-        console.error(error);
         return res.status(409).json({ message: 'User already in class' });
       }
       return next(error);

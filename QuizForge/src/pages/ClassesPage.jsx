@@ -211,7 +211,7 @@ function AddStudentModal({
       toast.error("Waiting for email validation");
       return;
     }
-    if (emailCheckError) {
+    if (emailCheckError || !emailValid) {
       toast.error("Please fix the email before submitting");
       return;
     }
@@ -286,7 +286,12 @@ function AddStudentModal({
           <button
             onClick={handleSubmit}
             className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={isSubmitting || isCheckingEmail || !!emailCheckError}
+            disabled={
+              isSubmitting ||
+              isCheckingEmail ||
+              !!emailCheckError ||
+              !emailValid
+            }
           >
             Add student
           </button>

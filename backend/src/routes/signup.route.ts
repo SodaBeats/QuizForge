@@ -27,7 +27,6 @@ router.post(
       });
     } catch (error: any) {
       if (error.cause?.code === '23505') {
-        console.error(error);
         return res
           .status(409)
           .json({ success: false, message: 'This email is already in use' });
