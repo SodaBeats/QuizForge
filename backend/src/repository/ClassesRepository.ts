@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { classes_db } from '../db/schema.js';
 
@@ -30,5 +30,22 @@ export const ClassesRepository = {
       .where(eq(classes_db.teacher_id, userId));
 
     return result;
+  },
+
+  // get class by class id
+  async getClassByClassId(userId: number, classId: number) {
+    const [result] = await db
+      .select({
+        id: classes_db.id,
+        teacherId: classes_db.teacher_id,
+        className: classes_db.class_name,
+        classSubject: classes_db.class_subject,
+      })
+      .from(classes_db)
+      .where(
+        and(eq(classes_db.teacher_id, userId), eq(classes_db.id, classId)),
+      );
+
+    return result ? result : null;
   },
 };

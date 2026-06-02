@@ -427,19 +427,21 @@ export default function ClassesPage() {
 
               {/* Student grid */}
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-3 content-start">
-                {selectedClass.students.map((student) => (
+                {selectedClass.students?.map((student) => (
                   <div
-                    key={student.id}
+                    key={student?.email}
                     className="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:bg-gray-700 cursor-pointer"
                   >
                     <div className="w-9 h-9 rounded-full bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
-                      {getInitials(student.name)}
+                      {getInitials(student?.name)}
                     </div>
                     <div className="overflow-hidden">
                       <div className="text-sm text-gray-100 font-medium truncate">
-                        {student.name}
+                        {student?.name}
                       </div>
-                      <div className="text-xs text-gray-500">{student.id}</div>
+                      <div className="text-xs text-gray-500">
+                        {student?.email}
+                      </div>
                     </div>
                   </div>
                 ))}

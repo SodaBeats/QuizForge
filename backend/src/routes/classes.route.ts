@@ -63,7 +63,63 @@ router.get(
 
       return res.status(200).json({ success: true, classArray });
     } catch (error) {
-      next(error);
+      return next(error);
+    }
+  },
+);
+
+// router for adding student to class
+router.post(
+  '/:classId/students',
+  verifyToken,
+  userBasedRateLimiter(30, 10),
+  async (req, res, next) => {
+    if (req.user.role !== 'teacher')
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+
+    const classId = Number(req.params.classId);
+    if (!classId || isNaN(classId))
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid class ID' });
+
+    const email = req.body.email;
+    if (!email)
+      return res.status(400).json({ message: 'Please enter an email' });
+
+    try {
+      // check user owns class
+      const isOwner = await ClassesRepository.getClassByClassId(
+        req.user.id,
+        classId,
+      );
+      if (!isOwner)
+        return res.status(404).json({ message: 'Class does not exist' });
+
+      // get student id based on email
+      const student = await UserRepository.selectUserByEmail(req.body.email);
+      if (!student)
+        return res.status(404).json({ message: "Student doesn't exist" });
+
+      // insert to class and student junction table
+      const inserted = await ClassStudentsRepository.addStudentToClass(
+        classId,
+        student.id,
+      );
+      if (!inserted)
+        return res
+          .status(500)
+          .json({ message: 'Failed to add student to class' });
+
+      return res.status(201).json({ success: true, message: 'Student Added!' });
+    } catch (error: any) {
+      if (error.cause?.code === '23505') {
+        console.error(error);
+        return res.status(409).json({ message: 'User already in class' });
+      }
+      return next(error);
     }
   },
 );
@@ -111,7 +167,7 @@ router.get(
 
       return res.status(200).json({ success: true });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 );
