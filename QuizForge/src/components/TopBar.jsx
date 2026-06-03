@@ -483,18 +483,17 @@ export default function TopBar({
         credentials: "include",
       });
 
+      if (!response || !response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "Quiz creation failed",
+        );
+      }
+
       const data = await response.json();
 
-      if (!data.success) {
-        const errorMsg =
-          data.message ||
-          (Array.isArray(data.errors)
-            ? data.errors.map((e) => e.msg).join(", ")
-            : "Quiz creation failed");
-        toast.error(errorMsg);
-        console.error(data);
-        return;
-      }
       console.log(data.quiz);
 
       setQuizMetadata(data.quiz);
@@ -502,7 +501,7 @@ export default function TopBar({
       closeForgeQuizModal();
     } catch (error) {
       console.error("Error creating quiz: ", error);
-      toast.error(`Error: ${error.message || "Something went wrong"}`);
+      toast.error("Something went wrong while creating quiz");
     } finally {
       setIsCreatingQuiz(false);
     }
@@ -536,11 +535,13 @@ export default function TopBar({
       `${backendHost}/api/documents?limit=${limit}&offset=${offset}`,
       { credentials: "include" },
     );
-    if (!response) {
-      throw new Error("Authentication failed or no response received");
-    }
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response || !response.ok) {
+      const result = await response.json();
+      throw new Error(
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result?.message ||
+          "failed to fetch docs",
+      );
     }
     return await response.json();
   };

@@ -87,14 +87,14 @@ export default function QuizMakerSkeleton() {
       },
     );
     if (!response || !response.ok) {
-      throw new Error("Failed to fetch questions");
-    }
-    const result = await response.json();
-    if (!result.success) {
+      const result = await response.json();
       throw new Error(
-        `Failed to fetch questions: ${result.message || result.error}`,
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result?.message ||
+          "failed to fetch questions",
       );
     }
+    const result = await response.json();
 
     return result;
   };
