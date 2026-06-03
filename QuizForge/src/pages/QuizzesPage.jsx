@@ -33,7 +33,8 @@ export default function QuizzesPage() {
           "failed to fetch quizzes",
       );
     }
-    return await response.json();
+    const result = await response.json();
+    return result.userQuizzes;
   };
 
   const fetchQuestions = async (quizId) => {
@@ -58,7 +59,7 @@ export default function QuizzesPage() {
     staleTime: 1000 * 60 * 5,
   });
   const selectedQuiz =
-    queryQuizzes?.find((q) => q.id === selectedQuizId) || null;
+    queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
 
   const handleDeleteQuiz = async (quizId) => {
     const queryKey = ["queryQuizzes"];

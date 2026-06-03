@@ -185,4 +185,49 @@ router.get(
   },
 );
 
+// remove student from class
+router.delete(
+  '/:classId/students/:studentId',
+  verifyToken,
+  userBasedRateLimiter(10, 7),
+  async (req, res, next) => {
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+    const classId = Number(req.params.classId);
+    if (!classId || isNaN(classId))
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid class ID' });
+    const studentId = Number(req.params.studentId);
+    console.log(classId, studentId);
+    if (!studentId || isNaN(studentId))
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid student ID' });
+
+    try {
+      // check user owns class
+      const isOwner = await ClassesRepository.getClassByClassId(
+        req.user.id,
+        classId,
+      );
+      if (!isOwner)
+        return res.status(404).json({ message: 'Class does not exist' });
+
+      const deleted = await ClassStudentsRepository.removeStudentFromClass(
+        classId,
+        studentId,
+      );
+      if (!deleted) return res.status(500).json({ success: false });
+
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 export default router;

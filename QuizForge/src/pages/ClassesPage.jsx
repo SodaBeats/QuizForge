@@ -309,6 +309,7 @@ export default function ClassesPage() {
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
+  const [removingIds, setRemovingIds] = useState([]);
 
   // handler for creating a class
   async function handleCreateClass(form) {
@@ -370,6 +371,48 @@ export default function ClassesPage() {
     await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
   }
 
+  // handler for removing student from class
+  async function removeStudent(classId, studentId) {
+    if (!window.confirm("Remove this student from the class?")) return;
+
+    const snapshot = queryClient.getQueryData(["queryClasses"]);
+
+    // optimistic update: remove student locally
+    queryClient.setQueryData(["queryClasses"], (old) => {
+      if (!old) return old;
+      return old.map((c) => {
+        if (c.id !== classId) return c;
+        return {
+          ...c,
+          students: c.students?.filter((s) => s.id !== studentId),
+        };
+      });
+    });
+
+    setRemovingIds((prev) => [...prev, studentId]);
+
+    try {
+      const response = await authFetch(
+        `${backendHost}/api/classes/${classId}/students/${studentId}`,
+        { method: "DELETE", credentials: "include" },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.message || "Failed to remove student");
+      }
+
+      toast.success("Student removed");
+      await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
+    } catch (err) {
+      // rollback
+      queryClient.setQueryData(["queryClasses"], snapshot);
+      toast.error(err.message || "Unable to remove student");
+    } finally {
+      setRemovingIds((prev) => prev.filter((id) => id !== studentId));
+    }
+  }
+
   const { data: queryClasses, isFetching: queryClassesIsFetching } = useQuery({
     queryKey: ["queryClasses"],
     queryFn: fetchClasses,
@@ -425,21 +468,39 @@ export default function ClassesPage() {
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-3 content-start">
                 {selectedClass.students?.map((student) => (
                   <div
-                    key={student?.email}
-                    onClick={() => setSelectedStudent(student)}
-                    className="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:bg-gray-700 cursor-pointer"
+                    key={student?.id}
+                    className="flex items-center justify-between bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:bg-gray-700"
                   >
-                    <div className="w-9 h-9 rounded-full bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
-                      {getInitials(student?.name)}
-                    </div>
-                    <div className="overflow-hidden">
-                      <div className="text-sm text-gray-100 font-medium truncate">
-                        {student?.name}
+                    <div
+                      onClick={() => setSelectedStudent(student)}
+                      className="flex items-center gap-3 flex-1 cursor-pointer"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
+                        {getInitials(student?.name)}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {student?.email}
+                      <div className="overflow-hidden">
+                        <div className="text-sm text-gray-100 font-medium truncate">
+                          {student?.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {student?.email}
+                        </div>
                       </div>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeStudent(selectedClass.id, student.id);
+                      }}
+                      disabled={removingIds.includes(student.id)}
+                      className={`ml-3 text-red-400 hover:text-red-600 px-2 py-1 rounded-md ${
+                        removingIds.includes(student.id)
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      }`}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
@@ -460,7 +521,7 @@ export default function ClassesPage() {
                   student={selectedStudent}
                   studentClasses={queryClasses?.filter((classItem) =>
                     classItem.students?.some(
-                      (student) => student?.email === selectedStudent.email,
+                      (student) => student?.id === selectedStudent.id,
                     ),
                   )}
                   onClose={() => setSelectedStudent(null)}

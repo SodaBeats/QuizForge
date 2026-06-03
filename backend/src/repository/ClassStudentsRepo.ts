@@ -10,6 +10,7 @@ export const ClassStudentsRepository = {
 
     const result = await db
       .select({
+        id: users.id,
         classId: classes_students_db.class_id,
         email: users.email,
         name: sql<string>`${users.first_name} || ' ' || ${users.last_name}`,
@@ -46,5 +47,19 @@ export const ClassStudentsRepository = {
         classId: classes_students_db.class_id,
       });
     return result ? result : null;
+  },
+
+  async removeStudentFromClass(classId: number, studentId: number) {
+    const [result] = await db
+      .delete(classes_students_db)
+      .where(
+        and(
+          eq(classes_students_db.class_id, classId),
+          eq(classes_students_db.student_id, studentId),
+        ),
+      )
+      .returning({ id: classes_students_db.id });
+
+    return result ?? null;
   },
 };
