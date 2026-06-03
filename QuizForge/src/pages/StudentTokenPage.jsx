@@ -13,7 +13,7 @@ export default function StudentTokenPage() {
 
   const handleSubmitToken = async (token) => {
     try {
-      const quizAndQuestionsRes = await authFetch(
+      const response = await authFetch(
         `${backendHost}/api/student/quiz-access`,
         {
           method: "POST",
@@ -22,10 +22,14 @@ export default function StudentTokenPage() {
         },
       );
 
-      const quizAndQuestions = await quizAndQuestionsRes.json();
+      const quizAndQuestions = await response.json();
 
       if (!quizAndQuestions.success) {
-        toast.error(quizAndQuestions.message || "Access Denied");
+        toast.error(
+          quizAndQuestions.errors?.map((e) => e.msg).join(", ") ||
+            quizAndQuestions.message ||
+            "Access Denied",
+        );
         return;
       }
 

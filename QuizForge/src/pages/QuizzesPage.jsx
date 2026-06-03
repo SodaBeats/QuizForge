@@ -26,17 +26,14 @@ export default function QuizzesPage() {
       credentials: "include",
     });
     if (!response || !response.ok) {
+      const result = await response.json();
       throw new Error(
-        `Failed to fetch quizzes: ${response?.status} ${response?.statusText}`,
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result?.message ||
+          "failed to fetch quizzes",
       );
     }
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(
-        `Failed to fetch quizzes: ${result.message || result.error}`,
-      );
-    }
-    return result.userQuizzes;
+    return await response.json();
   };
 
   const fetchQuestions = async (quizId) => {
@@ -44,17 +41,14 @@ export default function QuizzesPage() {
       `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
     );
     if (!response || !response.ok) {
+      const result = await response.json();
       throw new Error(
-        `Failed to fetch questions: ${response?.status} ${response?.statusText}`,
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result?.message ||
+          "failed to fetch questions",
       );
     }
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(
-        `Failed to fetch questions: ${result.message || result.error}`,
-      );
-    }
-    return result;
+    return await response.json();
   };
 
   // FETCH QUIZZES AND STORE IN TANSTACK CACHE
@@ -84,22 +78,18 @@ export default function QuizzesPage() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!response.ok) {
+      if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Server responded with: Error ${response.status}: ${response.statusText}`,
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to delete quiz",
         );
       }
 
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(
-          `Failed to delete quiz: ${result.message || result.error}`,
-        );
-      }
-
-      toast.success(result.message);
+      toast.success("Quiz Deleted!");
     } catch (error) {
-      console.error(error.message, error.status);
+      console.error(error);
       if (previousQuizzesData) {
         queryClient.setQueryData(queryKey, previousQuizzesData);
       }
@@ -152,24 +142,18 @@ export default function QuizzesPage() {
         },
       );
       if (!response || !response.ok) {
-        throw new Error(`Failed to update quiz`);
-      }
-
-      const result = await response.json();
-      if (!result.success) {
+        const result = await response.json();
         throw new Error(
-          `${
-            result.message ||
-            result.errors?.map((e) => e.msg).join(", ") ||
-            "Update Failed"
-          }`,
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to update quiz",
         );
       }
 
       toast.success("Quiz Updated!");
     } catch (error) {
       toast.error("Failed to update quiz");
-      console.error("Error: ", error);
+      console.error(error);
       queryClient.setQueryData(queryKey, originalQuizzes);
       setSelectedQuizId(null);
     }
@@ -212,16 +196,13 @@ export default function QuizzesPage() {
         },
       );
       if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Failed to update question: ${response.status} ${response.statusText}`,
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to update question",
         );
       }
-
-      const result = await response.json();
-      if (!result || !result.success) {
-        throw new Error(`Failed to update question: ${result.message}`);
-      }
-
       toast.success("Question Updated!");
     } catch (error) {
       queryClient.setQueryData(queryKey, originalData);
