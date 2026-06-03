@@ -34,7 +34,7 @@ export default function ClassesSidebar({
             <button
               key={cls.id}
               onClick={() =>
-                onSelectClass(selectedClassId === cls.id ? null : cls)
+                onSelectClass(selectedClassId === cls.id ? null : cls.id)
               }
               className={`w-full flex items-center gap-3 px-4 py-3 text-left border-l-2 transition-colors
                 ${

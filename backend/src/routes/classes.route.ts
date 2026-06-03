@@ -74,7 +74,12 @@ router.post(
   '/:classId/students',
   verifyToken,
   userBasedRateLimiter(30, 10),
-  body('email').trim().normalizeEmail().isEmail().withMessage('Invalid Email'),
+  /*body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid Email'),*/
   async (req, res, next) => {
     if (req.user.role !== 'teacher')
       return res
@@ -135,7 +140,12 @@ router.get(
   '/:classId/students/find',
   verifyToken,
   userBasedRateLimiter(60, 10),
-  body('email').trim().normalizeEmail().isEmail().withMessage('Invalid Email'),
+  /*body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid Email'),*/
   async (req, res, next) => {
     if (req.user.role !== 'teacher') {
       return res.status(403).json({
@@ -202,7 +212,6 @@ router.delete(
         .status(400)
         .json({ success: false, message: 'Invalid class ID' });
     const studentId = Number(req.params.studentId);
-    console.log(classId, studentId);
     if (!studentId || isNaN(studentId))
       return res
         .status(400)
@@ -221,7 +230,7 @@ router.delete(
         classId,
         studentId,
       );
-      if (!deleted) return res.status(500).json({ success: false });
+      if (!deleted) return res.status(404).json({ success: false });
 
       return res.status(200).json({ success: true });
     } catch (error) {

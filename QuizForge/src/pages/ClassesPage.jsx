@@ -302,7 +302,7 @@ function AddStudentModal({
 // MAIN COMPONENT
 // ------------------------------------------------------------------------
 export default function ClassesPage() {
-  const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedClassId, setSelectedClassId] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -350,7 +350,7 @@ export default function ClassesPage() {
   // handler for adding student to class
   async function handleAddStudent(form) {
     const response = await authFetch(
-      `${backendHost}/api/classes/${selectedClass?.id}/students`,
+      `${backendHost}/api/classes/${selectedClassId}/students`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -389,6 +389,11 @@ export default function ClassesPage() {
       });
     });
 
+    // close modal if the deleted student is currently selected
+    if (selectedStudent?.id === studentId) {
+      setSelectedStudent(null);
+    }
+
     setRemovingIds((prev) => [...prev, studentId]);
 
     try {
@@ -419,6 +424,9 @@ export default function ClassesPage() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // derive selected class from query data to keep it in sync
+  const selectedClass = queryClasses?.find((c) => c.id === selectedClassId);
+
   // ------------------------------------------------------------------------
   // ERROR BOUNDARY
   // ------------------------------------------------------------------------
@@ -435,8 +443,8 @@ export default function ClassesPage() {
         <ClassesSidebar
           classes={queryClasses}
           isFetching={queryClassesIsFetching}
-          selectedClassId={selectedClass?.id}
-          onSelectClass={setSelectedClass}
+          selectedClassId={selectedClassId}
+          onSelectClass={setSelectedClassId}
           setShowCreateModal={setShowCreateModal}
         />
 
