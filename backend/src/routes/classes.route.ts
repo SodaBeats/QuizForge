@@ -1,5 +1,6 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
+import { body, validationResult } from 'express-validator';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { classesInputValidator } from '../middlewares/classesValidator.middleware.js';
@@ -73,11 +74,17 @@ router.post(
   '/:classId/students',
   verifyToken,
   userBasedRateLimiter(30, 10),
+  body('email').trim().normalizeEmail().isEmail().withMessage('Invalid Email'),
   async (req, res, next) => {
     if (req.user.role !== 'teacher')
       return res
         .status(403)
         .json({ success: false, message: 'Unauthorized action' });
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
     const classId = Number(req.params.classId);
     if (!classId || isNaN(classId))
@@ -128,6 +135,7 @@ router.get(
   '/:classId/students/find',
   verifyToken,
   userBasedRateLimiter(60, 10),
+  body('email').trim().normalizeEmail().isEmail().withMessage('Invalid Email'),
   async (req, res, next) => {
     if (req.user.role !== 'teacher') {
       return res.status(403).json({
@@ -135,6 +143,12 @@ router.get(
         message: 'Unauthorized action',
       });
     }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
     const classId = Number(req.params.classId);
     if (!classId || isNaN(classId))
       return res
