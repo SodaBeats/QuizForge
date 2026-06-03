@@ -25,7 +25,7 @@ export default function QuizzesPage() {
       method: "GET",
       credentials: "include",
     });
-    if (!response || !response.ok) {
+    if (!response.ok) {
       const result = await response.json();
       throw new Error(
         result.errors?.map((e) => e.msg).join(", ") ||
