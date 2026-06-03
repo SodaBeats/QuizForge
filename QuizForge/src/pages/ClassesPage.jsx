@@ -7,20 +7,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../components/AuthProvider";
 import TopBar from "../components/TopBar";
 import ClassesSidebar from "../components/ClassesSidebar";
+import StudentInfoModal from "../components/StudentInfoModal";
+import { getInitials } from "../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-// ---------------------------------------------------------------
-// HELPER FUNCTIONS
-// ---------------------------------------------------------------
-function getInitials(name) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -313,6 +303,7 @@ function AddStudentModal({
 // ------------------------------------------------------------------------
 export default function ClassesPage() {
   const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -435,6 +426,7 @@ export default function ClassesPage() {
                 {selectedClass.students?.map((student) => (
                   <div
                     key={student?.email}
+                    onClick={() => setSelectedStudent(student)}
                     className="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 hover:bg-gray-700 cursor-pointer"
                   >
                     <div className="w-9 h-9 rounded-full bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
@@ -460,6 +452,18 @@ export default function ClassesPage() {
                   onSubmit={handleAddStudent}
                   isSubmitting={isSubmitting}
                   setIsSubmitting={setIsSubmitting}
+                />
+              )}
+
+              {selectedStudent && (
+                <StudentInfoModal
+                  student={selectedStudent}
+                  studentClasses={queryClasses?.filter((classItem) =>
+                    classItem.students?.some(
+                      (student) => student?.email === selectedStudent.email,
+                    ),
+                  )}
+                  onClose={() => setSelectedStudent(null)}
                 />
               )}
             </>

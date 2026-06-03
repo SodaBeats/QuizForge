@@ -77,10 +77,6 @@ export function AuthProvider({ children }) {
     silentRefresh();
   }, [silentRefresh, navigate]);
 
-  useEffect(() => {
-    console.log("Auth Provider re-rendered");
-  });
-
   const authFetch = useCallback(
     async (url, options = {}) => {
       try {
