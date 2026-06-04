@@ -239,4 +239,44 @@ router.delete(
   },
 );
 
+// delete class
+router.delete(
+  '/:classId',
+  verifyToken,
+  userBasedRateLimiter(10, 7),
+  async (req, res, next) => {
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+    const classId = Number(req.params.classId);
+    if (!classId || isNaN(classId))
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid class ID' });
+
+    try {
+      // verify teacher owns the class
+      const classExists = await ClassesRepository.getClassByClassId(
+        req.user.id,
+        classId,
+      );
+      if (!classExists)
+        return res
+          .status(404)
+          .json({ success: false, message: 'Class not found' });
+
+      // delete the class
+      await ClassesRepository.deleteClassById(req.user.id, classId);
+
+      return res
+        .status(200)
+        .json({ success: true, message: 'Class deleted successfully' });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 export default router;

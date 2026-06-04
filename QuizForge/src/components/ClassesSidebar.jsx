@@ -6,6 +6,8 @@ export default function ClassesSidebar({
   selectedClassId,
   onSelectClass,
   setShowCreateModal,
+  onDeleteClass,
+  deletingIds = [],
 }) {
   return (
     <div className="w-56 flex-shrink-0 border-r border-gray-700 flex flex-col bg-gray-900">
@@ -31,30 +33,52 @@ export default function ClassesSidebar({
           </div>
         ) : classes?.length > 0 ? (
           classes.map((cls) => (
-            <button
+            <div
               key={cls.id}
-              onClick={() =>
-                onSelectClass(selectedClassId === cls.id ? null : cls.id)
-              }
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left border-l-2 transition-colors
-                ${
-                  selectedClassId === cls.id
-                    ? "bg-blue-900 bg-opacity-30 border-blue-500"
-                    : "border-transparent hover:bg-gray-800"
-                }`}
+              className="group flex items-center px-4 py-3 hover:bg-gray-800 transition-colors border-l-2"
+              style={{
+                borderLeftColor:
+                  selectedClassId === cls.id ? "#3b82f6" : "transparent",
+              }}
             >
-              <div className="w-8 h-8 rounded-md bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
-                {cls.name.slice(0, 2)}
-              </div>
-              <div className="overflow-hidden">
-                <div className="text-sm text-gray-100 font-medium truncate">
-                  {cls.name}
+              <button
+                onClick={() =>
+                  onSelectClass(selectedClassId === cls.id ? null : cls.id)
+                }
+                className="flex-1 flex items-center gap-3 text-left"
+              >
+                <div className="w-8 h-8 rounded-md bg-blue-900 bg-opacity-50 flex items-center justify-center text-blue-300 text-xs font-semibold flex-shrink-0">
+                  {cls.name.slice(0, 2)}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {cls.students?.length ?? 0} students
+                <div className="overflow-hidden">
+                  <div className="text-sm text-gray-100 font-medium truncate">
+                    {cls.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {cls.students?.length ?? 0} students
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteClass(cls);
+                }}
+                disabled={deletingIds.includes(cls.id)}
+                className={`ml-2 text-gray-500 hover:text-red-400 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-all ${
+                  deletingIds.includes(cls.id)
+                    ? "opacity-100 cursor-not-allowed text-red-400"
+                    : ""
+                }`}
+                aria-label="Delete class"
+              >
+                {deletingIds.includes(cls.id) ? (
+                  <div className="w-4 h-4 border-2 border-t-transparent border-red-400 rounded-full animate-spin" />
+                ) : (
+                  "×"
+                )}
+              </button>
+            </div>
           ))
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-gray-500">

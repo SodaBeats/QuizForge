@@ -310,6 +310,7 @@ export default function ClassesPage() {
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
   const [removingIds, setRemovingIds] = useState([]);
+  const [deletingIds, setDeletingIds] = useState([]);
 
   // handler for creating a class
   async function handleCreateClass(form) {
@@ -418,6 +419,54 @@ export default function ClassesPage() {
     }
   }
 
+  // handler for deleting a class
+  async function handleDeleteClass(classToDelete) {
+    const confirmMessage = `Delete class '${classToDelete.name}'? This cannot be undone.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    const snapshot = queryClient.getQueryData(["queryClasses"]);
+
+    // optimistic update: remove class locally
+    queryClient.setQueryData(["queryClasses"], (old) => {
+      if (!old) return old;
+      return old.filter((c) => c.id !== classToDelete.id);
+    });
+
+    // deselect class if it was selected
+    if (selectedClassId === classToDelete.id) {
+      setSelectedClassId(null);
+    }
+
+    setDeletingIds((prev) => [...prev, classToDelete.id]);
+
+    try {
+      const response = await authFetch(
+        `${backendHost}/api/classes/${classToDelete.id}`,
+        { method: "DELETE", credentials: "include" },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.message || "Failed to delete class");
+      }
+
+      toast.success("Class deleted successfully");
+      await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
+    } catch (err) {
+      // rollback
+      queryClient.setQueryData(["queryClasses"], snapshot);
+      if (
+        selectedClassId === null &&
+        snapshot?.some((c) => c.id === classToDelete.id)
+      ) {
+        setSelectedClassId(classToDelete.id);
+      }
+      toast.error(err.message || "Failed to delete class");
+    } finally {
+      setDeletingIds((prev) => prev.filter((id) => id !== classToDelete.id));
+    }
+  }
+
   const { data: queryClasses, isFetching: queryClassesIsFetching } = useQuery({
     queryKey: ["queryClasses"],
     queryFn: fetchClasses,
@@ -446,6 +495,8 @@ export default function ClassesPage() {
           selectedClassId={selectedClassId}
           onSelectClass={setSelectedClassId}
           setShowCreateModal={setShowCreateModal}
+          onDeleteClass={handleDeleteClass}
+          deletingIds={deletingIds}
         />
 
         {/* Student panel */}

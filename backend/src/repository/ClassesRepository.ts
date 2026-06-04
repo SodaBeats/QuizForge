@@ -48,4 +48,15 @@ export const ClassesRepository = {
 
     return result ? result : null;
   },
+
+  // delete class by id
+  async deleteClassById(userId: number, classId: number) {
+    const result = await db
+      .delete(classes_db)
+      .where(
+        and(eq(classes_db.teacher_id, userId), eq(classes_db.id, classId)),
+      );
+
+    return result;
+  },
 };
