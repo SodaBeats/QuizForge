@@ -57,12 +57,15 @@ export default function LogInComponent() {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        toast.error(data.message || data.error || "Authentication failed");
-        return;
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to submit",
+        );
       }
+      const data = await response.json();
       if (isLogin && data.user.role === "teacher") {
         setToken(data.accessToken);
         setUserInfo(data.user);
@@ -82,7 +85,7 @@ export default function LogInComponent() {
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

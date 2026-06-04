@@ -79,9 +79,7 @@ export default function QuestionEditor({
         );
       }
       const data = await response.json();
-      if (!data || !data.success) {
-        throw new Error(data.message || data.error || "Something went wrong");
-      }
+      console.log(data);
       setDocuments(Array.isArray(data.documents) ? data.documents : []);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
@@ -132,13 +130,12 @@ export default function QuestionEditor({
         body: JSON.stringify(manualQuestion),
       });
       if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Failed to submit question: ${response?.status} ${response?.statusText}`,
+          result?.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to submit question",
         );
-      }
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(`Failed to submit question: ${result.message}`);
       }
       queryClient.invalidateQueries({ queryKey });
       toast.success("Question Added!");
@@ -157,7 +154,7 @@ export default function QuestionEditor({
       });
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error("Something went wrong while submitting question");
     }
   };
 
@@ -184,13 +181,12 @@ export default function QuestionEditor({
         },
       );
       if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Failed to update question: ${response?.status} ${response?.statusText}`,
+          result?.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to update question",
         );
-      }
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message);
       }
       toast.success("Question Updated!");
     } catch (error) {
@@ -232,16 +228,15 @@ export default function QuestionEditor({
       );
 
       if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Generation Error: ${response?.status} ${response?.statusText}`,
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to generate questions",
         );
       }
 
       const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.message || result.error || "Server Error");
-      }
 
       queryClient.setQueryData(queryKey, (prevData) => {
         const existingQuestions = Array.isArray(prevData?.questionList)
@@ -260,7 +255,7 @@ export default function QuestionEditor({
       toast.success("Generated questions added successfully");
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error("Something went wrong while generating questions");
     } finally {
       setLoading(false);
     }

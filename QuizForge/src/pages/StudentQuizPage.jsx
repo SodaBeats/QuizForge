@@ -102,21 +102,16 @@ export default function StudentQuizPage() {
           credentials: "include",
         },
       );
-
-      const result = await response.json();
-      //console.log(result);
-
-      if (!result.success) {
-        console.log(
-          result.error ||
-            result.message ||
-            "Something went wrong while submitting quiz",
+      if (!response || !response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to submit quiz",
         );
-        toast.error(
-          "Something went wrong while submitting quiz. Please try again later",
-        );
-        return;
       }
+
+      //console.log(result);
 
       toast.success("Attempt received!");
       navigate("/student", { replace: true });
@@ -136,10 +131,13 @@ export default function StudentQuizPage() {
           credentials: "include",
         },
       );
-      const result = await response.json();
-      if (!result.success) {
-        console.log("failed to delete attempt", result.message || result.error);
-        toast.error("Failed to delete attempt");
+      if (!response || !response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result?.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "Failed to delete attempt",
+        );
       }
     } catch (err) {
       console.error("Failed delete attempt", err);

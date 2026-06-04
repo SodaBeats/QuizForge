@@ -20,7 +20,6 @@ export function AuthProvider({ children }) {
 
   // Logout function to clear token
   const logout = useCallback(async () => {
-    //Tell the backend to delete the HTTP-only cookie
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/logout`, {
         method: "POST",
@@ -29,8 +28,8 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("logout fetch failed", err);
     } finally {
-      setToken(null); //clear local react state
-      navigate("/login"); // Send them home or to login
+      setToken(null);
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -76,10 +75,6 @@ export function AuthProvider({ children }) {
     }
     silentRefresh();
   }, [silentRefresh, navigate]);
-
-  useEffect(() => {
-    console.log("Auth Provider re-rendered");
-  });
 
   const authFetch = useCallback(
     async (url, options = {}) => {

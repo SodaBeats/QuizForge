@@ -445,9 +445,7 @@ router.patch(
         Number(id),
       );
 
-      return res
-        .status(200)
-        .json({ success: true, message: 'Quiz updated!', updatedQuiz });
+      return res.status(200).json({ success: true });
     } catch (error) {
       return next(error);
     }
@@ -481,9 +479,7 @@ router.delete(
           .status(404)
           .json({ success: false, message: 'Quiz not found' });
       } else {
-        return res
-          .status(200)
-          .json({ success: true, message: 'Quiz Deleted!' });
+        return res.status(200).json({ success: true });
       }
     } catch (error) {
       return next(error);

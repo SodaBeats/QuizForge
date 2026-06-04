@@ -187,21 +187,21 @@ function SideBar({
           credentials: "include",
         },
       );
-      if (!response.ok) {
+      if (!response || !response.ok) {
+        const result = await response.json();
         throw new Error(
-          `Server responded with: Error ${response.status}: ${response.statusText}`,
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result?.message ||
+            "failed to delete question",
         );
       }
 
       const result = await response.json();
-      if (!result.success) {
-        throw new Error(`Failed to delete question: ${result.message}`);
-      }
 
       await queryClient.invalidateQueries({ queryKey: queryKey });
       toast.success(result.message);
     } catch (error) {
-      console.error(error.message, error.status);
+      console.error(error);
       if (previousQueryData) {
         queryClient.setQueryData(queryKey, previousQueryData);
       }
@@ -223,14 +223,16 @@ function SideBar({
         credentials: "include",
       },
     );
-    if (!response.ok) {
-      throw new Error("Failed to fetch quizzes");
+    if (!response || !response.ok) {
+      const result = await response.json();
+      throw new Error(
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result?.message ||
+          "failed to fetch quizzes",
+      );
     }
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(`Failed to fetch quizzes: ${result.message}`);
-    }
-    return result;
+
+    return await response.json();
   };
 
   const handleSelectQuiz = async (quiz) => {

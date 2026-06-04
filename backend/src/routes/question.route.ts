@@ -282,7 +282,6 @@ router.post(
 
       return res.status(200).json({
         success: true,
-        message: 'Questions Generated!',
         questions: insertedQuestions,
       });
     } catch (error) {
