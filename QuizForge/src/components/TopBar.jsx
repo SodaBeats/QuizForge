@@ -372,6 +372,8 @@ export default function TopBar({
   };
 
   const handleLogout = async () => {
+    const confirmMessage = "Are you sure you want to log out?";
+    if (!window.confirm(confirmMessage)) return;
     try {
       setIsLoading(true);
       await logout();

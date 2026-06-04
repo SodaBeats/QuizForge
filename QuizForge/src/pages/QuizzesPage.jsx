@@ -62,6 +62,8 @@ export default function QuizzesPage() {
     queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
 
   const handleDeleteQuiz = async (quizId) => {
+    const confirmMessage = "Are you sure you wish to delete this quiz?";
+    if (!window.confirm(confirmMessage)) return;
     const queryKey = ["queryQuizzes"];
     const previousSelectedQuizId = selectedQuizId;
     const previousQuizzesData = queryClient.getQueryData(queryKey);
