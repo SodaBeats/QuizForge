@@ -4,10 +4,6 @@ import { getInitials } from "../util/getInitials";
 export default function StudentInfoModal({ student, studentClasses, onClose }) {
   const studentCardRef = useRef(null);
 
-  const contactPhone = student.phone || "(555) 123-4567";
-  const emergencyContact =
-    student.emergencyContact || "Parent / Guardian • (555) 987-6543";
-
   // closes modal when clicking away from student card
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,22 +38,6 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
                 {student.name}
               </div>
               <div className="text-sm text-gray-400">{student.email}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-gray-800 border border-gray-700 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                Contact Info
-              </div>
-              <div className="mt-2 text-sm text-white">{contactPhone}</div>
-              <div className="mt-1 text-xs text-gray-400">Primary phone</div>
-            </div>
-            <div className="rounded-xl bg-gray-800 border border-gray-700 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                Emergency Contact
-              </div>
-              <div className="mt-2 text-sm text-white">{emergencyContact}</div>
             </div>
           </div>
 
