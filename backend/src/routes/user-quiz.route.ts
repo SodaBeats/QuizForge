@@ -1,14 +1,16 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
+import { type Quiz, Accessibility } from '../types/quizType.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { quizInputValidator } from '../middlewares/quizInputValidator.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
-//import { QuestionsToQuizRepo } from '../repository/QuestionsToQuizRepo.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
+import { db } from '../db/db.js';
+import { QuizAccessRepo } from '../repository/QuizAccessRepo.js';
 
 const router = express.Router();
 
@@ -19,26 +21,23 @@ router.post(
   userBasedRateLimiter(3, 3),
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
-    const { quizTitle } = req.body;
     const { id, role } = req.user;
 
-    //verify contents
-    if (!quizTitle) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Incomplete Input' });
-    }
     if (role !== 'teacher') {
       return res
         .status(403)
         .json({ success: false, message: 'Unauthorized action' });
     }
 
-    const formattedData = {
+    const formattedData: Quiz = {
       user_id: id,
       quiz_title: req.body.quizTitle,
       quiz_description: req.body.description,
       share_token: req.body.shareToken,
+      accessibility:
+        req.body.accessibility === 'anyone'
+          ? Accessibility.anyone
+          : Accessibility.restricted,
       max_attempts: req.body.maxAttempts,
       due_date: new Date(req.body.dueDate),
       status: req.body.status,
@@ -46,15 +45,32 @@ router.post(
 
     try {
       //insert quiz data to database
-      const newQuiz = await UserQuizzesRepository.insertNewQuiz(formattedData);
-      if (!newQuiz) {
-        return res
-          .status(500)
-          .json({ success: false, message: 'Failed to create quiz' });
-      }
+      const newQuiz = await db.transaction(async (tx) => {
+        const quiz = await UserQuizzesRepository.insertNewQuiz(
+          formattedData,
+          tx,
+        );
+        if (!quiz) {
+          throw new Error('Failed to create quiz');
+        }
+        if (req.body.accessibility !== 'anyone') {
+          const classId = Number(req.body.accessibility);
+          if (Number.isNaN(classId)) {
+            throw new Error('Invalid class ID');
+          }
+          const quizAccessInsert = await QuizAccessRepo.insert(
+            quiz.id,
+            classId,
+            tx,
+          );
+          if (!quizAccessInsert)
+            throw new Error('Failed to handle quiz accessibility');
+        }
+        return quiz;
+      });
 
       return res
-        .status(200)
+        .status(201)
         .json({ success: true, message: 'Quiz Forged!', quiz: newQuiz });
     } catch (error) {
       return next(error);

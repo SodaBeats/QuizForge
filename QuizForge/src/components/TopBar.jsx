@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
+import { classServices } from "../services/classServices";
+import { documentServices } from "../services/documentServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -17,11 +19,11 @@ function FileModal({
   isUploading,
   selectedFileId,
   page,
-  fetchDocs,
+  authFetch,
 }) {
   const { data, isFetching, error } = useQuery({
     queryKey: ["docFetch", page],
-    queryFn: () => fetchDocs(page),
+    queryFn: () => documentServices.fetchDocs(authFetch, page),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -151,6 +153,9 @@ function QuizForgeModal({
   isCreatingQuiz,
   closeForgeQuizModal,
   setForgeQuizData,
+  userClasses,
+  isFetchingClasses,
+  classFetchError,
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -227,6 +232,38 @@ function QuizForgeModal({
             </div>
           </div>
 
+          {/* Accessibility */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Accessibility
+            </label>
+            <select
+              value={forgeQuizData.accessibility}
+              onChange={(e) =>
+                setForgeQuizData((prev) => ({
+                  ...prev,
+                  accessibility: e.target.value,
+                }))
+              }
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="anyone">Anyone with the code</option>
+              {userClasses?.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name}
+                </option>
+              ))}
+            </select>
+            {classFetchError && (
+              <p className="mt-2 text-xs text-red-400">
+                Unable to load classes.
+              </p>
+            )}
+            {isFetchingClasses && (
+              <p className="mt-2 text-xs text-gray-400">Loading classes...</p>
+            )}
+          </div>
+
           {/* Max Attempts and Status - Side by Side */}
           <div className="grid grid-cols-2 gap-4">
             {/* Max Attempts */}
@@ -244,7 +281,7 @@ function QuizForgeModal({
                   }))
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                placeholder="2"
+                placeholder="1"
                 min="1"
               />
             </div>
@@ -337,9 +374,10 @@ export default function TopBar({
     quizTitle: "",
     description: "",
     shareToken: "",
-    maxAttempts: 0,
+    maxAttempts: 1,
     dueDate: "",
     status: "draft",
+    accessibility: "anyone",
   });
 
   const menuRef = useRef(null);
@@ -414,6 +452,7 @@ export default function TopBar({
       maxAttempts: 0,
       dueDate: "",
       status: "draft",
+      accessibility: "anyone",
     });
     setIsForgeQuizModalOpen(true);
   };
@@ -441,6 +480,7 @@ export default function TopBar({
       maxAttempts: 0,
       dueDate: "",
       status: "draft",
+      accessibility: "anyone",
     });
   };
 
@@ -481,6 +521,7 @@ export default function TopBar({
           maxAttempts: maxAttempts,
           dueDate: finalDueDate,
           status: forgeQuizData.status,
+          accessibility: forgeQuizData.accessibility,
         }),
         credentials: "include",
       });
@@ -530,23 +571,16 @@ export default function TopBar({
     );
   };
 
-  const fetchDocs = async (page = 0) => {
-    const offset = page * 5;
-    const limit = 5;
-    const response = await authFetch(
-      `${backendHost}/api/documents?limit=${limit}&offset=${offset}`,
-      { credentials: "include" },
-    );
-    if (!response || !response.ok) {
-      const result = await response.json();
-      throw new Error(
-        result.errors?.map((e) => e.msg).join(", ") ||
-          result?.message ||
-          "failed to fetch docs",
-      );
-    }
-    return await response.json();
-  };
+  const {
+    data: userClasses,
+    isFetching: isFetchingClasses,
+    error: classFetchError,
+  } = useQuery({
+    queryKey: ["userClasses"],
+    queryFn: () => classServices.fetchClasses(authFetch),
+    enabled: isForgeQuizModalOpen,
+    staleTime: 1000 * 60 * 5,
+  });
 
   // ----------------------------------------------------------------------------
   // ERROR BOUNDARY
@@ -609,7 +643,7 @@ export default function TopBar({
                   isUploading={isUploading}
                   selectedFileId={selectedFileId}
                   page={page}
-                  fetchDocs={fetchDocs}
+                  authFetch={authFetch}
                 />
               )}
             </div>
@@ -624,6 +658,9 @@ export default function TopBar({
             handleForgeQuiz={handleForgeQuiz}
             isCreatingQuiz={isCreatingQuiz}
             closeForgeQuizModal={closeForgeQuizModal}
+            userClasses={userClasses}
+            isFetchingClasses={isFetchingClasses}
+            classFetchError={classFetchError}
           />
         )}
 
@@ -634,7 +671,6 @@ export default function TopBar({
             className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-700 
               hover:border-blue-400 flex items-center justify-center overflow-hidden transition-all"
           >
-            {/* Placeholder for Profile Image */}
             <span className="text-white text-xs font-bold">JD</span>
           </button>
           {isProfileMenuOpen && (

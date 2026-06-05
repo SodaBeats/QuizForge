@@ -20,7 +20,6 @@ function SelectQuizModal({
     queryKey: ["userQuizzes", page],
     queryFn: () => fetchQuizzes(page),
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
   });
 
   const totalQuizzes = data?.totalQuizzes || 0;

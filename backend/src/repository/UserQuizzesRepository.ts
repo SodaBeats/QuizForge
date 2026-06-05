@@ -1,6 +1,6 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq, count, and, desc, countDistinct } from 'drizzle-orm';
-import { db } from '../db/db.js';
+import { db, type QueryClient } from '../db/db.js';
 import { quizzes_db, quiz_attempts_db, questions_db } from '../db/schema.js';
 
 type QuizInputData = InferInsertModel<typeof quizzes_db>;
@@ -8,13 +8,14 @@ type QuizUpdateData = Partial<QuizInputData>;
 
 export const UserQuizzesRepository = {
   //insert quiz to table
-  async insertNewQuiz(data: QuizInputData) {
+  async insertNewQuiz(data: QuizInputData, tx: QueryClient = db) {
     const [quiz] = await db.insert(quizzes_db).values(data).returning({
       id: quizzes_db.id,
       userId: quizzes_db.user_id,
       quizTitle: quizzes_db.quiz_title,
       quizDescription: quizzes_db.quiz_description,
       shareToken: quizzes_db.share_token,
+      accessibility: quizzes_db.accessibility,
       maxAttempts: quizzes_db.max_attempts,
       status: quizzes_db.status,
       dueDate: quizzes_db.due_date,

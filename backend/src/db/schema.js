@@ -10,6 +10,7 @@ import {
   unique,
   index,
   vector,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 
@@ -240,13 +241,18 @@ export const quiz_access_db = pgTable(
   'quiz_access_db',
   {
     quiz_id: integer('quiz_id')
-      .references(() => quizzes.id)
+      .references(() => quizzes_db.id, { onDelete: 'cascade' })
       .notNull(),
     class_id: integer('class_id')
-      .references(() => classes.id)
+      .references(() => classes_db.id, { onDelete: 'cascade' })
       .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.quiz_id, table.class_id] })],
+  (table) => [
+    primaryKey({
+      name: 'quiz_access_pk',
+      columns: [table.quiz_id, table.class_id],
+    }),
+  ],
 );
 
 // --RELATIONS

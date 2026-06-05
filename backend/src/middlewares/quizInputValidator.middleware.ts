@@ -17,6 +17,7 @@ export const quizInputValidator = [
     .withMessage('Share token is required')
     .isAlphanumeric()
     .toLowerCase(),
+  body('accessibility').trim().notEmpty().default('anyone'),
   body('maxAttempts')
     .optional()
     .trim()
