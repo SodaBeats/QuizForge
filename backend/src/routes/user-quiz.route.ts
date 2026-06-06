@@ -34,10 +34,7 @@ router.post(
       quiz_title: req.body.quizTitle,
       quiz_description: req.body.description,
       share_token: req.body.shareToken,
-      accessibility:
-        req.body.accessibility === 'anyone'
-          ? Accessibility.anyone
-          : Accessibility.restricted,
+      accessibility: req.body.accessibility,
       max_attempts: req.body.maxAttempts,
       due_date: new Date(req.body.dueDate),
       status: req.body.status,
@@ -53,19 +50,16 @@ router.post(
         if (!quiz) {
           throw new Error('Failed to create quiz');
         }
-        if (req.body.accessibility !== 'anyone') {
-          const classId = Number(req.body.accessibility);
-          if (Number.isNaN(classId)) {
-            throw new Error('Invalid class ID');
-          }
+        if (req.body.classIds.length > 0) {
           const quizAccessInsert = await QuizAccessRepo.insert(
             quiz.id,
-            classId,
+            req.body.classIds,
             tx,
           );
           if (!quizAccessInsert)
-            throw new Error('Failed to handle quiz accessibility');
+            throw new Error('Failed to handle accessibility');
         }
+
         return quiz;
       });
 
@@ -101,12 +95,6 @@ router.get(
         limit,
         offset,
       );
-      if (!userQuizzes || userQuizzes.length < 1) {
-        return res.status(404).json({
-          success: false,
-          message: 'This user does not have quizzes.',
-        });
-      }
       const totalQuizzes = await UserQuizzesRepository.countTotalQuizzes(
         req.user.id,
       );

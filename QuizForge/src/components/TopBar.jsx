@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
@@ -147,6 +147,121 @@ function FileModal({
   );
 }
 
+function ClassAccessibilityDropdown({
+  selectedClassIds,
+  setForgeQuizData,
+  userClasses,
+  isFetchingClasses,
+  classFetchError,
+}) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleToggleClass = (classId) => {
+    setForgeQuizData((prev) => {
+      const currentIds = prev.selectedClassIds || [];
+      const isSelected = currentIds.includes(classId);
+      const nextIds = isSelected
+        ? currentIds.filter((id) => id !== classId)
+        : [...currentIds, classId];
+      return { ...prev, selectedClassIds: nextIds };
+    });
+  };
+
+  const handleClearAll = () => {
+    setForgeQuizData((prev) => ({
+      ...prev,
+      selectedClassIds: [],
+    }));
+  };
+
+  const displayText =
+    selectedClassIds.length === 0
+      ? "Anyone with the code"
+      : selectedClassIds.length === 1
+        ? `${userClasses?.find((c) => c.id === selectedClassIds[0])?.name}`
+        : `${selectedClassIds.length} classes selected`;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-left flex items-center justify-between hover:bg-gray-600 transition-colors"
+      >
+        <span className="truncate">{displayText}</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            isDropdownOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
+        </svg>
+      </button>
+
+      {isDropdownOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+          {/* "Anyone with the code" option */}
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600">
+            <input
+              type="checkbox"
+              checked={selectedClassIds.length === 0}
+              onChange={handleClearAll}
+              className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+            />
+            <span>Anyone with the code</span>
+          </label>
+
+          {isFetchingClasses ? (
+            <p className="px-3 py-2 text-gray-400 text-sm">Loading classes...</p>
+          ) : classFetchError ? (
+            <p className="px-3 py-2 text-red-400 text-xs">
+              Unable to load classes.
+            </p>
+          ) : userClasses?.length ? (
+            userClasses.map((cls) => (
+              <label
+                key={cls.id}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedClassIds.includes(cls.id)}
+                  onChange={() => handleToggleClass(cls.id)}
+                  className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                />
+                <span>{cls.name}</span>
+              </label>
+            ))
+          ) : (
+            <p className="px-3 py-2 text-gray-400 text-sm">No classes found.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function QuizForgeModal({
   forgeQuizData,
   handleForgeQuiz,
@@ -237,31 +352,16 @@ function QuizForgeModal({
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Accessibility
             </label>
-            <select
-              value={forgeQuizData.accessibility}
-              onChange={(e) =>
-                setForgeQuizData((prev) => ({
-                  ...prev,
-                  accessibility: e.target.value,
-                }))
-              }
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="anyone">Anyone with the code</option>
-              {userClasses?.map((cls) => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.name}
-                </option>
-              ))}
-            </select>
-            {classFetchError && (
-              <p className="mt-2 text-xs text-red-400">
-                Unable to load classes.
-              </p>
-            )}
-            {isFetchingClasses && (
-              <p className="mt-2 text-xs text-gray-400">Loading classes...</p>
-            )}
+            <ClassAccessibilityDropdown
+              selectedClassIds={forgeQuizData.selectedClassIds}
+              setForgeQuizData={setForgeQuizData}
+              userClasses={userClasses}
+              isFetchingClasses={isFetchingClasses}
+              classFetchError={classFetchError}
+            />
+            <p className="text-xs text-gray-400 mt-2">
+              Leave as "Anyone with the code" or restrict to specific classes.
+            </p>
           </div>
 
           {/* Max Attempts and Status - Side by Side */}
@@ -378,6 +478,7 @@ export default function TopBar({
     dueDate: "",
     status: "draft",
     accessibility: "anyone",
+    selectedClassIds: [],
   });
 
   const menuRef = useRef(null);
@@ -453,6 +554,7 @@ export default function TopBar({
       dueDate: "",
       status: "draft",
       accessibility: "anyone",
+      selectedClassIds: [],
     });
     setIsForgeQuizModalOpen(true);
   };
@@ -481,6 +583,7 @@ export default function TopBar({
       dueDate: "",
       status: "draft",
       accessibility: "anyone",
+      selectedClassIds: [],
     });
   };
 
@@ -505,6 +608,8 @@ export default function TopBar({
       toast.error("Max attempts must be a valid number");
       return;
     }
+    const selectedClassIds = forgeQuizData.selectedClassIds || [];
+    const accessibility = selectedClassIds.length > 0 ? "restricted" : "anyone";
 
     setIsCreatingQuiz(true);
 
@@ -521,7 +626,8 @@ export default function TopBar({
           maxAttempts: maxAttempts,
           dueDate: finalDueDate,
           status: forgeQuizData.status,
-          accessibility: forgeQuizData.accessibility,
+          accessibility,
+          classIds: selectedClassIds,
         }),
         credentials: "include",
       });
@@ -536,8 +642,6 @@ export default function TopBar({
       }
 
       const data = await response.json();
-
-      console.log(data.quiz);
 
       setQuizMetadata(data.quiz);
       toast.success(data.message);
