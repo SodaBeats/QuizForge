@@ -53,10 +53,15 @@ export default function QuizzesPage() {
   };
 
   // FETCH QUIZZES AND STORE IN TANSTACK CACHE
-  const { data: queryQuizzes, isFetching: queryQuizzesFetching } = useQuery({
+  const {
+    data: queryQuizzes,
+    isFetching: queryQuizzesFetching,
+    error: queryQuizzesError,
+  } = useQuery({
     queryKey: ["queryQuizzes"],
     queryFn: fetchQuizzes,
     staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
   const selectedQuiz =
     queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
@@ -229,6 +234,7 @@ export default function QuizzesPage() {
 
         <QuizzesSidebar
           isFetching={queryQuizzesFetching}
+          isError={queryQuizzesError}
           quizzes={queryQuizzes}
           selectedQuizId={selectedQuizId}
           setSelectedQuizId={setSelectedQuizId}

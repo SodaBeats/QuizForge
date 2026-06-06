@@ -8,6 +8,7 @@ export default function QuizzesSidebar({
   setSelectedQuizId,
   selectedQuizId,
   onDeleteQuiz,
+  isError,
 }) {
   const navigate = useNavigate();
 
@@ -15,6 +16,27 @@ export default function QuizzesSidebar({
     return (
       <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
         <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="w-64 border-r border-gray-700 flex flex-col bg-gray-900">
+        <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+          Failed to fetch quizzes
+        </div>
+        {/* Create New Quiz Button */}
+        <div className="border-t border-gray-700 p-4">
+          <button
+            onClick={() =>
+              navigate("/teacher", { state: { openForgeQuizModal: true } })
+            }
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+          >
+            + Create New Quiz
+          </button>
+        </div>
       </div>
     );
   }
