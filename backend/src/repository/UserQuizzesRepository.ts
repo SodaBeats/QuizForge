@@ -68,8 +68,10 @@ export const UserQuizzesRepository = {
         userId: quizzes_db.user_id,
         quizTitle: quizzes_db.quiz_title,
         quizDescription: quizzes_db.quiz_description,
+        accessibility: quizzes_db.accessibility,
         shareToken: quizzes_db.share_token,
         maxAttempts: quizzes_db.max_attempts,
+        status: quizzes_db.status,
         dueDate: quizzes_db.due_date,
         totalAttempts: count(quiz_attempts_db.id),
       })

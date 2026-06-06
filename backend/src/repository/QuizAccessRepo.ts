@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import { quiz_access_db } from '../db/schema.js';
 
@@ -11,5 +12,14 @@ export const QuizAccessRepo = {
       .returning();
 
     return result.length > 0 ? true : false;
+  },
+
+  async quizAccess(quizId: number) {
+    const result = await db
+      .select({ classId: quiz_access_db.class_id })
+      .from(quiz_access_db)
+      .where(eq(quiz_access_db.quiz_id, quizId));
+
+    return result.length > 0 ? result.map((row) => row.classId) : null;
   },
 };

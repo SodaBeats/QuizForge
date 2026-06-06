@@ -218,7 +218,7 @@ export const classes_db = pgTable(
 );
 
 // classes and students junction table
-export const classes_students_db = pgTable(
+export const students_classes_db = pgTable(
   'students_classes_db',
   {
     id: serial('id').primaryKey(),

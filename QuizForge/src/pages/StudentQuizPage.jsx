@@ -14,7 +14,6 @@ export default function StudentQuizPage() {
   const { quizToken } = useParams();
   const { authFetch } = useContext(AuthContext);
 
-  //get data passed from the last page using LOCATION.STATE
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState(null);
   const [attemptCount, setAttemptCount] = useState(0);
