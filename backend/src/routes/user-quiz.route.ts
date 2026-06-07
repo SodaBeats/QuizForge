@@ -50,7 +50,7 @@ router.post(
         if (!quiz) {
           throw new Error('Failed to create quiz');
         }
-        if (req.body.classIds.length > 0) {
+        if (req.body.classIds?.length > 0) {
           const quizAccessInsert = await QuizAccessRepo.insert(
             quiz.id,
             req.body.classIds,

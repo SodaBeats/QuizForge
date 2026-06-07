@@ -82,6 +82,7 @@ export default function StudentQuizPage() {
     onSuccess: () => {
       // Invalidate the quiz query
       queryClient.invalidateQueries({ queryKey: ["studentQuiz", quizToken] });
+      navigate("/student");
     },
     onError: (error) => {
       console.error("Failed delete attempt", error);
@@ -148,7 +149,6 @@ export default function StudentQuizPage() {
           <button
             onClick={() => {
               deleteAttempt();
-              navigate("/student");
             }}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
           >

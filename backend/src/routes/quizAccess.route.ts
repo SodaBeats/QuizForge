@@ -43,8 +43,15 @@ router.post(
         const userClasses =
           await ClassStudentsRepository.getAllClassOfStudent(userId);
 
-        if (!allowedClasses || !userClasses)
-          return res.status(500).json({ message: 'Something went wrong' });
+        if (!allowedClasses)
+          return res
+            .status(500)
+            .json({ message: 'Quiz access configuration error' });
+
+        if (!userClasses)
+          return res
+            .status(403)
+            .json({ message: 'You do not have access to this quiz' });
 
         const hasAccess = userClasses.some((classId) =>
           allowedClasses.includes(classId),

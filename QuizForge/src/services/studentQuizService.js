@@ -4,11 +4,16 @@ export const studentQuizService = {
       `${backendHost}/api/student/quiz-access/${quizToken}`,
       {
         credentials: "include",
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch quiz");
+      const result = await response.json();
+      throw new Error(
+        result.errors?.map((e) => e.msg).join(", ") ||
+          result.message ||
+          "Failed to fetch quiz",
+      );
     }
 
     const data = await response.json();
@@ -38,7 +43,7 @@ export const studentQuizService = {
       throw new Error(
         result.errors?.map((e) => e.msg).join(", ") ||
           result?.message ||
-          "Failed to submit quiz"
+          "Failed to submit quiz",
       );
     }
 
@@ -52,7 +57,7 @@ export const studentQuizService = {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-      }
+      },
     );
 
     if (!response.ok) {
@@ -60,7 +65,7 @@ export const studentQuizService = {
       throw new Error(
         result?.errors?.map((e) => e.msg).join(", ") ||
           result?.message ||
-          "Failed to delete attempt"
+          "Failed to delete attempt",
       );
     }
 

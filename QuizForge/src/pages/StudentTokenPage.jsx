@@ -17,7 +17,7 @@ export default function StudentTokenPage() {
         `${backendHost}/api/student/quiz-access`,
         {
           method: "POST",
-          header: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
           credentials: "include",
         },

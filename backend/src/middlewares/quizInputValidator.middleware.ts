@@ -17,7 +17,12 @@ export const quizInputValidator = [
     .withMessage('Share token is required')
     .isAlphanumeric()
     .toLowerCase(),
-  body('accessibility').trim().notEmpty().default('anyone'),
+  body('accessibility')
+    .trim()
+    .notEmpty()
+    .default('anyone')
+    .isIn(['anyone', 'restricted'])
+    .withMessage('Invalid accessibility value'),
   body('maxAttempts')
     .optional()
     .trim()
