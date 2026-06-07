@@ -6,6 +6,8 @@ import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middle
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
+import { QuizAccessRepo } from '../repository/QuizAccessRepo.js';
+import { ClassStudentsRepository } from '../repository/ClassStudentsRepo.js';
 
 const router = express.Router();
 
@@ -17,17 +19,49 @@ router.post(
   quizAccessValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { token } = req.body;
       const userId = Number(req.user.id);
       // FETCH QUIZ + ATTEMPT COUNT
       const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(
-        token,
+        req.body.token,
         userId,
       );
       if (!quiz) {
         return res
           .status(404)
           .json({ success: false, message: 'Quiz does not exist' });
+      }
+
+      // check if published or draft
+      if (quiz.status !== 'published')
+        return res.status(404).json({ message: 'Quiz not found' });
+
+      // Fetch quiz access
+      if (quiz.accessibility === 'restricted') {
+        // get quiz access info
+        const allowedClasses = await QuizAccessRepo.quizAccess(quiz.id);
+        // get user classes
+        const userClasses =
+          await ClassStudentsRepository.getAllClassOfStudent(userId);
+
+        if (!allowedClasses)
+          return res
+            .status(500)
+            .json({ message: 'Quiz access configuration error' });
+
+        if (!userClasses)
+          return res
+            .status(403)
+            .json({ message: 'You do not have access to this quiz' });
+
+        const hasAccess = userClasses.some((classId) =>
+          allowedClasses.includes(classId),
+        );
+        if (!hasAccess) {
+          return res.status(403).json({
+            success: false,
+            message: 'You do not have access to this quiz.',
+          });
+        }
       }
 
       // CHECK DEADLINE

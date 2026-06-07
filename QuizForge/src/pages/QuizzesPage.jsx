@@ -53,15 +53,22 @@ export default function QuizzesPage() {
   };
 
   // FETCH QUIZZES AND STORE IN TANSTACK CACHE
-  const { data: queryQuizzes, isFetching: queryQuizzesFetching } = useQuery({
+  const {
+    data: queryQuizzes,
+    isFetching: queryQuizzesFetching,
+    error: queryQuizzesError,
+  } = useQuery({
     queryKey: ["queryQuizzes"],
     queryFn: fetchQuizzes,
     staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
   const selectedQuiz =
     queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
 
   const handleDeleteQuiz = async (quizId) => {
+    const confirmMessage = "Are you sure you wish to delete this quiz?";
+    if (!window.confirm(confirmMessage)) return;
     const queryKey = ["queryQuizzes"];
     const previousSelectedQuizId = selectedQuizId;
     const previousQuizzesData = queryClient.getQueryData(queryKey);
@@ -227,6 +234,7 @@ export default function QuizzesPage() {
 
         <QuizzesSidebar
           isFetching={queryQuizzesFetching}
+          isError={queryQuizzesError}
           quizzes={queryQuizzes}
           selectedQuizId={selectedQuizId}
           setSelectedQuizId={setSelectedQuizId}

@@ -1,7 +1,7 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq, inArray, sql, and } from 'drizzle-orm';
 import { db } from '../db/db.js';
-import { classes_db, classes_students_db, users } from '../db/schema.js';
+import { classes_db, students_classes_db, users } from '../db/schema.js';
 
 export const ClassStudentsRepository = {
   // get all students in array of class
@@ -11,13 +11,13 @@ export const ClassStudentsRepository = {
     const result = await db
       .select({
         id: users.id,
-        classId: classes_students_db.class_id,
+        classId: students_classes_db.class_id,
         email: users.email,
         name: sql<string>`${users.first_name} || ' ' || ${users.last_name}`,
       })
-      .from(classes_students_db)
-      .innerJoin(users, eq(classes_students_db.student_id, users.id))
-      .where(inArray(classes_students_db.class_id, classIds));
+      .from(students_classes_db)
+      .innerJoin(users, eq(students_classes_db.student_id, users.id))
+      .where(inArray(students_classes_db.class_id, classIds));
 
     return result;
   },
@@ -26,11 +26,11 @@ export const ClassStudentsRepository = {
   async checkIfUserInClass(userId: number, classId: number) {
     const [result] = await db
       .select()
-      .from(classes_students_db)
+      .from(students_classes_db)
       .where(
         and(
-          eq(classes_students_db.student_id, userId),
-          eq(classes_students_db.class_id, classId),
+          eq(students_classes_db.student_id, userId),
+          eq(students_classes_db.class_id, classId),
         ),
       );
     return result ? true : false;
@@ -39,27 +39,36 @@ export const ClassStudentsRepository = {
   // add student to class, return data
   async addStudentToClass(classId: number, studentId: number) {
     const [result] = await db
-      .insert(classes_students_db)
+      .insert(students_classes_db)
       .values({ class_id: classId, student_id: studentId })
       .returning({
-        id: classes_students_db.id,
-        studentId: classes_students_db.student_id,
-        classId: classes_students_db.class_id,
+        id: students_classes_db.id,
+        studentId: students_classes_db.student_id,
+        classId: students_classes_db.class_id,
       });
     return result ? result : null;
   },
 
   async removeStudentFromClass(classId: number, studentId: number) {
     const [result] = await db
-      .delete(classes_students_db)
+      .delete(students_classes_db)
       .where(
         and(
-          eq(classes_students_db.class_id, classId),
-          eq(classes_students_db.student_id, studentId),
+          eq(students_classes_db.class_id, classId),
+          eq(students_classes_db.student_id, studentId),
         ),
       )
-      .returning({ id: classes_students_db.id });
+      .returning({ id: students_classes_db.id });
 
     return result ?? null;
+  },
+
+  async getAllClassOfStudent(studentId: number) {
+    const result = await db
+      .select({ classId: students_classes_db.class_id })
+      .from(students_classes_db)
+      .where(eq(students_classes_db.student_id, studentId));
+
+    return result.length > 0 ? result.map((row) => row.classId) : null;
   },
 };

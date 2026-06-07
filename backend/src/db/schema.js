@@ -10,6 +10,7 @@ import {
   unique,
   index,
   vector,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 
@@ -80,15 +81,14 @@ export const quizzes_db = pgTable(
       .notNull()
       .default(sql`substring(md5(random()::text), 1, 12)`),
     max_attempts: integer('max_attempts').default(1).notNull(),
+    accessibility: text('accessibility', { enum: ['anyone', 'restricted'] })
+      .default('anyone')
+      .notNull(),
     status: text('status').notNull().default('draft'),
     due_date: timestamp('due_date', { withTimezone: true }).notNull(),
     created_at: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => {
-    return {
-      quizTokenIndex: index('quiz_token_idx').on(table.share_token),
-    };
-  },
+  (table) => [index('quiz_token_idx').on(table.share_token)],
 );
 
 export const quiz_questions_db = pgTable(
@@ -102,18 +102,13 @@ export const quiz_questions_db = pgTable(
       .references(() => questions_db.id, { onDelete: 'cascade' })
       .notNull(),
   },
-  (table) => {
-    return {
-      // This index to speed up extraction of questions assigned  to the same quiz id
-      quizIdIndex: index('quiz_id_idx').on(table.quiz_id),
+  (table) => [
+    // This index to speed up extraction of questions assigned  to the same quiz id
+    index('quiz_id_idx').on(table.quiz_id),
 
-      // Prevent the same question from being added to the same quiz twice
-      uniqueQuizQuestion: unique('unique_quiz_question').on(
-        table.quiz_id,
-        table.question_id,
-      ),
-    };
-  },
+    // Prevent the same question from being added to the same quiz twice
+    unique('unique_quiz_question').on(table.quiz_id, table.question_id),
+  ],
 );
 
 export const quiz_attempts_db = pgTable('quiz_attempts_db', {
@@ -168,22 +163,17 @@ export const attempt_answers_db = pgTable(
 
     created_at: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => ({
+  (table) => [
     // Speed up the dashboard query — you'll always filter by quiz_id
     // when building the difficulty ranking
-    quizIdIndex: index('attempt_answers_quiz_id_idx').on(table.quiz_id),
+    index('attempt_answers_quiz_id_idx').on(table.quiz_id),
 
     // Speed up per-question aggregation
-    questionIdIndex: index('attempt_answers_question_id_idx').on(
-      table.question_id,
-    ),
+    index('attempt_answers_question_id_idx').on(table.question_id),
 
     // Prevent a student from submitting the same question twice in the same attempt
-    uniqueAttemptQuestion: unique('unique_attempt_question').on(
-      table.attempt_id,
-      table.question_id,
-    ),
-  }),
+    unique('unique_attempt_question').on(table.attempt_id, table.question_id),
+  ],
 );
 
 // document chunks table with vector
@@ -228,7 +218,7 @@ export const classes_db = pgTable(
 );
 
 // classes and students junction table
-export const classes_students_db = pgTable(
+export const students_classes_db = pgTable(
   'students_classes_db',
   {
     id: serial('id').primaryKey(),
@@ -243,6 +233,25 @@ export const classes_students_db = pgTable(
     index('class_junction_idx').on(table.class_id),
     index('student_junction_idx').on(table.student_id),
     unique().on(table.class_id, table.student_id),
+  ],
+);
+
+// quiz access junction table
+export const quiz_access_db = pgTable(
+  'quiz_access_db',
+  {
+    quiz_id: integer('quiz_id')
+      .references(() => quizzes_db.id, { onDelete: 'cascade' })
+      .notNull(),
+    class_id: integer('class_id')
+      .references(() => classes_db.id, { onDelete: 'cascade' })
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'quiz_access_pk',
+      columns: [table.quiz_id, table.class_id],
+    }),
   ],
 );
 

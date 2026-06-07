@@ -17,38 +17,40 @@ export default function StudentTokenPage() {
         `${backendHost}/api/student/quiz-access`,
         {
           method: "POST",
-          body: JSON.stringify({ token: token }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
           credentials: "include",
         },
       );
 
-      const quizAndQuestions = await response.json();
-
-      if (!quizAndQuestions.success) {
-        toast.error(
-          quizAndQuestions.errors?.map((e) => e.msg).join(", ") ||
-            quizAndQuestions.message ||
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(
+          result.errors?.map((e) => e.msg).join(", ") ||
+            result.message ||
             "Access Denied",
         );
-        return;
       }
+
+      const quizAndQuestions = await response.json();
 
       //stop user if already used up all attempts
       if (quizAndQuestions.totalAttempts >= quizAndQuestions.maxAttempts) {
-        toast.error(
+        throw new Error(
           `You have used up all ${quizAndQuestions.maxAttempts} available attempts`,
         );
-        return;
       }
 
       toast.success("Quiz found! Starting...");
       setIsModalOpen(false);
 
       //navigate to quiz page
-      navigate(`/student/quiz/${quizAndQuestions.shareToken}`);
+      navigate(`/student/quiz/${quizAndQuestions.shareToken}`, {
+        replace: true,
+      });
     } catch (error) {
-      alert("Something went wrong with token verification");
       console.error(error);
+      alert(error.message || "Something went wrong");
     }
   };
 

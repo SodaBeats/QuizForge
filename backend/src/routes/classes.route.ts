@@ -47,6 +47,7 @@ router.get(
   verifyToken,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
+    console.log('CLASSES ROUTE [GET]: RAN');
     if (req.user.role !== 'teacher') {
       return res
         .status(403)

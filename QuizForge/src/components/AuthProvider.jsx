@@ -10,8 +10,6 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 //make component called AuthProvider
 //children is a prop = whatever components you wrap inside <AuthProvider>
 export function AuthProvider({ children }) {
-  //current login token, and function to change token
-  //empty default
   const [token, setToken] = useState(null);
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
