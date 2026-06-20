@@ -105,6 +105,21 @@ export default function StudentQuizPage() {
     );
   };
 
+  // function to clear timers on session storage
+  const clearTimerStorage = useCallback(() => {
+    if (!attemptId) return;
+
+    const timerPrefix = `quiz_timer_${attemptId}_`;
+
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const storageKey = sessionStorage.key(index);
+
+      if (storageKey?.startsWith(timerPrefix)) {
+        sessionStorage.removeItem(storageKey);
+      }
+    }
+  }, [attemptId]);
+
   // ----------------------------------------------------------
   // MUTATION FUNCTIONS
   // ----------------------------------------------------------
@@ -119,6 +134,7 @@ export default function StudentQuizPage() {
     onSuccess: () => {
       // Remove session storage
       sessionStorage.removeItem(storageKey);
+      clearTimerStorage();
       toast.success("Attempt received!");
       navigate("/student", { replace: true });
     },
@@ -138,6 +154,7 @@ export default function StudentQuizPage() {
     onSuccess: () => {
       // Remove session storage
       sessionStorage.removeItem(storageKey);
+      clearTimerStorage();
       navigate("/student");
     },
     onError: (error) => {
@@ -241,6 +258,9 @@ export default function StudentQuizPage() {
     }
   };
 
+  // -------------------------------------------------------------------
+  // ERROR BOUNDARIES
+  // -------------------------------------------------------------------
   if (isLoading) {
     return <LoadingScreen fullScreen />;
   }
@@ -315,7 +335,6 @@ export default function StudentQuizPage() {
                 <button
                   onClick={() => {
                     setShowLogoutWarning(false);
-                    console.log("attemptId onclick: ", attemptId);
                     submitAndLogout();
                   }}
                   className="px-4 py-2 rounded bg-blue-600 text-white"
@@ -353,6 +372,8 @@ export default function StudentQuizPage() {
           onTimeout={handleTimeout}
           attemptCount={attemptCount}
           maxAttempts={maxAttempts}
+          attemptId={attemptId}
+          questionId={selectedQuestion?.id}
         />
       </div>
     </div>
