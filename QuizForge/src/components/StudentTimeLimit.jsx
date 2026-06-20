@@ -16,16 +16,32 @@ export default function StudentTimeLimit({
   const getStoredStartTime = () => {
     if (!timerStorageKey) return Date.now();
 
-    const savedValue = sessionStorage.getItem(timerStorageKey);
-    const parsedValue = Number(savedValue);
-
-    if (!savedValue || Number.isNaN(parsedValue) || parsedValue <= 0) {
+    try {
+      const savedValue = sessionStorage.getItem(timerStorageKey);
+      const parsedValue = Number(savedValue);
       const now = Date.now();
-      sessionStorage.setItem(timerStorageKey, String(now));
-      return now;
-    }
+      const maxReasonableAge = timeLimit * 2 * 1000;
 
-    return parsedValue;
+      if (
+        !savedValue ||
+        Number.isNaN(parsedValue) ||
+        parsedValue <= 0 ||
+        parsedValue > now ||
+        now - parsedValue > maxReasonableAge
+      ) {
+        const now = Date.now();
+        sessionStorage.setItem(timerStorageKey, String(now));
+        return now;
+      }
+
+      return parsedValue;
+    } catch (err) {
+      console.error(
+        "Session Storage access failed, using current time instead: ",
+        err,
+      );
+      return Date.now();
+    }
   };
 
   // 1. Initialize state
