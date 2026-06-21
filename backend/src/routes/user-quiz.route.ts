@@ -360,6 +360,44 @@ router.get(
   },
 );
 
+// GET PER CLASS AVERAGE RANKING ----------------------------------------------------
+router.get(
+  '/:quizId/classesavg',
+  verifyToken,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+
+    if (Number.isNaN(quizId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+    if (req.user.role !== 'teacher') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Unauthorized action' });
+    }
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const perClassAverage = await QuizAttemptsRepo.getPerClassAverage(
+        quizId,
+        req.user.id,
+      );
+      console.log('PER CLASS AVERAGE: ', perClassAverage);
+      return res.status(200).json({ success: true, data: perClassAverage });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 // ROUTER FOR QUESTION UPDATES ------------------------------------------------------
 router.patch(
   '/:quizId/question/:questionId',
