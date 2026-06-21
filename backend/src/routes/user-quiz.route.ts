@@ -66,7 +66,10 @@ router.post(
       return res
         .status(201)
         .json({ success: true, message: 'Quiz Forged!', quiz: newQuiz });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.cause?.code === '23505') {
+        return res.status(500).json({ message: 'Share token is taken' });
+      }
       return next(error);
     }
   },

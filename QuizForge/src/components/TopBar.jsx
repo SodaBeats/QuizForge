@@ -159,10 +159,7 @@ function ClassAccessibilityDropdown({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
@@ -233,7 +230,9 @@ function ClassAccessibilityDropdown({
           </label>
 
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-gray-400 text-sm">Loading classes...</p>
+            <p className="px-3 py-2 text-gray-400 text-sm">
+              Loading classes...
+            </p>
           ) : classFetchError ? (
             <p className="px-3 py-2 text-red-400 text-xs">
               Unable to load classes.
@@ -544,13 +543,15 @@ export default function TopBar({
   };
 
   const openForgeQuizModal = () => {
-    // Pre-fill with selected file name
+    // generate share token
     const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    // Pre-fill with selected file name
     setForgeQuizData({
       quizTitle: selectedFile?.name || "",
       description: "",
       shareToken: quizToken,
-      maxAttempts: 0,
+      maxAttempts: 1,
       dueDate: "",
       status: "draft",
       accessibility: "anyone",
@@ -648,7 +649,7 @@ export default function TopBar({
       closeForgeQuizModal();
     } catch (error) {
       console.error("Error creating quiz: ", error);
-      toast.error("Something went wrong while creating quiz");
+      toast.error(error.message);
     } finally {
       setIsCreatingQuiz(false);
     }
