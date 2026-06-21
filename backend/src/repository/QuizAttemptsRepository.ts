@@ -237,7 +237,7 @@ export const QuizAttemptsRepo = {
         tc.id AS classId,
         tc.class_name AS className,
         COALESCE(ROUND(AVG(a.score), 1), 0) as averageScore,
-        COUNT(sc.student_id) AS takers
+        COUNT(a.user_id) AS takers
       FROM teacher_classes tc
       LEFT JOIN ${students_classes_db} sc ON sc.class_id = tc.id
       LEFT JOIN attempts a ON a.user_id = sc.student_id

@@ -97,7 +97,7 @@ function ClassRow({ cls, rank, maxAverage }) {
           {cls.classname}
         </span>
         <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBadgeClass(cls.average)}`}
+          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBadgeClass(cls.averagescore)}`}
         >
           {cls.averagescore ?? 0}%
         </span>

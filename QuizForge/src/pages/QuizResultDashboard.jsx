@@ -181,7 +181,7 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
       throw new Error(
         classesAverage?.message ||
           classesAverage?.error ||
-          "Something went wrong while fetching metrics",
+          "Something went wrong while fetching classes average ranking",
       );
     }
 
