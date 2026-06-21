@@ -45,9 +45,7 @@ export default function StudentTokenPage() {
       setIsModalOpen(false);
 
       //navigate to quiz page
-      navigate(`/student/quiz/${quizAndQuestions.shareToken}`, {
-        replace: true,
-      });
+      navigate(`/student/quiz/${quizAndQuestions.shareToken}`);
     } catch (error) {
       console.error(error);
       alert(error.message || "Something went wrong");

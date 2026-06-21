@@ -20,7 +20,6 @@ export default function QuizMakerSkeleton() {
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
-  //handle uploaded file
   const handleFileUpload = async (file) => {
     setIsUploading(true);
 

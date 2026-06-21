@@ -1,14 +1,41 @@
+// --------------------------------------------------
+// SUB COMPONENT
+// --------------------------------------------------
+function ReasoningAnswerInput({ answers, question, onAnswerChange }) {
+  // prevent pasting answer
+  const handlePaste = (e) => {
+    e.preventDefault();
+  };
 
-export default function StudentQuizWindow({ 
-  question, 
-  onNext, 
-  onPrev, 
-  canNext, 
+  return (
+    <div className="h-48 flex flex-col">
+      {/* Fixed height for textarea to prevent takeover */}
+      <textarea
+        className="w-full flex-1 bg-gray-800/40 border border-gray-800 rounded-xl p-4 focus:border-blue-500 focus:outline-none text-white text-sm resize-none"
+        placeholder="Type your answer here..."
+        value={answers[question.id] || ""}
+        onChange={(e) => onAnswerChange(e.target.value)}
+        onPaste={(e) => handlePaste(e)}
+      />
+    </div>
+  );
+}
+
+export default function StudentQuizWindow({
+  question,
+  onNext,
+  onPrev,
+  canNext,
   canPrev,
   answers,
-  onAnswerChange 
+  onAnswerChange,
 }) {
-  if (!question) return <div className="flex-1 p-8 text-gray-500">Select a question to begin.</div>;
+  if (!question)
+    return (
+      <div className="flex-1 p-8 text-gray-500">
+        Select a question to begin.
+      </div>
+    );
 
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-white">
@@ -23,11 +50,13 @@ export default function StudentQuizWindow({
 
         {/* Input Part */}
         <div className="flex-1 flex flex-col justify-center py-6">
-          <div className="w-full max-w-2xl mx-auto"> 
+          <div className="w-full max-w-2xl mx-auto">
             {/* max-w-2xl keeps buttons from getting too wide on desktop */}
-            {question.questionType === 'multiple-choice' ? (
-              <div className="space-y-2"> {/* Reduced vertical spacing */}
-                {['A', 'B', 'C', 'D'].map((letter) => {
+            {question.questionType === "multiple-choice" ? (
+              <div className="space-y-2">
+                {" "}
+                {/* Reduced vertical spacing */}
+                {["A", "B", "C", "D"].map((letter) => {
                   const optionKey = `option${letter}`;
                   const optionText = question[optionKey];
                   if (!optionText) return null;
@@ -38,14 +67,18 @@ export default function StudentQuizWindow({
                       onClick={() => onAnswerChange(letter.toLowerCase())}
                       className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center gap-3 ${
                         answers?.[question.id] === letter.toLowerCase()
-                          ? 'border-blue-500 bg-blue-500/10 text-white'
-                          : 'border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:bg-gray-800/40'
+                          ? "border-blue-500 bg-blue-500/10 text-white"
+                          : "border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:bg-gray-800/40"
                       }`}
                     >
                       {/* Smaller Letter Indicator */}
-                      <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0 ${
-                        answers?.[question.id] === letter.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-400'
-                      }`}>
+                      <div
+                        className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0 ${
+                          answers?.[question.id] === letter.toLowerCase()
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-700 text-gray-400"
+                        }`}
+                      >
                         {letter}
                       </div>
                       <span className="text-sm">{optionText}</span>
@@ -53,7 +86,7 @@ export default function StudentQuizWindow({
                   );
                 })}
               </div>
-            ) : question.questionType === 'true-false' ? (
+            ) : question.questionType === "true-false" ? (
               <div className="space-y-3">
                 {/* True Option */}
                 <label className="flex items-center gap-3 p-4 bg-gray-800/40 border border-gray-800 rounded-xl cursor-pointer hover:border-blue-500/50 transition-colors">
@@ -61,7 +94,7 @@ export default function StudentQuizWindow({
                     type="radio"
                     name={`question-${question.id}`}
                     value="true"
-                    checked={answers[question.id] === 'true'}
+                    checked={answers[question.id] === "true"}
                     onChange={(e) => onAnswerChange(e.target.value)}
                     className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
                   />
@@ -74,7 +107,7 @@ export default function StudentQuizWindow({
                     type="radio"
                     name={`question-${question.id}`}
                     value="false"
-                    checked={answers[question.id] === 'false'}
+                    checked={answers[question.id] === "false"}
                     onChange={(e) => onAnswerChange(e.target.value)}
                     className="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
                   />
@@ -82,14 +115,11 @@ export default function StudentQuizWindow({
                 </label>
               </div>
             ) : (
-              <div className="h-48 flex flex-col"> {/* Fixed height for textarea to prevent takeover */}
-                <textarea
-                  className="w-full flex-1 bg-gray-800/40 border border-gray-800 rounded-xl p-4 focus:border-blue-500 focus:outline-none text-white text-sm resize-none"
-                  placeholder="Type your answer here..."
-                  value={answers[question.id] || ''}
-                  onChange={(e) => onAnswerChange(e.target.value)}
-                />
-              </div>
+              <ReasoningAnswerInput
+                answers={answers}
+                question={question}
+                onAnswerChange={onAnswerChange}
+              />
             )}
           </div>
         </div>

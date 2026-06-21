@@ -1,6 +1,11 @@
-import { useState, useContext } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useContext, useCallback, useEffect } from "react";
+import {
+  useParams,
+  useNavigate,
+  Navigate,
+  useBeforeUnload,
+} from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import { studentQuizService } from "../services/studentQuizService";
@@ -13,14 +18,30 @@ import LoadingScreen from "../components/LoadingScreen";
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 export default function StudentQuizPage() {
+  // ----------------------------------------------------------------
+  // STATES AND FRIENDS
+  // ----------------------------------------------------------------
   const { quizToken } = useParams();
-  const { authFetch } = useContext(AuthContext);
-  const queryClient = useQueryClient();
+  const storageKey = `quiz_progress_${quizToken}`;
+  const { authFetch, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [answers, setAnswers] = useState({});
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
-  const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
+  const [answers, setAnswers] = useState(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved).answers : {};
+  });
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved).selectedQuestionIndex : 0;
+  });
+  const [answeredQuestions, setAnsweredQuestions] = useState(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    // sessionStorage can't store a Set
+    // save it as an array and convert back
+    return saved ? new Set(JSON.parse(saved).answeredQuestions) : new Set();
+  });
+  const [showExitWarning, setShowExitWarning] = useState(false);
+  const [showLogoutWarning, setShowLogoutWarning] = useState(false);
 
   // Fetch quiz data
   const {
@@ -32,14 +53,12 @@ export default function StudentQuizPage() {
     queryFn: () =>
       studentQuizService.fetchStudentQuiz(authFetch, quizToken, backendHost),
     enabled: !!quizToken && !!authFetch && !!backendHost,
-    staleTime: Infinity,
-    cacheTime: 1000 * 60 * 60,
+    staleTime: 5000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     refetchOnReconnect: false,
   });
 
-  // Extract data for readability
+  // Extract quiz data for readability
   const quiz = quizData?.quiz;
   const questions = quizData?.questions;
   const attemptId = quizData?.attemptId;
@@ -50,7 +69,60 @@ export default function StudentQuizPage() {
   const canPrev = false;
   const canNext = true;
 
-  // Mutation for quiz submission
+  // intercept backward navigation
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+  }, []);
+
+  // If navigating back
+  // Ask user to stay or submit quiz before navigation
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopState = () => {
+      window.history.pushState(null, "", window.location.href);
+      setShowExitWarning(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // save user progress to session
+  const saveProgress = (
+    updatedAnswers,
+    updatedIndex,
+    updatedAnsweredQuestions,
+  ) => {
+    sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        answers: updatedAnswers,
+        selectedQuestionIndex: updatedIndex,
+        // Convert Set to array for serialization
+        answeredQuestions: [...updatedAnsweredQuestions],
+      }),
+    );
+  };
+
+  // function to clear timers on session storage
+  const clearTimerStorage = useCallback(() => {
+    if (!attemptId) return;
+
+    const timerPrefix = `quiz_timer_${attemptId}_`;
+
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const storageKey = sessionStorage.key(index);
+
+      if (storageKey?.startsWith(timerPrefix)) {
+        sessionStorage.removeItem(storageKey);
+      }
+    }
+  }, [attemptId]);
+
+  // ----------------------------------------------------------
+  // MUTATION FUNCTIONS
+  // ----------------------------------------------------------
   const submitQuizMutation = useMutation({
     mutationFn: (payload) =>
       studentQuizService.submitStudentQuiz(
@@ -60,8 +132,9 @@ export default function StudentQuizPage() {
         payload,
       ),
     onSuccess: () => {
-      // Invalidate the quiz query
-      queryClient.invalidateQueries({ queryKey: ["studentQuiz", quizToken] });
+      // Remove session storage
+      sessionStorage.removeItem(storageKey);
+      clearTimerStorage();
       toast.success("Attempt received!");
       navigate("/student", { replace: true });
     },
@@ -71,7 +144,6 @@ export default function StudentQuizPage() {
     },
   });
 
-  // Mutation for attempt deletion
   const deleteAttemptMutation = useMutation({
     mutationFn: () =>
       studentQuizService.deleteStudentQuizAttempt(
@@ -80,8 +152,9 @@ export default function StudentQuizPage() {
         backendHost,
       ),
     onSuccess: () => {
-      // Invalidate the quiz query
-      queryClient.invalidateQueries({ queryKey: ["studentQuiz", quizToken] });
+      // Remove session storage
+      sessionStorage.removeItem(storageKey);
+      clearTimerStorage();
       navigate("/student");
     },
     onError: (error) => {
@@ -92,6 +165,7 @@ export default function StudentQuizPage() {
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
+    saveProgress(answers, index, answeredQuestions);
   };
 
   const handlePrev = () => {
@@ -106,12 +180,17 @@ export default function StudentQuizPage() {
   };
 
   const handleAnswerChange = (ans) => {
-    setAnswers({ ...answers, [selectedQuestion.id]: ans });
-    setAnsweredQuestions((prev) => {
-      const newSet = new Set(prev);
-      newSet.add(selectedQuestion.id);
-      return newSet;
-    });
+    const updatedAnswers = { ...answers, [selectedQuestion.id]: ans };
+    const updatedAnsweredQuestions = new Set(answeredQuestions);
+    updatedAnsweredQuestions.add(selectedQuestion.id);
+
+    setAnswers(updatedAnswers);
+    setAnsweredQuestions(updatedAnsweredQuestions);
+    saveProgress(
+      updatedAnswers,
+      selectedQuestionIndex,
+      updatedAnsweredQuestions,
+    );
   };
 
   // auto advance to next question when time runs out
@@ -124,8 +203,15 @@ export default function StudentQuizPage() {
     }
   };
 
-  const handleQuizSubmit = () => {
-    submitQuizMutation.mutate({
+  // warn before closing or refreshing tab
+  useBeforeUnload(
+    useCallback((e) => {
+      e.preventDefault();
+    }, []),
+  );
+
+  const handleQuizSubmit = async () => {
+    return submitQuizMutation.mutateAsync({
       questions,
       answers,
       quiz,
@@ -133,10 +219,48 @@ export default function StudentQuizPage() {
     });
   };
 
+  const hasActiveQuizProgress = () => {
+    const savedProgress = sessionStorage.getItem(storageKey);
+    const savedAnswers = savedProgress
+      ? JSON.parse(savedProgress)?.answers || {}
+      : {};
+
+    return Boolean(
+      attemptId ||
+      Object.keys(savedAnswers).length > 0 ||
+      answeredQuestions.size > 0,
+    );
+  };
+
   const deleteAttempt = () => {
     deleteAttemptMutation.mutate();
   };
 
+  const handleLogout = async () => {
+    if (hasActiveQuizProgress()) {
+      return setShowLogoutWarning(true);
+    }
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while logging out");
+    }
+  };
+
+  const submitAndLogout = async () => {
+    try {
+      await handleQuizSubmit();
+      await logout();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong on submit and logout");
+    }
+  };
+
+  // -------------------------------------------------------------------
+  // ERROR BOUNDARIES
+  // -------------------------------------------------------------------
   if (isLoading) {
     return <LoadingScreen fullScreen />;
   }
@@ -165,8 +289,62 @@ export default function StudentQuizPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
-      <StudentTopbar />
+      <StudentTopbar onLogout={handleLogout} />
       <div className="flex h-screen overflow-hidden bg-black">
+        {showExitWarning && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-xl max-w-sm text-center space-y-4">
+              <h2 className="text-white text-lg font-semibold">Leave Quiz?</h2>
+              <p className="text-gray-300 text-sm">
+                Your quiz will be auto-submitted if you navigate away.
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setShowExitWarning(false)}
+                  className="px-4 py-2 rounded bg-gray-700 text-white"
+                >
+                  Stay
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExitWarning(false);
+                    handleQuizSubmit();
+                  }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                >
+                  Submit & Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showLogoutWarning && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-xl max-w-sm text-center space-y-4">
+              <h2 className="text-white text-lg font-semibold">Leave Quiz?</h2>
+              <p className="text-gray-300 text-sm">
+                Your quiz will be auto-submitted if you navigate away.
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setShowLogoutWarning(false)}
+                  className="px-4 py-2 rounded bg-gray-700 text-white"
+                >
+                  Stay
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLogoutWarning(false);
+                    submitAndLogout();
+                  }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                >
+                  Submit & Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* The Question List*/}
         <StudentSidebar
           questions={questions}
@@ -194,6 +372,8 @@ export default function StudentQuizPage() {
           onTimeout={handleTimeout}
           attemptCount={attemptCount}
           maxAttempts={maxAttempts}
+          attemptId={attemptId}
+          questionId={selectedQuestion?.id}
         />
       </div>
     </div>
