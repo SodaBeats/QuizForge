@@ -224,12 +224,7 @@ export const QuizAttemptsRepo = {
   // Get per-class average
   async getPerClassAverage(quizId: number, teacherId: number) {
     const query = sql`
-      WITH attempts AS (
-        SELECT user_id, quiz_id, MAX(score) as score
-        FROM ${quiz_attempts_db}
-        WHERE quiz_id = ${quizId}
-        GROUP BY user_id, quiz_id
-      ), teacher_classes AS (
+      WITH teacher_classes AS (
         SELECT id, class_name
         FROM classes_db WHERE teacher_id = ${teacherId}
       )
@@ -240,7 +235,7 @@ export const QuizAttemptsRepo = {
         COUNT(a.user_id) AS takers
       FROM teacher_classes tc
       LEFT JOIN ${students_classes_db} sc ON sc.class_id = tc.id
-      LEFT JOIN attempts a ON a.user_id = sc.student_id
+      JOIN ${quiz_attempts_db} a ON a.user_id = sc.student_id AND a.quiz_id = ${quizId}
       GROUP BY tc.id, tc.class_name
       ORDER BY averageScore DESC
     `;
