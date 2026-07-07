@@ -209,6 +209,8 @@ export default function QuestionEditor({
 
   // GENERATE QUESTIONS BY AI ------------------------------------------------
   const handleGenerate = async () => {
+    if (generateOptions.questionAmount > 10)
+      return toast.error("Maximum of 10 questions per generation");
     setLoading(true);
     const queryKey = ["quizQuestions", quizMetadata?.id];
     try {
@@ -227,7 +229,7 @@ export default function QuestionEditor({
         },
       );
 
-      if (!response || !response.ok) {
+      if (!response.ok) {
         const result = await response.json();
         throw new Error(
           result.errors?.map((e) => e.msg).join(", ") ||
@@ -643,6 +645,7 @@ export default function QuestionEditor({
                   }
                   className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
                   min="1"
+                  max="10"
                   placeholder="Enter number of questions"
                 />
               </>
