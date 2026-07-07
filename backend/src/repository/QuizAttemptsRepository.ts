@@ -235,7 +235,7 @@ export const QuizAttemptsRepo = {
         COUNT(a.user_id) AS takers
       FROM teacher_classes tc
       LEFT JOIN ${students_classes_db} sc ON sc.class_id = tc.id
-      JOIN ${quiz_attempts_db} a ON a.user_id = sc.student_id AND a.quiz_id = ${quizId}
+      LEFT JOIN ${quiz_attempts_db} a ON a.user_id = sc.student_id AND a.quiz_id = ${quizId}
       GROUP BY tc.id, tc.class_name
       ORDER BY averageScore DESC
     `;
