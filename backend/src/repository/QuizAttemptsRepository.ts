@@ -232,10 +232,10 @@ export const QuizAttemptsRepo = {
         tc.id AS classId,
         tc.class_name AS className,
         COALESCE(ROUND(AVG(a.score), 1), 0) as averageScore,
-        COUNT(a.user_id) AS takers
+        COUNT(DISTINCT a.user_id) AS takers
       FROM teacher_classes tc
       LEFT JOIN ${students_classes_db} sc ON sc.class_id = tc.id
-      LEFT JOIN ${quiz_attempts_db} a ON a.user_id = sc.student_id AND a.quiz_id = ${quizId}
+      LEFT JOIN ${quiz_attempts_db} a ON a.user_id = sc.student_id AND a.quiz_id = ${quizId} AND a.status = 'completed'
       GROUP BY tc.id, tc.class_name
       ORDER BY averageScore DESC
     `;
