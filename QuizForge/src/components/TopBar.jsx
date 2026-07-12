@@ -783,14 +783,6 @@ export default function TopBar({
               <button
                 className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                 onClick={() => {
-                  /* Navigate to Dashboard */ setIsProfileMenuOpen(false);
-                }}
-              >
-                Dashboard
-              </button>
-              <button
-                className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                onClick={() => {
                   navigate("/teacher/quizzes");
                   setIsProfileMenuOpen(!isProfileMenuOpen);
                 }}

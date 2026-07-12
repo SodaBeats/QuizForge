@@ -150,28 +150,31 @@ router.post(
         })
         .strip();
 
-      // embed the topic for RAG
-      const embeddedUserQueryResponse = await ollama.embed({
-        model: 'mxbai-embed-large:latest',
-        input: `Represent this sentence for searching relevant passages: ${topic}`,
-      });
-      const embeddedUserQuery = embeddedUserQueryResponse.embeddings[0];
-      if (!embeddedUserQuery || embeddedUserQuery.length < 1) {
-        return res
-          .status(500)
-          .json({ success: false, message: 'Failed to embed user query' });
-      }
+      // embed the topic for RAG if sources are provided
 
-      // fetch relevant document chunks if provided
-      const relevantChunks =
-        await DocumentChunksRepo.getRelevantChunksWithSources(
-          embeddedUserQuery,
-          sources,
-          req.user.id,
-        );
-      if (!relevantChunks || relevantChunks.length < 1) {
-        contextString = 'Freestyle';
-      } else {
+      if (Array.isArray(sources) && sources.length > 0) {
+        const embeddedUserQueryResponse = await ollama.embed({
+          model: 'mxbai-embed-large:latest',
+          input: `Represent this sentence for searching relevant passages: ${topic}`,
+        });
+        const embeddedUserQuery = embeddedUserQueryResponse.embeddings[0];
+        if (!embeddedUserQuery || embeddedUserQuery.length < 1) {
+          return res
+            .status(500)
+            .json({ success: false, message: 'Failed to embed user query' });
+        }
+
+        // fetch relevant document chunks if provided
+        const relevantChunks =
+          await DocumentChunksRepo.getRelevantChunksWithSources(
+            embeddedUserQuery,
+            sources,
+            req.user.id,
+          );
+        if (!relevantChunks || relevantChunks.length < 1)
+          return res
+            .status(404)
+            .json({ message: 'could not find relevant documents for topic' });
         contextString = relevantChunks
           .map((chunk, index) => `[Chunk ${index + 1}]: ${chunk.content}`)
           .join('\n\n');
@@ -185,10 +188,12 @@ router.post(
             message: 'Exceeded token limit',
           });
         }
+      } else {
+        contextString = 'Freestyle';
       }
 
       const response = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         response_format: { type: 'json_object' },
         messages: [
           {
@@ -210,7 +215,8 @@ router.post(
             Follow these instructions strictly based on the question type:
             ## 1. multiple-choice
             - Required: [question_text, correct_answer_text, correct_answer, option_a, option_b, option_c, option_d]
-            - Constraint: Be sure to create the "correct_answer_text" first, then "option_a", "option_b", "option_c", "option_d", and finally the correct letter for "correct_answer".
+            - Be sure to include the correct answer in the choices.
+            - Be sure to input the correct answer's letter in the 'correct_answer'.
 
             ## 2. true-false
             - Required: [question_text, correct_answer]
@@ -227,6 +233,7 @@ router.post(
           <document>${contextString}</document>`,
           },
         ],
+        reasoning_effort: 'medium',
       });
 
       if (!response || !response.choices[0]?.message.content) {

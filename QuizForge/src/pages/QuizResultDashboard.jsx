@@ -21,6 +21,7 @@ const DEFAULT_DASHBOARD_DATA = {
   students: [],
   questions: [],
   scoreDistribution: [],
+  classAverage: [],
 };
 
 function buildMetrics(data) {
@@ -92,31 +93,38 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
       return DEFAULT_DASHBOARD_DATA;
     }
 
-    const [metricRes, studentsRes, questionsRes, scoreRes] = await Promise.all([
-      authFetch(`${backendHost}/api/quizzes/${quizId}/metrics`, {
-        method: "GET",
-        credentials: "include",
-      }),
-      authFetch(`${backendHost}/api/quizzes/${quizId}/students`, {
-        method: "GET",
-        credentials: "include",
-      }),
-      authFetch(`${backendHost}/api/quizzes/${quizId}/questions`, {
-        method: "GET",
-        credentials: "include",
-      }),
-      authFetch(`${backendHost}/api/quizzes/${quizId}/score`, {
-        method: "GET",
-        credentials: "include",
-      }),
-    ]);
+    const [metricRes, studentsRes, questionsRes, scoreRes, classesAverageRes] =
+      await Promise.all([
+        authFetch(`${backendHost}/api/quizzes/${quizId}/metrics`, {
+          method: "GET",
+          credentials: "include",
+        }),
+        authFetch(`${backendHost}/api/quizzes/${quizId}/students`, {
+          method: "GET",
+          credentials: "include",
+        }),
+        authFetch(`${backendHost}/api/quizzes/${quizId}/questions`, {
+          method: "GET",
+          credentials: "include",
+        }),
+        authFetch(`${backendHost}/api/quizzes/${quizId}/score`, {
+          method: "GET",
+          credentials: "include",
+        }),
+        authFetch(`${backendHost}/api/quizzes/${quizId}/classesavg`, {
+          method: "GET",
+          credentials: "include",
+        }),
+      ]);
 
-    const [metrics, students, questions, scores] = await Promise.all([
-      metricRes.json(),
-      studentsRes.json(),
-      questionsRes.json(),
-      scoreRes.json(),
-    ]);
+    const [metrics, students, questions, scores, classesAverage] =
+      await Promise.all([
+        metricRes.json(),
+        studentsRes.json(),
+        questionsRes.json(),
+        scoreRes.json(),
+        classesAverageRes.json(),
+      ]);
 
     if (!metrics.success) {
       if (metrics.message === "Unauthorized action") {
@@ -165,12 +173,24 @@ async function fetchDashboardData({ quizId, authFetch, logout }) {
           "Something went wrong while fetching score distribution data",
       );
     }
+    if (!classesAverage.success) {
+      if (classesAverage.message === "Unauthorized action") {
+        await logout();
+        return DEFAULT_DASHBOARD_DATA;
+      }
+      throw new Error(
+        classesAverage?.message ||
+          classesAverage?.error ||
+          "Something went wrong while fetching classes average ranking",
+      );
+    }
 
     return {
       metrics: buildMetrics(metrics),
       students: students.data,
       questions: buildQuestionCorrectionRate(questions.data),
       scoreDistribution: getScoreDistribution(scores.data),
+      classesAverage: classesAverage.data,
     };
   } catch (error) {
     console.error(error);
@@ -202,6 +222,8 @@ export default function QuizResultDashboard() {
   const scoreDistribution =
     dashboardData?.scoreDistribution ??
     DEFAULT_DASHBOARD_DATA.scoreDistribution;
+  const classesRanking =
+    dashboardData?.classesAverage ?? DEFAULT_DASHBOARD_DATA.classAverage;
 
   if (!backendHost) {
     return <Navigate to="/error" replace />;
@@ -217,7 +239,7 @@ export default function QuizResultDashboard() {
           DIFFICULTY={questions}
           SCORES={scoreDistribution}
         />
-        <ResultsLeaderboard STUDENTS={students} />
+        <ResultsLeaderboard STUDENTS={students} classes={classesRanking} />
       </div>
     </div>
   );

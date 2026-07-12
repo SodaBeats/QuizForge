@@ -60,7 +60,7 @@ app.use('/auth/refresh', refreshRoute);
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ error: 'File too large (max 5MB)' });
+      return res.status(413).json({ error: 'File too large (max 2MB)' });
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
       return res.status(400).json({ error: 'Only one file allowed' });
