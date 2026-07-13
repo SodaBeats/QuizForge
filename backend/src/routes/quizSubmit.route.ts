@@ -45,9 +45,28 @@ router.patch(
 
     // get total score for 'multiple-choice' and 'true-false' questions
     const normalQuestionsScore = await getScore(normalQuestions, answers);
+
     // get score array for 'short-answer' questions
-    const shortAnsQuestionsScoreObject: Record<string, number> =
-      await getShortAnsScoreObject(shortAnsQuestions, shortQuestionsAnswers);
+    let shortAnsQuestionsScoreObject: Record<string, number> = {};
+
+    if (shortAnsQuestions.length > 0) {
+      try {
+        shortAnsQuestionsScoreObject = await getShortAnsScoreObject(
+          shortAnsQuestions,
+          shortQuestionsAnswers,
+        );
+      } catch (error: any) {
+        console.error(
+          '[quizSubmit.route] Short answer grading failed:',
+          error.message,
+        );
+
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to grade short answer questions. Please try again.',
+        });
+      }
+    }
 
     console.log(
       'SHORT ANSWER QUESTION SCORE OBJECT: ',

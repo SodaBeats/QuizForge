@@ -140,7 +140,9 @@ export default function StudentQuizPage() {
     },
     onError: (error) => {
       console.error(error);
-      alert("Something went wrong while submitting attempt");
+      toast.error(
+        error?.message || "Something went wrong while submitting attempt",
+      );
     },
   });
 

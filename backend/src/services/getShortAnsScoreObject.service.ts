@@ -87,7 +87,7 @@ const gradeBatch = async (
     ],
   });
 
-  if (!response || !response.choices[0]?.message.content) {
+  if (!response?.choices?.[0]?.message?.content) {
     throw new Error('Failed to get response from Groq API');
   }
 
@@ -126,11 +126,13 @@ const gradeBatchWithRetry = async (
       return await gradeBatch(questions, answers);
     } catch (retryError: any) {
       console.error(
-        `[getShortAnsScoreObject.service] Batch ${batchNumber} failed after retry. Skipping this batch.`,
+        `[getShortAnsScoreObject.service] Batch ${batchNumber} failed after retry. Aborting grading.`,
         retryError.message,
       );
 
-      return {};
+      throw new Error(
+        `Short-answer grading failed for batch ${batchNumber}. Please try again.`,
+      );
     }
   }
 };
