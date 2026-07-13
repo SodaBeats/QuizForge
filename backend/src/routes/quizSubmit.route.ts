@@ -49,6 +49,11 @@ router.patch(
     const shortAnsQuestionsScoreObject: Record<string, number> =
       await getShortAnsScoreObject(shortAnsQuestions, shortQuestionsAnswers);
 
+    console.log(
+      'SHORT ANSWER QUESTION SCORE OBJECT: ',
+      shortAnsQuestionsScoreObject,
+    );
+
     // get total score for 'short-answer' questions
     const shortAnsQuestionsRawScore = Object.values(
       shortAnsQuestionsScoreObject,

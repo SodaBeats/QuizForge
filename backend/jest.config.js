@@ -11,10 +11,7 @@ export default {
   },
 
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      { useESM: true },
-    ],
+    '^.+\\.tsx?$': ['ts-jest', { useESM: true }],
   },
 
   // ── Real-DB integration test setup ────────────────────────────────────────
@@ -32,7 +29,5 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/src/tests/integration/setup/loadEnv.ts'],
 
   // ── Test file locations ───────────────────────────────────────────────────
-  testMatch: [
-    '<rootDir>/src/tests/integration/*.test.ts',
-  ],
+  testMatch: ['<rootDir>/src/tests/integration/*.test.ts'],
 };
