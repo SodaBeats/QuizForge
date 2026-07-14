@@ -47,6 +47,6 @@ The terminal trouble is coming from a mismatch between the Jest configuration an
 
 ## Practical takeaways
 
-- If you want unit tests to run easily from the terminal, the Jest `testMatch` or a separate unit-only Jest config must be corrected.
-- If you want integration tests to run, the database URL in `.env.test` must be populated and the test database must be reachable.
-- The current failure is not caused by the service code itself; it is caused by test discovery and environment configuration noise around Jest.
+- Unit tests now run through a dedicated unit config and no longer inherit the database-driven integration setup.
+- Integration tests can be run separately through the integration config once `.env.test` points to a reachable database.
+- The current failure is no longer caused by the service code itself for the unit suite; it is now isolated to environment configuration when the integration path is used.
