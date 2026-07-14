@@ -5,7 +5,7 @@ import type { Question } from '../types/questionType.js';
 // -------------------------------------------------------------------
 // Types
 // -------------------------------------------------------------------
-type ScoreableQuestion = Pick<
+export type ScoreableQuestion = Pick<
   Question,
   'id' | 'correctAnswer' | 'questionType' | 'questionText'
 >;
@@ -15,12 +15,43 @@ type BatchScoreResponse = Record<string, number>;
 //  Variables
 // -------------------------------------------------------------------
 const groq = new Groq();
-const shortAnswerScoreSchema = z.record(z.string(), z.number());
+const shortAnswerScoreSchema = z.record(
+  z.string(),
+  z.number().int().min(0).max(10),
+);
 const shortAnswerBatchSize = 10;
 
 // -------------------------------------------------------------------
 // Functions
 // -------------------------------------------------------------------
+export const parseShortAnswerScores = (
+  rawParsed: unknown,
+  questions: ScoreableQuestion[],
+): BatchScoreResponse => {
+  const parsedScore = shortAnswerScoreSchema.safeParse(rawParsed);
+
+  if (!parsedScore.success) {
+    throw new Error('LLM returned an unexpected format');
+  }
+
+  const scores = parsedScore.data;
+  const expectedIds = questions.map((question) => question.id.toString());
+  const returnedIds = Object.keys(scores);
+
+  const missingIds = expectedIds.filter((id) => !returnedIds.includes(id));
+  const extraIds = returnedIds.filter((id) => !expectedIds.includes(id));
+
+  if (missingIds.length > 0 || extraIds.length > 0) {
+    throw new Error(
+      `LLM returned invalid question IDs for short answer grading. Expected [${expectedIds.join(
+        ', ',
+      )}], received [${returnedIds.join(', ')}]`,
+    );
+  }
+
+  return scores;
+};
+
 const chunkQuestions = <T>(items: T[], batchSize: number): T[][] => {
   const batches: T[][] = [];
   for (let index = 0; index < items.length; index += batchSize) {
@@ -100,13 +131,7 @@ const gradeBatch = async (
     throw new Error(`Failed to parse LLM response: ${err.message}`);
   }
 
-  const parsedScore = shortAnswerScoreSchema.safeParse(rawParsed);
-  if (!parsedScore.success || !parsedScore.data) {
-    throw new Error('LLM returned an unexpected format');
-  }
-
-  //console.log(`[getShortAnsScoreObject.service]:`, parsedScore);
-  return parsedScore.data;
+  return parseShortAnswerScores(rawParsed, questions);
 };
 
 const gradeBatchWithRetry = async (
