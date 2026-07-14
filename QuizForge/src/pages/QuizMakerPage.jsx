@@ -27,7 +27,7 @@ export default function QuizMakerSkeleton() {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/pdf", // .docx
     ];
-    const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
+    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please upload a DOCX or PDF file");
@@ -36,7 +36,7 @@ export default function QuizMakerSkeleton() {
 
     // 2. Check File Size
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`File is too large. Maximum size is 1MB.`);
+      toast.error(`File is too large. Maximum size is 2MB.`);
       return;
     }
 
@@ -72,7 +72,7 @@ export default function QuizMakerSkeleton() {
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Failed to upload file. Please try again.");
+      alert(error.message || "Failed to upload file. Please try again.");
     } finally {
       setIsUploading(false);
     }
