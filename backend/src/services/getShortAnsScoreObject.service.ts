@@ -2,42 +2,94 @@ import Groq from 'groq-sdk';
 import { z } from 'zod';
 import type { Question } from '../types/questionType.js';
 
-type ScoreableQuestion = Pick<
+// ---------------------------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------------------------
+export type ScoreableQuestion = Pick<
   Question,
   'id' | 'correctAnswer' | 'questionType' | 'questionText'
 >;
-const shortAnswerScoreSchema = z.record(z.string(), z.number());
-const groq = new Groq();
+type BatchScoreResponse = Record<string, number>;
 
-export const getShortAnsScoreObject = async (
+// ---------------------------------------------------------------------------------------------
+//  Variables
+// ---------------------------------------------------------------------------------------------
+const groq = new Groq();
+const shortAnswerScoreSchema = z.record(
+  z.string(),
+  z.number().int().min(0).max(10),
+);
+const shortAnswerBatchSize = 10;
+
+// ---------------------------------------------------------------------------------------------
+// Functions
+// ---------------------------------------------------------------------------------------------
+export const parseShortAnswerScores = (
+  rawParsed: unknown,
   questions: ScoreableQuestion[],
-  answers: Record<string, string> | null,
-): Promise<Record<string, number>> => {
-  if (!answers || Object.keys(answers).length === 0 || questions.length === 0) {
-    return {};
+): BatchScoreResponse => {
+  const parsedScore = shortAnswerScoreSchema.safeParse(rawParsed);
+
+  if (!parsedScore.success) {
+    throw new Error('LLM returned an unexpected format');
   }
 
-  try {
-    const formatForLlm = questions.map((q) => {
-      return {
-        questionId: q.id,
-        question: q.questionText,
-        correctAnswer: q.correctAnswer,
-        answer: answers[q.id] ?? '',
-      };
-    });
-    const stringifiedFormat = JSON.stringify(formatForLlm, null, 2);
-    let rawParsed;
+  const scores = parsedScore.data;
+  const expectedIds = questions.map((question) => question.id.toString());
+  const returnedIds = Object.keys(scores);
 
-    console.log(`[FORMAT FOR LLM]: `, formatForLlm);
+  const missingIds = expectedIds.filter((id) => !returnedIds.includes(id));
+  const extraIds = returnedIds.filter((id) => !expectedIds.includes(id));
 
-    const response = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-      messages: [
-        {
-          role: 'system',
-          content: `
+  if (missingIds.length > 0 || extraIds.length > 0) {
+    throw new Error(
+      `LLM returned invalid question IDs for short answer grading. Expected [${expectedIds.join(
+        ', ',
+      )}], received [${returnedIds.join(', ')}]`,
+    );
+  }
+
+  return scores;
+};
+
+const chunkQuestions = <T>(items: T[], batchSize: number): T[][] => {
+  const batches: T[][] = [];
+  for (let index = 0; index < items.length; index += batchSize) {
+    batches.push(items.slice(index, index + batchSize));
+  }
+  return batches;
+};
+
+const buildGradingPayload = (
+  questions: ScoreableQuestion[],
+  answers: Record<string, string>,
+) => {
+  return questions.map((question) => {
+    return {
+      questionId: question.id,
+      question: question.questionText,
+      correctAnswer: question.correctAnswer ?? '',
+      answer: answers[question.id.toString()] ?? '',
+    };
+  });
+};
+
+const gradeBatch = async (
+  questions: ScoreableQuestion[],
+  answers: Record<string, string>,
+): Promise<BatchScoreResponse> => {
+  const formatForLlm = buildGradingPayload(questions, answers);
+  const stringifiedFormat = JSON.stringify(formatForLlm, null, 2);
+
+  console.log(`[FORMAT FOR LLM]: `, stringifiedFormat);
+
+  const response = await groq.chat.completions.create({
+    model: 'openai/gpt-oss-120b',
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: `
                   # PERSONA
                     - You are a specialized Answer Grading Engine.
 
@@ -58,38 +110,77 @@ export const getShortAnsScoreObject = async (
                       "14": 9
                     }
                 `,
-        },
-        {
-          role: 'user',
-          content: `<Grading>${stringifiedFormat}</Grading>`,
-        },
-      ],
-    });
+      },
+      {
+        role: 'user',
+        content: `<Grading>${stringifiedFormat}</Grading>`,
+      },
+    ],
+  });
 
-    if (!response || !response.choices[0]?.message.content) {
-      throw new Error('Failed to get response from Groq API');
-    }
-    try {
-      rawParsed = JSON.parse(response.choices[0].message.content);
-    } catch (err: any) {
-      console.error(err);
-      throw new Error(`Failed to parse LLM response: ${err.message}`);
-    }
-    const parsedScore = shortAnswerScoreSchema.safeParse(rawParsed);
-    if (!parsedScore.success || !parsedScore.data) {
-      throw new Error('LLM returned an unexpected format');
-    }
-
-    console.log(`[getShortAnsScoreObject.service]:`, parsedScore);
-
-    /*const rawScore = Object.values(parsedScore).reduce((sum, val) => {
-            const numericVal = typeof val === 'number' ? val : 0;
-            return sum + numericVal;
-          }, 0);*/
-
-    return parsedScore.data;
-  } catch (error: any) {
-    console.error(error);
-    throw new Error(`Failed to grade answers: ${error.message}`);
+  if (!response?.choices?.[0]?.message?.content) {
+    throw new Error('Failed to get response from Groq API');
   }
+
+  let rawParsed: unknown;
+
+  try {
+    rawParsed = JSON.parse(response.choices[0].message.content);
+  } catch (err: any) {
+    console.error(err);
+    throw new Error(`Failed to parse LLM response: ${err.message}`);
+  }
+
+  return parseShortAnswerScores(rawParsed, questions);
+};
+
+const gradeBatchWithRetry = async (
+  questions: ScoreableQuestion[],
+  answers: Record<string, string>,
+  batchNumber: number,
+): Promise<BatchScoreResponse> => {
+  try {
+    return await gradeBatch(questions, answers);
+  } catch (error: any) {
+    console.warn(
+      `[getShortAnsScoreObject.service] Batch ${batchNumber} failed on first attempt, retrying...`,
+      error.message,
+    );
+
+    try {
+      return await gradeBatch(questions, answers);
+    } catch (retryError: any) {
+      console.error(
+        `[getShortAnsScoreObject.service] Batch ${batchNumber} failed after retry. Aborting grading.`,
+        retryError.message,
+      );
+
+      throw new Error(
+        `Short-answer grading failed for batch ${batchNumber}. Please try again.`,
+      );
+    }
+  }
+};
+
+// ---------------------------------------------------------------------------------------------
+// Main Function
+// ---------------------------------------------------------------------------------------------
+export const getShortAnsScoreObject = async (
+  questions: ScoreableQuestion[],
+  answers: Record<string, string> | null,
+): Promise<Record<string, number>> => {
+  if (!answers || Object.keys(answers).length === 0 || questions.length === 0) {
+    return {};
+  }
+
+  const questionBatches = chunkQuestions(questions, shortAnswerBatchSize);
+  const mergedScores: BatchScoreResponse = {};
+
+  for (const [index, batch] of questionBatches.entries()) {
+    const batchScores = await gradeBatchWithRetry(batch, answers, index + 1);
+
+    Object.assign(mergedScores, batchScores);
+  }
+
+  return mergedScores;
 };

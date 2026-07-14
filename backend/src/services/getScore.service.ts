@@ -23,7 +23,7 @@ type ScoreableQuestion = Pick<
 >;
 
 // main function --------------------------------------------------------------
-export const getScore = async (
+export const getScore = (
   questions: ScoreableQuestion[],
   answers: Record<string, string> | null,
 ) => {
