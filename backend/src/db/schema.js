@@ -130,27 +130,23 @@ export const attempt_answers_db = pgTable(
   'attempt_answers_db',
   {
     id: serial('id').primaryKey(),
-
     quiz_id: integer('quiz_id')
       .notNull()
       .references(() => quizzes_db.id, { onDelete: 'cascade' }),
-
     attempt_id: integer('attempt_id')
       .notNull()
       .references(() => quiz_attempts_db.id, { onDelete: 'cascade' }),
-
     user_id: integer('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-
     question_id: integer('question_id')
       .notNull()
       .references(() => questions_db.id, { onDelete: 'cascade' }),
-
     chosen_answer: text('chosen_answer'),
     correct_answer: text('correct_answer').notNull(),
     is_correct: boolean('is_correct').notNull().default(false),
-
+    remarks: text('remarks'),
+    points: integer('points').default(0),
     created_at: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
