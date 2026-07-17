@@ -127,7 +127,7 @@ const gradeBatch = async (
                     - You will only answer with the specified JSON format and NOTHING ELSE.
                     - Using the 'correctAnswer' as reference, you will grade the 'answer' based on how closely it aligns with the 'correctAnswer'.
                     - Be very strict in checking the alignment of 'correctAnswer' and 'answer'.
-                    - Add 'remark' on what the answer is lacking and what the user can revisit to improve, but only when needed. If not needed, then keep it blank.
+                    - Add 'remarks' on what the answer is lacking and what the user can revisit to improve, but only when needed. If not needed, then keep it blank.
                   # SCORE RULE
                     - Rate the 'answer' 0 if it does not reflect the idea in the 'correctAnswer' reference.
                     - Rate the 'answer' 4 if it semantically lacks alignment with the idea in the 'correctAnswer' reference.
