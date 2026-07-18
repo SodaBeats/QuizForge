@@ -142,7 +142,7 @@ router.patch(
     } catch (error: any) {
       console.error(
         '[quizSubmit.route] Summary generation failed: ',
-        error.messaage || error,
+        error.message || error,
       );
     }
     /*console.log('[NORMAL QUESTIONS]: ', normalQuestions);
