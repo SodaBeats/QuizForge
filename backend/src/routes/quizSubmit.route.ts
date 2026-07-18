@@ -24,6 +24,7 @@ router.patch(
     const { questions, answers, quiz, attemptId } = req.body;
     const userId = req.user.id;
     let shortQuestionsAnswers: Record<string, string> = {};
+    let attemptRemarks = 'Summary Unavailable';
 
     if (!questions || !answers || !quiz?.id || !attemptId) {
       return res
@@ -131,12 +132,19 @@ router.patch(
       },
     );
 
-    const attemptRemarks = await getSummaryRemarks({
-      formattedAttemptAnswers,
-      formattedShortAnsAttemptAnswers,
-      normalQuestions,
-      shortAnsQuestions,
-    });
+    try {
+      attemptRemarks = await getSummaryRemarks({
+        formattedAttemptAnswers,
+        formattedShortAnsAttemptAnswers,
+        normalQuestions,
+        shortAnsQuestions,
+      });
+    } catch (error: any) {
+      console.error(
+        '[quizSubmit.route] Summary generation failed: ',
+        error.messaage || error,
+      );
+    }
     /*console.log('[NORMAL QUESTIONS]: ', normalQuestions);
     console.log('[SHORT ANS QUESTIONS]: ', shortAnsQuestions);
     console.log('[FORMATTED ATTEMPT ANSWERS]: ', formattedAttemptAnswers);
