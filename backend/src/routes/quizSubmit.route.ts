@@ -10,6 +10,7 @@ import {
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 import type { Question } from '../types/questionType.js';
+import { getSummaryRemarks } from '../services/summaryRemarks.service.js';
 
 const router = express.Router();
 
@@ -87,10 +88,6 @@ router.patch(
       return sum + numericVal;
     }, 0);
 
-    //console.log(`[shortAnsQuestions]:`, shortAnsQuestions);
-    //console.log(`[shortQuestionsAnswers]:`, shortQuestionsAnswers);
-    //console.log(`[shortAnsQuestionsScoreObject]: `, shortAnsQuestionsScoreObject);
-
     // calculate max possible score based on question point
     // (multiple-choice, true-false = 1 pt)
     // (short-answer = 10 pts)
@@ -101,13 +98,6 @@ router.patch(
       maxPossibleScore > 0
         ? Math.floor((rawScore / maxPossibleScore) * 100)
         : 0;
-
-    const formattedData = {
-      score: percentileScore,
-      status: 'completed',
-      raw_score: rawScore,
-      max_possible_score: maxPossibleScore,
-    };
 
     const formattedAttemptAnswers = normalQuestions.map((q: Question) => {
       return {
@@ -140,6 +130,29 @@ router.patch(
         };
       },
     );
+
+    const attemptRemarks = await getSummaryRemarks({
+      formattedAttemptAnswers,
+      formattedShortAnsAttemptAnswers,
+      normalQuestions,
+      shortAnsQuestions,
+    });
+    /*console.log('[NORMAL QUESTIONS]: ', normalQuestions);
+    console.log('[SHORT ANS QUESTIONS]: ', shortAnsQuestions);
+    console.log('[FORMATTED ATTEMPT ANSWERS]: ', formattedAttemptAnswers);
+    console.log(
+      '[FORMATTED SHORT ANS ATTEMPT ANSWERS]: ',
+      formattedShortAnsAttemptAnswers,
+    );*/
+    console.log(attemptRemarks);
+
+    const formattedData = {
+      score: percentileScore,
+      status: 'completed',
+      raw_score: rawScore,
+      max_possible_score: maxPossibleScore,
+      attempt_remarks: attemptRemarks,
+    };
 
     try {
       await db.transaction(async (tx) => {

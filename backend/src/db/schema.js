@@ -122,7 +122,8 @@ export const quiz_attempts_db = pgTable('quiz_attempts_db', {
   score: integer('score').default(0),
   raw_score: integer('raw_score').default(0),
   max_possible_score: integer('max_possible_score').default(0),
-  status: text('status').default('completed'), // 'in-progress' or 'completed'
+  status: text('status').default('completed'), // 'in-progress' or 'completed',
+  attempt_remarks: text('attempt_remarks').default('none'),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
