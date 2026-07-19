@@ -3,10 +3,14 @@ import { db } from '../db/db.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { getScore } from '../services/getScore.service.js';
-import { getShortAnsScoreObject } from '../services/getShortAnsScoreObject.service.js';
+import {
+  getShortAnsScoreObject,
+  type ShortAnswerGradingResult,
+} from '../services/getShortAnsScoreObject.service.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 import type { Question } from '../types/questionType.js';
+import { getSummaryRemarks } from '../services/summaryRemarks.service.js';
 
 const router = express.Router();
 
@@ -20,6 +24,7 @@ router.patch(
     const { questions, answers, quiz, attemptId } = req.body;
     const userId = req.user.id;
     let shortQuestionsAnswers: Record<string, string> = {};
+    let attemptRemarks = 'Summary Unavailable';
 
     if (!questions || !answers || !quiz?.id || !attemptId) {
       return res
@@ -44,16 +49,19 @@ router.patch(
     });
 
     // get total score for 'multiple-choice' and 'true-false' questions
-    const normalQuestionsScore = await getScore(normalQuestions, answers);
+    const normalQuestionsScore = getScore(normalQuestions, answers);
 
     // get score array for 'short-answer' questions
-    let shortAnsQuestionsScoreObject: Record<string, number> = {};
+    let shortAnsQuestionsScoreObject: ShortAnswerGradingResult = {
+      scores: {},
+      remarks: {},
+    };
 
     if (shortAnsQuestions.length > 0) {
       try {
         shortAnsQuestionsScoreObject = await getShortAnsScoreObject(
-          shortAnsQuestions,
-          shortQuestionsAnswers,
+          shortAnsQuestions, // array of question objects
+          shortQuestionsAnswers, // object with key value pair of question id and answer
         );
       } catch (error: any) {
         console.error(
@@ -75,15 +83,11 @@ router.patch(
 
     // get total score for 'short-answer' questions
     const shortAnsQuestionsRawScore = Object.values(
-      shortAnsQuestionsScoreObject,
+      shortAnsQuestionsScoreObject.scores,
     ).reduce((sum, val) => {
       const numericVal = typeof val === 'number' ? val : 0;
       return sum + numericVal;
     }, 0);
-
-    //console.log(`[shortAnsQuestions]:`, shortAnsQuestions);
-    //console.log(`[shortQuestionsAnswers]:`, shortQuestionsAnswers);
-    //console.log(`[shortAnsQuestionsScoreObject]: `, shortAnsQuestionsScoreObject);
 
     // calculate max possible score based on question point
     // (multiple-choice, true-false = 1 pt)
@@ -96,13 +100,6 @@ router.patch(
         ? Math.floor((rawScore / maxPossibleScore) * 100)
         : 0;
 
-    const formattedData = {
-      score: percentileScore,
-      status: 'completed',
-      raw_score: rawScore,
-      max_possible_score: maxPossibleScore,
-    };
-
     const formattedAttemptAnswers = normalQuestions.map((q: Question) => {
       return {
         quiz_id: quiz.id,
@@ -112,12 +109,15 @@ router.patch(
         chosen_answer: answers[q.id] ?? null,
         correct_answer: q.correctAnswer,
         is_correct: (answers[q.id] ?? null) === q.correctAnswer,
+        points: (answers[q.id] ?? null) === q.correctAnswer ? 1 : 0,
       };
     });
 
     const formattedShortAnsAttemptAnswers = shortAnsQuestions.map(
       (q: Question) => {
-        const score = shortAnsQuestionsScoreObject[q.id.toString()] ?? 0;
+        const score = shortAnsQuestionsScoreObject.scores[q.id.toString()] ?? 0;
+        const remarks =
+          shortAnsQuestionsScoreObject.remarks[q.id.toString()] ?? null;
         return {
           quiz_id: quiz.id,
           attempt_id: attemptId,
@@ -126,9 +126,41 @@ router.patch(
           chosen_answer: shortQuestionsAnswers[q.id.toString()] ?? null,
           correct_answer: q.correctAnswer,
           is_correct: score >= 7,
+          remarks,
+          points: score,
         };
       },
     );
+
+    try {
+      attemptRemarks = await getSummaryRemarks({
+        formattedAttemptAnswers,
+        formattedShortAnsAttemptAnswers,
+        normalQuestions,
+        shortAnsQuestions,
+      });
+    } catch (error: any) {
+      console.error(
+        '[quizSubmit.route] Summary generation failed: ',
+        error.message || error,
+      );
+    }
+    /*console.log('[NORMAL QUESTIONS]: ', normalQuestions);
+    console.log('[SHORT ANS QUESTIONS]: ', shortAnsQuestions);
+    console.log('[FORMATTED ATTEMPT ANSWERS]: ', formattedAttemptAnswers);
+    console.log(
+      '[FORMATTED SHORT ANS ATTEMPT ANSWERS]: ',
+      formattedShortAnsAttemptAnswers,
+    );*/
+    console.log(attemptRemarks);
+
+    const formattedData = {
+      score: percentileScore,
+      status: 'completed',
+      raw_score: rawScore,
+      max_possible_score: maxPossibleScore,
+      attempt_remarks: attemptRemarks,
+    };
 
     try {
       await db.transaction(async (tx) => {

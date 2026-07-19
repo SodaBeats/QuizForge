@@ -165,9 +165,10 @@ function SideBar({
   const handleQuestionDelete = async (questionId) => {
     const confirmMessage = "Are you sure you wish to delete this question?";
     if (!window.confirm(confirmMessage)) return;
+    if (!currentQuiz?.id) return;
 
     const previousSelectedQuestionId = selectedQuestionId;
-    const queryKey = ["quizQuestions"];
+    const queryKey = ["quizQuestions", currentQuiz.id];
     const previousQueryData = queryClient.getQueryData(queryKey);
 
     if (previousQueryData?.questionList) {
@@ -330,7 +331,7 @@ function SideBar({
             <div className="text-sm font-semibold text-gray-400">Questions</div>
           </div>
           <div className="space-y-1">
-            {questions ? (
+            {Array.isArray(questions) && questions.length > 0 ? (
               questions.map((question) => (
                 <div
                   key={question.id}
