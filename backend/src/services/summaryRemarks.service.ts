@@ -37,7 +37,7 @@ export const getSummaryRemarks = async ({
       question: q.questionText,
       userAnswer: matchingAnswer?.chosen_answer || 'Skipped',
       correctAnswer: q.correctAnswer,
-      result: matchingAnswer.is_correct ? 'correct' : 'wrong',
+      result: matchingAnswer?.is_correct ? 'correct' : 'wrong',
       instructorRemarks: matchingAnswer?.remarks?.trim() || 'None',
     };
   });

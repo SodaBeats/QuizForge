@@ -60,10 +60,11 @@ export const parseShortAnswerScores = (
 
   const missingIds = expectedIds.filter((id) => !returnedIds.includes(id));
   const extraIds = returnedIds.filter((id) => !expectedIds.includes(id));
+  const hasDuplicates = new Set(returnedIds).size !== returnedIds.length;
 
-  if (missingIds.length > 0 || extraIds.length > 0) {
+  if (missingIds.length > 0 || extraIds.length > 0 || hasDuplicates) {
     throw new Error(
-      `LLM returned invalid question IDs for short answer grading. Expected [${expectedIds.join(
+      `LLM returned invalid or duplicate question IDs for short answer grading. Expected [${expectedIds.join(
         ', ',
       )}], received [${returnedIds.join(', ')}]`,
     );

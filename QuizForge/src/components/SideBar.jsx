@@ -165,6 +165,7 @@ function SideBar({
   const handleQuestionDelete = async (questionId) => {
     const confirmMessage = "Are you sure you wish to delete this question?";
     if (!window.confirm(confirmMessage)) return;
+    if (!currentQuiz?.id) return;
 
     const previousSelectedQuestionId = selectedQuestionId;
     const queryKey = ["quizQuestions", currentQuiz.id];
