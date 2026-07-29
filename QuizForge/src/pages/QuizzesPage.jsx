@@ -7,6 +7,7 @@ import QuizzesSidebar from "../components/QuizzesSideBar";
 import TopBar from "../components/TopBar";
 import QuizzesMetaData from "../components/QuizzesMetadata";
 import QuizzesQuestionList from "../components/QuizzesQuestionList";
+import { classServices } from "../services/classServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -182,6 +183,17 @@ export default function QuizzesPage() {
     },
   );
 
+  // get all user classes
+  const {
+    data: userClasses,
+    isFetching: isFetchingClasses,
+    error: classFetchError,
+  } = useQuery({
+    queryKey: ["userClasses"],
+    queryFn: () => classServices.fetchClasses(authFetch),
+    staleTime: 1000 * 60 * 5,
+  });
+
   const handleQuestionUpdate = async (quizId, editingQuestion) => {
     const queryKey = ["queryQuestions", selectedQuizId];
     const originalData = queryClient.getQueryData(queryKey);
@@ -246,6 +258,9 @@ export default function QuizzesPage() {
               key={selectedQuiz.id}
               quiz={selectedQuiz}
               onUpdateQuizMeta={handleQuizMetaUpdate}
+              userClasses={userClasses}
+              isFetchingClasses={isFetchingClasses}
+              classFetchError={classFetchError}
             />
             <QuizzesQuestionList
               isFetching={queryQuestionsFetching}

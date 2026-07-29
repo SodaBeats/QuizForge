@@ -1,7 +1,13 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, count, and, desc, countDistinct } from 'drizzle-orm';
+import { eq, count, and, desc, countDistinct, sql } from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
-import { quizzes_db, quiz_attempts_db, questions_db } from '../db/schema.js';
+import {
+  quizzes_db,
+  quiz_attempts_db,
+  questions_db,
+  classes_db,
+  quiz_access_db,
+} from '../db/schema.js';
 
 type QuizInputData = InferInsertModel<typeof quizzes_db>;
 type QuizUpdateData = Partial<QuizInputData>;
@@ -38,21 +44,36 @@ export const UserQuizzesRepository = {
         maxAttempts: quizzes_db.max_attempts,
         dueDate: quizzes_db.due_date,
         status: quizzes_db.status,
+        accessibility: quizzes_db.accessibility,
         questionCount: count(questions_db.id),
+        // Aggregate class_id integers into a array of numbers
+        classIds: sql<number[]>`
+        COALESCE(
+          json_agg(DISTINCT ${quiz_access_db.class_id}) 
+          FILTER (WHERE ${quiz_access_db.class_id} IS NOT NULL), 
+          '[]'::json
+        )
+      `.as('class_ids'),
       })
       .from(quizzes_db)
       .leftJoin(questions_db, eq(quizzes_db.id, questions_db.quiz_id))
+      .leftJoin(quiz_access_db, eq(quizzes_db.id, quiz_access_db.quiz_id))
       .where(eq(quizzes_db.user_id, userId))
       .groupBy(quizzes_db.id)
       .orderBy(desc(quizzes_db.created_at))
       .limit(limit)
       .offset(offset);
+
     return quizzes ?? null;
   },
 
   //update quiz and return all data
-  async updateQuizDataReturnAll(data: QuizUpdateData, quizId: number) {
-    const [updated] = await db
+  async updateQuizDataReturnAll(
+    data: QuizUpdateData,
+    quizId: number,
+    tx: QueryClient = db,
+  ) {
+    const [updated] = await tx
       .update(quizzes_db)
       .set(data)
       .where(eq(quizzes_db.id, quizId))

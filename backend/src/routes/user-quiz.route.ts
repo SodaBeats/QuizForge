@@ -483,12 +483,28 @@ router.patch(
         due_date: new Date(req.body.dueDate),
         max_attempts: req.body.maxAttempts,
         status: req.body.status,
+        accessibility: req.body.accessibility,
       };
 
-      const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
-        dataForDrizzle,
-        Number(id),
-      );
+      await db.transaction(async (tx) => {
+        const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
+          dataForDrizzle,
+          Number(id),
+          tx,
+        );
+        if (!updatedQuiz) {
+          throw new Error('Failed to update quiz');
+        }
+        if (req.body.classIds?.length > 0) {
+          const quizAccessInsert = await QuizAccessRepo.insert(
+            Number(id),
+            req.body.classIds,
+            tx,
+          );
+          if (!quizAccessInsert)
+            throw new Error('Failed to handle accessibility');
+        }
+      });
 
       return res.status(200).json({ success: true });
     } catch (error) {
