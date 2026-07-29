@@ -45,7 +45,7 @@ export const UserQuizzesRepository = {
         dueDate: quizzes_db.due_date,
         status: quizzes_db.status,
         accessibility: quizzes_db.accessibility,
-        questionCount: count(questions_db.id),
+        questionCount: countDistinct(questions_db.id),
         // Aggregate class_id integers into a array of numbers
         classIds: sql<number[]>`
         COALESCE(

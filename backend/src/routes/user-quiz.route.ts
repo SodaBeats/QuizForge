@@ -495,14 +495,13 @@ router.patch(
         if (!updatedQuiz) {
           throw new Error('Failed to update quiz');
         }
-        if (req.body.classIds?.length > 0) {
-          const quizAccessInsert = await QuizAccessRepo.insert(
+        if (Array.isArray(req.body.classIds)) {
+          const accessUpdated = await QuizAccessRepo.updateAccess(
             Number(id),
             req.body.classIds,
             tx,
           );
-          if (!quizAccessInsert)
-            throw new Error('Failed to handle accessibility');
+          if (!accessUpdated) throw new Error('Failed to handle accessibility');
         }
       });
 

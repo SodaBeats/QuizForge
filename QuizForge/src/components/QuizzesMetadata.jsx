@@ -49,7 +49,8 @@ function ClassAccessDropdown({
     editingQuiz.classIds.length === 0
       ? "Anyone with the code"
       : editingQuiz.classIds.length === 1
-        ? `${userClasses?.find((c) => c.id === editingQuiz.classIds[0])?.name}`
+        ? (userClasses?.find((c) => c.id === editingQuiz.classIds[0])?.name ??
+          "1 class selected")
         : `${editingQuiz.classIds.length} classes selected`;
   return (
     <div className="relative" ref={dropdownRef}>
