@@ -2,6 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { type Quiz, Accessibility } from '../types/quizType.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { verifyTeacher } from '../middlewares/teacherAuthz.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { quizInputValidator } from '../middlewares/quizInputValidator.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
@@ -18,16 +19,11 @@ const router = express.Router();
 router.post(
   '/',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(3, 3),
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { id, role } = req.user;
-
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
-    }
 
     const formattedData: Quiz = {
       user_id: id,
@@ -112,6 +108,7 @@ router.get(
 router.get(
   '/questions',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const { quizId } = req.query;
@@ -119,11 +116,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'You must select a quiz' });
-    }
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
 
     try {
@@ -156,6 +148,7 @@ router.get(
 router.get(
   '/:quizId/attempts',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(3, 3),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -163,11 +156,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
     try {
       const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
@@ -195,6 +183,7 @@ router.get(
 router.get(
   '/:quizId/metrics',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -203,11 +192,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
 
     try {
@@ -246,6 +230,7 @@ router.get(
 router.get(
   '/:quizId/students',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -254,11 +239,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
 
     try {
@@ -292,6 +272,7 @@ router.get(
 router.get(
   '/:quizId/questions',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -300,11 +281,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
 
     try {
@@ -328,6 +304,7 @@ router.get(
 router.get(
   '/:quizId/score',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -337,11 +314,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
 
     try {
@@ -364,6 +336,7 @@ router.get(
 router.get(
   '/:quizId/classesavg',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 10),
   async (req, res, next) => {
     const quizId = Number(req.params.quizId);
@@ -372,11 +345,6 @@ router.get(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
     try {
       const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
@@ -402,16 +370,11 @@ router.get(
 router.patch(
   '/:quizId/question/:questionId',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 5),
   questionInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { questionId, quizId } = req.params;
-
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
-    }
 
     try {
       const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
@@ -450,17 +413,12 @@ router.patch(
 router.patch(
   '/:id',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 5),
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { role } = req.user;
     const { id } = req.params;
-
-    if (role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
-    }
 
     if (Object.keys(req.body).length < 1) {
       return res
@@ -483,12 +441,27 @@ router.patch(
         due_date: new Date(req.body.dueDate),
         max_attempts: req.body.maxAttempts,
         status: req.body.status,
+        accessibility: req.body.accessibility,
       };
 
-      const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
-        dataForDrizzle,
-        Number(id),
-      );
+      await db.transaction(async (tx) => {
+        const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
+          dataForDrizzle,
+          Number(id),
+          tx,
+        );
+        if (!updatedQuiz) {
+          throw new Error('Failed to update quiz');
+        }
+        if (Array.isArray(req.body.classIds)) {
+          const accessUpdated = await QuizAccessRepo.updateAccess(
+            Number(id),
+            req.body.classIds,
+            tx,
+          );
+          if (!accessUpdated) throw new Error('Failed to handle accessibility');
+        }
+      });
 
       return res.status(200).json({ success: true });
     } catch (error) {
@@ -501,6 +474,7 @@ router.patch(
 router.delete(
   '/:id',
   verifyToken,
+  verifyTeacher,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
     const quizIdNum = Number(req.params.id);
@@ -508,11 +482,6 @@ router.delete(
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
-    }
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
     }
     try {
       const deletedQuiz = await UserQuizzesRepository.deleteQuiz(

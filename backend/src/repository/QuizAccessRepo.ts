@@ -22,4 +22,21 @@ export const QuizAccessRepo = {
 
     return result.length > 0 ? result.map((row) => row.classId) : null;
   },
+
+  async updateAccess(quizId: number, classIds: number[], tx: QueryClient = db) {
+    await tx
+      .delete(quiz_access_db)
+      .where(eq(quiz_access_db.quiz_id, quizId))
+      .returning();
+    if (classIds.length > 0) {
+      const result = await tx
+        .insert(quiz_access_db)
+        .values(
+          classIds.map((classId) => ({ quiz_id: quizId, class_id: classId })),
+        )
+        .returning();
+      return result.length > 0 ? true : false;
+    }
+    return true;
+  },
 };
