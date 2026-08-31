@@ -4,148 +4,28 @@ import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import toast from "react-hot-toast";
 import { classServices } from "../services/classServices";
-import { documentServices } from "../services/documentServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
+
+// shared clay styling tokens — cosmetic only, referenced by className below
+const wellInputClass =
+  "w-full px-3 py-2 bg-[#26211c] rounded-xl text-[#e8ddce] text-sm placeholder:text-[#766a59] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition";
+const labelClass = "block text-sm font-medium text-[#cabaa2] mb-1";
+const primaryBtnClass =
+  "font-display font-bold rounded-xl px-4 py-2 text-[#3a2010] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+const primaryBtnStyle = {
+  background: "linear-gradient(155deg, #ffab6b, #ff9450 55%, #e8752a)",
+  boxShadow:
+    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 5px 5px 12px rgba(0,0,0,0.4)",
+};
+const secondaryBtnClass =
+  "rounded-xl px-4 py-2 transition-all text-[#cabaa2] bg-[#26211c] hover:bg-[#3a3128] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
+const modalPanelClass =
+  "bg-[#322b23] rounded-3xl shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body";
 
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
 // -------------------------------------------------------------------------------------
-function FileModal({
-  closeFileModal,
-  handleSelectDocument,
-  fetchMoreDocuments,
-  fetchPreviousDocuments,
-  isUploading,
-  selectedFileId,
-  page,
-  authFetch,
-}) {
-  const { data, isFetching, error } = useQuery({
-    queryKey: ["docFetch", page],
-    queryFn: () => documentServices.fetchDocs(authFetch, page),
-    staleTime: 1000 * 60 * 5,
-  });
-
-  // Get totalDocuments from backend response or compute based on data
-  const totalDocuments = data?.totalDocuments || data?.total || 0;
-
-  if (isFetching) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">My Documents</h2>
-            <button
-              onClick={closeFileModal}
-              className="text-gray-400 hover:text-white text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2 mb-6">
-            <p className="text-gray-400 text-center py-4">Fetching...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">My Documents</h2>
-            <button
-              onClick={closeFileModal}
-              className="text-gray-400 hover:text-white text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2 mb-6">
-            <p className="text-gray-400 text-center py-4">
-              Something went wrong while fetching documents
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto border border-gray-700 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">My Documents</h2>
-          <button
-            onClick={closeFileModal}
-            className="text-gray-400 hover:text-white text-2xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="space-y-2 mb-6">
-          {data.documents.length > 0 ? (
-            data.documents.map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => handleSelectDocument(doc)}
-                className={`p-3 rounded cursor-pointer border transition-colors text-white truncate ${
-                  selectedFileId === doc.id
-                    ? "bg-blue-600 border-blue-500"
-                    : "bg-gray-700 hover:bg-gray-600 border-gray-600"
-                }`}
-              >
-                <span className="truncate">
-                  {doc.title || `Document ${doc.id}` || "Untitled"}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 text-center py-4">No documents found</p>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalDocuments > 5 && (
-          <div className="flex items-center justify-center gap-4 mb-4 border-t border-gray-700 pt-4">
-            <button
-              onClick={fetchPreviousDocuments}
-              disabled={page === 0}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-              title="Previous page"
-            >
-              ← Prev
-            </button>
-            <span className="text-gray-400 text-sm">Page {page + 1}</span>
-            <button
-              onClick={fetchMoreDocuments}
-              disabled={
-                page * 5 + (data?.documents?.length || 0) >= totalDocuments
-              }
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded border border-gray-600 transition-colors"
-              title="Next page"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
-        <div className="border-t border-gray-700 pt-4">
-          <button
-            onClick={() => document.getElementById("file-upload").click()}
-            disabled={isUploading}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded border border-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? "Uploading..." : "Upload New Document"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ClassAccessibilityDropdown({
   selectedClassIds,
@@ -193,14 +73,14 @@ function ClassAccessibilityDropdown({
         : `${selectedClassIds.length} classes selected`;
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative font-body" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-left flex items-center justify-between hover:bg-gray-600 transition-colors"
+        className={`${wellInputClass} text-left flex items-center justify-between`}
       >
         <span className="truncate">{displayText}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${
+          className={`w-4 h-4 transition-transform text-[#766a59] ${
             isDropdownOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -217,20 +97,20 @@ function ClassAccessibilityDropdown({
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 rounded-xl z-20 max-h-48 overflow-y-auto bg-[#26211c] shadow-[6px_6px_14px_rgba(0,0,0,0.45),-4px_-4px_10px_rgba(255,255,255,0.03)]">
           {/* "Anyone with the code" option */}
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] cursor-pointer">
             <input
               type="checkbox"
               checked={selectedClassIds.length === 0}
               onChange={handleClearAll}
-              className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+              className="h-4 w-4 rounded cursor-pointer accent-[#ff9450]"
             />
             <span>Anyone with the code</span>
           </label>
 
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-gray-400 text-sm">
+            <p className="px-3 py-2 text-[#766a59] text-sm">
               Loading classes...
             </p>
           ) : classFetchError ? (
@@ -241,19 +121,21 @@ function ClassAccessibilityDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={selectedClassIds.includes(cls.id)}
                   onChange={() => handleToggleClass(cls.id)}
-                  className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 rounded cursor-pointer accent-[#ff9450]"
                 />
                 <span>{cls.name}</span>
               </label>
             ))
           ) : (
-            <p className="px-3 py-2 text-gray-400 text-sm">No classes found.</p>
+            <p className="px-3 py-2 text-[#766a59] text-sm">
+              No classes found.
+            </p>
           )}
         </div>
       )}
@@ -272,15 +154,15 @@ function QuizForgeModal({
   classFetchError,
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 w-[500px] max-w-full mx-4">
-        <h2 className="text-xl font-semibold mb-4 text-white">Forge Quiz</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
+        <h2 className="text-xl font-display font-semibold mb-4 text-[#e8ddce]">
+          Forge quiz
+        </h2>
         <div className="space-y-4">
           {/* Quiz Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Quiz Title
-            </label>
+            <label className={labelClass}>Quiz title</label>
             <input
               type="text"
               value={forgeQuizData.quizTitle}
@@ -290,16 +172,14 @@ function QuizForgeModal({
                   quizTitle: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+              className={wellInputClass}
               placeholder="Enter quiz title"
             />
           </div>
 
           {/* Quiz Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Description
-            </label>
+            <label className={labelClass}>Description</label>
             <textarea
               value={forgeQuizData.description}
               onChange={(e) =>
@@ -308,7 +188,7 @@ function QuizForgeModal({
                   description: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
+              className={`${wellInputClass} resize-none`}
               rows="3"
               placeholder="Enter quiz description"
             />
@@ -316,15 +196,13 @@ function QuizForgeModal({
 
           {/* Share Token */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Share Token
-            </label>
+            <label className={labelClass}>Share token</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={forgeQuizData.shareToken}
                 readOnly
-                className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-gray-400"
+                className={`flex-1 ${wellInputClass} text-[#766a59]`}
                 placeholder="Generating token..."
               />
               <button
@@ -338,7 +216,8 @@ function QuizForgeModal({
                     },
                   });
                 }}
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className={primaryBtnClass}
+                style={primaryBtnStyle}
                 disabled={!forgeQuizData.shareToken}
               >
                 Copy
@@ -348,9 +227,7 @@ function QuizForgeModal({
 
           {/* Accessibility */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Accessibility
-            </label>
+            <label className={labelClass}>Accessibility</label>
             <ClassAccessibilityDropdown
               selectedClassIds={forgeQuizData.selectedClassIds}
               setForgeQuizData={setForgeQuizData}
@@ -358,7 +235,7 @@ function QuizForgeModal({
               isFetchingClasses={isFetchingClasses}
               classFetchError={classFetchError}
             />
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-[#766a59] mt-2">
               Leave as "Anyone with the code" or restrict to specific classes.
             </p>
           </div>
@@ -367,9 +244,7 @@ function QuizForgeModal({
           <div className="grid grid-cols-2 gap-4">
             {/* Max Attempts */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Max Attempts
-              </label>
+              <label className={labelClass}>Max attempts</label>
               <input
                 type="number"
                 value={forgeQuizData.maxAttempts}
@@ -379,16 +254,14 @@ function QuizForgeModal({
                     maxAttempts: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className={wellInputClass}
                 placeholder="1"
                 min="1"
               />
             </div>
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Status
-              </label>
+              <label className={labelClass}>Status</label>
               <select
                 value={forgeQuizData.status || "draft"}
                 onChange={(e) =>
@@ -397,7 +270,7 @@ function QuizForgeModal({
                     status: e.target.value.toLowerCase(),
                   }))
                 }
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className={wellInputClass}
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -407,9 +280,7 @@ function QuizForgeModal({
 
           {/* Due Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Due Date
-            </label>
+            <label className={labelClass}>Due date</label>
             <input
               type="datetime-local"
               value={forgeQuizData.dueDate}
@@ -419,7 +290,7 @@ function QuizForgeModal({
                   dueDate: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+              className={wellInputClass}
             />
           </div>
         </div>
@@ -429,14 +300,15 @@ function QuizForgeModal({
           <button
             onClick={handleForgeQuiz}
             disabled={isCreatingQuiz}
-            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`flex-1 ${primaryBtnClass}`}
+            style={primaryBtnStyle}
           >
-            {isCreatingQuiz ? "Creating Quiz..." : "Create Quiz"}
+            {isCreatingQuiz ? "Creating quiz..." : "Create quiz"}
           </button>
           <button
             onClick={closeForgeQuizModal}
             disabled={isCreatingQuiz}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50"
+            className={`flex-1 ${secondaryBtnClass}`}
           >
             Cancel
           </button>
@@ -450,25 +322,15 @@ function QuizForgeModal({
 //  MAIN COMPONENT
 // -------------------------------------------------------------------------------------
 
-export default function TopBar({
-  handleFileUpload,
-  isUploading,
-  setSelectedFileId,
-  selectedFileId,
-  setUploadedFiles,
-  selectedFile,
-  setQuizMetadata,
-}) {
+export default function TopBar({ selectedFile, setQuizMetadata }) {
   // -------------------------------------------------------------------------------------
   //  STATES AND VARIABLES
   // -------------------------------------------------------------------------------------
   //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
-  const [showFileModal, setShowFileModal] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
-  const [page, setPage] = useState(0);
   const [forgeQuizData, setForgeQuizData] = useState({
     quizTitle: "",
     description: "",
@@ -501,14 +363,6 @@ export default function TopBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      handleFileUpload(file);
-      setShowFileModal(false);
-    }
-  };
-
   const handleLogout = async () => {
     const confirmMessage = "Are you sure you want to log out?";
     if (!window.confirm(confirmMessage)) return;
@@ -519,26 +373,6 @@ export default function TopBar({
       alert("Error: " + error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // open file modal and fetch documents list
-  const openFileModal = async () => {
-    setShowFileModal(true);
-  };
-
-  const closeFileModal = () => {
-    setShowFileModal(false);
-    setPage(0);
-  };
-
-  const fetchMoreDocuments = () => {
-    setPage(page + 1);
-  };
-
-  const fetchPreviousDocuments = () => {
-    if (page > 0) {
-      setPage(page - 1);
     }
   };
 
@@ -655,27 +489,6 @@ export default function TopBar({
     }
   };
 
-  const handleSelectDocument = async (doc) => {
-    // close modal and select immediately
-    setShowFileModal(false);
-    setSelectedFileId(doc.id);
-
-    // ensure parent has an entry for this doc (without copying any large content)
-    setUploadedFiles((prev) =>
-      prev.some((f) => f.id === doc.id)
-        ? prev
-        : [
-            ...prev,
-            {
-              id: doc.id,
-              name: doc.title || String(doc.id),
-              nickname: doc.title || String(doc.id),
-              content: null,
-            },
-          ],
-    );
-  };
-
   const {
     data: userClasses,
     isFetching: isFetchingClasses,
@@ -699,60 +512,44 @@ export default function TopBar({
   // -------------------------------------------------------------------------------------
 
   return (
-    <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-gray-900">
+    <div className="mx-4 mt-4 px-5 py-3 flex items-center justify-between rounded-3xl bg-[#322b23] shadow-[10px_10px_22px_rgba(0,0,0,0.4),-6px_-6px_16px_rgba(255,255,255,0.04)]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        .font-display { font-family: 'Baloo 2', sans-serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+      `}</style>
+
       {/* LEFT SIDE: Logo */}
       <Link
         to="/teacher"
-        className="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors"
+        className="flex items-center gap-2.5 cursor-pointer group"
       >
-        QuizForge
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-extrabold text-[#3a2010] text-sm"
+          style={{
+            background: "linear-gradient(150deg, #ffab6b, #e8752a)",
+            boxShadow:
+              "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 4px 4px 10px rgba(0,0,0,0.4)",
+          }}
+        >
+          Q
+        </div>
+        <span className="font-display text-base font-bold text-[#e8ddce] group-hover:text-[#ff9450] transition-colors">
+          QuizForge
+        </span>
       </Link>
 
       {/* RIGHT SIDE: Actions */}
-      <div className="flex items-center gap-4">
-        {/* Files Section */}
+      <div className="flex items-center gap-3 font-body">
+        {/* Forge Quiz Button */}
         {showFileButton && (
-          <>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded border border-gray-600 transition-colors"
-                onClick={openFileModal}
-              >
-                Files
-              </button>
-
-              <button
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded border border-blue-500 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={openForgeQuizModal}
-              >
-                Forge Quiz
-              </button>
-
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                accept=".pdf,.docx"
-                onChange={(e) => {
-                  handleFileChange(e);
-                }}
-              />
-
-              {/* Modal Logic Remains the Same */}
-              {showFileModal && (
-                <FileModal
-                  closeFileModal={closeFileModal}
-                  handleSelectDocument={handleSelectDocument}
-                  fetchMoreDocuments={fetchMoreDocuments}
-                  fetchPreviousDocuments={fetchPreviousDocuments}
-                  isUploading={isUploading}
-                  selectedFileId={selectedFileId}
-                  page={page}
-                  authFetch={authFetch}
-                />
-              )}
-            </div>
-          </>
+          <button
+            className={primaryBtnClass}
+            style={primaryBtnStyle}
+            onClick={openForgeQuizModal}
+          >
+            Forge quiz
+          </button>
         )}
 
         {/* Forge Quiz Modal */}
@@ -773,15 +570,21 @@ export default function TopBar({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-10 h-10 rounded-full bg-blue-600 border-2 border-gray-700 
-              hover:border-blue-400 flex items-center justify-center overflow-hidden transition-all"
+            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all"
+            style={{
+              background: "linear-gradient(150deg, #ffab6b, #e8752a)",
+              boxShadow:
+                "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 4px 4px 10px rgba(0,0,0,0.4)",
+            }}
           >
-            <span className="text-white text-xs font-bold">JD</span>
+            <span className="text-[#3a2010] text-xs font-display font-bold">
+              JD
+            </span>
           </button>
           {isProfileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-2 z-50">
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl py-2 z-50 bg-[#26211c] shadow-[8px_8px_18px_rgba(0,0,0,0.5),-6px_-6px_14px_rgba(255,255,255,0.04)]">
               <button
-                className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] hover:text-[#e8ddce] transition-colors"
                 onClick={() => {
                   navigate("/teacher/quizzes");
                   setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -790,7 +593,7 @@ export default function TopBar({
                 Quizzes
               </button>
               <button
-                className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] hover:text-[#e8ddce] transition-colors"
                 onClick={() => {
                   navigate("/teacher/classes");
                   setIsProfileMenuOpen(false);
@@ -799,10 +602,10 @@ export default function TopBar({
                 Classes
               </button>
 
-              <div className="border-t border-gray-700 my-1"></div>
+              <div className="h-px bg-black/20 my-1"></div>
 
               <button
-                className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3a3128] transition-colors"
                 onClick={handleLogout}
               >
                 Logout

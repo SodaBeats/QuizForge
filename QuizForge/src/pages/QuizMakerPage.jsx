@@ -17,6 +17,7 @@ export default function QuizMakerSkeleton() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [quizMetadata, setQuizMetadata] = useState(null);
+  const [mobileTab, setMobileTab] = useState("sidebar"); // mobile-only panel switcher — purely UI state, no data logic
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
@@ -125,7 +126,13 @@ export default function QuizMakerSkeleton() {
   // MAIN COMPONENT
   // -------------------------------------------------------------------------------
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
+    <div className="h-dvh flex flex-col bg-[#0D0906] text-[#F5F2EC]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+      `}</style>
+
       {/* Top Bar */}
       <TopBar
         handleFileUpload={handleFileUpload}
@@ -137,33 +144,75 @@ export default function QuizMakerSkeleton() {
         setQuizMetadata={setQuizMetadata}
       />
 
+      {/* Mobile/tablet panel switcher — hidden on desktop, where all 3 panels show at once */}
+      <div className="flex lg:hidden border-b border-[#2A241C] bg-[#12100D] font-body">
+        {[
+          { key: "sidebar", label: "Files" },
+          { key: "viewer", label: "Viewer" },
+          { key: "editor", label: "Editor" },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setMobileTab(tab.key)}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+              mobileTab === tab.key
+                ? "text-[#FF7A1A]"
+                : "text-[#7A756A] hover:text-[#C9C4B3]"
+            }`}
+          >
+            {tab.label}
+            {mobileTab === tab.key && (
+              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-[#FF7A1A]" />
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
         {/* Left: Sidebar */}
-        <SideBar
-          uploadedFiles={uploadedFiles}
-          setUploadedFiles={setUploadedFiles}
-          selectedFileId={selectedFileId}
-          setSelectedFileId={setSelectedFileId}
-          selectedFile={selectedFile}
-          selectedQuestionId={selectedQuestionId}
-          setSelectedQuestionId={setSelectedQuestionId}
-          selectedQuestion={selectedQuestion}
-          questions={queryQuestionsData?.questionList}
-          currentQuiz={quizMetadata}
-          setCurrentQuiz={setQuizMetadata}
-          isFetching={isFetching}
-        />
+        <div
+          className={`${
+            mobileTab === "sidebar" ? "flex flex-1 min-h-0" : "hidden"
+          } lg:contents`}
+        >
+          <SideBar
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+            selectedFileId={selectedFileId}
+            setSelectedFileId={setSelectedFileId}
+            selectedFile={selectedFile}
+            selectedQuestionId={selectedQuestionId}
+            setSelectedQuestionId={setSelectedQuestionId}
+            selectedQuestion={selectedQuestion}
+            questions={queryQuestionsData?.questionList}
+            currentQuiz={quizMetadata}
+            setCurrentQuiz={setQuizMetadata}
+            isFetching={isFetching}
+          />
+        </div>
 
         {/* Middle: Source File Viewer */}
-        <FileViewer selectedFile={selectedFile} />
+        <div
+          className={`${
+            mobileTab === "viewer" ? "flex flex-1 min-h-0" : "hidden"
+          } lg:contents`}
+        >
+          <FileViewer selectedFile={selectedFile} />
+        </div>
 
         {/* Right: Question Editor */}
-        <QuestionEditor
-          selectedQuestion={selectedQuestion}
-          setSelectedQuestionId={setSelectedQuestionId}
-          quizMetadata={quizMetadata}
-        />
+        <div
+          className={`${
+            mobileTab === "editor" ? "flex flex-1 min-h-0" : "hidden"
+          } lg:contents`}
+        >
+          <QuestionEditor
+            selectedQuestion={selectedQuestion}
+            setSelectedQuestionId={setSelectedQuestionId}
+            quizMetadata={quizMetadata}
+          />
+        </div>
       </div>
     </div>
   );
