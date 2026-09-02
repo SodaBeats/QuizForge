@@ -68,7 +68,7 @@ export const DocumentChunksRepo = {
         and(
           eq(document_chunks_db.user_id, userId),
           inArray(document_chunks_db.document_id, sources),
-          sql`${similarity} < 0.7`, // reject bad matches
+          sql`${similarity} < 0.4`, // reject bad matches
         ),
       )
       .orderBy(similarity)

@@ -113,7 +113,11 @@ body {
 
   padding: 40px 20px;
 
-  overflow: hidden;
+  /* Was `overflow: hidden` — clipped taller forms (e.g. signup) on short
+     viewports instead of letting the page scroll. Horizontal overflow
+     from the decorative art still stays clipped. */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ==========================================================================
@@ -279,6 +283,12 @@ body {
    leaning_stage_bg_clean.png
 
    Therefore React only places the form content over the image.
+
+   This background-image layout only works while the stage keeps its
+   1024:576 (landscape) aspect ratio. Below ~860px viewport width there
+   isn't enough height left for the form once that ratio is preserved,
+   so section 24 below swaps to a plain card (no background art) at
+   that breakpoint instead of continuing to shrink the illustration.
 */
 
 .page-container.leaning-mode .floating-decor,
@@ -1066,6 +1076,8 @@ body {
 
 /* ==========================================================================
    20. LEANING MODE SCALING
+   (Applies while the illustrated background is active — see section 24
+   for the breakpoint where this hands off to a plain card instead.)
    ========================================================================== */
 
 .page-container.leaning-mode .card-header {
@@ -1256,7 +1268,8 @@ body {
 }
 
 /* ==========================================================================
-   22. RESPONSIVE
+   22. RESPONSIVE (standing-mode legacy rules — kept for that mode; not
+   reached while the component renders `leaning-mode`, see section 24)
    ========================================================================== */
 
 @media (max-width: 1024px) {
@@ -1379,7 +1392,7 @@ body {
 }
 
 /* ==========================================================================
-   23. LEANING MODE SMALL SCREENS
+   23. LEANING MODE SMALL SCREENS — outer spacing only
    ========================================================================== */
 
 @media (max-width: 640px) {
@@ -1391,5 +1404,236 @@ body {
 @media (max-width: 360px) {
   .page-container.leaning-mode {
     padding: 10px 6px;
+  }
+}
+
+/* ==========================================================================
+   24. LEANING MODE — MOBILE / TABLET FALLBACK
+   ========================================================================== */
+
+/*
+   The illustrated background keeps a fixed 1024:576 (landscape) aspect
+   ratio. Below ~860px wide there isn't enough vertical room left inside
+   that ratio to comfortably fit the form (especially the signup fields),
+   so on smaller screens we drop the background art entirely and render
+   the form as a plain, normally-flowing card instead. Every rule here
+   has the same specificity as its section 20 / section 7 counterpart, so
+   being declared later in the file is what makes it win — keep this as
+   the last section in the file.
+*/
+
+@media (max-width: 860px) {
+  .page-container {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .page-container.leaning-mode .stage-wrapper {
+    max-width: 460px;
+
+    width: 100%;
+
+    aspect-ratio: unset;
+
+    background: none;
+
+    filter: none;
+
+    container-type: normal;
+  }
+
+  .page-container.leaning-mode .clipboard-card {
+    position: static;
+
+    width: 100%;
+    height: auto;
+
+    left: auto;
+    top: auto;
+  }
+
+  .page-container.leaning-mode .clipboard-board {
+    background: var(--color-paper-bg);
+
+    border-radius: var(--radius-card-inner);
+
+    box-shadow: var(--shadow-paper);
+
+    padding: 6px;
+
+    width: 100%;
+    height: auto;
+  }
+
+  .page-container.leaning-mode .paper-sheet {
+    width: 100%;
+    height: auto;
+
+    padding: 30px 22px;
+  }
+
+  /* Undo the container-query micro-scaling from section 20 and go back
+     to normal, comfortably readable sizes for a stacked card. */
+
+  .page-container.leaning-mode .card-header {
+    margin-bottom: 20px;
+
+    gap: 10px;
+  }
+
+  .page-container.leaning-mode .brand-logo {
+    gap: 10px;
+  }
+
+  .page-container.leaning-mode .logo-icon-box {
+    width: 42px;
+
+    height: 42px;
+  }
+
+  .page-container.leaning-mode .logo-icon-box .q-letter {
+    font-size: 1.55rem;
+  }
+
+  .page-container.leaning-mode .brand-text .brand-name {
+    font-size: 1.15rem;
+  }
+
+  .page-container.leaning-mode .brand-text .brand-subtext {
+    font-size: 0.66rem;
+  }
+
+  .page-container.leaning-mode .classroom-badge {
+    padding: 5px 12px;
+  }
+
+  .page-container.leaning-mode .badge-text .small-text {
+    font-size: 0.6rem;
+  }
+
+  .page-container.leaning-mode .badge-text .strong-text {
+    font-size: 0.68rem;
+  }
+
+  .page-container.leaning-mode .headline-section {
+    margin-bottom: 18px;
+  }
+
+  .page-container.leaning-mode .welcome-title {
+    font-size: 1.5rem;
+  }
+
+  .page-container.leaning-mode .welcome-subtitle {
+    font-size: 0.82rem;
+  }
+
+  .page-container.leaning-mode .login-form {
+    gap: 14px;
+  }
+
+  .page-container.leaning-mode .input-wrapper {
+    padding: 10px 14px;
+
+    gap: 10px;
+  }
+
+  .page-container.leaning-mode .input-icon {
+    font-size: 1.05rem;
+  }
+
+  .page-container.leaning-mode .input-label {
+    font-size: 0.68rem;
+  }
+
+  /* 16px keeps iOS Safari from auto-zooming into the field on focus. */
+  .page-container.leaning-mode .custom-input {
+    font-size: 16px;
+  }
+
+  .page-container.leaning-mode .form-options {
+    margin-bottom: 4px;
+  }
+
+  .page-container.leaning-mode .checkmark {
+    width: 18px;
+
+    height: 18px;
+  }
+
+  .page-container.leaning-mode .checkbox-label,
+  .page-container.leaning-mode .forgot-link {
+    font-size: 0.8rem;
+  }
+
+  .page-container.leaning-mode .submit-btn {
+    height: 50px;
+
+    margin-top: 6px;
+
+    gap: 10px;
+  }
+
+  .page-container.leaning-mode .btn-arrow-badge {
+    width: 30px;
+
+    height: 30px;
+
+    font-size: 0.8rem;
+  }
+
+  .page-container.leaning-mode .btn-text {
+    font-size: 0.94rem;
+  }
+
+  .page-container.leaning-mode .divider {
+    margin: 16px 0;
+  }
+
+  .page-container.leaning-mode .card-footer {
+    margin-top: 18px;
+  }
+
+  .page-container.leaning-mode .card-footer p {
+    font-size: 0.82rem;
+  }
+
+  .page-container.leaning-mode .role-option {
+    font-size: 0.7rem;
+
+    padding: 7px 6px;
+  }
+}
+
+/* Very small phones (≤ 380px): tighten outer + card padding further. */
+@media (max-width: 380px) {
+  .page-container.leaning-mode .stage-wrapper {
+    max-width: 100%;
+  }
+
+  .page-container.leaning-mode .paper-sheet {
+    padding: 24px 16px;
+  }
+
+  .page-container.leaning-mode .signup-name-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Short landscape viewports (e.g. phone rotated): trim vertical spacing
+   so the whole form doesn't push the button off-screen. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .page-container {
+    padding-top: 16px;
+
+    padding-bottom: 16px;
+  }
+
+  .page-container.leaning-mode .headline-section,
+  .page-container.leaning-mode .card-header {
+    margin-bottom: 12px;
+  }
+
+  .page-container.leaning-mode .login-form {
+    gap: 10px;
   }
 }
