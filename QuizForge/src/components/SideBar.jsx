@@ -20,7 +20,7 @@ const modalPanelClass =
   "bg-[#322b23] rounded-3xl shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body";
 
 // ------------------------------------------------------------------------------------
-// SUB COMPONENTS
+// SUB COMPONENT: File picker/upload modal (moved here from TopBar)
 // -------------------------------------------------------------------------------------
 function FileModal({
   closeFileModal,
@@ -38,7 +38,6 @@ function FileModal({
     staleTime: 1000 * 60 * 5,
   });
 
-  // Get totalDocuments from backend response or compute based on data
   const totalDocuments = data?.totalDocuments || data?.total || 0;
 
   if (isFetching) {
@@ -92,6 +91,7 @@ function FileModal({
       </div>
     );
   }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
       <div
@@ -173,6 +173,9 @@ function FileModal({
   );
 }
 
+// ------------------------------------------------------------------------------------
+// SUB COMPONENT: Select Quiz Modal
+// -------------------------------------------------------------------------------------
 function SelectQuizModal({
   page,
   fetchQuizzes,
@@ -304,33 +307,17 @@ function SideBar({
   currentQuiz,
   setCurrentQuiz,
   isFetching,
-  handleFileUpload,
-  isUploading,
+  handleFileUpload, // passed in from the parent page (previously only went to TopBar)
+  isUploading, // passed in from the parent page (previously only went to TopBar)
 }) {
   const { authFetch } = useContext(AuthContext);
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [showFileModal, setShowFileModal] = useState(false);
-  const [filePage, setFilePage] = useState(0);
   const queryClient = useQueryClient();
 
-  const openSelectQuizModal = async () => {
-    setIsSelectQuizModalOpen(true);
-  };
-
-  const fetchMoreQuizzes = () => {
-    setPage(page + 1);
-  };
-
-  const fetchPreviousQuizzes = () => {
-    if (page > 0) {
-      setPage(page - 1);
-    }
-  };
-
-  // ----------------------------------------------------------------------------
-  // FILE MODAL HELPERS
-  // ----------------------------------------------------------------------------
+  // ---- File modal state/logic (moved here from TopBar) ----
+  const [showFileModal, setShowFileModal] = useState(false);
+  const [filePage, setFilePage] = useState(0);
 
   const openFileModal = async () => {
     setShowFileModal(true);
@@ -378,6 +365,21 @@ function SideBar({
             },
           ],
     );
+  };
+  // ---- end file modal logic ----
+
+  const openSelectQuizModal = async () => {
+    setIsSelectQuizModalOpen(true);
+  };
+
+  const fetchMoreQuizzes = () => {
+    setPage(page + 1);
+  };
+
+  const fetchPreviousQuizzes = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
   };
 
   const handleFileDelete = async (fileId) => {
@@ -491,15 +493,15 @@ function SideBar({
       <div className="w-full lg:w-52 bg-[#26211c] flex flex-col font-body p-3 gap-3">
         {/* File List - 30% */}
         <div className="h-[30%] rounded-2xl bg-[#322b23] p-4 overflow-y-auto shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-row items-center justify-between mb-3">
             <div className="text-xs font-semibold text-[#766a59] uppercase tracking-wide">
               Files
             </div>
             <button
               onClick={openFileModal}
+              title="Add file"
               className="w-6 h-6 flex items-center justify-center rounded-lg text-[#3a2010] font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
               style={primaryBtnStyle}
-              title="Add file"
             >
               +
             </button>
@@ -525,7 +527,6 @@ function SideBar({
                     onClick={(e) => {
                       e.stopPropagation();
                       handleFileDelete(file.id);
-                      // TODO: Implement delete file logic
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedFileId === file.id
@@ -624,18 +625,16 @@ function SideBar({
         </div>
       </div>
 
-      {/* Hidden file input, shared by the "+" button / FileModal upload button */}
+      {/* hidden file input for uploads, triggered from FileModal */}
       <input
         type="file"
         id="file-upload"
         className="hidden"
         accept=".pdf,.docx"
-        onChange={(e) => {
-          handleFileChange(e);
-        }}
+        onChange={handleFileChange}
       />
 
-      {/* File Modal */}
+      {/* File Picker Modal (moved from TopBar) */}
       {showFileModal && (
         <FileModal
           closeFileModal={closeFileModal}

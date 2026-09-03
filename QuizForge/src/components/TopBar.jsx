@@ -26,7 +26,6 @@ const modalPanelClass =
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
 // -------------------------------------------------------------------------------------
-
 function ClassAccessibilityDropdown({
   selectedClassIds,
   setForgeQuizData,
