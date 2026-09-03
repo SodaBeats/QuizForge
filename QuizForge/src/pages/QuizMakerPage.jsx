@@ -17,7 +17,7 @@ export default function QuizMakerSkeleton() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [quizMetadata, setQuizMetadata] = useState(null);
-  const [mobileTab, setMobileTab] = useState("sidebar"); // mobile-only panel switcher — purely UI state, no data logic
+  const [mobileTab, setMobileTab] = useState("sidebar");
   const { authFetch } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
@@ -26,18 +26,19 @@ export default function QuizMakerSkeleton() {
 
     const allowedTypes = [
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/pdf", // .docx
+      "application/pdf",
     ];
     const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please upload a DOCX or PDF file");
+      setIsUploading(false);
       return;
     }
 
-    // 2. Check File Size
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error(`File is too large. Maximum size is 2MB.`);
+      setIsUploading(false);
       return;
     }
 
@@ -106,7 +107,6 @@ export default function QuizMakerSkeleton() {
     enabled: !!quizMetadata?.id && quizMetadata.questionCount > 0,
   });
 
-  //determine which file is selected
   const selectedFile =
     uploadedFiles?.find((f) => f.id === selectedFileId) || null;
 
@@ -115,16 +115,10 @@ export default function QuizMakerSkeleton() {
       (q) => q.id === selectedQuestionId,
     ) ?? null;
 
-  // -------------------------------------------------------------------------------
-  //  ERROR BOUNDARY
-  // -------------------------------------------------------------------------------
   if (!backendHost) {
     return <Navigate to="/error" replace />;
   }
 
-  // -------------------------------------------------------------------------------
-  // MAIN COMPONENT
-  // -------------------------------------------------------------------------------
   return (
     <div className="h-dvh flex flex-col bg-[#0D0906] text-[#F5F2EC]">
       <style>{`
@@ -133,18 +127,10 @@ export default function QuizMakerSkeleton() {
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      {/* Top Bar */}
-      <TopBar
-        handleFileUpload={handleFileUpload}
-        isUploading={isUploading}
-        setSelectedFileId={setSelectedFileId}
-        selectedFileId={selectedFileId}
-        setUploadedFiles={setUploadedFiles}
-        selectedFile={selectedFile}
-        setQuizMetadata={setQuizMetadata}
-      />
+      {/* Top Bar — only needs selectedFile (for pre-filling quiz title) and setQuizMetadata */}
+      <TopBar selectedFile={selectedFile} setQuizMetadata={setQuizMetadata} />
 
-      {/* Mobile/tablet panel switcher — hidden on desktop, where all 3 panels show at once */}
+      {/* Mobile/tablet panel switcher */}
       <div className="flex lg:hidden border-b border-[#2A241C] bg-[#12100D] font-body">
         {[
           { key: "sidebar", label: "Files" },
@@ -170,7 +156,7 @@ export default function QuizMakerSkeleton() {
 
       {/* Main Content Area */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left: Sidebar */}
+        {/* Left: Sidebar — upload lives here */}
         <div
           className={`${
             mobileTab === "sidebar" ? "flex flex-1 min-h-0" : "hidden"
@@ -189,6 +175,8 @@ export default function QuizMakerSkeleton() {
             currentQuiz={quizMetadata}
             setCurrentQuiz={setQuizMetadata}
             isFetching={isFetching}
+            handleFileUpload={handleFileUpload}
+            isUploading={isUploading}
           />
         </div>
 
