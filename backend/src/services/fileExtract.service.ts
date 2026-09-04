@@ -52,6 +52,7 @@ export const extractText = async (
       extracted_text: cleanedText,
     };
 
+    console.log();
     // chunk text for RAG
     const chunks = textUtilities.seniorChunker(cleanedText);
     if (!chunks || chunks.length < 1) {
