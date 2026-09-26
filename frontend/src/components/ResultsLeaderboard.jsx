@@ -18,7 +18,7 @@ function getInitials(name) {
 // Assigns a deterministic avatar bg/text color from a small palette
 // so each student always gets the same color without storing it.
 const AVATAR_COLORS = [
-  { bg: "bg-[#3a2a1c]", text: "text-[#ffb27a]" },
+  { bg: "bg-surface-700", text: "text-brand-300" },
   { bg: "bg-[#1c332e]", text: "text-teal-300" },
   { bg: "bg-[#2a1c33]", text: "text-purple-300" },
   { bg: "bg-[#332a1c]", text: "text-amber-300" },
@@ -32,10 +32,10 @@ function avatarColor(id) {
 
 // Medal colors for the top 3 ranks
 function rankStyle(rank) {
-  if (rank === 1) return "text-[#ff9450] font-bold";
-  if (rank === 2) return "text-[#cabaa2] font-bold";
+  if (rank === 1) return "text-brand-400 font-bold";
+  if (rank === 2) return "text-ink-300 font-bold";
   if (rank === 3) return "text-[#c9873a] font-bold";
-  return "text-[#6b5f52] font-medium";
+  return "text-ink-600 font-medium";
 }
 
 // Score badge color: green if high, amber if mid, red if low
@@ -53,7 +53,7 @@ function StudentRow({ student, rank }) {
   const { bg, text } = avatarColor(student.id);
 
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-xl hover:bg-[#3a3128] transition-colors group font-body">
+    <div className="flex items-center gap-3 py-2 px-3 rounded-xl hover:bg-surface-700 transition-colors group font-body">
       {/* Rank number */}
       <span className={`w-5 text-center text-sm ${rankStyle(rank)}`}>
         {rank}
@@ -67,7 +67,7 @@ function StudentRow({ student, rank }) {
       </div>
 
       {/* Name */}
-      <span className="flex-1 text-sm text-[#cabaa2] truncate">
+      <span className="flex-1 text-sm text-ink-300 truncate">
         {student.name}
       </span>
 
@@ -87,13 +87,13 @@ function ClassRow({ cls, rank, maxAverage }) {
     maxAverage > 0 ? Math.round((cls.averagescore / maxAverage) * 100) : 0;
 
   return (
-    <div className="py-2 px-3 rounded-xl hover:bg-[#3a3128] transition-colors font-body">
+    <div className="py-2 px-3 rounded-xl hover:bg-surface-700 transition-colors font-body">
       {/* Top line: rank, name, average badge */}
       <div className="flex items-center gap-3 mb-1.5">
         <span className={`w-5 text-center text-sm ${rankStyle(rank)}`}>
           {rank}
         </span>
-        <span className="flex-1 text-sm text-[#cabaa2] truncate">
+        <span className="flex-1 text-sm text-ink-300 truncate">
           {cls.classname}
         </span>
         <span
@@ -105,16 +105,16 @@ function ClassRow({ cls, rank, maxAverage }) {
 
       {/* Progress bar */}
       <div className="ml-8 flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-[#26211c] rounded-full overflow-hidden shadow-[inset_2px_2px_4px_rgba(0,0,0,0.4)]">
+        <div className="flex-1 h-1.5 bg-surface-900 rounded-full overflow-hidden shadow-[inset_2px_2px_4px_rgba(0,0,0,0.4)]">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${barWidth}%`,
-              background: "linear-gradient(90deg, #ffab6b, #ff9450, #e8752a)",
+              background: "linear-gradient(90deg, var(--brand-300), var(--brand-400), var(--brand-600))",
             }}
           />
         </div>
-        <span className="text-xs text-[#766a59] w-14 text-right">
+        <span className="text-xs text-ink-500 w-14 text-right">
           {cls.takers} students
         </span>
       </div>
@@ -129,7 +129,7 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
     classes?.length > 0 ? Math.max(...classes.map((c) => c.averagescore)) : 0;
 
   return (
-    <div className="w-full lg:w-[30%] flex-shrink-0 flex flex-col gap-3 h-full bg-[#26211c] font-body p-3">
+    <div className="w-full lg:w-[30%] flex-shrink-0 flex flex-col gap-3 h-full bg-surface-900 font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -137,13 +137,13 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
       `}</style>
 
       {/* ── Top half: Student ranking ─────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-[#322b23] overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+      <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-surface-800 overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
         {/* Header */}
-        <div className="px-4 py-3 bg-[#3a3128] flex items-center justify-between flex-shrink-0">
-          <h2 className="text-sm font-display font-semibold text-[#e8ddce] tracking-wide">
+        <div className="px-4 py-3 bg-surface-700 flex items-center justify-between flex-shrink-0">
+          <h2 className="text-sm font-display font-semibold text-ink-200 tracking-wide">
             Student ranking
           </h2>
-          <span className="text-xs text-[#766a59]">
+          <span className="text-xs text-ink-500">
             {STUDENTS?.length ?? 0} Students
           </span>
         </div>
@@ -153,7 +153,7 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
           {!STUDENTS || !Array.isArray(STUDENTS) || STUDENTS.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
               <svg
-                className="w-16 h-16 text-[#3a3128] mb-4"
+                className="w-16 h-16 text-surface-700 mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -165,10 +165,10 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                 />
               </svg>
-              <h3 className="text-[#766a59] font-display font-medium">
+              <h3 className="text-ink-500 font-display font-medium">
                 Waiting for students
               </h3>
-              <p className="text-sm text-[#6b5f52] mt-1 max-w-xs">
+              <p className="text-sm text-ink-600 mt-1 max-w-xs">
                 Once students start the quiz, their progress and scores will
                 appear here automatically.
               </p>
@@ -182,13 +182,13 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
       </div>
 
       {/* ── Bottom half: Class ranking ────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-[#322b23] overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+      <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-surface-800 overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
         {/* Header */}
-        <div className="px-4 py-3 bg-[#3a3128] flex items-center justify-between flex-shrink-0">
-          <h2 className="text-sm font-display font-semibold text-[#e8ddce] tracking-wide">
+        <div className="px-4 py-3 bg-surface-700 flex items-center justify-between flex-shrink-0">
+          <h2 className="text-sm font-display font-semibold text-ink-200 tracking-wide">
             Class ranking
           </h2>
-          <span className="text-xs text-[#766a59]">
+          <span className="text-xs text-ink-500">
             {classes?.length} sections
           </span>
         </div>

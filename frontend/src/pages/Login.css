@@ -8,32 +8,32 @@
    ========================================================================== */
 
 :root {
-  --color-orange-primary: #ff5500;
-  --color-orange-gradient-start: #ff7e32;
-  --color-orange-gradient-end: #ff4d00;
-  --color-orange-light: #fff0e6;
-  --color-orange-border: #ff6500;
+  --color-orange-primary: var(--brand-500);
+  --color-orange-gradient-start: var(--brand-500);
+  --color-orange-gradient-end: var(--brand-600);
+  --color-orange-light: var(--brand-100);
+  --color-orange-border: var(--brand-500);
 
-  --color-page-bg-start: #fdfbf8;
-  --color-page-bg-end: #f0e9de;
+  --color-page-bg-start: var(--ink-50);
+  --color-page-bg-end: var(--ink-100);
 
-  --color-paper-bg: #fffdf9;
+  --color-paper-bg: var(--ink-50);
 
-  --color-board-dark: #3a251b;
-  --color-board-darker: #261710;
+  --color-board-dark: var(--surface-800);
+  --color-board-darker: var(--surface-900);
 
-  --color-clip-metallic: #e2d5c3;
-  --color-backdrop-circle: #3d2d27;
+  --color-clip-metallic: var(--ink-200);
+  --color-backdrop-circle: var(--surface-700);
 
-  --color-text-main: #2d241e;
-  --color-text-muted: #786b62;
-  --color-text-caption: #8c7e75;
-  --color-text-light: #a09388;
+  --color-text-main: var(--surface-900);
+  --color-text-muted: var(--ink-500);
+  --color-text-caption: var(--ink-400);
+  --color-text-light: var(--ink-400);
 
-  --color-input-bg: #f8f6f2;
-  --color-input-border: #e6dfd5;
-  --color-input-focus: #ff7315;
-  --color-badge-bg: #f5efe6;
+  --color-input-bg: var(--ink-100);
+  --color-input-border: var(--ink-200);
+  --color-input-focus: var(--brand-500);
+  --color-badge-bg: var(--ink-100);
 
   --font-family-main:
     "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -49,9 +49,9 @@
   --shadow-paper:
     inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 24px rgba(0, 0, 0, 0.35);
 
-  --shadow-btn: 0 10px 25px rgba(255, 85, 0, 0.35);
+  --shadow-btn: 0 10px 25px rgb(var(--brand-500-rgb) / 0.35);
 
-  --shadow-btn-hover: 0 14px 30px rgba(255, 85, 0, 0.5);
+  --shadow-btn-hover: 0 14px 30px rgb(var(--brand-500-rgb) / 0.5);
 
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -407,11 +407,11 @@ body {
   align-items: center;
   justify-content: center;
 
-  box-shadow: 0 6px 14px rgba(255, 85, 0, 0.35);
+  box-shadow: 0 6px 14px rgb(var(--brand-500-rgb) / 0.35);
 }
 
 .logo-icon-box .q-letter {
-  color: #ffffff;
+  color: var(--ink-50);
 
   font-size: 1.75rem;
 
@@ -588,11 +588,11 @@ body {
 }
 
 .input-wrapper:focus-within {
-  background: #ffffff;
+  background: var(--ink-50);
 
   border-color: var(--color-input-focus);
 
-  box-shadow: 0 0 0 4px rgba(255, 115, 21, 0.15);
+  box-shadow: 0 0 0 4px rgb(var(--brand-500-rgb) / 0.15);
 }
 
 .input-icon {
@@ -686,7 +686,7 @@ body {
 
   border-radius: var(--radius-input);
 
-  box-shadow: inset 3px 3px 7px rgba(180, 155, 115, 0.15);
+  box-shadow: inset 3px 3px 7px rgb(var(--ink-400-rgb) / 0.15);
 }
 
 .role-option {
@@ -718,7 +718,7 @@ body {
 }
 
 .role-option.active {
-  color: #ffffff;
+  color: var(--ink-50);
 
   background: linear-gradient(
     135deg,
@@ -726,7 +726,7 @@ body {
     var(--color-orange-gradient-end)
   );
 
-  box-shadow: 0 4px 10px rgba(255, 85, 0, 0.25);
+  box-shadow: 0 4px 10px rgb(var(--brand-500-rgb) / 0.25);
 }
 
 /* ==========================================================================
@@ -817,7 +817,7 @@ body {
 .check-icon {
   font-size: 0.7rem;
 
-  color: #ffffff;
+  color: var(--ink-50);
 
   opacity: 0;
 
@@ -859,7 +859,7 @@ body {
 }
 
 .forgot-link:hover {
-  color: #d94600;
+  color: var(--brand-600);
 
   text-decoration: underline;
 }
@@ -912,7 +912,7 @@ body {
 .submit-btn:active:not(:disabled) {
   transform: translateY(1px);
 
-  box-shadow: 0 6px 16px rgba(255, 85, 0, 0.4);
+  box-shadow: 0 6px 16px rgb(var(--brand-500-rgb) / 0.4);
 }
 
 .submit-btn:disabled {
@@ -934,7 +934,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  color: #ffffff;
+  color: var(--ink-50);
 
   font-size: 0.85rem;
 
@@ -946,7 +946,7 @@ body {
 }
 
 .btn-text {
-  color: #ffffff;
+  color: var(--ink-50);
 
   font-size: 1rem;
 
@@ -965,7 +965,7 @@ body {
 
   border: 2px solid rgba(255, 255, 255, 0.35);
 
-  border-top-color: #ffffff;
+  border-top-color: var(--ink-50);
 
   border-radius: 50%;
 
@@ -1059,7 +1059,7 @@ body {
 }
 
 .signup-link:hover {
-  color: #d94600;
+  color: var(--brand-600);
 
   text-decoration: underline;
 }

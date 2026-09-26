@@ -231,7 +231,7 @@ export default function QuizResultDashboard() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#0D0906] text-[#F5F2EC]">
+    <div className="h-screen flex flex-col bg-surface-950 text-ink-100">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', sans-serif; }
@@ -241,7 +241,7 @@ export default function QuizResultDashboard() {
       <TopBar />
 
       {/* Mobile/tablet panel switcher — hidden on desktop, where both panels show at once */}
-      <div className="flex lg:hidden border-b border-[#2A241C] bg-[#12100D] font-body">
+      <div className="flex lg:hidden border-b border-surface-900 bg-surface-950 font-body">
         {[
           { key: "results", label: "Results" },
           { key: "leaderboard", label: "Leaderboard" },
@@ -251,13 +251,13 @@ export default function QuizResultDashboard() {
             onClick={() => setMobileTab(tab.key)}
             className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
               mobileTab === tab.key
-                ? "text-[#FF7A1A]"
-                : "text-[#7A756A] hover:text-[#C9C4B3]"
+                ? "text-brand-500"
+                : "text-ink-500 hover:text-ink-300"
             }`}
           >
             {tab.label}
             {mobileTab === tab.key && (
-              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-[#FF7A1A]" />
+              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-brand-500" />
             )}
           </button>
         ))}

@@ -9,19 +9,19 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared clay styling tokens — cosmetic only, referenced by className below
 const wellInputClass =
-  "w-full px-3 py-2 bg-[#26211c] rounded-xl text-[#e8ddce] text-sm placeholder:text-[#766a59] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition";
-const labelClass = "block text-sm font-medium text-[#cabaa2] mb-1";
+  "w-full px-3 py-2 bg-surface-900 rounded-xl text-ink-200 text-sm placeholder:text-ink-500 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition";
+const labelClass = "block text-sm font-medium text-ink-300 mb-1";
 const primaryBtnClass =
-  "font-display font-bold rounded-xl px-4 py-2 text-[#3a2010] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "font-display font-bold rounded-xl px-4 py-2 text-brand-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, #ffab6b, #ff9450 55%, #e8752a)",
+  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
-    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 5px 5px 12px rgba(0,0,0,0.4)",
+    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };
 const secondaryBtnClass =
-  "rounded-xl px-4 py-2 transition-all text-[#cabaa2] bg-[#26211c] hover:bg-[#3a3128] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
+  "rounded-xl px-4 py-2 transition-all text-ink-300 bg-surface-900 hover:bg-surface-700 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
 const modalPanelClass =
-  "bg-[#322b23] rounded-3xl shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body";
+  "bg-surface-800 rounded-3xl shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body";
 
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -79,7 +79,7 @@ function ClassAccessibilityDropdown({
       >
         <span className="truncate">{displayText}</span>
         <svg
-          className={`w-4 h-4 transition-transform text-[#766a59] ${
+          className={`w-4 h-4 transition-transform text-ink-500 ${
             isDropdownOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -96,20 +96,20 @@ function ClassAccessibilityDropdown({
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 rounded-xl z-20 max-h-48 overflow-y-auto bg-[#26211c] shadow-[6px_6px_14px_rgba(0,0,0,0.45),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+        <div className="absolute top-full left-0 right-0 mt-1 rounded-xl z-20 max-h-48 overflow-y-auto bg-surface-900 shadow-[6px_6px_14px_rgba(0,0,0,0.45),-4px_-4px_10px_rgba(255,255,255,0.03)]">
           {/* "Anyone with the code" option */}
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] cursor-pointer">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-ink-300 hover:bg-surface-700 cursor-pointer">
             <input
               type="checkbox"
               checked={selectedClassIds.length === 0}
               onChange={handleClearAll}
-              className="h-4 w-4 rounded cursor-pointer accent-[#ff9450]"
+              className="h-4 w-4 rounded cursor-pointer accent-brand-400"
             />
             <span>Anyone with the code</span>
           </label>
 
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-[#766a59] text-sm">
+            <p className="px-3 py-2 text-ink-500 text-sm">
               Loading classes...
             </p>
           ) : classFetchError ? (
@@ -120,19 +120,19 @@ function ClassAccessibilityDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-ink-300 hover:bg-surface-700 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={selectedClassIds.includes(cls.id)}
                   onChange={() => handleToggleClass(cls.id)}
-                  className="h-4 w-4 rounded cursor-pointer accent-[#ff9450]"
+                  className="h-4 w-4 rounded cursor-pointer accent-brand-400"
                 />
                 <span>{cls.name}</span>
               </label>
             ))
           ) : (
-            <p className="px-3 py-2 text-[#766a59] text-sm">
+            <p className="px-3 py-2 text-ink-500 text-sm">
               No classes found.
             </p>
           )}
@@ -155,7 +155,7 @@ function QuizForgeModal({
   return (
     <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
       <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
-        <h2 className="text-xl font-display font-semibold mb-4 text-[#e8ddce]">
+        <h2 className="text-xl font-display font-semibold mb-4 text-ink-200">
           Forge quiz
         </h2>
         <div className="space-y-4">
@@ -201,7 +201,7 @@ function QuizForgeModal({
                 type="text"
                 value={forgeQuizData.shareToken}
                 readOnly
-                className={`flex-1 ${wellInputClass} text-[#766a59]`}
+                className={`flex-1 ${wellInputClass} text-ink-500`}
                 placeholder="Generating token..."
               />
               <button
@@ -211,7 +211,7 @@ function QuizForgeModal({
                     duration: 2000,
                     style: {
                       background: "#10B981",
-                      color: "#fff",
+                      color: "var(--ink-50)",
                     },
                   });
                 }}
@@ -234,7 +234,7 @@ function QuizForgeModal({
               isFetchingClasses={isFetchingClasses}
               classFetchError={classFetchError}
             />
-            <p className="text-xs text-[#766a59] mt-2">
+            <p className="text-xs text-ink-500 mt-2">
               Leave as "Anyone with the code" or restrict to specific classes.
             </p>
           </div>
@@ -511,7 +511,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
   // -------------------------------------------------------------------------------------
 
   return (
-    <div className="mx-4 mt-4 px-5 py-3 flex items-center justify-between rounded-3xl bg-[#322b23] shadow-[10px_10px_22px_rgba(0,0,0,0.4),-6px_-6px_16px_rgba(255,255,255,0.04)]">
+    <div className="mx-4 mt-4 px-5 py-3 flex items-center justify-between rounded-3xl bg-surface-800 shadow-[10px_10px_22px_rgba(0,0,0,0.4),-6px_-6px_16px_rgba(255,255,255,0.04)]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -524,16 +524,16 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
         className="flex items-center gap-2.5 cursor-pointer group"
       >
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-extrabold text-[#3a2010] text-sm"
+          className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-extrabold text-brand-900 text-sm"
           style={{
-            background: "linear-gradient(150deg, #ffab6b, #e8752a)",
+            background: "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
             boxShadow:
-              "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 4px 4px 10px rgba(0,0,0,0.4)",
+              "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 4px 4px 10px rgba(0,0,0,0.4)",
           }}
         >
           Q
         </div>
-        <span className="font-display text-base font-bold text-[#e8ddce] group-hover:text-[#ff9450] transition-colors">
+        <span className="font-display text-base font-bold text-ink-200 group-hover:text-brand-400 transition-colors">
           QuizForge
         </span>
       </Link>
@@ -571,19 +571,19 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all"
             style={{
-              background: "linear-gradient(150deg, #ffab6b, #e8752a)",
+              background: "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
               boxShadow:
-                "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 4px 4px 10px rgba(0,0,0,0.4)",
+                "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 4px 4px 10px rgba(0,0,0,0.4)",
             }}
           >
-            <span className="text-[#3a2010] text-xs font-display font-bold">
+            <span className="text-brand-900 text-xs font-display font-bold">
               JD
             </span>
           </button>
           {isProfileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-2xl py-2 z-50 bg-[#26211c] shadow-[8px_8px_18px_rgba(0,0,0,0.5),-6px_-6px_14px_rgba(255,255,255,0.04)]">
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl py-2 z-50 bg-surface-900 shadow-[8px_8px_18px_rgba(0,0,0,0.5),-6px_-6px_14px_rgba(255,255,255,0.04)]">
               <button
-                className="w-full text-left px-4 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] hover:text-[#e8ddce] transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-ink-300 hover:bg-surface-700 hover:text-ink-200 transition-colors"
                 onClick={() => {
                   navigate("/teacher/quizzes");
                   setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -592,7 +592,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
                 Quizzes
               </button>
               <button
-                className="w-full text-left px-4 py-2 text-sm text-[#cabaa2] hover:bg-[#3a3128] hover:text-[#e8ddce] transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-ink-300 hover:bg-surface-700 hover:text-ink-200 transition-colors"
                 onClick={() => {
                   navigate("/teacher/classes");
                   setIsProfileMenuOpen(false);
@@ -604,7 +604,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
               <div className="h-px bg-surface-950/20 my-1"></div>
 
               <button
-                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3a3128] transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-surface-700 transition-colors"
                 onClick={handleLogout}
               >
                 Logout

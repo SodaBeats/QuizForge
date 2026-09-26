@@ -57,7 +57,7 @@ function ClassAccessDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full bg-[#26211c] rounded-xl p-2.5 text-sm text-[#e8ddce] text-left flex items-center justify-between shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] hover:bg-[#2e2820] transition-all font-body"
+        className="w-full bg-surface-900 rounded-xl p-2.5 text-sm text-ink-200 text-left flex items-center justify-between shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] hover:bg-surface-800 transition-all font-body"
       >
         <span className="truncate">{displayText}</span>
         <svg
@@ -77,8 +77,8 @@ function ClassAccessDropdown({
         </svg>
       </button>
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-[#26211c] border border-[#3a3128] rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-[#e8ddce] hover:bg-[#3a3128] cursor-pointer border-b border-[#3a3128]">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-surface-900 border border-surface-700 rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-ink-200 hover:bg-surface-700 cursor-pointer border-b border-surface-700">
             <input
               type="checkbox"
               checked={editingQuiz?.classIds?.length === 0}
@@ -88,7 +88,7 @@ function ClassAccessDropdown({
             <span>Anyone with the code</span>
           </label>
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-[#766a59] text-sm">
+            <p className="px-3 py-2 text-ink-500 text-sm">
               Loading classes...
             </p>
           ) : classFetchError ? (
@@ -99,7 +99,7 @@ function ClassAccessDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[#e8ddce] hover:bg-[#3a3128] cursor-pointer border-b border-[#3a3128] last:border-b-0"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-ink-200 hover:bg-surface-700 cursor-pointer border-b border-surface-700 last:border-b-0"
               >
                 <input
                   type="checkbox"
@@ -111,7 +111,7 @@ function ClassAccessDropdown({
               </label>
             ))
           ) : (
-            <p className="px-3 py-2 text-[#766a59] text-sm">
+            <p className="px-3 py-2 text-ink-500 text-sm">
               No classes found.
             </p>
           )}
@@ -122,17 +122,17 @@ function ClassAccessDropdown({
 }
 
 const inputClass =
-  "w-full bg-[#26211c] rounded-xl p-2.5 text-sm text-[#e8ddce] placeholder:text-[#766a59] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition-all font-body";
-const labelClass = "text-sm font-semibold text-[#766a59] block mb-2 font-body";
+  "w-full bg-surface-900 rounded-xl p-2.5 text-sm text-ink-200 placeholder:text-ink-500 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition-all font-body";
+const labelClass = "text-sm font-semibold text-ink-500 block mb-2 font-body";
 const primaryBtnClass =
-  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-[#3a2010] hover:-translate-y-0.5 active:translate-y-0.5";
+  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-brand-900 hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, #ffab6b, #ff9450 55%, #e8752a)",
+  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
-    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 5px 5px 12px rgba(0,0,0,0.4)",
+    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };
 const secondaryBtnClass =
-  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-[#cabaa2] bg-[#26211c] hover:bg-[#3a3128] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
+  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-ink-300 bg-surface-900 hover:bg-surface-700 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
 
 export default function QuizzesMetadata({
   quiz,
@@ -146,8 +146,8 @@ export default function QuizzesMetadata({
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-[#6b5f52] text-sm font-body bg-[#26211c] w-full p-3">
-        <div className="w-full h-full rounded-2xl bg-[#322b23] flex items-center justify-center shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+      <div className="flex items-center justify-center h-full text-ink-600 text-sm font-body bg-surface-900 w-full p-3">
+        <div className="w-full h-full rounded-2xl bg-surface-800 flex items-center justify-center shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
           Select a quiz to view details
         </div>
       </div>
@@ -155,16 +155,16 @@ export default function QuizzesMetadata({
   }
 
   return (
-    <div className="flex-1 h-full w-full bg-[#26211c] flex flex-col font-body p-3">
+    <div className="flex-1 h-full w-full bg-surface-900 flex flex-col font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-2xl bg-[#322b23] overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+      <div className="flex-1 flex flex-col rounded-2xl bg-surface-800 overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
         {/* Header */}
-        <div className="p-4 bg-[#3a3128]">
+        <div className="p-4 bg-surface-700">
           <input
             type="text"
             name="quizTitle"
@@ -176,10 +176,10 @@ export default function QuizzesMetadata({
               }))
             }
             placeholder="Enter quiz title..."
-            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-[#e8ddce] mb-2 border-b border-transparent focus:border-[#ff9450] focus:outline-none transition-all hover:bg-[#26211c]/40 rounded px-1 -ml-1"
+            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-ink-200 mb-2 border-b border-transparent focus:border-brand-400 focus:outline-none transition-all hover:bg-surface-900/40 rounded px-1 -ml-1"
           />
 
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-[#766a59]">
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-ink-500">
             <span>{quiz.questionCount} questions</span>
             <span>•</span>
             <span>Created {quiz.createdAt || "Recently"}</span>
@@ -213,11 +213,11 @@ export default function QuizzesMetadata({
                 type="text"
                 value={quiz.shareToken?.toUpperCase() || "N/A"}
                 readOnly
-                className="flex-1 px-3 py-2 rounded-xl text-[#766a59] text-sm min-w-0 bg-[#26211c] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]"
+                className="flex-1 px-3 py-2 rounded-xl text-ink-500 text-sm min-w-0 bg-surface-900 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]"
               />
               {quiz.shareToken && (
                 <button
-                  className="px-3 py-2 rounded-xl text-sm font-display font-bold text-[#3a2010] transition-all flex-shrink-0 hover:-translate-y-0.5 active:translate-y-0.5"
+                  className="px-3 py-2 rounded-xl text-sm font-display font-bold text-brand-900 transition-all flex-shrink-0 hover:-translate-y-0.5 active:translate-y-0.5"
                   style={primaryBtnStyle}
                   onClick={() => {
                     navigator.clipboard.writeText(quiz.shareToken);
@@ -225,7 +225,7 @@ export default function QuizzesMetadata({
                       duration: 2000,
                       style: {
                         background: "#10B981",
-                        color: "#fff",
+                        color: "var(--ink-50)",
                       },
                     });
                   }}

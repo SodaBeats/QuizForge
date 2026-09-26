@@ -6,15 +6,15 @@
 
 .student-token-page {
   /* Student-only variables */
-  --bg: #0b0f1a;
-  --card-bg: #131a2a;
-  --card-border: #232c40;
-  --orange: #ff7a1a;
-  --orange-2: #ff9a3d;
-  --text: #f4f6fb;
-  --text-dim: #9aa4b8;
-  --input-bg: #171f32;
-  --input-border: #2a3448;
+  --bg: var(--surface-950);
+  --card-bg: var(--surface-900);
+  --card-border: var(--surface-800);
+  --orange: var(--brand-500);
+  --orange-2: var(--brand-400);
+  --text: var(--ink-100);
+  --text-dim: var(--ink-400);
+  --input-bg: var(--surface-800);
+  --input-border: var(--surface-700);
 
   /* Page */
   width: 100%;
@@ -167,9 +167,9 @@
   font-weight: 800;
   font-size: 22px;
 
-  color: #12131a;
+  color: var(--surface-950);
 
-  box-shadow: 0 6px 16px rgba(255, 122, 26, 0.35);
+  box-shadow: 0 6px 16px rgb(var(--brand-500-rgb) / 0.35);
 
   flex-shrink: 0;
 }
@@ -204,7 +204,7 @@
 
   gap: 10px;
 
-  background: #12182a;
+  background: var(--surface-900);
 
   border: 1px solid var(--card-border);
 
@@ -219,7 +219,7 @@
 
   border-radius: 50%;
 
-  background: #1c2437;
+  background: var(--surface-800);
 
   display: flex;
   align-items: center;
@@ -304,7 +304,7 @@
 
   border-radius: 50%;
 
-  background: #1c2437;
+  background: var(--surface-800);
 
   display: flex;
   align-items: center;
@@ -394,11 +394,11 @@
 .student-token-page .otp input:focus {
   border-color: var(--orange);
 
-  box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.18);
+  box-shadow: 0 0 0 4px rgb(var(--brand-500-rgb) / 0.18);
 }
 
 .student-token-page .otp input::placeholder {
-  color: #454f68;
+  color: var(--surface-500);
 
   font-weight: 600;
 }
@@ -470,9 +470,9 @@
 .student-token-page .btn-primary {
   background: linear-gradient(135deg, var(--orange-2), var(--orange));
 
-  color: #191008;
+  color: var(--surface-950);
 
-  box-shadow: 0 10px 24px rgba(255, 122, 26, 0.35);
+  box-shadow: 0 10px 24px rgb(var(--brand-500-rgb) / 0.35);
 
   margin-bottom: 14px;
 }
@@ -511,7 +511,7 @@
 }
 
 .student-token-page .btn-ghost:hover {
-  border-color: #3a4460;
+  border-color: var(--surface-600);
 
   background: rgba(255, 255, 255, 0.02);
 }

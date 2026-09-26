@@ -27,10 +27,10 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
       `}</style>
       <div
         ref={studentCardRef}
-        className="bg-[#322b23] rounded-3xl max-w-xl w-full overflow-hidden shadow-[14px_14px_28px_rgba(0,0,0,0.5),-8px_-8px_20px_rgba(255,255,255,0.04)] font-body"
+        className="bg-surface-800 rounded-3xl max-w-xl w-full overflow-hidden shadow-[14px_14px_28px_rgba(0,0,0,0.5),-8px_-8px_20px_rgba(255,255,255,0.04)] font-body"
       >
-        <div className="flex items-center justify-between px-6 py-5 bg-[#3a3128]">
-          <h2 className="text-lg font-display font-semibold text-[#e8ddce]">
+        <div className="flex items-center justify-between px-6 py-5 bg-surface-700">
+          <h2 className="text-lg font-display font-semibold text-ink-200">
             Student info
           </h2>
         </div>
@@ -38,9 +38,9 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
         <div className="px-6 py-5 space-y-5">
           <div className="flex items-center gap-4">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold flex-shrink-0 text-[#ffb27a]"
+              className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold flex-shrink-0 text-brand-300"
               style={{
-                background: "#3a2a1c",
+                background: "var(--surface-700)",
                 boxShadow:
                   "inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 6px rgba(0,0,0,0.35)",
               }}
@@ -48,17 +48,17 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
               {getInitials(student.name)}
             </div>
             <div className="min-w-0">
-              <div className="text-lg font-display font-semibold text-[#e8ddce] truncate">
+              <div className="text-lg font-display font-semibold text-ink-200 truncate">
                 {student.name}
               </div>
-              <div className="text-sm text-[#766a59] truncate">
+              <div className="text-sm text-ink-500 truncate">
                 {student.email}
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#26211c] p-4 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]">
-            <div className="text-xs uppercase tracking-[0.2em] text-[#766a59]">
+          <div className="rounded-2xl bg-surface-900 p-4 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]">
+            <div className="text-xs uppercase tracking-[0.2em] text-ink-500">
               Classes
             </div>
             <div className="mt-3 space-y-2">
@@ -66,22 +66,22 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
                 studentClasses.map((classItem) => (
                   <div
                     key={classItem.id}
-                    className="rounded-xl bg-[#322b23] px-3 py-2 text-sm text-[#cabaa2] shadow-[6px_6px_14px_rgba(0,0,0,0.3),-4px_-4px_10px_rgba(255,255,255,0.02)]"
+                    className="rounded-xl bg-surface-800 px-3 py-2 text-sm text-ink-300 shadow-[6px_6px_14px_rgba(0,0,0,0.3),-4px_-4px_10px_rgba(255,255,255,0.02)]"
                   >
                     {classItem.name}
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-[#6b5f52]">No classes found</div>
+                <div className="text-sm text-ink-600">No classes found</div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 bg-[#3a3128]">
+        <div className="flex justify-end gap-3 px-6 py-4 bg-surface-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-full text-sm font-medium text-[#cabaa2] hover:text-[#e8ddce] transition-all bg-[#26211c] hover:bg-[#3a3128]/60 shadow-[inset_3px_3px_6px_rgba(0,0,0,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.03)]"
+            className="px-4 py-2 rounded-full text-sm font-medium text-ink-300 hover:text-ink-200 transition-all bg-surface-900 hover:bg-surface-700/60 shadow-[inset_3px_3px_6px_rgba(0,0,0,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.03)]"
           >
             Close
           </button>
