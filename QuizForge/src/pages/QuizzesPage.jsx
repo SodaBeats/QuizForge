@@ -15,6 +15,7 @@ export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [mobileTab, setMobileTab] = useState("list"); // mobile-only panel switcher — purely UI state, no data logic
   const queryClient = useQueryClient();
 
   // ---------------------------------------------------------------------
@@ -237,42 +238,92 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-white">
+    <div className="h-screen flex flex-col bg-[#26211c] text-[#e8ddce]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        .font-display { font-family: 'Baloo 2', sans-serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+      `}</style>
+
       {/*Top Bar */}
       <TopBar />
 
-      <div className="flex-1 flex overflow-hidden">
+      {/* Mobile/tablet panel switcher — only relevant once a quiz is selected, hidden on desktop */}
+      {selectedQuizId && (
+        <div className="flex lg:hidden mx-3 mt-3 rounded-2xl bg-[#322b23] shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)] font-body overflow-hidden">
+          {[
+            { key: "list", label: "Quizzes" },
+            { key: "details", label: "Details" },
+            { key: "questions", label: "Questions" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setMobileTab(tab.key)}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+                mobileTab === tab.key
+                  ? "text-[#ff9450]"
+                  : "text-[#766a59] hover:text-[#cabaa2]"
+              }`}
+            >
+              {tab.label}
+              {mobileTab === tab.key && (
+                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-[#ff9450]" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Main Content Area */}
 
-        <QuizzesSidebar
-          isFetching={queryQuizzesFetching}
-          isError={queryQuizzesError}
-          quizzes={queryQuizzes}
-          selectedQuizId={selectedQuizId}
-          setSelectedQuizId={setSelectedQuizId}
-          onDeleteQuiz={handleDeleteQuiz}
-        />
+        <div
+          className={`${
+            !selectedQuizId || mobileTab === "list" ? "flex" : "hidden"
+          } lg:contents`}
+        >
+          <QuizzesSidebar
+            isFetching={queryQuizzesFetching}
+            isError={queryQuizzesError}
+            quizzes={queryQuizzes}
+            selectedQuizId={selectedQuizId}
+            setSelectedQuizId={setSelectedQuizId}
+            onDeleteQuiz={handleDeleteQuiz}
+          />
+        </div>
         {selectedQuizId ? (
           <>
-            <QuizzesMetaData
-              key={selectedQuiz.id}
-              quiz={selectedQuiz}
-              onUpdateQuizMeta={handleQuizMetaUpdate}
-              userClasses={userClasses}
-              isFetchingClasses={isFetchingClasses}
-              classFetchError={classFetchError}
-            />
-            <QuizzesQuestionList
-              isFetching={queryQuestionsFetching}
-              questions={queryQuestions?.questionList}
-              selectedQuiz={selectedQuiz}
-              onUpdateQuestion={handleQuestionUpdate}
-              editingQuestion={editingQuestion}
-              setEditingQuestion={setEditingQuestion}
-            />
+            <div
+              className={`${
+                mobileTab === "details" ? "flex" : "hidden"
+              } lg:contents`}
+            >
+              <QuizzesMetaData
+                key={selectedQuiz.id}
+                quiz={selectedQuiz}
+                onUpdateQuizMeta={handleQuizMetaUpdate}
+                userClasses={userClasses}
+                isFetchingClasses={isFetchingClasses}
+                classFetchError={classFetchError}
+              />
+            </div>
+            <div
+              className={`${
+                mobileTab === "questions" ? "flex" : "hidden"
+              } lg:contents`}
+            >
+              <QuizzesQuestionList
+                isFetching={queryQuestionsFetching}
+                questions={queryQuestions?.questionList}
+                selectedQuiz={selectedQuiz}
+                onUpdateQuestion={handleQuestionUpdate}
+                editingQuestion={editingQuestion}
+                setEditingQuestion={setEditingQuestion}
+              />
+            </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex-1 flex items-center justify-center text-[#6b5f52] text-sm font-body p-3">
             Select a quiz to view details
           </div>
         )}

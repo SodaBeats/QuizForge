@@ -52,11 +52,12 @@ function ClassAccessDropdown({
         ? (userClasses?.find((c) => c.id === editingQuiz.classIds[0])?.name ??
           "1 class selected")
         : `${editingQuiz.classIds.length} classes selected`;
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-left flex items-center justify-between hover:bg-gray-600 transition-colors"
+        className="w-full bg-[#26211c] rounded-xl p-2.5 text-sm text-[#e8ddce] text-left flex items-center justify-between shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] hover:bg-[#2e2820] transition-all font-body"
       >
         <span className="truncate">{displayText}</span>
         <svg
@@ -76,9 +77,8 @@ function ClassAccessDropdown({
         </svg>
       </button>
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
-          {/* "Anyone with the code" option */}
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[#26211c] border border-[#3a3128] rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-[#e8ddce] hover:bg-[#3a3128] cursor-pointer border-b border-[#3a3128]">
             <input
               type="checkbox"
               checked={editingQuiz?.classIds?.length === 0}
@@ -88,7 +88,7 @@ function ClassAccessDropdown({
             <span>Anyone with the code</span>
           </label>
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-gray-400 text-sm">
+            <p className="px-3 py-2 text-[#766a59] text-sm">
               Loading classes...
             </p>
           ) : classFetchError ? (
@@ -99,7 +99,7 @@ function ClassAccessDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-600 cursor-pointer border-b border-gray-600 last:border-b-0"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-[#e8ddce] hover:bg-[#3a3128] cursor-pointer border-b border-[#3a3128] last:border-b-0"
               >
                 <input
                   type="checkbox"
@@ -111,13 +111,28 @@ function ClassAccessDropdown({
               </label>
             ))
           ) : (
-            <p className="px-3 py-2 text-gray-400 text-sm">No classes found.</p>
+            <p className="px-3 py-2 text-[#766a59] text-sm">
+              No classes found.
+            </p>
           )}
         </div>
       )}
     </div>
   );
 }
+
+const inputClass =
+  "w-full bg-[#26211c] rounded-xl p-2.5 text-sm text-[#e8ddce] placeholder:text-[#766a59] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition-all font-body";
+const labelClass = "text-sm font-semibold text-[#766a59] block mb-2 font-body";
+const primaryBtnClass =
+  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-[#3a2010] hover:-translate-y-0.5 active:translate-y-0.5";
+const primaryBtnStyle = {
+  background: "linear-gradient(155deg, #ffab6b, #ff9450 55%, #e8752a)",
+  boxShadow:
+    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(80,30,5,0.4), 5px 5px 12px rgba(0,0,0,0.4)",
+};
+const secondaryBtnClass =
+  "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-[#cabaa2] bg-[#26211c] hover:bg-[#3a3128] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
 
 export default function QuizzesMetadata({
   quiz,
@@ -131,187 +146,185 @@ export default function QuizzesMetadata({
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        Select a quiz to view details
+      <div className="flex items-center justify-center h-full text-[#6b5f52] text-sm font-body bg-[#26211c] w-full p-3">
+        <div className="w-full h-full rounded-2xl bg-[#322b23] flex items-center justify-center shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+          Select a quiz to view details
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 h-full bg-gray-800 border-r border-gray-700 flex flex-col">
-      {/* Header */}
-      <div className="border-b border-gray-700 p-4">
-        <input
-          type="text"
-          name="quizTitle"
-          value={editingQuiz.quizTitle || ""}
-          onChange={(e) =>
-            setEditingQuiz((prev) => ({
-              ...prev,
-              quizTitle: e.target.value,
-            }))
-          }
-          placeholder="Enter Quiz Title..."
-          className="w-full bg-transparent text-xl font-semibold text-white mb-2 border-b border-transparent focus:border-blue-500 focus:outline-none transition-all hover:bg-gray-800/50 rounded px-1 -ml-1"
-        />
+    <div className="flex-1 h-full w-full bg-[#26211c] flex flex-col font-body p-3">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        .font-display { font-family: 'Baloo 2', sans-serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+      `}</style>
 
-        <div className="flex items-center gap-4 text-sm text-gray-400">
-          <span>{quiz.questionCount} questions</span>
-          <span>•</span>
-          <span>Created {quiz.createdAt || "Recently"}</span>
-        </div>
-      </div>
-
-      {/* Metadata Content */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-4">
-        {/* Description */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 block mb-2">
-            Description
-          </label>
-          <textarea
-            value={editingQuiz.description}
-            onChange={(e) => {
+      <div className="flex-1 flex flex-col rounded-2xl bg-[#322b23] overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+        {/* Header */}
+        <div className="p-4 bg-[#3a3128]">
+          <input
+            type="text"
+            name="quizTitle"
+            value={editingQuiz.quizTitle || ""}
+            onChange={(e) =>
               setEditingQuiz((prev) => ({
                 ...prev,
-                description: e.target.value,
-              }));
-            }}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
-            rows="3"
-            placeholder="Enter quiz description"
+                quizTitle: e.target.value,
+              }))
+            }
+            placeholder="Enter quiz title..."
+            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-[#e8ddce] mb-2 border-b border-transparent focus:border-[#ff9450] focus:outline-none transition-all hover:bg-[#26211c]/40 rounded px-1 -ml-1"
           />
+
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-[#766a59]">
+            <span>{quiz.questionCount} questions</span>
+            <span>•</span>
+            <span>Created {quiz.createdAt || "Recently"}</span>
+          </div>
         </div>
 
-        {/* Share Token */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 block mb-2">
-            Share Token
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={quiz.shareToken?.toUpperCase() || "N/A"}
-              readOnly
-              className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-gray-400 text-sm"
+        {/* Metadata Content */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-4">
+          {/* Description */}
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              value={editingQuiz.description}
+              onChange={(e) => {
+                setEditingQuiz((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }));
+              }}
+              className={`${inputClass} resize-none`}
+              rows="3"
+              placeholder="Enter quiz description"
             />
-            {quiz.shareToken && (
-              <button
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                onClick={() => {
-                  navigator.clipboard.writeText(quiz.shareToken);
-                  toast.success("Token copied to clipboard!", {
-                    duration: 2000,
-                    style: {
-                      background: "#10B981",
-                      color: "#fff",
-                    },
-                  });
-                }}
+          </div>
+
+          {/* Share Token */}
+          <div>
+            <label className={labelClass}>Share token</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={quiz.shareToken?.toUpperCase() || "N/A"}
+                readOnly
+                className="flex-1 px-3 py-2 rounded-xl text-[#766a59] text-sm min-w-0 bg-[#26211c] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]"
+              />
+              {quiz.shareToken && (
+                <button
+                  className="px-3 py-2 rounded-xl text-sm font-display font-bold text-[#3a2010] transition-all flex-shrink-0 hover:-translate-y-0.5 active:translate-y-0.5"
+                  style={primaryBtnStyle}
+                  onClick={() => {
+                    navigator.clipboard.writeText(quiz.shareToken);
+                    toast.success("Token copied to clipboard!", {
+                      duration: 2000,
+                      style: {
+                        background: "#10B981",
+                        color: "#fff",
+                      },
+                    });
+                  }}
+                >
+                  Copy
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Due Date */}
+            <div>
+              <label className={labelClass}>Due date</label>
+              <input
+                type="datetime-local"
+                name="dueDate"
+                value={toDatetimeLocal(editingQuiz.dueDate).slice(0, 16)}
+                onChange={(e) =>
+                  setEditingQuiz((prev) => ({
+                    ...prev,
+                    dueDate: e.target.value || null,
+                  }))
+                }
+                className={inputClass}
+              />
+            </div>
+
+            {/* Accessibility */}
+            <div>
+              <label className={labelClass}>Accessibility</label>
+              <ClassAccessDropdown
+                editingQuiz={editingQuiz}
+                setEditingQuiz={setEditingQuiz}
+                userClasses={userClasses}
+                isFetchingClasses={isFetchingClasses}
+                classFetchError={classFetchError}
+              />
+            </div>
+          </div>
+
+          {/* Status and Max Attempts - Side by Side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Max Attempts */}
+            <div>
+              <label className={labelClass}>Max attempts</label>
+              <input
+                type="number"
+                name="maxAttempts"
+                min="1"
+                placeholder="e.g. 3"
+                value={editingQuiz.maxAttempts || ""}
+                onChange={(e) =>
+                  setEditingQuiz((prev) => ({
+                    ...prev,
+                    maxAttempts:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  }))
+                }
+                className={inputClass}
+              />
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className={labelClass}>Status</label>
+              <select
+                value={editingQuiz.status || "draft"}
+                onChange={(e) =>
+                  setEditingQuiz((prev) => ({
+                    ...prev,
+                    status: e.target.value,
+                  }))
+                }
+                className={inputClass}
               >
-                Copy
-              </button>
-            )}
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Due Date */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 block mb-2">
-              Due Date
-            </label>
-            <input
-              type="datetime-local"
-              name="dueDate"
-              value={toDatetimeLocal(editingQuiz.dueDate).slice(0, 16)}
-              onChange={(e) =>
-                setEditingQuiz((prev) => ({
-                  ...prev,
-                  dueDate: e.target.value || null,
-                }))
-              }
-              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
-                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-            />
-          </div>
-          {/* Accessibility */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Accessibility
-            </label>
-            <ClassAccessDropdown
-              editingQuiz={editingQuiz}
-              setEditingQuiz={setEditingQuiz}
-              userClasses={userClasses}
-              isFetchingClasses={isFetchingClasses}
-              classFetchError={classFetchError}
-            />
-          </div>
+        {/* Actions */}
+        <div className="p-4 space-y-2">
+          <button
+            className={primaryBtnClass}
+            style={primaryBtnStyle}
+            onClick={() => onUpdateQuizMeta(editingQuiz)}
+          >
+            Save changes
+          </button>
+          <button
+            className={secondaryBtnClass}
+            onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)}
+          >
+            View results
+          </button>
         </div>
-
-        {/* Status and Max Attempts - Side by Side */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Max Attempts */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 block mb-2">
-              Max Attempts
-            </label>
-            <input
-              type="number"
-              name="maxAttempts"
-              min="1"
-              placeholder="e.g. 3"
-              value={editingQuiz.maxAttempts || ""}
-              onChange={(e) =>
-                setEditingQuiz((prev) => ({
-                  ...prev,
-                  maxAttempts:
-                    e.target.value === "" ? null : Number(e.target.value),
-                }))
-              }
-              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
-                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-            />
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 block mb-2">
-              Status
-            </label>
-            <select
-              value={editingQuiz.status || "draft"}
-              onChange={(e) =>
-                setEditingQuiz((prev) => ({
-                  ...prev,
-                  status: e.target.value,
-                }))
-              }
-              className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white 
-                focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="border-t border-gray-700 p-4 space-y-2">
-        <button
-          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors font-medium"
-          onClick={() => onUpdateQuizMeta(editingQuiz)}
-        >
-          Save Changes
-        </button>
-        <button
-          className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-medium"
-          onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)}
-        >
-          View Results
-        </button>
       </div>
     </div>
   );
