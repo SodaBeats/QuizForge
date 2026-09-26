@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { colors } from "../theme/colors";
+import { colors } from "../../theme/colors";
 
 ChartJS.register(
   CategoryScale,

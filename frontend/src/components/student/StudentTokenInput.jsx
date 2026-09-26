@@ -1,7 +1,7 @@
 // QuizTokenModal.jsx
 import { useState, useContext } from "react";
 import toast from "react-hot-toast";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 
 export default function QuizTokenModal({ isOpen, onClose, onSubmit }) {
   const [token, setToken] = useState("");

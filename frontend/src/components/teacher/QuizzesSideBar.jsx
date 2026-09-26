@@ -1,11 +1,12 @@
 // QuizzesSidebar.jsx
 import { useNavigate } from "react-router-dom";
-import "./LoadingScreen.css";
+import "../LoadingScreen.css";
 
 const primaryBtnClass =
   "w-full px-4 py-2.5 rounded-xl transition-all font-display font-bold text-sm text-brand-900 hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
+  background:
+    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
     "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 6px 6px 14px rgba(0,0,0,0.4)",
 };

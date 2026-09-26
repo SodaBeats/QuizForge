@@ -7,13 +7,13 @@ import {
 } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AuthContext } from "../components/AuthProvider";
-import { studentQuizService } from "../services/studentQuizService";
-import StudentTopbar from "../components/StudentTopbar";
-import StudentSidebar from "../components/StudentSidebar";
-import StudentQuizWindow from "../components/StudentQuizWindow";
-import StudentTimeLimit from "../components/StudentTimeLimit";
-import LoadingScreen from "../components/LoadingScreen";
+import LoadingScreen from "../../components/LoadingScreen";
+import { AuthContext } from "../../components/AuthProvider";
+import { studentQuizService } from "../../services/studentQuizService";
+import StudentTopbar from "../../components/student/StudentTopbar";
+import StudentSidebar from "../../components/student/StudentSidebar";
+import StudentQuizWindow from "../../components/student/StudentQuizWindow";
+import StudentTimeLimit from "../../components/student/StudentTimeLimit";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 

@@ -1,15 +1,15 @@
 import { useContext, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { AuthContext } from "../components/AuthProvider";
+import { AuthContext } from "../../components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import "./StudentTokenPage.css";
 
 // image imports
-import avatarPeeking from "../assets/avatar_token.png";
-import lightbulbClean from "../assets/lightbulb_token.png";
-import checklistClean from "../assets/checklist_token.png";
-import booksClean from "../assets/books_token.png";
-import paperPlaneClean from "../assets/paper_plane_token.png";
+import avatarPeeking from "../../assets/avatar_token.png";
+import lightbulbClean from "../../assets/lightbulb_token.png";
+import checklistClean from "../../assets/checklist_token.png";
+import booksClean from "../../assets/books_token.png";
+import paperPlaneClean from "../../assets/paper_plane_token.png";
 
 export default function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);

@@ -2,12 +2,12 @@ import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AuthContext } from "../components/AuthProvider";
-import QuizzesSidebar from "../components/QuizzesSideBar";
-import TopBar from "../components/TopBar";
-import QuizzesMetaData from "../components/QuizzesMetadata";
-import QuizzesQuestionList from "../components/QuizzesQuestionList";
-import { classServices } from "../services/classServices";
+import { AuthContext } from "../../components/AuthProvider";
+import QuizzesSidebar from "../../components/teacher/QuizzesSideBar";
+import TopBar from "../../components/teacher/TopBar";
+import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
+import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
+import { classServices } from "../../services/classServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 

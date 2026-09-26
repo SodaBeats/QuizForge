@@ -4,11 +4,11 @@ import { useState, useEffect, useContext } from "react";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AuthContext } from "../components/AuthProvider";
-import TopBar from "../components/TopBar";
-import ClassesSidebar from "../components/ClassesSidebar";
-import StudentInfoModal from "../components/StudentInfoModal";
-import { getInitials } from "../util/getInitials";
+import { AuthContext } from "../../components/AuthProvider";
+import TopBar from "../../components/teacher/TopBar";
+import ClassesSidebar from "../../components/teacher/ClassesSidebar";
+import StudentInfoModal from "../../components/teacher/StudentInfoModal";
+import { getInitials } from "../../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -20,7 +20,8 @@ const modalPanelClass =
 const primaryBtnClass =
   "px-4 py-2 text-sm text-brand-900 font-display font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
+  background:
+    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
     "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };
@@ -97,9 +98,7 @@ function CreateClassModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-ink-500">
-              Subject
-            </label>
+            <label className="text-xs font-medium text-ink-500">Subject</label>
             <input
               name="subject"
               value={form.subject}

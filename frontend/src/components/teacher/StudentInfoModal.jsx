@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { getInitials } from "../util/getInitials";
+import { getInitials } from "../../util/getInitials";
 
 export default function StudentInfoModal({ student, studentClasses, onClose }) {
   const studentCardRef = useRef(null);

@@ -1,9 +1,9 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
-import { classServices } from "../services/classServices";
+import { classServices } from "../../services/classServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -14,7 +14,8 @@ const labelClass = "block text-sm font-medium text-ink-300 mb-1";
 const primaryBtnClass =
   "font-display font-bold rounded-xl px-4 py-2 text-brand-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
+  background:
+    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
     "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };
@@ -109,9 +110,7 @@ function ClassAccessibilityDropdown({
           </label>
 
           {isFetchingClasses ? (
-            <p className="px-3 py-2 text-ink-500 text-sm">
-              Loading classes...
-            </p>
+            <p className="px-3 py-2 text-ink-500 text-sm">Loading classes...</p>
           ) : classFetchError ? (
             <p className="px-3 py-2 text-red-400 text-xs">
               Unable to load classes.
@@ -132,9 +131,7 @@ function ClassAccessibilityDropdown({
               </label>
             ))
           ) : (
-            <p className="px-3 py-2 text-ink-500 text-sm">
-              No classes found.
-            </p>
+            <p className="px-3 py-2 text-ink-500 text-sm">No classes found.</p>
           )}
         </div>
       )}
@@ -526,7 +523,8 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-extrabold text-brand-900 text-sm"
           style={{
-            background: "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
+            background:
+              "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
             boxShadow:
               "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 4px 4px 10px rgba(0,0,0,0.4)",
           }}
@@ -571,7 +569,8 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all"
             style={{
-              background: "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
+              background:
+                "linear-gradient(150deg, var(--brand-300), var(--brand-600))",
               boxShadow:
                 "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 4px 4px 10px rgba(0,0,0,0.4)",
             }}

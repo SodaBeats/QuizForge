@@ -2,10 +2,10 @@ import { useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import TopBar from "../components/TopBar";
-import ResultsLeaderboard from "../components/ResultsLeaderboard";
-import ResultsMainPanel from "../components/ResultsMainPanel";
-import { AuthContext } from "../components/AuthProvider";
+import TopBar from "../../components/teacher/TopBar";
+import ResultsLeaderboard from "../../components/teacher/ResultsLeaderboard";
+import ResultsMainPanel from "../../components/teacher/ResultsMainPanel";
+import { AuthContext } from "../../components/AuthProvider";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 

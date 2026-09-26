@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./AuthProvider";
 import { useContext } from "react";
-import LoadingScreen from "./LoadingScreen";
+import LoadingScreen from "../LoadingScreen";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 

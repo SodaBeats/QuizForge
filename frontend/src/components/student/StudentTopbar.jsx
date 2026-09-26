@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 
 export default function SudentTopbar({ onLogout }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);

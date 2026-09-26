@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AuthContext } from "../components/AuthProvider";
-import TopBar from "../components/TopBar";
-import SideBar from "../components/SideBar";
-import FileViewer from "../components/FileViewer";
-import QuestionEditor from "../components/QuestionEditor";
+import { AuthContext } from "../../components/AuthProvider";
+import TopBar from "../../components/teacher/TopBar";
+import SideBar from "../../components/teacher/SideBar";
+import FileViewer from "../../components/teacher/FileViewer";
+import QuestionEditor from "../../components/teacher/QuestionEditor";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 

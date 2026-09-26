@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -13,7 +13,8 @@ const labelClass = "block text-sm font-medium mb-1.5 text-ink-300 font-body";
 const primaryBtnClass =
   "flex-1 font-display font-bold rounded-xl px-4 py-2.5 text-brand-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
+  background:
+    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
     "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };

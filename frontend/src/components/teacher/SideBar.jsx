@@ -1,16 +1,17 @@
 import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { documentServices } from "../services/documentServices";
+import { documentServices } from "../../services/documentServices";
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared clay styling tokens — cosmetic only, referenced by className below
 const primaryBtnClass =
   "font-display font-bold rounded-xl px-4 py-2 text-brand-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const primaryBtnStyle = {
-  background: "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
+  background:
+    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
   boxShadow:
     "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
 };
@@ -127,9 +128,7 @@ function FileModal({
               </div>
             ))
           ) : (
-            <p className="text-ink-500 text-center py-4">
-              No documents found
-            </p>
+            <p className="text-ink-500 text-center py-4">No documents found</p>
           )}
         </div>
 
