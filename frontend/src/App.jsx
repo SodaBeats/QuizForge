@@ -3,14 +3,14 @@ import { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthContext } from "./components/AuthProvider";
-import QuizMakerSkeleton from "./pages/QuizMakerPage";
+import QuizMakerSkeleton from "./pages/teacher/QuizMakerPage";
 import LogInComponent from "./pages/Login";
-import QuizzesPage from "./pages/QuizzesPage";
-import StudentTokenPage from "./pages/StudentTokenPage";
-import StudentQuizPage from "./pages/StudentQuizPage";
+import QuizzesPage from "./pages/teacher/QuizzesPage";
+import StudentTokenPage from "./pages/student/StudentTokenPage";
+import StudentQuizPage from "./pages/student/StudentQuizPage";
 import RootRedirector from "./components/RootRedirector";
-import QuizResultDashboard from "./pages/QuizResultDashboard";
-import ClassesPage from "./pages/ClassesPage";
+import QuizResultDashboard from "./pages/teacher/QuizResultDashboard";
+import ClassesPage from "./pages/teacher/ClassesPage";
 import ErrorPage from "./pages/ErrorPage";
 
 function ProtectedRoute({ children }) {

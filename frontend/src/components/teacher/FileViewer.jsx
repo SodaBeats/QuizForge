@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "./AuthProvider";
+import { AuthContext } from "../AuthProvider";
 import { useContext } from "react";
 import LoadingScreen from "../LoadingScreen";
 

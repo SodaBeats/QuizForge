@@ -1,108 +1,60 @@
 # AGENTS.md
 
-## Frontend (`frontend/`)
+## Repo shape
 
-React 19 + Vite 7 SPA. Styling with Tailwind CSS 3 (global `src/index.css`, a few page-local `.css` files). Routing via `react-router-dom` 7, server state via `@tanstack/react-query` 5, toasts via `react-hot-toast`, charts via `chart.js` / `react-chartjs-2`.
+- Two independent npm packages, **no root package.json / no workspaces**: `backend/` and `frontend/`. Run every npm command from inside those directories.
+- **Backend** — Express 5 + TypeScript ESM (`"type": "module"`), Drizzle ORM + Postgres. Entry: `src/index.ts` (listens on `:3000`) → `src/server.ts`, which mounts all routes (`/api/*`, `/auth/*`), the global IP rate limiter, and the central error handler. Layers: `routes/ → middlewares/ → services/ → repository/ → db/`.
+- **Frontend** — React 19 + Vite 7, **plain JS/JSX: no TypeScript and no typecheck** (the README's "TypeScript" claim is wrong). Entry: `src/main.jsx` → `src/App.jsx` (whole route table + inline `ProtectedRoute`/`StudentRoute` guards reading `AuthContext`). Tailwind 3.
+- `README.md` is truncated mid-"Getting Started" — it contains no run/test instructions. Trust package.json/scripts over docs.
 
-### Scripts
+## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build (outputs to `dist/`) |
-| `npm run lint` | ESLint (`eslint .`) |
-| `npm run preview` | Preview the production build |
+Backend (`backend/`):
 
-Config: `vite.config.js` (plain, only the React plugin), `tailwind.config.js`, `postcss.config.js`, `eslint.config.js`, `.prettierrc`. Backend origin comes from `.env` (`VITE_BACKEND_HOST`, see `.env.example`).
+- `npm run dev` — dev server on `:3000` (`tsx watch`). This is the only way to run it: `npm run build` is `tsc` with `noEmit: true` (`outDir` commented out), so it emits nothing and `npm start` (`node dist/index.js`) can never work.
+- `npx tsc --noEmit` — typecheck. There is **no backend lint/format script** and no backend ESLint config.
+- `npm test` (= `npm run test:unit`) — unit suite, no DB needed.
+- `npm run test:int` — integration suite (prereqs below).
+- Filter tests: `npm test -- --testPathPatterns <regex>`. Jest 30 renamed the flag — the singular `--testPathPattern` fails with "Option was replaced".
 
-### File structure
+Frontend (`frontend/`):
 
-```
-frontend/
-├── index.html                 # Vite entry HTML
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
-├── eslint.config.js
-├── .prettierrc
-├── .env / .env.example        # VITE_BACKEND_HOST
-├── dist/                      # Build output (generated, ignore)
-└── src/
-    ├── main.jsx               # Entry: BrowserRouter > AuthProvider > QueryClientProvider > App
-    ├── App.jsx                # Route table + ProtectedRoute / StudentRoute guards
-    ├── index.css              # Global styles (Tailwind entry)
-    ├── reference.jsx          # ⚠ Legacy reference copy (see Notes)
-    ├── assets/                # Static images (avatars, checklist/books/lightbulb/paper_plane
-    │                          #  variants: base/_clean/_crop/_perfect/_token, backgrounds)
-    ├── pages/                 # One component per route
-    │   ├── Login.jsx / Login.css
-    │   ├── ErrorPage.jsx
-    │   ├── ClassesPage.jsx
-    │   ├── QuizzesPage.jsx
-    │   ├── QuizMakerPage.jsx
-    │   ├── QuizResultDashboard.jsx
-    │   ├── StudentTokenPage.jsx / StudentTokenPage.css
-    │   └── StudentQuizPage.jsx
-    ├── components/            # Flat component directory (no subfolders yet)
-    │   ├── AuthProvider.jsx    # AuthContext: token + userInfo, used by guards and most components
-    │   ├── RootRedirector.jsx  # "/" → role-based redirect
-    │   ├── LoadingScreen.jsx / LoadingScreen.css
-    │   ├── TopBar.jsx          # Teacher top bar (uses classServices)
-    │   ├── SideBar.jsx         # Teacher sidebar (uses documentServices)
-    │   ├── FileViewer.jsx
-    │   ├── QuestionEditor.jsx
-    │   ├── QuizzesSideBar.jsx
-    │   ├── QuizzesMetadata.jsx
-    │   ├── QuizzesQuestionList.jsx
-    │   ├── ResultsMainPanel.jsx
-    │   ├── ResultsLeaderboard.jsx
-    │   ├── ClassesSidebar.jsx
-    │   ├── StudentInfoModal.jsx
-    │   ├── StudentTopbar.jsx
-    │   ├── StudentSidebar.jsx
-    │   ├── StudentQuizWindow.jsx
-    │   ├── StudentTimeLimit.jsx
-    │   └── StudentTokenInput.jsx
-    ├── services/              # API layer (fetch wrappers, exported singletons)
-    │   ├── documentServices.js   # documentServices
-    │   ├── classServices.js      # classServices
-    │   └── studentQuizService.js # studentQuizService
-    └── util/
-        ├── getInitials.js        # getInitials(name)
-        └── toDateTimeLocal.js    # toDatetimeLocal(dateString)
-```
+- `npm run dev` (Vite, `:5173`), `npm run lint`, `npm run build`, `npm run preview`. **No tests exist for the frontend.**
 
-### Routes (`src/App.jsx`)
+## Environment / services
 
-| Path | Page | Guard |
-| --- | --- | --- |
-| `/` | `RootRedirector` | — |
-| `/login` | `Login` | — |
-| `/error` | `ErrorPage` | — |
-| `/teacher` | `QuizMakerPage` | `ProtectedRoute` (teacher) |
-| `/teacher/quizzes` | `QuizzesPage` | `ProtectedRoute` (teacher) |
-| `/teacher/quizzes/:quizId` | `QuizResultDashboard` | `ProtectedRoute` (teacher) |
-| `/teacher/classes` | `ClassesPage` | `ProtectedRoute` (teacher) |
-| `/student` | `StudentTokenPage` | `StudentRoute` (student) |
-| `/student/quiz/:quizToken` | `StudentQuizPage` | `StudentRoute` (student) |
+- Backend reads `backend/.env` (gitignored; copy `backend/.env.example`). `DATABASE_URL`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET` are hard-required at import time (`src/db/db.ts`). Also used: `GROQ_API_KEY` (AI grading), `CORS_ORIGIN` (defaults to `http://localhost:5173`), `REDIS_HOST/PORT/PASSWORD/DB`.
+- **Redis must be running for any backend request to succeed**: the global IP rate limiter (`src/middlewares/ipBasedRateLimiter.middleware.ts`) runs on every route and returns 500 if Redis is unreachable — this also applies to supertest calls in integration tests. Default `localhost:6379`.
+- Frontend needs `frontend/.env` with `VITE_BACKEND_HOST` (e.g. `http://localhost:3000`); every service/page builds API URLs from it.
+- DB schema: `npm run db:migrate` = `drizzle-kit push` (push is the source of truth; `src/db/migration/` is gitignored, so **no committed migration files**). `npm run db:generate` writes generated SQL.
+- Fresh clone: `backend/.env`, `backend/.env.test`, and `frontend/.env` are all gitignored — create them yourself.
 
-Both guards live inline in `App.jsx` and read `AuthContext` (`token`, `userInfo.role`), redirecting to `/login` on failure.
+## Testing quirks
 
-### Component → consumer map
+- Configs: `jest.config.js` → re-exports `jest.config.unit.js` (default run = unit). `jest.config.integration.js` adds `globalSetup`/`globalTeardown`/`loadEnv`. Base is ESM + ts-jest, so jest must run via `node --experimental-vm-modules ...` — the npm scripts already do this; don't hand-roll jest commands.
+- Layout: unit tests `src/tests/unit/*.unit.test.ts`, integration `src/tests/integration/*.int.test.ts`.
+- Integration prerequisites: a pgvector Postgres reachable via **`backend/.env.test` → `DATABASE_URL` (ships empty — fill it)**, plus running Redis. `globalSetup.ts` itself runs `npx drizzle-kit push`, creates the `vector` extension, truncates every table, and seeds:
+  - `teacher@test.com` / `TeacherPass1!`
+  - `student@test.com` / `StudentPass1!`
+  - `student2@test.com` / `Student2Pass2!`
+  - Shared helpers (`loginAs`, `authHeader`, `*_CREDS`) live in `src/tests/integration/setup/testHelpers.ts`.
 
-- `AuthProvider` — consumed by nearly every page/component (auth state), plus `main.jsx` and `App.jsx`.
-- `LoadingScreen` — `AuthProvider`, `FileViewer`, `RootRedirector`, `StudentQuizPage`.
-- Teacher quiz maker (`QuizMakerPage`) — `TopBar`, `SideBar`, `FileViewer`, `QuestionEditor`.
-- Teacher quizzes (`QuizzesPage`) — `TopBar`, `QuizzesSideBar`, `QuizzesMetadata`, `QuizzesQuestionList`.
-- Teacher results (`QuizResultDashboard`) — `TopBar`, `ResultsMainPanel`, `ResultsLeaderboard`.
-- Classes (`ClassesPage`) — `TopBar`, `ClassesSidebar`, `StudentInfoModal`.
-- Student quiz (`StudentQuizPage`) — `StudentTopbar`, `StudentSidebar`, `StudentQuizWindow`, `StudentTimeLimit`, `LoadingScreen`.
-- Student token (`StudentTokenPage`) — `AuthProvider` + asset images.
+## Baseline at HEAD (verified 2026-09-26)
 
-### Notes for refactoring
+Everything below fails **before** any new change — re-verify your own baseline instead of assuming you broke it:
 
-- `components/` is flat and mixes teacher UI, student UI, shared shell (`TopBar`, `SideBar`, `LoadingScreen`), and infrastructure (`AuthProvider`, `RootRedirector`) — a natural split candidate (e.g. `components/teacher/`, `components/student/`, `components/shared/`, `context/`).
-- `src/reference.jsx` is a stale legacy copy of the quiz maker: it imports non-existent `./components/layout/*` paths and hardcodes a PHP upload endpoint. Nothing imports it; safe to delete or keep as reference.
-- Services are plain fetch wrappers returning singletons; React Query is set up in `main.jsx` but the service layer itself does not use query hooks.
-- CSS is mostly Tailwind utility classes; `Login.css`, `StudentTokenPage.css`, and `LoadingScreen.css` are the only component/page stylesheets.
+- Frontend `npm run build` fails: `src/App.jsx` imports flat `./pages/<Name>`, but pages were moved into `src/pages/teacher/` and `src/pages/student/` — those imports need rewriting.
+- Frontend `npm run lint` fails: unused `onClose` in `src/components/student/StudentTokenInput.jsx`.
+- Backend `npx tsc --noEmit` fails: 8 errors — 6 implicit-any in `src/services/summaryRemarks.service.ts`, 2 in `src/tests/unit/getShortAnsScoreObject.unit.test.ts`.
+- Backend `npm test`: 2 failures in `getShortAnsScoreObject.unit.test.ts` (assertions expect `/invalid question IDs/i`; the thrown message now reads "invalid or duplicate question IDs").
+
+## CI
+
+- Only workflow: `.github/workflows/integration-tests.yml` (on PRs). It installs deps, enables pgvector, and runs `drizzle-kit push` — but the **test step is `if: false`, so no tests actually run in CI**. Don't assume CI validates your change.
+- `CODEOWNERS`: everything → `@SodaBeats`.
+
+## Conventions & stale docs
+
+- Colors: use tokens from `src/theme/colors.js` (Tailwind classes like `bg-surface-900`, `text-brand-500`, or `:root` CSS vars / `colors.*` for inline styles) instead of raw hex — a recent refactor centralized the palette.
+- `docs/past-changes/frontend-refactor-notes.md` is a copy of the pre-refactor AGENTS.md: its flat `pages/`/`components/` layout, `reference.jsx`, and "no subfolders" notes are outdated (both `pages/` and `components/` now have `teacher/` + `student/` subfolders; `reference.jsx` was deleted).
+- Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.

@@ -32,7 +32,7 @@
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript, Tailwind CSS, Tanstack Query
+- **Frontend:** React, Tailwind CSS, Tanstack Query
 - **Backend:** Node.js, Express, PostgreSQL, Drizzle ORM
 - **Database:** Neon Postgres (with `pgvector` extension)
 - **Testing & CI:** Jest, GitHub Actions, Docker
