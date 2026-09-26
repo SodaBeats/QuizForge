@@ -65,7 +65,7 @@ function CreateClassModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[#3a3128] rounded-t-3xl">
@@ -131,7 +131,7 @@ function CreateClassModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm rounded-3xl">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-surface-900 bg-opacity-40 backdrop-blur-sm rounded-3xl">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-[#ff9450] rounded-full animate-spin" />
             <div className="text-sm text-[#e8ddce]">Creating...</div>
@@ -238,7 +238,7 @@ function AddStudentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[#3a3128] rounded-t-3xl">
@@ -307,7 +307,7 @@ function AddStudentModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm rounded-3xl">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-surface-900 bg-opacity-40 backdrop-blur-sm rounded-3xl">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-[#ff9450] rounded-full animate-spin" />
             <div className="text-sm text-[#e8ddce]">Adding...</div>

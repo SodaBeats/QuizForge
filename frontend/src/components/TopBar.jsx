@@ -153,7 +153,7 @@ function QuizForgeModal({
   classFetchError,
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
       <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
         <h2 className="text-xl font-display font-semibold mb-4 text-[#e8ddce]">
           Forge quiz
@@ -601,7 +601,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
                 Classes
               </button>
 
-              <div className="h-px bg-black/20 my-1"></div>
+              <div className="h-px bg-surface-950/20 my-1"></div>
 
               <button
                 className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3a3128] transition-colors"

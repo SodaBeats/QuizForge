@@ -19,7 +19,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
   }, []); // eslint-disable-line
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4 py-6">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50 px-4 py-6">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }

@@ -83,7 +83,7 @@ function ClassAccessDropdown({
               type="checkbox"
               checked={editingQuiz?.classIds?.length === 0}
               onChange={handleClearAll}
-              className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+              className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500 cursor-pointer"
             />
             <span>Anyone with the code</span>
           </label>
@@ -105,7 +105,7 @@ function ClassAccessDropdown({
                   type="checkbox"
                   checked={editingQuiz.classIds.includes(cls.id)}
                   onChange={() => handleToggleClass(cls.id)}
-                  className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 rounded border-surface-600 bg-surface-700 text-brand-500 focus:ring-brand-500 cursor-pointer"
                 />
                 <span>{cls.name}</span>
               </label>

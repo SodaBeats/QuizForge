@@ -105,7 +105,7 @@ export default function QuizzesSidebar({
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedQuizId === quiz.id
-                        ? "text-[#3a2010] hover:text-black"
+                        ? "text-[#3a2010] hover:text-surface-900"
                         : "text-red-400 hover:text-red-500"
                     }`}
                   >

@@ -92,7 +92,7 @@ export default function ClassesSidebar({
                   disabled={deletingIds.includes(cls.id)}
                   className={`ml-2 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-all ${
                     selectedClassId === cls.id
-                      ? "text-[#3a2010] hover:text-black"
+                      ? "text-[#3a2010] hover:text-surface-900"
                       : "text-[#766a59] hover:text-red-400"
                   } ${
                     deletingIds.includes(cls.id)

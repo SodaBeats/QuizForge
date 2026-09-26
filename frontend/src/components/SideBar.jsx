@@ -42,7 +42,7 @@ function FileModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
         <div
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
@@ -67,7 +67,7 @@ function FileModal({
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
         <div
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
@@ -93,7 +93,7 @@ function FileModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
       <div
         className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
       >
@@ -194,7 +194,7 @@ function SelectQuizModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
         <div className="bg-[#322b23] rounded-3xl p-6 w-96 shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body">
           <div className="flex flex-col items-center gap-3 text-[#cabaa2]">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#ff9450] border-t-transparent" />
@@ -210,7 +210,7 @@ function SelectQuizModal({
       console.error(error);
     }
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
         <div className="bg-[#322b23] rounded-3xl p-6 w-96 max-h-[70vh] overflow-y-auto shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-[#e8ddce]">
@@ -233,7 +233,7 @@ function SelectQuizModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
       <div className="bg-[#322b23] rounded-3xl p-6 w-96 max-h-[70vh] overflow-y-auto shadow-[10px_10px_22px_rgba(0,0,0,0.5),-6px_-6px_16px_rgba(255,255,255,0.04)] font-body">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-[#e8ddce]">
@@ -530,7 +530,7 @@ function SideBar({
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedFileId === file.id
-                        ? "text-[#3a2010] hover:text-black"
+                        ? "text-[#3a2010] hover:text-surface-900"
                         : "text-red-400 hover:text-red-500"
                     }`}
                   >
@@ -558,7 +558,7 @@ function SideBar({
                 onClick={() => {
                   setCurrentQuiz(null);
                 }}
-                className="ml-2 text-[#3a2010] hover:text-black opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
+                className="ml-2 text-[#3a2010] hover:text-surface-900 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
               >
                 ×
               </button>
@@ -604,7 +604,7 @@ function SideBar({
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedQuestionId === question.id
-                        ? "text-[#3a2010] hover:text-black"
+                        ? "text-[#3a2010] hover:text-surface-900"
                         : "text-red-400 hover:text-red-500"
                     }`}
                   >
