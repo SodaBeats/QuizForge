@@ -1,50 +1,33 @@
 /**
- * QuizForge color tokens — single source of truth.
+ * QuizForge color tokens — flat 5-token palette, single source of truth.
+ *
+ * Every token has exactly one value; there are no shades.
+ *
+ *   canvas  — page background (darkest)
+ *   surface — panels, cards, sidebars, modals, inputs
+ *   ink     — primary text
+ *   muted   — secondary text (subtitles, placeholders, disabled) and hairline
+ *             borders, applied through alpha modifiers:
+ *               border-muted/20  → panel edge
+ *               border-muted/30  → input / interactive edge
+ *               bg-muted/10      → hover lift
+ *   accent  — brand orange: solid buttons, focus rings, selected/active state
  *
  * Loaded by `tailwind.config.js`, which:
- *   1. exposes them as Tailwind colors (bg-surface-900, text-brand-500, ...)
- *   2. emits them as :root CSS variables (--surface-900, --brand-500, ...)
- *      for use in plain CSS files (Login.css, StudentTokenPage.css, ...)
+ *   1. exposes them as Tailwind utilities (bg-canvas, text-ink, border-muted/20 …)
+ *   2. emits them as :root CSS variables (--canvas, --surface, … plus
+ *      --canvas-rgb, --surface-rgb …) for plain CSS files and inline styles.
  *
- * Import this module in JSX when a raw value is needed in an inline style:
+ * Import this module in JSX only when a raw value is needed inline:
  *   import { colors } from "../theme/colors";
- *   style={{ background: colors.surface[900] }}
- *
- * Palette roles:
- *   surface — dark warm gray: page backgrounds, elevated surfaces, borders
- *   brand   — orange: accent, interactive elements (buttons, focus, selected)
- *   ink     — white/cream: text and light surfaces
- *
- * Status colors (red/green/amber) intentionally use the Tailwind defaults
- * and are not defined here.
+ *   style={{ background: colors.accent }}
  */
 export const colors = {
-  surface: {
-    950: "#0d0906",
-    900: "#26211c",
-    800: "#322b23",
-    700: "#3a3128",
-    600: "#4a3f34",
-    500: "#5c4f42",
-  },
-  brand: {
-    100: "#fff0e6",
-    300: "#ffab6b",
-    400: "#ff9450",
-    500: "#ff7a1a",
-    600: "#e8752a",
-    800: "#5c3512",
-    900: "#3a2010",
-  },
-  ink: {
-    50: "#ffffff",
-    100: "#f5f2ec",
-    200: "#e8ddce",
-    300: "#cabaa2",
-    400: "#a89a86",
-    500: "#766a59",
-    600: "#6b5f52",
-  },
+  canvas: "#0d0906",
+  surface: "#26211c",
+  ink: "#e8ddce",
+  muted: "#a89a86",
+  accent: "#ff7a1a",
 };
 
 export default colors;

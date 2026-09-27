@@ -18,9 +18,9 @@ export default function SudentTopbar({ onLogout }) {
   }, []);
 
   return (
-    <div className="border-b border-surface-700 p-4 flex items-center justify-between bg-surface-900">
+    <div className="border-b border-muted/20 p-4 flex items-center justify-between bg-surface">
       {/* LEFT SIDE: Logo */}
-      <span className="text-xl font-bold text-ink-50 cursor-pointer hover:text-brand-400 transition-colors">
+      <span className="text-xl font-bold text-ink cursor-pointer hover:text-accent transition-colors">
         QuizForge
       </span>
 
@@ -30,16 +30,16 @@ export default function SudentTopbar({ onLogout }) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-10 h-10 rounded-full bg-brand-500 border-2 border-surface-700 
-              hover:border-brand-400 flex items-center justify-center overflow-hidden transition-all"
+            className="w-10 h-10 rounded-full bg-accent border-2 border-muted/20 
+              hover:border-accent flex items-center justify-center overflow-hidden transition-all"
           >
             {/* Placeholder for Profile Image */}
-            <span className="text-ink-50 text-xs font-bold">JD</span>
+            <span className="text-canvas text-xs font-bold">JD</span>
           </button>
           {isProfileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-surface-800 border border-surface-700 rounded-lg shadow-xl py-2 z-50">
+            <div className="absolute right-0 mt-2 w-48 bg-surface border border-muted/20 rounded-lg py-2 z-50">
               <button
-                className="w-full text-left px-4 py-2 text-red-400 hover:bg-surface-700 transition-colors"
+                className="w-full text-left px-4 py-2 text-red-400 hover:bg-muted/10 transition-colors"
                 onClick={onLogout}
               >
                 Logout

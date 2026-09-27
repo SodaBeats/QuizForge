@@ -8,50 +8,40 @@
    ========================================================================== */
 
 :root {
-  --color-orange-primary: var(--brand-500);
-  --color-orange-gradient-start: var(--brand-500);
-  --color-orange-gradient-end: var(--brand-600);
-  --color-orange-light: var(--brand-100);
-  --color-orange-border: var(--brand-500);
+  --color-orange-primary: var(--accent);
+  --color-orange-gradient-start: var(--accent);
+  --color-orange-gradient-end: var(--accent);
+  --color-orange-light: var(--accent);
+  --color-orange-border: var(--accent);
 
-  --color-page-bg-start: var(--ink-50);
-  --color-page-bg-end: var(--ink-100);
+  --color-page-bg-start: var(--ink);
+  --color-page-bg-end: var(--ink);
 
-  --color-paper-bg: var(--ink-50);
+  --color-paper-bg: var(--ink);
 
-  --color-board-dark: var(--surface-800);
-  --color-board-darker: var(--surface-900);
+  --color-board-dark: var(--surface);
+  --color-board-darker: var(--surface);
 
-  --color-clip-metallic: var(--ink-200);
-  --color-backdrop-circle: var(--surface-700);
+  --color-clip-metallic: var(--ink);
+  --color-backdrop-circle: var(--surface);
 
-  --color-text-main: var(--surface-900);
-  --color-text-muted: var(--ink-500);
-  --color-text-caption: var(--ink-400);
-  --color-text-light: var(--ink-400);
+  --color-text-main: var(--surface);
+  --color-text-muted: var(--muted);
+  --color-text-caption: var(--muted);
+  --color-text-light: var(--muted);
 
-  --color-input-bg: var(--ink-100);
-  --color-input-border: var(--ink-200);
-  --color-input-focus: var(--brand-500);
-  --color-badge-bg: var(--ink-100);
+  --color-input-bg: var(--ink);
+  --color-input-border: var(--ink);
+  --color-input-focus: var(--accent);
+  --color-badge-bg: var(--ink);
 
   --font-family-main:
     "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
 
-  --radius-card-outer: 36px;
-  --radius-card-inner: 30px;
-  --radius-input: 16px;
+  --radius-card-outer: 12px;
+  --radius-card-inner: 8px;
+  --radius-input: 8px;
   --radius-pill: 9999px;
-
-  --shadow-board:
-    0 25px 60px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0, 0, 0, 0.3);
-
-  --shadow-paper:
-    inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 24px rgba(0, 0, 0, 0.35);
-
-  --shadow-btn: 0 10px 25px rgb(var(--brand-500-rgb) / 0.35);
-
-  --shadow-btn-hover: 0 14px 30px rgb(var(--brand-500-rgb) / 0.5);
 
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -83,11 +73,7 @@ html,
 body {
   font-family: var(--font-family-main);
 
-  background: radial-gradient(
-    circle at 50% 40%,
-    var(--color-page-bg-start) 0%,
-    var(--color-page-bg-end) 100%
-  );
+  background: var(--color-page-bg-start);
 
   color: var(--color-text-main);
 
@@ -132,7 +118,6 @@ body {
   pointer-events: none;
   user-select: none;
 
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.5));
 }
 
 .floating-decor img {
@@ -245,7 +230,7 @@ body {
 
   background: var(--color-orange-primary);
 
-  border-radius: 99px;
+  border-radius: 8px;
 
   margin-top: 8px;
 }
@@ -305,7 +290,6 @@ body {
   background: url("../assets/leaning_stage_bg_clean.png") no-repeat center
     center / contain;
 
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
 
   container-type: inline-size;
 
@@ -335,8 +319,6 @@ body {
 .page-container.leaning-mode .clipboard-board {
   background: transparent;
 
-  box-shadow: none;
-
   border: none;
 
   padding: 0;
@@ -353,8 +335,6 @@ body {
   background: transparent;
 
   border: none;
-
-  box-shadow: none;
 
   width: 100%;
   height: 100%;
@@ -394,24 +374,18 @@ body {
   width: 46px;
   height: 46px;
 
-  background: linear-gradient(
-    135deg,
-    var(--color-orange-gradient-start) 0%,
-    var(--color-orange-gradient-end) 100%
-  );
+  background: var(--color-orange-primary);
 
-  border-radius: 14px;
+  border-radius: 8px;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
-
-  box-shadow: 0 6px 14px rgb(var(--brand-500-rgb) / 0.35);
 }
 
 .logo-icon-box .q-letter {
-  color: var(--ink-50);
+  color: var(--ink);
 
   font-size: 1.75rem;
 
@@ -523,11 +497,7 @@ body {
 .welcome-title .highlight-orange {
   color: var(--color-orange-primary);
 
-  background: linear-gradient(
-    135deg,
-    var(--color-orange-gradient-start),
-    var(--color-orange-gradient-end)
-  );
+  background: var(--color-orange-primary);
 
   -webkit-background-clip: text;
   background-clip: text;
@@ -588,11 +558,9 @@ body {
 }
 
 .input-wrapper:focus-within {
-  background: var(--ink-50);
+  background: var(--ink);
 
   border-color: var(--color-input-focus);
-
-  box-shadow: 0 0 0 4px rgb(var(--brand-500-rgb) / 0.15);
 }
 
 .input-icon {
@@ -685,8 +653,6 @@ body {
   border: 1.5px solid var(--color-input-border);
 
   border-radius: var(--radius-input);
-
-  box-shadow: inset 3px 3px 7px rgb(var(--ink-400-rgb) / 0.15);
 }
 
 .role-option {
@@ -718,15 +684,9 @@ body {
 }
 
 .role-option.active {
-  color: var(--ink-50);
+  color: var(--ink);
 
-  background: linear-gradient(
-    135deg,
-    var(--color-orange-gradient-start),
-    var(--color-orange-gradient-end)
-  );
-
-  box-shadow: 0 4px 10px rgb(var(--brand-500-rgb) / 0.25);
+  background: var(--color-orange-primary);
 }
 
 /* ==========================================================================
@@ -817,7 +777,7 @@ body {
 .check-icon {
   font-size: 0.7rem;
 
-  color: var(--ink-50);
+  color: var(--ink);
 
   opacity: 0;
 
@@ -859,7 +819,7 @@ body {
 }
 
 .forgot-link:hover {
-  color: var(--brand-600);
+  color: var(--accent);
 
   text-decoration: underline;
 }
@@ -873,15 +833,11 @@ body {
 
   height: 54px;
 
-  background: linear-gradient(
-    135deg,
-    var(--color-orange-gradient-start) 0%,
-    var(--color-orange-gradient-end) 100%
-  );
+  background: var(--color-orange-primary);
 
   border: none;
 
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-input);
 
   display: flex;
 
@@ -891,8 +847,6 @@ body {
   gap: 12px;
 
   cursor: pointer;
-
-  box-shadow: var(--shadow-btn);
 
   transition: all var(--transition-normal);
 
@@ -905,14 +859,10 @@ body {
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-
-  box-shadow: var(--shadow-btn-hover);
 }
 
 .submit-btn:active:not(:disabled) {
   transform: translateY(1px);
-
-  box-shadow: 0 6px 16px rgb(var(--brand-500-rgb) / 0.4);
 }
 
 .submit-btn:disabled {
@@ -934,7 +884,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  color: var(--ink-50);
+  color: var(--ink);
 
   font-size: 0.85rem;
 
@@ -946,7 +896,7 @@ body {
 }
 
 .btn-text {
-  color: var(--ink-50);
+  color: var(--ink);
 
   font-size: 1rem;
 
@@ -963,9 +913,9 @@ body {
   width: 17px;
   height: 17px;
 
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid rgb(var(--muted-rgb) / 0.4);
 
-  border-top-color: var(--ink-50);
+  border-top-color: var(--ink);
 
   border-radius: 50%;
 
@@ -1059,7 +1009,7 @@ body {
 }
 
 .signup-link:hover {
-  color: var(--brand-600);
+  color: var(--accent);
 
   text-decoration: underline;
 }
@@ -1229,10 +1179,6 @@ body {
   border-radius: 50%;
 
   z-index: 1;
-
-  box-shadow:
-    inset 0 -10px 30px rgba(0, 0, 0, 0.3),
-    0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .avatar-container {
@@ -1264,7 +1210,6 @@ body {
 
   display: block;
 
-  filter: drop-shadow(10px 15px 25px rgba(0, 0, 0, 0.5));
 }
 
 /* ==========================================================================
@@ -1456,8 +1401,6 @@ body {
     background: var(--color-paper-bg);
 
     border-radius: var(--radius-card-inner);
-
-    box-shadow: var(--shadow-paper);
 
     padding: 6px;
 

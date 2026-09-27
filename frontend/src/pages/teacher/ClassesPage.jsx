@@ -12,21 +12,15 @@ import { getInitials } from "../../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
-// shared clay styling tokens — cosmetic only, referenced by className below
+// shared flat styling tokens - cosmetic only, referenced by className below
 const wellInputClass =
-  "bg-surface-900 rounded-xl px-3 py-2 text-sm text-ink-200 placeholder-ink-600 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition-all";
+  "bg-surface rounded-md px-3 py-2 text-sm text-ink placeholder-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
 const modalPanelClass =
-  "bg-surface-800 rounded-3xl w-[420px] max-w-full relative font-body shadow-[14px_14px_28px_rgba(0,0,0,0.5),-8px_-8px_20px_rgba(255,255,255,0.04)]";
+  "bg-surface rounded-lg w-[420px] max-w-full relative font-body border border-muted/20";
 const primaryBtnClass =
-  "px-4 py-2 text-sm text-brand-900 font-display font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const primaryBtnStyle = {
-  background:
-    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
-  boxShadow:
-    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
-};
+  "px-4 py-2 text-sm bg-accent text-canvas font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
-  "px-4 py-2 text-sm text-ink-300 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface-900 hover:bg-surface-700 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
+  "px-4 py-2 text-sm text-ink rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface hover:bg-muted/10 border border-muted/30";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -66,16 +60,16 @@ function CreateClassModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-surface-700 rounded-t-3xl">
-          <h2 className="text-sm font-display font-semibold text-ink-200">
+        <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
+          <h2 className="text-sm font-display font-semibold text-ink">
             Create a new class
           </h2>
           <button
             onClick={onClose}
-            className="text-ink-500 hover:text-ink-200 text-xl leading-none border-none"
+            className="text-muted hover:text-ink text-xl leading-none border-none"
           >
             ×
           </button>
@@ -84,7 +78,7 @@ function CreateClassModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-ink-500">
+            <label className="text-xs font-medium text-muted">
               Class name
             </label>
             <input
@@ -98,7 +92,7 @@ function CreateClassModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-ink-500">Subject</label>
+            <label className="text-xs font-medium text-muted">Subject</label>
             <input
               name="subject"
               value={form.subject}
@@ -122,7 +116,6 @@ function CreateClassModal({
           <button
             onClick={handleSubmit}
             className={primaryBtnClass}
-            style={primaryBtnStyle}
             disabled={isSubmitting}
           >
             Create class
@@ -130,10 +123,10 @@ function CreateClassModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-surface-900 bg-opacity-40 backdrop-blur-sm rounded-3xl">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-brand-400 rounded-full animate-spin" />
-            <div className="text-sm text-ink-200">Creating...</div>
+            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+            <div className="text-sm text-ink">Creating...</div>
           </div>
         </div>
       )}
@@ -237,16 +230,16 @@ function AddStudentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-surface-700 rounded-t-3xl">
-          <h2 className="text-sm font-display font-semibold text-ink-200 truncate pr-2">
+        <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
+          <h2 className="text-sm font-display font-semibold text-ink truncate pr-2">
             Add student to {selectedClass?.name}
           </h2>
           <button
             onClick={onClose}
-            className="text-ink-500 hover:text-ink-200 text-xl leading-none border-none flex-shrink-0"
+            className="text-muted hover:text-ink text-xl leading-none border-none flex-shrink-0"
           >
             ×
           </button>
@@ -255,7 +248,7 @@ function AddStudentModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-ink-500">
+            <label className="text-xs font-medium text-muted">
               Student email
             </label>
             <input
@@ -269,7 +262,7 @@ function AddStudentModal({
             />
             <div className="min-h-[1.25rem] text-xs">
               {isCheckingEmail && (
-                <span className="text-brand-300">Checking email...</span>
+                <span className="text-accent">Checking email...</span>
               )}
               {!isCheckingEmail && emailCheckError && (
                 <span className="text-red-400">{emailCheckError}</span>
@@ -293,7 +286,6 @@ function AddStudentModal({
           <button
             onClick={handleSubmit}
             className={primaryBtnClass}
-            style={primaryBtnStyle}
             disabled={
               isSubmitting ||
               isCheckingEmail ||
@@ -306,10 +298,10 @@ function AddStudentModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-surface-900 bg-opacity-40 backdrop-blur-sm rounded-3xl">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-brand-400 rounded-full animate-spin" />
-            <div className="text-sm text-ink-200">Adding...</div>
+            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+            <div className="text-sm text-ink">Adding...</div>
           </div>
         </div>
       )}
@@ -502,7 +494,7 @@ export default function ClassesPage() {
     return <Navigate to="/error" replace />;
   }
   return (
-    <div className="h-screen flex flex-col bg-surface-900 text-ink-200">
+    <div className="h-screen flex flex-col bg-canvas text-ink">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -513,7 +505,7 @@ export default function ClassesPage() {
 
       {/* Mobile/tablet panel switcher — only relevant once a class is selected, hidden on desktop */}
       {selectedClass && (
-        <div className="flex lg:hidden mx-3 mt-3 rounded-2xl bg-surface-800 shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)] font-body overflow-hidden">
+        <div className="flex lg:hidden mx-3 mt-3 rounded-lg bg-surface border border-muted/20 font-body overflow-hidden">
           {[
             { key: "classes", label: "Classes" },
             { key: "students", label: "Students" },
@@ -523,13 +515,13 @@ export default function ClassesPage() {
               onClick={() => setMobileTab(tab.key)}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
                 mobileTab === tab.key
-                  ? "text-brand-400"
-                  : "text-ink-500 hover:text-ink-300"
+                  ? "text-accent"
+                  : "text-muted hover:text-ink"
               }`}
             >
               {tab.label}
               {mobileTab === tab.key && (
-                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-brand-400" />
+                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
               )}
             </button>
           ))}
@@ -564,21 +556,20 @@ export default function ClassesPage() {
           } flex-1 flex-col overflow-hidden font-body p-3`}
         >
           {selectedClass ? (
-            <div className="flex-1 flex flex-col rounded-2xl bg-surface-800 overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+            <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
               {/* Panel header */}
-              <div className="px-4 sm:px-6 py-4 bg-surface-700 flex items-center justify-between gap-3">
+              <div className="px-4 sm:px-6 py-4 bg-surface flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="text-base font-display font-semibold text-ink-200 truncate">
+                  <h2 className="text-base font-display font-semibold text-ink truncate">
                     {selectedClass.name}
                   </h2>
-                  <p className="text-xs text-ink-500 truncate">
+                  <p className="text-xs text-muted truncate">
                     {selectedClass.subject}
                   </p>
                 </div>
                 <span className="flex-shrink-0">
                   <button
-                    className="text-xs font-display font-bold text-brand-900 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5 active:translate-y-0.5"
-                    style={primaryBtnStyle}
+                    className="text-xs font-display font-bold bg-accent text-canvas px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
                     onClick={() => setShowAddStudentModal(true)}
                   >
                     Add student
@@ -591,20 +582,20 @@ export default function ClassesPage() {
                 {selectedClass.students?.map((student) => (
                   <div
                     key={student?.id}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 transition-all bg-surface-900 hover:bg-surface-700 shadow-[inset_3px_3px_6px_rgba(0,0,0,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.03)]"
+                    className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-surface hover:bg-muted/10 border border-muted/20"
                   >
                     <div
                       onClick={() => setSelectedStudent(student)}
                       className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
                     >
-                      <div className="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center text-brand-300 text-xs font-display font-semibold flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-accent text-xs font-display font-semibold flex-shrink-0">
                         {getInitials(student?.name)}
                       </div>
                       <div className="overflow-hidden">
-                        <div className="text-sm text-ink-200 font-medium truncate">
+                        <div className="text-sm text-ink font-medium truncate">
                           {student?.name}
                         </div>
-                        <div className="text-xs text-ink-500 truncate">
+                        <div className="text-xs text-muted truncate">
                           {student?.email}
                         </div>
                       </div>
@@ -651,7 +642,7 @@ export default function ClassesPage() {
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-2xl bg-surface-800 text-ink-600 gap-2 shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-surface text-muted gap-2 border border-muted/20">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>

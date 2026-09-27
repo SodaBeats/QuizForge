@@ -50,7 +50,7 @@ No known fails — frontend `npm run build` and `npm run lint`, backend `npx tsc
 
 ## Conventions & stale docs
 
-- Colors: use tokens from `src/theme/colors.js` (Tailwind classes like `bg-surface-900`, `text-brand-500`, or `:root` CSS vars / `colors.*` for inline styles) instead of raw hex — a recent refactor centralized the palette.
+- Colors: flat 5-token palette in `src/theme/colors.js` (no shades): `canvas` (page bg), `surface` (panels/cards/inputs), `ink` (primary text), `muted` (subtitles/placeholders **and** hairline borders/hover lifts via alpha — `border-muted/20`, `border-muted/30` on inputs, `hover:bg-muted/10`), `accent` (brand orange, solid). Use Tailwind utilities (`bg-canvas`, `text-ink`, `bg-accent`), the emitted `:root` vars (`var(--surface)`, `rgb(var(--accent-rgb) / 0.4)`), or `colors.*` for inline styles — never raw hex (status colors are the exception: Tailwind defaults like `emerald-500`). Design is flat: no gradients, no shadows — panels are defined by `bg-surface` + a hairline border, radius tops out at `rounded-lg` (cards) / `rounded-md` (buttons, inputs), `rounded-full` only for true circles.
 - `docs/past-changes/frontend-refactor-notes.md` is a copy of the pre-refactor AGENTS.md: its flat `pages/`/`components/` layout, `reference.jsx`, and "no subfolders" notes are outdated (both `pages/` and `components/` now have `teacher/` + `student/` subfolders; `reference.jsx` was deleted).
 - Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.
 

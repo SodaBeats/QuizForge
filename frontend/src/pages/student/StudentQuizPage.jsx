@@ -269,14 +269,14 @@ export default function StudentQuizPage() {
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-surface-900 text-ink-200">
+      <div className="h-screen flex items-center justify-center bg-canvas text-ink">
         <div className="text-center">
           <p className="text-red-400">{error?.message}</p>
           <button
             onClick={() => {
               deleteAttempt();
             }}
-            className="mt-4 bg-brand-500 text-ink-50 px-4 py-2 rounded"
+            className="mt-4 bg-accent text-canvas px-4 py-2 rounded"
           >
             Back to Student Page
           </button>
@@ -290,20 +290,20 @@ export default function StudentQuizPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-surface-900 text-ink-200">
+    <div className="h-screen flex flex-col bg-canvas text-ink">
       <StudentTopbar onLogout={handleLogout} />
-      <div className="flex h-screen overflow-hidden bg-surface-900">
+      <div className="flex h-screen overflow-hidden bg-canvas">
         {showExitWarning && (
-          <div className="fixed inset-0 bg-surface-950/60 flex items-center justify-center z-50">
-            <div className="bg-surface-800 p-6 rounded-xl max-w-sm text-center space-y-4">
-              <h2 className="text-ink-50 text-lg font-semibold">Leave Quiz?</h2>
-              <p className="text-ink-300 text-sm">
+          <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+            <div className="bg-surface p-6 rounded-md max-w-sm text-center space-y-4">
+              <h2 className="text-ink text-lg font-semibold">Leave Quiz?</h2>
+              <p className="text-ink text-sm">
                 Your quiz will be auto-submitted if you navigate away.
               </p>
               <div className="flex justify-center gap-3">
                 <button
                   onClick={() => setShowExitWarning(false)}
-                  className="px-4 py-2 rounded bg-surface-700 text-ink-50"
+                  className="px-4 py-2 rounded bg-surface text-ink"
                 >
                   Stay
                 </button>
@@ -312,7 +312,7 @@ export default function StudentQuizPage() {
                     setShowExitWarning(false);
                     handleQuizSubmit();
                   }}
-                  className="px-4 py-2 rounded bg-brand-500 text-ink-50"
+                  className="px-4 py-2 rounded bg-accent text-canvas"
                 >
                   Submit & Exit
                 </button>
@@ -321,16 +321,16 @@ export default function StudentQuizPage() {
           </div>
         )}
         {showLogoutWarning && (
-          <div className="fixed inset-0 bg-surface-950/60 flex items-center justify-center z-50">
-            <div className="bg-surface-800 p-6 rounded-xl max-w-sm text-center space-y-4">
-              <h2 className="text-ink-50 text-lg font-semibold">Leave Quiz?</h2>
-              <p className="text-ink-300 text-sm">
+          <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+            <div className="bg-surface p-6 rounded-md max-w-sm text-center space-y-4">
+              <h2 className="text-ink text-lg font-semibold">Leave Quiz?</h2>
+              <p className="text-ink text-sm">
                 Your quiz will be auto-submitted if you navigate away.
               </p>
               <div className="flex justify-center gap-3">
                 <button
                   onClick={() => setShowLogoutWarning(false)}
-                  className="px-4 py-2 rounded bg-surface-700 text-ink-50"
+                  className="px-4 py-2 rounded bg-surface text-ink"
                 >
                   Stay
                 </button>
@@ -339,7 +339,7 @@ export default function StudentQuizPage() {
                     setShowLogoutWarning(false);
                     submitAndLogout();
                   }}
-                  className="px-4 py-2 rounded bg-brand-500 text-ink-50"
+                  className="px-4 py-2 rounded bg-accent text-canvas"
                 >
                   Submit & Logout
                 </button>

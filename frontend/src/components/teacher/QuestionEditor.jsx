@@ -8,36 +8,30 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =
-  "w-full bg-surface-900 rounded-xl px-3 py-2 text-sm text-ink-200 placeholder:text-ink-500 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)] focus:outline-none focus:shadow-[inset_5px_5px_10px_rgba(0,0,0,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_0_3px_rgba(255,148,80,0.35)] transition font-body";
-const labelClass = "block text-sm font-medium mb-1.5 text-ink-300 font-body";
+  "w-full bg-surface rounded-md px-3 py-2 text-sm text-ink placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
+const labelClass = "block text-sm font-medium mb-1.5 text-ink font-body";
 const primaryBtnClass =
-  "flex-1 font-display font-bold rounded-xl px-4 py-2.5 text-brand-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const primaryBtnStyle = {
-  background:
-    "linear-gradient(155deg, var(--brand-300), var(--brand-400) 55%, var(--brand-600))",
-  boxShadow:
-    "inset 2px 2px 4px rgba(255,255,255,0.4), inset -3px -3px 6px rgb(var(--brand-900-rgb) / 0.4), 5px 5px 12px rgba(0,0,0,0.4)",
-};
+  "flex-1 font-display font-bold rounded-md px-4 py-2.5 bg-accent text-canvas transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
-  "flex-1 rounded-xl px-4 py-2.5 transition-all text-ink-300 bg-surface-900 hover:bg-surface-700 shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-3px_-3px_7px_rgba(255,255,255,0.04)]";
+  "flex-1 rounded-md px-4 py-2.5 transition-all text-ink bg-surface hover:bg-muted/10 border border-muted/30";
 
 const scrollStyles = `
   .qe-scroll::-webkit-scrollbar {
     width: 8px;
   }
   .qe-scroll::-webkit-scrollbar-track {
-    background: var(--surface-900);
+    background: var(--surface);
   }
   .qe-scroll::-webkit-scrollbar-thumb {
-    background: var(--surface-600);
+    background: var(--surface);
     border-radius: 6px;
   }
   .qe-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--surface-500);
+    background: var(--surface);
   }
   .qe-scroll {
     scrollbar-width: thin;
-    scrollbar-color: var(--surface-600) var(--surface-900);
+    scrollbar-color: var(--surface) var(--surface);
   }
 `;
 
@@ -306,7 +300,7 @@ export default function QuestionEditor({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-surface-900 font-body p-3">
+    <div className="flex-1 flex flex-col bg-surface font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -314,13 +308,13 @@ export default function QuestionEditor({
         ${scrollStyles}
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-2xl bg-surface-800 overflow-hidden shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]">
-        <div className="p-3.5 bg-surface-700 flex justify-between items-center">
+      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+        <div className="p-3.5 bg-surface flex justify-between items-center">
           <div>
-            <h2 className="text-sm font-display font-semibold text-ink-200">
+            <h2 className="text-sm font-display font-semibold text-ink">
               Question editor
             </h2>
-            <p className="text-xs text-ink-500 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {quizMetadata
                 ? `Editing questions for: "${quizMetadata.quizTitle}"`
                 : "No quiz selected"}
@@ -467,7 +461,6 @@ export default function QuestionEditor({
                       <button
                         onClick={handleManualSubmit}
                         className={primaryBtnClass}
-                        style={primaryBtnStyle}
                       >
                         {addMode === "edit" ? "Update" : "Done"}
                       </button>
@@ -541,7 +534,6 @@ export default function QuestionEditor({
                       <button
                         onClick={handleManualSubmit}
                         className={primaryBtnClass}
-                        style={primaryBtnStyle}
                       >
                         {addMode === "edit" ? "Update" : "Done"}
                       </button>
@@ -590,7 +582,6 @@ export default function QuestionEditor({
                       <button
                         onClick={handleManualSubmit}
                         className={primaryBtnClass}
-                        style={primaryBtnStyle}
                       >
                         {addMode === "edit" ? "Update" : "Done"}
                       </button>
@@ -621,12 +612,12 @@ export default function QuestionEditor({
             ) : addMode === "generate" ? (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-display font-semibold text-ink-200">
+                  <h2 className="text-xl font-display font-semibold text-ink">
                     Generate questions
                   </h2>
                   <button
                     onClick={() => setAddMode(null)}
-                    className="text-sm text-ink-500 hover:text-ink-200 transition-colors"
+                    className="text-sm text-muted hover:text-ink transition-colors"
                   >
                     ← Back
                   </button>
@@ -707,21 +698,21 @@ export default function QuestionEditor({
                       }
                       className={`${inputClass} text-left flex justify-between items-center`}
                     >
-                      <span className="text-ink-300">
+                      <span className="text-ink">
                         {generateOptions.sources &&
                         generateOptions.sources.length > 0
                           ? `${generateOptions.sources.length} document(s) selected`
                           : "Select documents..."}
                       </span>
-                      <span className="text-ink-500">▼</span>
+                      <span className="text-muted">▼</span>
                     </button>
                     {showSourcesDropdown && (
-                      <div className="absolute top-full left-0 right-0 rounded-xl mt-1 z-10 max-h-48 overflow-y-auto qe-scroll bg-surface-900 shadow-[6px_6px_14px_rgba(0,0,0,0.45),-4px_-4px_10px_rgba(255,255,255,0.03)]">
+                      <div className="absolute top-full left-0 right-0 rounded-md mt-1 z-10 max-h-48 overflow-y-auto qe-scroll bg-surface border border-muted/20">
                         {documents.length > 0 ? (
                           documents.map((doc) => (
                             <label
                               key={doc.id}
-                              className="flex items-center px-3 py-2 hover:bg-surface-700 cursor-pointer"
+                              className="flex items-center px-3 py-2 hover:bg-muted/10 cursor-pointer"
                             >
                               <input
                                 type="checkbox"
@@ -729,15 +720,15 @@ export default function QuestionEditor({
                                   (id) => Number(id) === Number(doc.id),
                                 )}
                                 onChange={() => handleToggleSource(doc.id)}
-                                className="mr-2 w-4 h-4 cursor-pointer accent-brand-400"
+                                className="mr-2 w-4 h-4 cursor-pointer accent-accent"
                               />
-                              <span className="text-ink-300 text-sm">
+                              <span className="text-ink text-sm">
                                 {doc.title}
                               </span>
                             </label>
                           ))
                         ) : (
-                          <div className="px-3 py-2 text-ink-500 text-sm">
+                          <div className="px-3 py-2 text-muted text-sm">
                             No documents available
                           </div>
                         )}
@@ -748,7 +739,6 @@ export default function QuestionEditor({
                 <div className="flex space-x-2 mt-4">
                   <button
                     className={primaryBtnClass}
-                    style={primaryBtnStyle}
                     onClick={handleGenerate}
                     disabled={loading}
                   >
@@ -766,32 +756,32 @@ export default function QuestionEditor({
               <div className="space-y-3 text-sm">
                 <button
                   onClick={() => handleModeSelect("generate")}
-                  className="w-full rounded-2xl p-4 text-left transition-all bg-surface-900 hover:bg-surface-700 shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]"
+                  className="w-full rounded-lg p-4 text-left transition-all bg-surface hover:bg-muted/10 border border-muted/20"
                 >
-                  <div className="text-base font-display font-semibold text-ink-200 flex items-center gap-2">
-                    <span className="text-brand-400">✦</span>
+                  <div className="text-base font-display font-semibold text-ink flex items-center gap-2">
+                    <span className="text-accent">✦</span>
                     Generate
                   </div>
-                  <div className="mt-1 text-ink-400">
+                  <div className="mt-1 text-muted">
                     Use AI to generate questions for you
                   </div>
                 </button>
 
                 <button
                   onClick={() => handleModeSelect("manual")}
-                  className="w-full rounded-2xl p-4 text-left transition-all bg-surface-900 hover:bg-surface-700 shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)]"
+                  className="w-full rounded-lg p-4 text-left transition-all bg-surface hover:bg-muted/10 border border-muted/20"
                 >
-                  <div className="text-base font-display font-semibold text-ink-200">
+                  <div className="text-base font-display font-semibold text-ink">
                     Make your own
                   </div>
-                  <div className="mt-1 text-ink-400">
+                  <div className="mt-1 text-muted">
                     Manually create a custom question
                   </div>
                 </button>
               </div>
             )
           ) : (
-            <div className="text-surface-500 text-sm">
+            <div className="text-canvas text-sm">
               Select a file from the sidebar to start creating questions
             </div>
           )}

@@ -12,20 +12,20 @@ export default function StudentSidebar({
   const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return (
-    <div className="w-80 border-r border-surface-700 bg-surface-900 flex flex-col h-full">
+    <div className="w-80 border-r border-muted/20 bg-surface flex flex-col h-full">
       {/* Header */}
-      <div className="border-b border-surface-700 p-4">
-        <h2 className="text-lg font-semibold text-ink-50">Questions</h2>
-        <p className="text-xs text-ink-400 mt-1">
+      <div className="border-b border-muted/20 p-4">
+        <h2 className="text-lg font-semibold text-ink">Questions</h2>
+        <p className="text-xs text-muted mt-1">
           {answeredCount} of {totalQuestions} answered
         </p>
       </div>
 
       {/* Progress Bar */}
-      <div className="px-4 py-3 border-b border-surface-700">
-        <div className="w-full bg-surface-800 rounded-full h-2">
+      <div className="px-4 py-3 border-b border-muted/20">
+        <div className="w-full bg-surface rounded-full h-2">
           <div 
-            className="bg-brand-500 h-2 rounded-full transition-all duration-300"
+            className="bg-accent h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -45,15 +45,15 @@ export default function StudentSidebar({
                 className={`
                   flex items-center gap-3 p-3 rounded-lg text-sm transition-all text-left
                   ${isSelected 
-                    ? 'bg-brand-500/20 text-brand-400 border border-brand-500/50' 
-                    : 'text-ink-400 hover:bg-surface-800 border border-transparent'}
+                    ? 'bg-accent/20 text-accent border border-accent/50' 
+                    : 'text-muted hover:bg-muted/10 border border-transparent'}
                 `}
               >
                 {/* Status Indicator Circle */}
                 <div className={`
                   w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0
-                  ${isAnswered ? 'bg-green-600 text-ink-50' : 'bg-surface-700 text-ink-400'}
-                  ${isSelected ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-gray-900' : ''}
+                  ${isAnswered ? 'bg-green-600 text-ink' : 'bg-surface text-muted'}
+                  ${isSelected ? 'ring-2 ring-accent ring-offset-2 ring-offset-gray-900' : ''}
                 `}>
                   {index + 1}
                 </div>
@@ -68,9 +68,9 @@ export default function StudentSidebar({
       </div>
 
       {/* Submit Quiz Button */}
-      <div className="border-t border-surface-700 p-4">
+      <div className="border-t border-muted/20 p-4">
         <button 
-          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-ink-50 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-ink rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             const unanswered = totalQuestions - answeredCount;
             if (unanswered > 0) {

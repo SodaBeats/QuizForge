@@ -46,14 +46,14 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-surface-900 bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-surface-800 rounded-lg p-8 w-96 max-w-full mx-4 border border-surface-700">
+    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+      <div className="bg-surface rounded-lg p-8 w-96 max-w-full mx-4 border border-muted/20">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-ink-50 mb-2">
+          <h2 className="text-2xl font-bold text-ink mb-2">
             Enter Quiz Token
           </h2>
-          <p className="text-sm text-ink-400">
+          <p className="text-sm text-muted">
             Enter the 6-character token provided by your instructor
           </p>
         </div>
@@ -68,10 +68,10 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
               onChange={(e) => setToken(e.target.value.toUpperCase())}
               maxLength={6}
               placeholder="XXXXXX"
-              className="w-full px-4 py-3 bg-surface-900 border-2 border-surface-600 rounded-lg text-ink-50 text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand-500 uppercase"
+              className="w-full px-4 py-3 bg-surface border-2 border-muted/20 rounded-lg text-ink text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-accent uppercase"
               autoFocus
             />
-            <p className="text-xs text-ink-500 text-center mt-2">
+            <p className="text-xs text-muted text-center mt-2">
               {token.length}/6 characters
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
           <button
             type="submit"
             disabled={isLoading || token.length !== 6}
-            className="w-full px-4 py-3 bg-brand-500 hover:bg-brand-600 text-ink-50 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-accent text-canvas rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Verifying..." : "Start Attempt"}
           </button>
@@ -89,14 +89,14 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full mt-4 px-4 py-2 bg-transparent border border-surface-600 hover:border-red-500 hover:bg-red-500/10 text-ink-400 hover:text-red-400 rounded-lg transition-colors font-medium"
+          className="w-full mt-4 px-4 py-2 bg-transparent border border-muted/20 hover:border-red-500 hover:bg-red-500/10 text-muted hover:text-red-400 rounded-lg transition-colors font-medium"
         >
           Logout
         </button>
 
         {/* Help Text */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-ink-500">
+          <p className="text-xs text-muted">
             Don't have a token? Contact your instructor
           </p>
         </div>

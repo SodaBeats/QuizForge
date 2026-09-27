@@ -238,7 +238,7 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-surface-900 text-ink-200">
+    <div className="h-screen flex flex-col bg-canvas text-ink">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -250,7 +250,7 @@ export default function QuizzesPage() {
 
       {/* Mobile/tablet panel switcher — only relevant once a quiz is selected, hidden on desktop */}
       {selectedQuizId && (
-        <div className="flex lg:hidden mx-3 mt-3 rounded-2xl bg-surface-800 shadow-[6px_6px_14px_rgba(0,0,0,0.4),-4px_-4px_10px_rgba(255,255,255,0.03)] font-body overflow-hidden">
+        <div className="flex lg:hidden mx-3 mt-3 rounded-lg bg-surface border border-muted/20 font-body overflow-hidden">
           {[
             { key: "list", label: "Quizzes" },
             { key: "details", label: "Details" },
@@ -261,13 +261,13 @@ export default function QuizzesPage() {
               onClick={() => setMobileTab(tab.key)}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
                 mobileTab === tab.key
-                  ? "text-brand-400"
-                  : "text-ink-500 hover:text-ink-300"
+                  ? "text-accent"
+                  : "text-muted hover:text-ink"
               }`}
             >
               {tab.label}
               {mobileTab === tab.key && (
-                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-brand-400" />
+                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
               )}
             </button>
           ))}
@@ -323,7 +323,7 @@ export default function QuizzesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-ink-600 text-sm font-body p-3">
+          <div className="flex-1 flex items-center justify-center text-muted text-sm font-body p-3">
             Select a quiz to view details
           </div>
         )}

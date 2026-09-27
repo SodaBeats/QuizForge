@@ -1,22 +1,23 @@
 import colors from "./src/theme/colors.js";
 
 /**
- * Emits the palette from src/theme/colors.js as :root CSS variables so
+ * Emits the flat palette from src/theme/colors.js as :root CSS variables so
  * plain CSS files (Login.css, StudentTokenPage.css, ...) and inline styles
  * share the same single source of truth:
- *   --surface-900: #26211c;         (the color)
- *   --surface-900-rgb: 38 33 28;    (channels, for rgb(var(--x-rgb) / a))
+ *   --surface: #26211c;             (the color)
+ *   --surface-rgb: 38 33 28;        (channels, for rgb(var(--surface-rgb) / a))
+ *
+ * The `muted` token doubles as the hairline border color, so it is meant to be
+ * used with an alpha modifier (border-muted/20, bg-muted/10).
  */
 function colorVarsPlugin({ addBase }) {
   const vars = {};
-  for (const [group, shades] of Object.entries(colors)) {
-    for (const [shade, value] of Object.entries(shades)) {
-      vars[`--${group}-${shade}`] = value;
-      const r = parseInt(value.slice(1, 3), 16);
-      const g = parseInt(value.slice(3, 5), 16);
-      const b = parseInt(value.slice(5, 7), 16);
-      vars[`--${group}-${shade}-rgb`] = `${r} ${g} ${b}`;
-    }
+  for (const [name, value] of Object.entries(colors)) {
+    vars[`--${name}`] = value;
+    const r = parseInt(value.slice(1, 3), 16);
+    const g = parseInt(value.slice(3, 5), 16);
+    const b = parseInt(value.slice(5, 7), 16);
+    vars[`--${name}-rgb`] = `${r} ${g} ${b}`;
   }
   addBase({ ":root": vars });
 }
@@ -30,15 +31,10 @@ export default {
   theme: {
     extend: {
       colors,
-      animation: {
-        'sheen': 'sheen 3s ease-in-out infinite',
+      fontFamily: {
+        display: ["Baloo 2", "sans-serif"],
+        body: ["Inter", "sans-serif"],
       },
-      keyframes: {
-        sheen: {
-          '0%': { transform: 'translateX(-100%) translateY(100%) rotate(45deg)' },
-          '100%': { transform: 'translateX(100%) translateY(-100%) rotate(45deg)' },
-        }
-      }
     },
   },
   plugins: [colorVarsPlugin],
