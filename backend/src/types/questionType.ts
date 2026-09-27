@@ -4,11 +4,11 @@ export type Question = {
   questionText: string;
   questionType: QuestionType;
   timeLimit: number; // in seconds
-  correctAnswer: string | null;
-  optionA: string | null;
-  optionB: string | null;
-  optionC: string | null;
-  optionD: string | null;
+  correctAnswer?: string | null;
+  optionA?: string | null;
+  optionB?: string | null;
+  optionC?: string | null;
+  optionD?: string | null;
 };
 
 export enum QuestionType {

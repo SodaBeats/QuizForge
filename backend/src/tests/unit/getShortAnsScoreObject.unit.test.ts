@@ -1,18 +1,19 @@
 import { parseShortAnswerScores } from '../../services/getShortAnsScoreObject.service.js';
 import type { ScoreableQuestion } from '../../services/getShortAnsScoreObject.service.js';
+import { QuestionType } from '../../types/questionType.js';
 
 describe('parseShortAnswerScores', () => {
   const questions: ScoreableQuestion[] = [
     {
       id: 11,
       correctAnswer: 'foo',
-      questionType: 'short-answer',
+      questionType: QuestionType.ShortAnswer,
       questionText: 'Q1',
     },
     {
       id: 12,
       correctAnswer: 'bar',
-      questionType: 'short-answer',
+      questionType: QuestionType.ShortAnswer,
       questionText: 'Q2',
     },
   ];
@@ -43,7 +44,7 @@ describe('parseShortAnswerScores', () => {
   it('rejects missing question IDs', () => {
     const rawParsed = [{ questionId: '11', score: 8, remarks: 'Good answer.' }];
     expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
-      /invalid question IDs/i,
+      /invalid (or duplicate )?question IDs/i,
     );
   });
 
@@ -54,7 +55,7 @@ describe('parseShortAnswerScores', () => {
       { questionId: '13', score: 7, remarks: 'Unexpected question.' },
     ];
     expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
-      /invalid question IDs/i,
+      /invalid (or duplicate )?question IDs/i,
     );
   });
 

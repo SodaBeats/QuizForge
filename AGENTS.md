@@ -39,14 +39,9 @@ Frontend (`frontend/`):
   - `student2@test.com` / `Student2Pass2!`
   - Shared helpers (`loginAs`, `authHeader`, `*_CREDS`) live in `src/tests/integration/setup/testHelpers.ts`.
 
-## Baseline at HEAD (verified 2026-09-26)
+## Baseline at HEAD (verified 2026-09-27)
 
-Everything below fails **before** any new change — re-verify your own baseline instead of assuming you broke it:
-
-- Frontend `npm run build` fails: `src/App.jsx` imports flat `./pages/<Name>`, but pages were moved into `src/pages/teacher/` and `src/pages/student/` — those imports need rewriting.
-- Frontend `npm run lint` fails: unused `onClose` in `src/components/student/StudentTokenInput.jsx`.
-- Backend `npx tsc --noEmit` fails: 8 errors — 6 implicit-any in `src/services/summaryRemarks.service.ts`, 2 in `src/tests/unit/getShortAnsScoreObject.unit.test.ts`.
-- Backend `npm test`: 2 failures in `getShortAnsScoreObject.unit.test.ts` (assertions expect `/invalid question IDs/i`; the thrown message now reads "invalid or duplicate question IDs").
+No known fails — frontend `npm run build` and `npm run lint`, backend `npx tsc --noEmit` and `npm test` (unit suite) all pass at HEAD. Re-verify your own baseline instead of assuming you broke it: if any of these fail before you change something, that's new information — update this section.
 
 ## CI
 
@@ -58,3 +53,11 @@ Everything below fails **before** any new change — re-verify your own baseline
 - Colors: use tokens from `src/theme/colors.js` (Tailwind classes like `bg-surface-900`, `text-brand-500`, or `:root` CSS vars / `colors.*` for inline styles) instead of raw hex — a recent refactor centralized the palette.
 - `docs/past-changes/frontend-refactor-notes.md` is a copy of the pre-refactor AGENTS.md: its flat `pages/`/`components/` layout, `reference.jsx`, and "no subfolders" notes are outdated (both `pages/` and `components/` now have `teacher/` + `student/` subfolders; `reference.jsx` was deleted).
 - Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.
+
+## Known Gotchas (read before touching these areas)
+
+- TanStack Query: `cacheTime` is dead — it's `gcTime` now. `staleTime: Infinity` + `refetchOnMount: false` can permanently cache a bad transient state.
+- Drizzle: `pgTable`'s third argument must be an array, not an object (old object-callback form is deprecated). `primaryKey()` requires a `name` property.
+- SQL: plain INNER JOINs silently drop zero-attempt records — use LEFT JOIN where absence is meaningful.
+- Backend: `db.ts` needs a `pool.on('error')` listener or Neon's serverless pool idle-timeout crashes the process.
+- Git: prefer `git switch` / `git restore` over `git checkout`. `gh pr checkout <PR-number>` works from any branch.

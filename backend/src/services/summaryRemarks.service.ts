@@ -1,17 +1,44 @@
 import { getGroqClient } from './getShortAnsScoreObject.service.js';
 import type { Question } from '../types/questionType.js';
 
+type formattedAttemptAnswer = {
+  quiz_id: number;
+  attempt_id: number;
+  user_id: number;
+  question_id: number;
+  chosen_answer?: string | null;
+  correct_answer: string | null;
+  is_correct: boolean;
+  points: number;
+};
+
+type formattedShortAnsAttemptAnswer = {
+  quiz_id: number;
+  attempt_id: number;
+  user_id: number;
+  question_id: number;
+  chosen_answer?: string | null;
+  correct_answer?: string | null;
+  is_correct: boolean;
+  remarks?: string | null;
+  points: number;
+};
+
 export const getSummaryRemarks = async ({
   formattedAttemptAnswers,
   formattedShortAnsAttemptAnswers,
   normalQuestions,
   shortAnsQuestions,
+}: {
+  formattedAttemptAnswers: formattedAttemptAnswer[];
+  formattedShortAnsAttemptAnswers: formattedShortAnsAttemptAnswer[];
+  normalQuestions: Question[];
+  shortAnsQuestions: Question[];
 }) => {
   const normSummary = normalQuestions.map((q: Question) => {
     const matchingAnswer = formattedAttemptAnswers.find(
       (ans) => ans.question_id === q.id,
     );
-
     const correctOptionKey =
       `option${q.correctAnswer?.toUpperCase()}` as keyof Question;
     const correctAnswerText = q[correctOptionKey];
@@ -83,7 +110,6 @@ export const getSummaryRemarks = async ({
       },
     ],
   });
-  //console.log(response);
 
   if (!response?.choices?.[0]?.message?.content) {
     throw new Error('Failed to get response from Groq API');
