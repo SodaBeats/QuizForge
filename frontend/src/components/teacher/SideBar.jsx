@@ -485,14 +485,14 @@ function SideBar({
       <div className="w-full lg:w-52 bg-surface flex flex-col font-body p-3 gap-3">
         {/* File List - 30% */}
         <div className="h-[30%] rounded-lg bg-surface p-4 overflow-y-auto border border-muted/20">
-          <div className="flex flex-row items-center justify-between mb-3">
-            <div className="text-xs font-semibold text-muted uppercase tracking-wide">
+          <div className="flex flex-row items-center justify-between mb-3 pb-2 border-b border-muted/20">
+            <div className="text-xs font-semibold text-ink uppercase tracking-wide">
               Files
             </div>
             <button
               onClick={openFileModal}
               title="Add file"
-              className="w-6 h-6 flex items-center justify-center rounded-lg text-canvas font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-canvas bg-accent font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
             >
               +
             </button>
@@ -530,14 +530,14 @@ function SideBar({
                 </div>
               ))
             ) : (
-              <div className="text-canvas text-sm">No file uploaded</div>
+              <div className="text-muted text-sm">No file uploaded</div>
             )}
           </div>
         </div>
 
         {/* Current Quiz - Small Section */}
         <div className="rounded-lg p-3 bg-surface border border-muted/20">
-          <div className="text-xs font-semibold text-muted mb-3 uppercase tracking-wide">
+          <div className="text-xs font-semibold text-ink mb-3 uppercase tracking-wide border-b border-muted/20">
             Current quiz
           </div>
           {currentQuiz ? (
@@ -566,8 +566,8 @@ function SideBar({
 
         {/* Question List - 70% */}
         <div className="flex-1 rounded-lg p-4 overflow-y-auto bg-surface border border-muted/20">
-          <div className="flex flex-row items-center justify-between mb-2">
-            <div className="text-xs font-semibold text-muted uppercase tracking-wide">
+          <div className="flex flex-row items-center justify-between mb-2 border-b border-muted/20">
+            <div className="mb-3 text-xs font-semibold text-ink uppercase tracking-wide">
               Questions
             </div>
           </div>
@@ -609,7 +609,7 @@ function SideBar({
               </div>
             ) : (
               <div className="space-y-1">
-                <div className="text-canvas text-sm">No questions</div>
+                <div className="text-muted text-sm">No questions</div>
               </div>
             )}
           </div>

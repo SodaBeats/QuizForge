@@ -56,7 +56,7 @@ export default function QuizzesSidebar({
 
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
         {/* Header */}
-        <div className="p-4 bg-surface">
+        <div className="p-4 bg-surface border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-ink">
             Quizzes
           </h2>

@@ -500,7 +500,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
   // -------------------------------------------------------------------------------------
 
   return (
-    <div className="mx-4 mt-4 px-5 py-3 flex items-center justify-between rounded-lg bg-surface border border-muted/20">
+    <div className="px-5 py-3 flex items-center justify-between bg-surface border border-muted/20">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -515,8 +515,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
         <div
           className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
           style={{
-            background:
-              "var(--accent)",
+            background: "var(--accent)",
           }}
         >
           Q
@@ -530,10 +529,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
       <div className="flex items-center gap-3 font-body">
         {/* Forge Quiz Button */}
         {showFileButton && (
-          <button
-            className={primaryBtnClass}
-            onClick={openForgeQuizModal}
-          >
+          <button className={primaryBtnClass} onClick={openForgeQuizModal}>
             Forge quiz
           </button>
         )}
@@ -558,8 +554,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all"
             style={{
-              background:
-                "var(--accent)",
+              background: "var(--accent)",
             }}
           >
             <span className="text-canvas text-xs font-display font-bold">

@@ -196,7 +196,7 @@ const QuestionList = ({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
-        <div className="p-4 bg-surface">
+        <div className="p-4 bg-surface border-b border-muted/20">
           <h3 className="text-base font-display font-semibold text-ink">
             Questions
           </h3>

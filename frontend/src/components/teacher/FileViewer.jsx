@@ -92,10 +92,9 @@ export default function FileViewer({ selectedFile }) {
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
-        ${scrollStyles}
       `}</style>
       <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-surface overflow-hidden border border-muted/20">
-        <div className="p-3.5 bg-surface">
+        <div className="p-3.5 bg-surface border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-ink">
             {selectedFile ? selectedFile.name : "File viewer"}
           </h2>
@@ -110,9 +109,7 @@ export default function FileViewer({ selectedFile }) {
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <NoFileIcon />
-                <p className="text-muted text-sm font-mono">
-                  No file selected
-                </p>
+                <p className="text-muted text-sm font-mono">No file selected</p>
               </div>
             </div>
           )}

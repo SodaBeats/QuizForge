@@ -155,7 +155,7 @@ export default function QuizzesMetadata({
 
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
         {/* Header */}
-        <div className="p-4 bg-surface">
+        <div className="p-4 bg-surface border-b border-muted/20">
           <input
             type="text"
             name="quizTitle"

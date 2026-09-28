@@ -309,7 +309,7 @@ export default function QuestionEditor({
       `}</style>
 
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
-        <div className="p-3.5 bg-surface flex justify-between items-center">
+        <div className="p-3.5 bg-surface flex justify-between items-center border-b border-muted/20">
           <div>
             <h2 className="text-sm font-display font-semibold text-ink">
               Question editor
@@ -781,7 +781,7 @@ export default function QuestionEditor({
               </div>
             )
           ) : (
-            <div className="text-canvas text-sm">
+            <div className="text-muted text-sm">
               Select a file from the sidebar to start creating questions
             </div>
           )}
