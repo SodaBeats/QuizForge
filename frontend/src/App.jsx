@@ -1,0 +1,93 @@
+import React from "react";
+import { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { AuthContext } from "./components/AuthProvider";
+import QuizMakerSkeleton from "./pages/teacher/QuizMakerPage";
+import LogInComponent from "./pages/Login";
+import QuizzesPage from "./pages/teacher/QuizzesPage";
+import StudentTokenPage from "./pages/student/StudentTokenPage";
+import StudentQuizPage from "./pages/student/StudentQuizPage";
+import RootRedirector from "./components/RootRedirector";
+import QuizResultDashboard from "./pages/teacher/QuizResultDashboard";
+import ClassesPage from "./pages/teacher/ClassesPage";
+import ErrorPage from "./pages/ErrorPage";
+
+function ProtectedRoute({ children }) {
+  const { token, userInfo } = useContext(AuthContext);
+  if (token && userInfo?.role === "teacher") {
+    return children;
+  } else {
+    return <Navigate to="/login" />;
+  }
+}
+function StudentRoute({ children }) {
+  const { token, userInfo } = useContext(AuthContext);
+  if (token && userInfo?.role === "student") {
+    return children;
+  } else {
+    return <Navigate to="/login" />;
+  }
+}
+
+export default function App() {
+  return (
+    <>
+      <Toaster position="top-center" />
+      <Routes>
+        <Route path="/" element={<RootRedirector />} />
+
+        <Route
+          path="/teacher"
+          element={
+            <ProtectedRoute>
+              <QuizMakerSkeleton />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/quizzes"
+          element={
+            <ProtectedRoute>
+              <QuizzesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/quizzes/:quizId"
+          element={
+            <ProtectedRoute>
+              <QuizResultDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/classes"
+          element={
+            <ProtectedRoute>
+              <ClassesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student"
+          element={
+            <StudentRoute>
+              <StudentTokenPage />
+            </StudentRoute>
+          }
+        />
+        <Route
+          path="/student/quiz/:quizToken"
+          element={
+            <StudentRoute>
+              <StudentQuizPage />
+            </StudentRoute>
+          }
+        />
+        <Route path="/login" element={<LogInComponent />} />
+        <Route path="/error" element={<ErrorPage />} />
+      </Routes>
+    </>
+  );
+}

@@ -76,11 +76,6 @@ router.patch(
       }
     }
 
-    console.log(
-      'SHORT ANSWER QUESTION SCORE OBJECT: ',
-      shortAnsQuestionsScoreObject,
-    );
-
     // get total score for 'short-answer' questions
     const shortAnsQuestionsRawScore = Object.values(
       shortAnsQuestionsScoreObject.scores,
@@ -145,14 +140,6 @@ router.patch(
         error.message || error,
       );
     }
-    /*console.log('[NORMAL QUESTIONS]: ', normalQuestions);
-    console.log('[SHORT ANS QUESTIONS]: ', shortAnsQuestions);
-    console.log('[FORMATTED ATTEMPT ANSWERS]: ', formattedAttemptAnswers);
-    console.log(
-      '[FORMATTED SHORT ANS ATTEMPT ANSWERS]: ',
-      formattedShortAnsAttemptAnswers,
-    );*/
-    console.log(attemptRemarks);
 
     const formattedData = {
       score: percentileScore,

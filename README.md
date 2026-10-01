@@ -1,14 +1,26 @@
 # QuizForge: AI-Driven Quiz Generation and Assessment Platform
 
-> Creating exams, grading open-ended responses, and tracking student analytics manually is time-consuming and tedious. QuizForge eliminates this administrative bottleneck by leveraging AI to automatically generate quizzes from uploaded documents, grade complex written answers, and track student performance with tailored learning recommendations.
+> Creating exams, grading open-ended responses, and tracking student analytics manually is time-consuming and tedious. QuizForge eliminates this administrative bottleneck by leveraging AI to automatically generate questions from uploaded documents, grade complex written answers, and track student performance with tailored learning recommendations.
 
 ---
 
 ## Features
 
-- **Document Ingestion & RAG Pipeline:** Uses uploaded documents as a context-aware knowledge base for question generation, ensuring accurate context and mitigating AI hallucinations.
-- **Automated Grading & Learning Recommendations:** Automatically evaluates student attempts through an AI grading pipeline. Synthesizes attempt summaries to identify student strengths, areas for improvement, and actionable study recommendations.
-- **Quiz Result Dashboard:** Displays individual and class ranking, identifies questions with highest/lowest correctenss rate, and visualize overall attempt score distribution.
+### Teacher Features
+
+- Upload documents and ingested by embedding pipeline to be used for RAG.
+- Quickly make quizzes/exams by providing metadata before generating questions, such as which documents to use as sources for the AI question generation using RAG (Optionally, able to generate questions without sources).
+- Quickly generate questions based on the given topic.
+- Able to limit exam access to certain groups/class.
+- `QuizResultDashboard` provides a dashboard for viewing quiz-wide result.
+- Automatic grading of student attempts with AI-driven assessment of open-ended question types (short-answer or essay).
+- Automatic AI-driven comments about questions that the student got wrong.
+- AI generates a summary of student's attempt performance such as strenghts and weaknesses, and recommends actionable learning paths based on inferred data.
+
+### Student Features
+
+- Access teacher exams using exam's designated token.
+- Behavioral safeguards such as anti-copy-paste measure, per-question timer, and navigation prevention to encourage honest exam attempts.
 
 ---
 
@@ -20,7 +32,7 @@
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript, Tailwind CSS, Tanstack Query
+- **Frontend:** React, Tailwind CSS, Tanstack Query
 - **Backend:** Node.js, Express, PostgreSQL, Drizzle ORM
 - **Database:** Neon Postgres (with `pgvector` extension)
 - **Testing & CI:** Jest, GitHub Actions, Docker

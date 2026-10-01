@@ -1,0 +1,5 @@
+/* Tailwind entrypoint. The palette lives in src/theme/colors.js
+   (canvas / surface / ink / muted / accent) — see tailwind.config.js. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
