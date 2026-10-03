@@ -14,13 +14,13 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared flat styling tokens - cosmetic only, referenced by className below
 const wellInputClass =
-  "bg-surface rounded-md px-3 py-2 text-sm text-ink placeholder-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
+  "bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
 const modalPanelClass =
-  "bg-surface rounded-lg w-[420px] max-w-full relative font-body border border-muted/20";
+  "bg-canvas rounded-lg w-[420px] max-w-full relative font-body border border-accent";
 const primaryBtnClass =
-  "px-4 py-2 text-sm bg-accent text-canvas font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "px-4 py-2 text-sm bg-accept text-inkondark hover:bg-green-600 font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
-  "px-4 py-2 text-sm text-ink rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface hover:bg-muted/10 border border-muted/30";
+  "px-4 py-2 text-sm text-inkondark rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface hover:bg-muted/20 border border-muted/30";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -64,12 +64,12 @@ function CreateClassModal({
       <div className={modalPanelClass}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
-          <h2 className="text-sm font-display font-semibold text-ink">
+          <h2 className="text-sm font-display font-semibold text-inkondark">
             Create a new class
           </h2>
           <button
             onClick={onClose}
-            className="text-muted hover:text-ink text-xl leading-none border-none"
+            className="text-red-500 hover:text-red-700 text-xl leading-none border-none"
           >
             ×
           </button>
@@ -78,9 +78,7 @@ function CreateClassModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">
-              Class name
-            </label>
+            <label className="text-xs font-medium text-muted">Class name</label>
             <input
               name="className"
               value={form.className}
@@ -126,7 +124,7 @@ function CreateClassModal({
         <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-ink">Creating...</div>
+            <div className="text-sm text-muted">Creating...</div>
           </div>
         </div>
       )}
@@ -234,12 +232,12 @@ function AddStudentModal({
       <div className={modalPanelClass}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
-          <h2 className="text-sm font-display font-semibold text-ink truncate pr-2">
+          <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
             Add student to {selectedClass?.name}
           </h2>
           <button
             onClick={onClose}
-            className="text-muted hover:text-ink text-xl leading-none border-none flex-shrink-0"
+            className="text-red-500 hover:text-red-700 text-xl leading-none border-none flex-shrink-0"
           >
             ×
           </button>
@@ -301,7 +299,7 @@ function AddStudentModal({
         <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-ink">Adding...</div>
+            <div className="text-sm text-muted">Adding...</div>
           </div>
         </div>
       )}
@@ -494,7 +492,7 @@ export default function ClassesPage() {
     return <Navigate to="/error" replace />;
   }
   return (
-    <div className="h-screen flex flex-col bg-canvas text-ink">
+    <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -516,7 +514,7 @@ export default function ClassesPage() {
               className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
                 mobileTab === tab.key
                   ? "text-accent"
-                  : "text-muted hover:text-ink"
+                  : "text-muted hover:text-inkondark"
               }`}
             >
               {tab.label}
@@ -556,11 +554,11 @@ export default function ClassesPage() {
           } flex-1 flex-col overflow-hidden font-body p-3`}
         >
           {selectedClass ? (
-            <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+            <div className="flex-1 flex flex-col rounded-lg bg-tealgray overflow-hidden border border-accent">
               {/* Panel header */}
-              <div className="px-4 sm:px-6 py-4 bg-surface flex items-center justify-between gap-3">
+              <div className="px-4 sm:px-6 py-4 bg-blackblue flex items-center justify-between gap-3 border-b border-muted/20">
                 <div className="min-w-0">
-                  <h2 className="text-base font-display font-semibold text-ink truncate">
+                  <h2 className="text-base font-display font-semibold text-inkondark truncate">
                     {selectedClass.name}
                   </h2>
                   <p className="text-xs text-muted truncate">
@@ -569,7 +567,7 @@ export default function ClassesPage() {
                 </div>
                 <span className="flex-shrink-0">
                   <button
-                    className="text-xs font-display font-bold bg-accent text-canvas px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+                    className="text-xs font-display font-bold bg-accept text-inkondark hover:bg-green-600 px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
                     onClick={() => setShowAddStudentModal(true)}
                   >
                     Add student
@@ -582,7 +580,7 @@ export default function ClassesPage() {
                 {selectedClass.students?.map((student) => (
                   <div
                     key={student?.id}
-                    className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-surface hover:bg-muted/10 border border-muted/20"
+                    className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
                   >
                     <div
                       onClick={() => setSelectedStudent(student)}
@@ -592,7 +590,7 @@ export default function ClassesPage() {
                         {getInitials(student?.name)}
                       </div>
                       <div className="overflow-hidden">
-                        <div className="text-sm text-ink font-medium truncate">
+                        <div className="text-sm text-inkondark font-medium truncate">
                           {student?.name}
                         </div>
                         <div className="text-xs text-muted truncate">
@@ -642,7 +640,7 @@ export default function ClassesPage() {
               )}
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-surface text-muted gap-2 border border-muted/20">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray text-muted gap-2 border border-accent">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>

@@ -27,10 +27,10 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
       `}</style>
       <div
         ref={studentCardRef}
-        className="bg-surface rounded-lg max-w-xl w-full overflow-hidden border border-muted/20 font-body"
+        className="bg-canvas rounded-lg max-w-xl w-full overflow-hidden border border-accent font-body"
       >
         <div className="flex items-center justify-between px-6 py-5 bg-surface">
-          <h2 className="text-lg font-display font-semibold text-ink">
+          <h2 className="text-lg font-display font-semibold text-inkondark">
             Student info
           </h2>
         </div>
@@ -46,16 +46,14 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
               {getInitials(student.name)}
             </div>
             <div className="min-w-0">
-              <div className="text-lg font-display font-semibold text-ink truncate">
+              <div className="text-lg font-display font-semibold text-inkondark truncate">
                 {student.name}
               </div>
-              <div className="text-sm text-muted truncate">
-                {student.email}
-              </div>
+              <div className="text-sm text-muted truncate">{student.email}</div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-surface p-4 border border-muted/30">
+          <div className="rounded-lg bg-darkslate p-4 border border-muted/30">
             <div className="text-xs uppercase tracking-[0.2em] text-muted">
               Classes
             </div>
@@ -64,7 +62,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
                 studentClasses.map((classItem) => (
                   <div
                     key={classItem.id}
-                    className="rounded-md bg-surface px-3 py-2 text-sm text-ink border border-muted/20"
+                    className="rounded-md bg-surface px-3 py-2 text-sm text-inkondark border border-muted/20"
                   >
                     {classItem.name}
                   </div>
@@ -79,7 +77,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
         <div className="flex justify-end gap-3 px-6 py-4 bg-surface">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-md text-sm font-medium text-ink hover:text-ink transition-all bg-surface hover:bg-muted/10 border border-muted/20"
+            className="px-4 py-2 rounded-md text-sm font-medium text-inkondark transition-all bg-surface hover:bg-muted/20 border border-muted/30"
           >
             Close
           </button>

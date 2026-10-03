@@ -39,13 +39,13 @@ function difficultyTextClass(pct) {
 function MetricCard({ label, value, sub }) {
   return (
     <div
-      className={`flex-1 min-w-[45%] sm:min-w-0 bg-surface rounded-lg p-3 sm:p-4 flex flex-col justify-between font-body border border-muted/20`}
+      className={`flex-1 min-w-[45%] sm:min-w-0 bg-tealgray rounded-lg p-3 sm:p-4 flex flex-col justify-between font-body border border-accent`}
     >
       <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
         {label}
       </p>
       <div>
-        <p className="text-2xl sm:text-3xl font-display font-bold text-ink leading-none mb-1">
+        <p className="text-2xl sm:text-3xl font-display font-bold text-inkondark leading-none mb-1">
           {value}
         </p>
         <p className="text-xs text-muted truncate">{sub}</p>
@@ -61,7 +61,7 @@ function DifficultyRow({ label, pct }) {
         {label}
       </span>
 
-      <div className="flex-1 h-2 bg-surface rounded-full overflow-hidden ">
+      <div className="flex-1 h-2 bg-darkslate rounded-full overflow-hidden ">
         <div
           className={`h-full rounded-full transition-all duration-500 ${difficultyBarClass(pct)}`}
           style={{ width: `${pct}%` }}
@@ -79,12 +79,12 @@ function DifficultyRow({ label, pct }) {
 
 function ReviewRow({ rank, label, pct }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-md bg-surface border border-muted/20 font-body">
+    <div className="flex items-center gap-3 p-3 rounded-md bg-darkslate border border-muted/20 font-body">
       <span className="w-6 h-6 rounded-full bg-red-900/50 text-red-300 text-xs font-bold flex items-center justify-center flex-shrink-0">
         {rank}
       </span>
 
-      <span className="flex-1 text-sm text-ink truncate">{label}</span>
+      <span className="flex-1 text-sm text-inkondark truncate">{label}</span>
 
       <span className="text-xs font-semibold text-red-400 flex-shrink-0">
         {pct}% correct
@@ -188,9 +188,9 @@ export default function ResultsMainPanel({
       {/* ── Row 2: Bottom panels — stacks on mobile/tablet, side-by-side on lg+ ── */}
       <div className="flex flex-col lg:flex-row gap-4 min-h-0 h-auto lg:h-[70%]">
         {/* Score distribution */}
-        <div className="w-full h-[300px] lg:h-auto lg:flex-1 min-w-0 bg-surface rounded-lg border border-muted/20 flex flex-col">
-          <div className="px-4 py-3 bg-surface flex-shrink-0 rounded-t-lg">
-            <h2 className="text-sm font-display font-semibold text-ink">
+        <div className="w-full h-[300px] lg:h-auto lg:flex-1 min-w-0 bg-tealgray rounded-lg border border-accent flex flex-col">
+          <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+            <h2 className="text-sm font-display font-semibold text-inkondark">
               Score distribution
             </h2>
             <p className="text-xs text-muted mt-0.5">
@@ -198,7 +198,7 @@ export default function ResultsMainPanel({
             </p>
           </div>
           <div className="flex-1 flex items-center justify-center p-4">
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full bg-darkslate rounded-md">
               <BarGraph data={SCORES} />
             </div>
           </div>
@@ -206,9 +206,9 @@ export default function ResultsMainPanel({
 
         {/* Right column: difficulty + needs review stacked */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
-          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-muted/20 flex flex-col">
-            <div className="px-4 py-3 bg-surface flex-shrink-0 rounded-t-lg">
-              <h2 className="text-sm font-display font-semibold text-ink">
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-tealgray rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+              <h2 className="text-sm font-display font-semibold text-inkondark">
                 Question difficulty
               </h2>
               <p className="text-xs text-muted mt-0.5">
@@ -230,9 +230,9 @@ export default function ResultsMainPanel({
             )}
           </div>
 
-          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-muted/20 flex flex-col">
-            <div className="px-4 py-3 bg-surface flex-shrink-0 rounded-t-lg">
-              <h2 className="text-sm font-display font-semibold text-ink">
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-tealgray rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+              <h2 className="text-sm font-display font-semibold text-inkondark">
                 Questions needing review
               </h2>
               <p className="text-xs text-muted mt-0.5">

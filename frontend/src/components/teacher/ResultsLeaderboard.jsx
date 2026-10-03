@@ -18,7 +18,7 @@ function getInitials(name) {
 // Flat palette: two neutral tints, assigned deterministically from the id so
 // each student always gets the same treatment without storing it.
 const AVATAR_COLORS = [
-  { bg: "bg-muted/20", text: "text-ink" },
+  { bg: "bg-muted/20", text: "text-inkondark" },
   { bg: "bg-accent/15", text: "text-accent" },
 ];
 
@@ -30,7 +30,7 @@ function avatarColor(id) {
 // Medal colors for the top 3 ranks
 function rankStyle(rank) {
   if (rank === 1) return "text-accent font-bold";
-  if (rank === 2) return "text-ink font-bold";
+  if (rank === 2) return "text-inkondark font-bold";
   if (rank === 3) return "text-muted font-bold";
   return "text-muted font-medium";
 }
@@ -64,7 +64,7 @@ function StudentRow({ student, rank }) {
       </div>
 
       {/* Name */}
-      <span className="flex-1 text-sm text-ink truncate">
+      <span className="flex-1 text-sm text-inkondark truncate">
         {student.name}
       </span>
 
@@ -90,7 +90,7 @@ function ClassRow({ cls, rank, maxAverage }) {
         <span className={`w-5 text-center text-sm ${rankStyle(rank)}`}>
           {rank}
         </span>
-        <span className="flex-1 text-sm text-ink truncate">
+        <span className="flex-1 text-sm text-inkondark truncate">
           {cls.classname}
         </span>
         <span
@@ -102,7 +102,7 @@ function ClassRow({ cls, rank, maxAverage }) {
 
       {/* Progress bar */}
       <div className="ml-8 flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-surface rounded-full overflow-hidden ">
+        <div className="flex-1 h-1.5 bg-blackblue rounded-full overflow-hidden ">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -134,10 +134,10 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
       `}</style>
 
       {/* ── Top half: Student ranking ─────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-surface overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-darkteal overflow-hidden border border-muted/20">
         {/* Header */}
-        <div className="px-4 py-3 bg-surface flex items-center justify-between flex-shrink-0">
-          <h2 className="text-sm font-display font-semibold text-ink tracking-wide">
+        <div className="px-4 py-3 bg-darkteal flex items-center justify-between flex-shrink-0 border-b border-muted/20">
+          <h2 className="text-sm font-display font-semibold text-inkondark tracking-wide">
             Student ranking
           </h2>
           <span className="text-xs text-muted">
@@ -150,7 +150,7 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
           {!STUDENTS || !Array.isArray(STUDENTS) || STUDENTS.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
               <svg
-                className="w-16 h-16 text-canvas mb-4"
+                className="w-16 h-16 text-muted mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -179,15 +179,13 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
       </div>
 
       {/* ── Bottom half: Class ranking ────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-surface overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-darkteal overflow-hidden border border-muted/20">
         {/* Header */}
-        <div className="px-4 py-3 bg-surface flex items-center justify-between flex-shrink-0">
-          <h2 className="text-sm font-display font-semibold text-ink tracking-wide">
+        <div className="px-4 py-3 bg-darkteal flex items-center justify-between flex-shrink-0 border-b border-muted/20">
+          <h2 className="text-sm font-display font-semibold text-inkondark tracking-wide">
             Class ranking
           </h2>
-          <span className="text-xs text-muted">
-            {classes?.length} sections
-          </span>
+          <span className="text-xs text-muted">{classes?.length} sections</span>
         </div>
 
         {/* List — no scroll needed for a small number of classes */}

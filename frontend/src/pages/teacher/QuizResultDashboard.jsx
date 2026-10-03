@@ -231,7 +231,7 @@ export default function QuizResultDashboard() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-ink">
+    <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', sans-serif; }
@@ -252,7 +252,7 @@ export default function QuizResultDashboard() {
             className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
               mobileTab === tab.key
                 ? "text-accent"
-                : "text-muted hover:text-ink"
+                : "text-muted hover:text-inkondark"
             }`}
           >
             {tab.label}

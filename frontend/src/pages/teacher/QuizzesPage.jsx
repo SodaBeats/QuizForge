@@ -238,7 +238,7 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-ink">
+    <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -262,7 +262,7 @@ export default function QuizzesPage() {
               className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
                 mobileTab === tab.key
                   ? "text-accent"
-                  : "text-muted hover:text-ink"
+                  : "text-muted hover:text-inkondark"
               }`}
             >
               {tab.label}
@@ -323,7 +323,7 @@ export default function QuizzesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted text-sm font-body p-3">
+          <div className="flex-1 min-w-0 flex items-center justify-center text-muted text-sm font-body p-3">
             Select a quiz to view details
           </div>
         )}

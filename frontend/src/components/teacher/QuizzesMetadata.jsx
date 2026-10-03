@@ -57,7 +57,7 @@ function ClassAccessDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full bg-surface rounded-md p-2.5 text-sm text-ink text-left flex items-center justify-between border border-muted/30 hover:bg-muted/10 transition-all font-body"
+        className="w-full bg-darkslate rounded-md p-2.5 text-sm text-muted text-left flex items-center justify-between border border-muted/30 hover:bg-muted/10 transition-all font-body"
       >
         <span className="truncate">{displayText}</span>
         <svg
@@ -78,7 +78,7 @@ function ClassAccessDropdown({
       </button>
       {isDropdownOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-muted/20 rounded-md z-20 max-h-48 overflow-y-auto">
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-muted/10 cursor-pointer border-b border-muted/20">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20">
             <input
               type="checkbox"
               checked={editingQuiz?.classIds?.length === 0}
@@ -97,7 +97,7 @@ function ClassAccessDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-muted/10 cursor-pointer border-b border-muted/20 last:border-b-0"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20 last:border-b-0"
               >
                 <input
                   type="checkbox"
@@ -118,12 +118,12 @@ function ClassAccessDropdown({
 }
 
 const inputClass =
-  "w-full bg-surface rounded-md p-2.5 text-sm text-ink placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
-const labelClass = "text-sm font-semibold text-muted block mb-2 font-body";
+  "w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
+const labelClass = "text-sm font-semibold text-inkondark block mb-2 font-body";
 const primaryBtnClass =
-  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm bg-accent text-canvas hover:-translate-y-0.5 active:translate-y-0.5";
+  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm bg-accept text-inkondark hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
-  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm text-ink bg-surface hover:bg-muted/10 border border-muted/30";
+  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
 
 export default function QuizzesMetadata({
   quiz,
@@ -137,8 +137,8 @@ export default function QuizzesMetadata({
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-muted text-sm font-body bg-surface w-full p-3">
-        <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-muted/20">
+      <div className="flex items-center justify-center h-full text-muted text-sm font-body bg-deepbluegray w-full p-3">
+        <div className="w-full h-full rounded-lg bg-tealgray flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
       </div>
@@ -146,16 +146,16 @@ export default function QuizzesMetadata({
   }
 
   return (
-    <div className="flex-1 h-full w-full bg-surface flex flex-col font-body p-3">
+    <div className="flex-1 min-w-0 h-full w-full bg-deepbluegray flex flex-col font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg bg-tealgray overflow-hidden border border-accent">
         {/* Header */}
-        <div className="p-4 bg-surface border-b border-muted/20">
+        <div className="p-4 bg-blackblue border-b border-muted/20">
           <input
             type="text"
             name="quizTitle"
@@ -167,7 +167,7 @@ export default function QuizzesMetadata({
               }))
             }
             placeholder="Enter quiz title..."
-            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-ink mb-2 border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
+            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-inkondark mb-2 border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
           />
 
           <div className="flex items-center gap-3 text-xs sm:text-sm text-muted">
@@ -204,11 +204,11 @@ export default function QuizzesMetadata({
                 type="text"
                 value={quiz.shareToken?.toUpperCase() || "N/A"}
                 readOnly
-                className="flex-1 px-3 py-2 rounded-md text-muted text-sm min-w-0 bg-surface border border-muted/30"
+                className="flex-1 px-3 py-2 rounded-md text-muted text-sm min-w-0 bg-darkslate border border-muted/30"
               />
               {quiz.shareToken && (
                 <button
-                  className="px-3 py-2 rounded-md text-sm font-display font-bold bg-accent text-canvas transition-all flex-shrink-0 hover:-translate-y-0.5 active:translate-y-0.5"
+                  className="px-3 py-2 rounded-md text-sm font-display font-bold bg-accept text-inkondark hover:bg-green-600 transition-all flex-shrink-0 hover:-translate-y-0.5 active:translate-y-0.5"
                   onClick={() => {
                     navigator.clipboard.writeText(quiz.shareToken);
                     toast.success("Token copied to clipboard!", {
