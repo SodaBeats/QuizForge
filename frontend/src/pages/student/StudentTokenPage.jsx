@@ -206,9 +206,7 @@ export default function StudentTokenPage() {
                 TITLE
                 ================================================= */}
 
-            <h1>
-              Enter Quiz <span className="accent">Token</span>
-            </h1>
+            <h1 className="text-accent">Enter Token</h1>
 
             <p className="subtext">
               Enter the 6-character token provided by your instructor

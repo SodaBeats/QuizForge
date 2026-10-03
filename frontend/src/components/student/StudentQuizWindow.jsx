@@ -11,7 +11,7 @@ function ReasoningAnswerInput({ answers, question, onAnswerChange }) {
     <div className="h-48 flex flex-col">
       {/* Fixed height for textarea to prevent takeover */}
       <textarea
-        className="w-full flex-1 bg-surface/40 border border-muted/20 rounded-md p-4 focus:border-accent focus:outline-none text-ink text-sm resize-none"
+        className="w-full flex-1 bg-surface/40 border border-muted/20 rounded-md p-4 focus:border-accent focus:outline-none text-inkondark text-sm placeholder:text-muted resize-none"
         placeholder="Type your answer here..."
         value={answers[question.id] || ""}
         onChange={(e) => onAnswerChange(e.target.value)}
@@ -32,18 +32,16 @@ export default function StudentQuizWindow({
 }) {
   if (!question)
     return (
-      <div className="flex-1 p-8 text-muted">
-        Select a question to begin.
-      </div>
+      <div className="flex-1 p-8 text-muted">Select a question to begin.</div>
     );
 
   return (
-    <div className="flex-1 flex flex-col bg-surface text-ink">
+    <div className="flex-1 flex flex-col bg-surface text-inkondark">
       {/* Question Content */}
       <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full px-8">
         {/* Question Part */}
         <div className="flex-1 flex flex-col justify-center py-6 border-b border-muted/20 overflow-y-auto pr-2">
-          <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-ink text-center">
+          <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-inkondark text-center">
             {question.questionText}
           </h1>
         </div>
@@ -67,7 +65,7 @@ export default function StudentQuizWindow({
                       onClick={() => onAnswerChange(letter.toLowerCase())}
                       className={`w-full p-2.5 rounded-lg border text-left transition-all flex items-center gap-3 ${
                         answers?.[question.id] === letter.toLowerCase()
-                          ? "border-accent bg-accent/10 text-ink"
+                          ? "border-accent bg-accent/10 text-inkondark"
                           : "border-muted/20 bg-surface/20 text-muted hover:border-muted/20 hover:bg-muted/10"
                       }`}
                     >
@@ -75,7 +73,7 @@ export default function StudentQuizWindow({
                       <div
                         className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0 ${
                           answers?.[question.id] === letter.toLowerCase()
-                            ? "bg-accent text-canvas"
+                            ? "bg-accent text-inkondark"
                             : "bg-surface text-muted"
                         }`}
                       >
@@ -98,7 +96,7 @@ export default function StudentQuizWindow({
                     onChange={(e) => onAnswerChange(e.target.value)}
                     className="w-5 h-5 text-accent focus:ring-2 focus:ring-accent"
                   />
-                  <span className="text-ink text-sm flex-1">True</span>
+                  <span className="text-inkondark text-sm flex-1">True</span>
                 </label>
 
                 {/* False Option */}
@@ -111,7 +109,7 @@ export default function StudentQuizWindow({
                     onChange={(e) => onAnswerChange(e.target.value)}
                     className="w-5 h-5 text-accent focus:ring-2 focus:ring-accent"
                   />
-                  <span className="text-ink text-sm flex-1">False</span>
+                  <span className="text-inkondark text-sm flex-1">False</span>
                 </label>
               </div>
             ) : (
@@ -137,7 +135,7 @@ export default function StudentQuizWindow({
         <button
           onClick={onNext}
           disabled={!canNext}
-          className="flex items-center gap-2 px-8 py-2 bg-accent text-canvas rounded-lg font-semibold transition-all disabled:opacity-20"
+          className="flex items-center gap-2 px-8 py-2 bg-accent text-inkondark rounded-lg font-semibold transition-all disabled:opacity-20"
         >
           Next →
         </button>

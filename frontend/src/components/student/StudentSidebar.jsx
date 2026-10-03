@@ -1,21 +1,21 @@
-
 // StudentQuizSidebar.jsx
-export default function StudentSidebar({ 
-  questions, 
-  currentQuestionIndex, 
+export default function StudentSidebar({
+  questions,
+  currentQuestionIndex,
   //onQuestionSelect,
   answeredQuestions,
-  onQuizSubmit
+  onQuizSubmit,
 }) {
   const totalQuestions = questions?.length ?? 0;
   const answeredCount = answeredQuestions?.size || 0;
-  const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const progressPercentage =
+    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return (
     <div className="w-80 border-r border-muted/20 bg-surface flex flex-col h-full">
       {/* Header */}
       <div className="border-b border-muted/20 p-4">
-        <h2 className="text-lg font-semibold text-ink">Questions</h2>
+        <h2 className="text-lg font-semibold text-inkondark">Questions</h2>
         <p className="text-xs text-muted mt-1">
           {answeredCount} of {totalQuestions} answered
         </p>
@@ -24,7 +24,7 @@ export default function StudentSidebar({
       {/* Progress Bar */}
       <div className="px-4 py-3 border-b border-muted/20">
         <div className="w-full bg-surface rounded-full h-2">
-          <div 
+          <div
             className="bg-accent h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
           />
@@ -44,17 +44,21 @@ export default function StudentSidebar({
                 //onClick={() => onQuestionSelect(index)}
                 className={`
                   flex items-center gap-3 p-3 rounded-lg text-sm transition-all text-left
-                  ${isSelected 
-                    ? 'bg-accent/20 text-accent border border-accent/50' 
-                    : 'text-muted hover:bg-muted/10 border border-transparent'}
+                  ${
+                    isSelected
+                      ? "bg-accent/20 text-accent border border-accent/50"
+                      : "text-muted hover:bg-muted/10 border border-transparent"
+                  }
                 `}
               >
                 {/* Status Indicator Circle */}
-                <div className={`
+                <div
+                  className={`
                   w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0
-                  ${isAnswered ? 'bg-green-600 text-ink' : 'bg-surface text-muted'}
-                  ${isSelected ? 'ring-2 ring-accent ring-offset-2 ring-offset-gray-900' : ''}
-                `}>
+                  ${isAnswered ? "bg-green-600 text-ink" : "bg-surface text-muted"}
+                  ${isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-gray-900" : ""}
+                `}
+                >
                   {index + 1}
                 </div>
 
@@ -69,13 +73,13 @@ export default function StudentSidebar({
 
       {/* Submit Quiz Button */}
       <div className="border-t border-muted/20 p-4">
-        <button 
-          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-ink rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        <button
+          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-inkondark rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             const unanswered = totalQuestions - answeredCount;
             if (unanswered > 0) {
               const confirm = window.confirm(
-                `You have ${unanswered} unanswered question(s). Submit anyway?`
+                `You have ${unanswered} unanswered question(s). Submit anyway?`,
               );
               console.log(confirm);
               if (!confirm) return;

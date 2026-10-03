@@ -84,14 +84,14 @@ export default function StudentTimeLimit({
     <div className="w-72 border-l border-muted/20 bg-surface p-6 hidden lg:flex flex-col gap-8">
       {/* Timer Section */}
       <>
-        <h2 className="text-m text-ink font-bold mb-2">{`Attempt: ${attemptCount} of ${maxAttempts}`}</h2>
+        <h2 className="text-m text-inkondark font-bold mb-2">{`Attempt: ${attemptCount} of ${maxAttempts}`}</h2>
       </>
       <div className="bg-surface/50 rounded-lg p-6 border border-muted/20 text-center">
         <p className="text-xs text-muted font-bold uppercase tracking-widest mb-2">
           Time Remaining
         </p>
         <div
-          className={`text-4xl font-mono font-bold ${remainingSeconds < 10 ? "text-red-500 animate-pulse" : "text-ink"}`}
+          className={`text-4xl font-mono font-bold ${remainingSeconds < 10 ? "text-red-500 animate-pulse" : "text-inkondark"}`}
         >
           {formattedTime}
         </div>
@@ -100,9 +100,7 @@ export default function StudentTimeLimit({
       {/* Quiz Info */}
       <div className="space-y-4">
         <div className="pt-4 border-t border-muted/20">
-          <p className="text-xs text-muted font-semibold mb-2">
-            Instructions
-          </p>
+          <p className="text-xs text-muted font-semibold mb-2">Instructions</p>
           <ul className="text-xs text-muted space-y-2 list-disc pl-4">
             <li>Answers are saved automatically.</li>
             <li>The question auto-advances when time expires.</li>

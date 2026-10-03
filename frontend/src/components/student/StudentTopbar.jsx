@@ -18,9 +18,9 @@ export default function SudentTopbar({ onLogout }) {
   }, []);
 
   return (
-    <div className="border-b border-muted/20 p-4 flex items-center justify-between bg-surface">
+    <div className="border-b border-accent/20 p-4 flex items-center justify-between bg-specialsurface">
       {/* LEFT SIDE: Logo */}
-      <span className="text-xl font-bold text-ink cursor-pointer hover:text-accent transition-colors">
+      <span className="text-xl font-bold text-inkondark cursor-pointer hover:text-inkondark/80 transition-colors">
         QuizForge
       </span>
 
@@ -34,7 +34,7 @@ export default function SudentTopbar({ onLogout }) {
               hover:border-accent flex items-center justify-center overflow-hidden transition-all"
           >
             {/* Placeholder for Profile Image */}
-            <span className="text-canvas text-xs font-bold">JD</span>
+            <span className="text-inkondark text-xs font-bold">JD</span>
           </button>
           {isProfileMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-surface border border-muted/20 rounded-lg py-2 z-50">

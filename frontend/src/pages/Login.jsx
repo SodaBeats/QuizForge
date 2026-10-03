@@ -337,10 +337,6 @@ export default function LogInComponent() {
                     <span className="input-icon">✉</span>
 
                     <div className="input-content">
-                      <label htmlFor="emailInput" className="input-label">
-                        Email address
-                      </label>
-
                       <input
                         type="email"
                         id="emailInput"
@@ -348,7 +344,7 @@ export default function LogInComponent() {
                         className="custom-input"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@school.edu"
+                        placeholder="Email"
                         required
                         autoComplete="email"
                       />
@@ -367,10 +363,6 @@ export default function LogInComponent() {
                     <span className="input-icon">🔒</span>
 
                     <div className="input-content">
-                      <label htmlFor="passwordInput" className="input-label">
-                        Password
-                      </label>
-
                       <input
                         type="password"
                         id="passwordInput"
@@ -378,7 +370,7 @@ export default function LogInComponent() {
                         className="custom-input"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="Password"
                         required
                         autoComplete="current-password"
                       />

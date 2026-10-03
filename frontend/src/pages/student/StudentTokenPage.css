@@ -7,14 +7,14 @@
 .student-token-page {
   /* Student-only variables */
   --bg: var(--canvas);
-  --card-bg: var(--surface);
-  --card-border: var(--surface);
+  --card-bg: var(--specialsurface);
+  --card-border: var(--accent);
   --orange: var(--accent);
   --orange-2: var(--accent);
-  --text: var(--ink);
+  --text: var(--inkondark);
   --text-dim: var(--muted);
-  --input-bg: var(--surface);
-  --input-border: var(--surface);
+  --input-bg: var(--darkslate);
+  --input-border: rgb(var(--muted-rgb) / 0.3);
 
   /* Page */
   width: 100%;
@@ -200,7 +200,7 @@
 
   background: var(--surface);
 
-  border: 1px solid var(--card-border);
+  border: 2px solid rgb(var(--accent-rgb));
 
   padding: 8px 16px 8px 8px;
 
@@ -260,7 +260,6 @@
   z-index: 5;
 
   position: relative;
-
 }
 
 /* =========================================================
@@ -272,7 +271,7 @@
 
   background: var(--card-bg);
 
-  border: 1px solid var(--card-border);
+  border: 2px solid var(--card-border);
 
   border-radius: 12px;
 
@@ -319,7 +318,8 @@
 
   letter-spacing: -0.3px;
 
-  color: var(--text);
+  /* No color here: the heading carries .text-accent in the markup —
+     an unlayered color would override that Tailwind utility. */
 }
 
 .student-token-page h1 .accent {
@@ -383,10 +383,12 @@
 
 .student-token-page .otp input:focus {
   border-color: var(--orange);
+
+  box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.3);
 }
 
 .student-token-page .otp input::placeholder {
-  color: var(--surface);
+  color: var(--muted);
 
   font-weight: 600;
 }
@@ -433,7 +435,7 @@
 
   transition:
     transform 0.12s ease,
-    filter 0.12s ease,
+    background 0.12s ease,
     border-color 0.12s ease;
 
   text-decoration: none;
@@ -456,15 +458,15 @@
    ========================================================= */
 
 .student-token-page .btn-primary {
-  background: var(--orange);
+  background: var(--accept);
 
-  color: var(--canvas);
+  color: var(--text);
 
   margin-bottom: 14px;
 }
 
 .student-token-page .btn-primary:hover {
-  filter: brightness(1.06);
+  background: #16a34a;
 }
 
 .student-token-page .btn-primary .icn {
@@ -491,14 +493,12 @@
 
   color: var(--text);
 
-  border: 1.5px solid var(--card-border);
+  border: 1.5px solid rgb(var(--muted-rgb) / 0.3);
 
   margin-bottom: 26px;
 }
 
 .student-token-page .btn-ghost:hover {
-  border-color: var(--surface);
-
   background: rgb(var(--muted-rgb) / 0.1);
 }
 
