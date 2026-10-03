@@ -8,6 +8,7 @@ import { AuthContext } from "../../components/AuthProvider";
 import TopBar from "../../components/teacher/TopBar";
 import ClassesSidebar from "../../components/teacher/ClassesSidebar";
 import StudentInfoModal from "../../components/teacher/StudentInfoModal";
+import mistyWoods from "../../assets/mistywoods-compressed.jpg";
 import { getInitials } from "../../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
@@ -492,7 +493,15 @@ export default function ClassesPage() {
     return <Navigate to="/error" replace />;
   }
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
+    <div
+      className="h-screen flex flex-col bg-canvas text-inkondark"
+      style={{
+        backgroundImage: `url(${mistyWoods})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -554,69 +563,72 @@ export default function ClassesPage() {
           } flex-1 flex-col overflow-hidden font-body p-3`}
         >
           {selectedClass ? (
-            <div className="flex-1 flex flex-col rounded-lg bg-tealgray overflow-hidden border border-accent">
-              {/* Panel header */}
-              <div className="px-4 sm:px-6 py-4 bg-blackblue flex items-center justify-between gap-3 border-b border-muted/20">
-                <div className="min-w-0">
-                  <h2 className="text-base font-display font-semibold text-inkondark truncate">
-                    {selectedClass.name}
-                  </h2>
-                  <p className="text-xs text-muted truncate">
-                    {selectedClass.subject}
-                  </p>
-                </div>
-                <span className="flex-shrink-0">
-                  <button
-                    className="text-xs font-display font-bold bg-accept text-inkondark hover:bg-green-600 px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
-                    onClick={() => setShowAddStudentModal(true)}
-                  >
-                    Add student
-                  </button>
-                </span>
-              </div>
-
-              {/* Student grid */}
-              <div className="themed-scroll flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 content-start">
-                {selectedClass.students?.map((student) => (
-                  <div
-                    key={student?.id}
-                    className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
-                  >
-                    <div
-                      onClick={() => setSelectedStudent(student)}
-                      className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
-                    >
-                      <div className="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-accent text-xs font-display font-semibold flex-shrink-0">
-                        {getInitials(student?.name)}
-                      </div>
-                      <div className="overflow-hidden">
-                        <div className="text-sm text-inkondark font-medium truncate">
-                          {student?.name}
-                        </div>
-                        <div className="text-xs text-muted truncate">
-                          {student?.email}
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeStudent(selectedClass.id, student.id);
-                      }}
-                      disabled={removingIds.includes(student.id)}
-                      className={`ml-3 text-red-400 hover:text-red-500 px-2 py-1 rounded-md flex-shrink-0 ${
-                        removingIds.includes(student.id)
-                          ? "opacity-60 cursor-not-allowed"
-                          : ""
-                      }`}
-                    >
-                      ✕
-                    </button>
+            <>
+              <div className="flex-1 flex flex-col rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+                {/* Panel header */}
+                <div className="px-4 sm:px-6 py-4 bg-blackblue/75 flex items-center justify-between gap-3 border-b border-muted/20">
+                  <div className="min-w-0">
+                    <h2 className="text-base font-display font-semibold text-inkondark truncate">
+                      {selectedClass.name}
+                    </h2>
+                    <p className="text-xs text-muted truncate">
+                      {selectedClass.subject}
+                    </p>
                   </div>
-                ))}
+                  <span className="flex-shrink-0">
+                    <button
+                      className="text-xs font-display font-bold bg-accept text-inkondark hover:bg-green-600 px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+                      onClick={() => setShowAddStudentModal(true)}
+                    >
+                      Add student
+                    </button>
+                  </span>
+                </div>
+
+                {/* Student grid */}
+                <div className="themed-scroll flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 content-start">
+                  {selectedClass.students?.map((student) => (
+                    <div
+                      key={student?.id}
+                      className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
+                    >
+                      <div
+                        onClick={() => setSelectedStudent(student)}
+                        className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-accent text-xs font-display font-semibold flex-shrink-0">
+                          {getInitials(student?.name)}
+                        </div>
+                        <div className="overflow-hidden">
+                          <div className="text-sm text-inkondark font-medium truncate">
+                            {student?.name}
+                          </div>
+                          <div className="text-xs text-muted truncate">
+                            {student?.email}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeStudent(selectedClass.id, student.id);
+                        }}
+                        disabled={removingIds.includes(student.id)}
+                        className={`ml-3 text-red-400 hover:text-red-500 px-2 py-1 rounded-md flex-shrink-0 ${
+                          removingIds.includes(student.id)
+                            ? "opacity-60 cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Add student modal */}
+              {/* Modals live OUTSIDE the frosted card — its backdrop-filter
+                  would trap their z-50/fixed positioning behind the panels */}
               {showAddStudentModal && (
                 <AddStudentModal
                   selectedClass={selectedClass}
@@ -638,9 +650,9 @@ export default function ClassesPage() {
                   onClose={() => setSelectedStudent(null)}
                 />
               )}
-            </div>
+            </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray text-muted gap-2 border border-accent">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray/75 backdrop-blur text-muted gap-2 border border-accent">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>

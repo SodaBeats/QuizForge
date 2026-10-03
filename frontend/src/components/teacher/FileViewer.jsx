@@ -64,67 +64,63 @@ export default function FileViewer({ selectedFile }) {
 
   if (isFetching) {
     return (
-      <div className="w-full lg:w-1/2 flex flex-col min-h-0 bg-deepbluegray font-body p-3">
+      <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
           .font-display { font-family: 'Baloo 2', sans-serif; }
           .font-body { font-family: 'Inter', sans-serif; }
           ${scrollStyles}
         `}</style>
-        <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-tealgray overflow-hidden border border-accent">
-          <div className="p-3.5 bg-blackblue border-b border-muted/20">
-            <h2 className="text-sm font-display font-semibold text-inkondark">
-              {selectedFile ? selectedFile.name : "File viewer"}
-            </h2>
-            <p className="text-xs text-muted mt-0.5">PDF or text viewer</p>
-          </div>
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 file-viewer-scroll">
-            <LoadingScreen />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full lg:w-1/2 flex flex-col min-h-0 bg-deepbluegray font-body p-3">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-        ${scrollStyles}
-      `}</style>
-      <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-tealgray overflow-hidden border border-accent">
-        <div className="p-3.5 bg-blackblue border-b border-muted/20">
+        <div className="p-3.5 bg-blackblue/75 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             {selectedFile ? selectedFile.name : "File viewer"}
           </h2>
           <p className="text-xs text-muted mt-0.5">PDF or text viewer</p>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto p-4 file-viewer-scroll">
-          {error ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="rounded-md bg-blackblue border border-red-400/50 px-5 py-4">
-                <p className="text-red-400 text-sm font-mono text-center">
-                  Failed to load this file
-                </p>
-              </div>
-            </div>
-          ) : data?.content ? (
-            <div className="font-body text-inkondark text-sm sm:text-[15px] whitespace-pre-wrap leading-[1.8] break-words">
-              {data.content}
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <NoFileIcon />
-                <p className="text-inkondark text-sm font-mono">
-                  No file selected
-                </p>
-              </div>
-            </div>
-          )}
+          <LoadingScreen />
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+        .font-display { font-family: 'Baloo 2', sans-serif; }
+        .font-body { font-family: 'Inter', sans-serif; }
+        ${scrollStyles}
+      `}</style>
+      <div className="p-3.5 bg-blackblue/75 border-b border-muted/20">
+        <h2 className="text-sm font-display font-semibold text-inkondark">
+          {selectedFile ? selectedFile.name : "File viewer"}
+        </h2>
+        <p className="text-xs text-muted mt-0.5">PDF or text viewer</p>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 file-viewer-scroll">
+        {error ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="rounded-md bg-blackblue border border-red-400/50 px-5 py-4">
+              <p className="text-red-400 text-sm font-mono text-center">
+                Failed to load this file
+              </p>
+            </div>
+          </div>
+        ) : data?.content ? (
+          <div className="font-body text-inkondark text-sm sm:text-[15px] whitespace-pre-wrap leading-[1.8] break-words">
+            {data.content}
+          </div>
+        ) : (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <NoFileIcon />
+              <p className="text-inkondark text-sm font-mono">
+                No file selected
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

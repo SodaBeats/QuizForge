@@ -482,7 +482,7 @@ function SideBar({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="w-full lg:w-52 bg-darkteal border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
+      <div className="w-full lg:w-52 bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
             sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
         <Link
@@ -503,7 +503,7 @@ function SideBar({
         </Link>
 
         {/* File List - 30% */}
-        <div className="h-[30%] rounded-lg bg-darkteal p-2 overflow-y-auto border border-muted/20">
+        <div className="h-[30%] rounded-lg p-2 overflow-y-auto border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-3 pb-2 border-b border-muted/20">
             <div className="text-xs font-semibold text-inkondark uppercase tracking-wide">
               Files
@@ -555,7 +555,7 @@ function SideBar({
         </div>
 
         {/* Current Quiz - Small Section */}
-        <div className="rounded-lg p-2 bg-darkteal border border-muted/20">
+        <div className="rounded-lg p-2 border border-muted/20">
           <div className="text-xs font-semibold text-inkondark mb-3 uppercase tracking-wide border-b border-muted/20">
             Current quiz
           </div>
@@ -584,7 +584,7 @@ function SideBar({
         </div>
 
         {/* Question List - 70% */}
-        <div className="flex-1 rounded-lg p-2 overflow-y-auto bg-darkteal border border-muted/20">
+        <div className="flex-1 rounded-lg p-2 overflow-y-auto border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-2 border-b border-muted/20">
             <div className="mb-3 text-xs font-semibold text-inkondark uppercase tracking-wide">
               Questions

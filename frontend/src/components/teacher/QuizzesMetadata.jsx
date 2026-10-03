@@ -137,8 +137,8 @@ export default function QuizzesMetadata({
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-muted text-sm font-body bg-deepbluegray w-full p-3">
-        <div className="w-full h-full rounded-lg bg-tealgray flex items-center justify-center border border-accent">
+      <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full p-3">
+        <div className="w-full h-full rounded-lg bg-tealgray/75 backdrop-blur flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
       </div>
@@ -146,16 +146,16 @@ export default function QuizzesMetadata({
   }
 
   return (
-    <div className="flex-1 min-w-0 h-full w-full bg-deepbluegray flex flex-col font-body p-3">
+    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-tealgray overflow-hidden border border-accent">
+      <div className="flex-1 flex flex-col rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
         {/* Header */}
-        <div className="p-4 bg-blackblue border-b border-muted/20">
+        <div className="p-4 bg-blackblue/75 border-b border-muted/20">
           <input
             type="text"
             name="quizTitle"

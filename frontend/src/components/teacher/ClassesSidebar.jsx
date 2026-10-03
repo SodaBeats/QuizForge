@@ -10,15 +10,15 @@ export default function ClassesSidebar({
   deletingIds = [],
 }) {
   return (
-    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-darkteal border-r-2 border-accent/50 font-body p-3">
+    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-darkteal overflow-hidden border border-muted/20">
-        <div className="p-4 bg-darkteal flex items-center justify-between gap-2 border-b border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
+        <div className="p-4 flex items-center justify-between gap-2 border-b border-muted/20">
           <p className="text-xs font-display font-semibold text-muted uppercase tracking-widest">
             Classes
           </p>

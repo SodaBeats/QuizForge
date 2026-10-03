@@ -8,6 +8,7 @@ import TopBar from "../../components/teacher/TopBar";
 import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
 import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
 import { classServices } from "../../services/classServices";
+import mistyWoods from "../../assets/mistywoods-compressed.jpg";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -238,7 +239,15 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
+    <div
+      className="h-screen flex flex-col bg-canvas text-inkondark"
+      style={{
+        backgroundImage: `url(${mistyWoods})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }

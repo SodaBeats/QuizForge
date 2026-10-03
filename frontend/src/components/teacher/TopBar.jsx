@@ -505,97 +505,102 @@ export default function TopBar({
   // -------------------------------------------------------------------------------------
 
   return (
-    <div className="px-5 py-3 flex items-center justify-between bg-darkteal border-b-2 border-accent/20">
-      <style>{`
+    <>
+      <div className="px-5 py-3 flex items-center justify-between bg-darkteal/75 backdrop-blur z-40 border-b-2 border-accent/20">
+        <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      {/* LEFT SIDE: Logo (hidden at lg+ when the sidebar owns it — see logoClass) */}
-      <Link
-        to="/teacher"
-        className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
-      >
-        <div
-          className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
-          style={{
-            background: "var(--accent)",
-          }}
+        {/* LEFT SIDE: Logo (hidden at lg+ when the sidebar owns it — see logoClass) */}
+        <Link
+          to="/teacher"
+          className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
         >
-          Q
-        </div>
-        <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
-          QuizForge
-        </span>
-      </Link>
-
-      {/* RIGHT SIDE: Actions (ml-auto keeps them right even when the logo is hidden) */}
-      <div className="flex items-center gap-3 font-body ml-auto">
-        {/* Forge Quiz Button */}
-        {showFileButton && (
-          <button className={primaryBtnClass} onClick={openForgeQuizModal}>
-            Forge quiz
-          </button>
-        )}
-
-        {/* Forge Quiz Modal */}
-        {isForgeQuizModalOpen && (
-          <QuizForgeModal
-            forgeQuizData={forgeQuizData}
-            setForgeQuizData={setForgeQuizData}
-            handleForgeQuiz={handleForgeQuiz}
-            isCreatingQuiz={isCreatingQuiz}
-            closeForgeQuizModal={closeForgeQuizModal}
-            userClasses={userClasses}
-            isFetchingClasses={isFetchingClasses}
-            classFetchError={classFetchError}
-          />
-        )}
-
-        {/* PROFILE DROPDOWN */}
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all bg-accent"
+          <div
+            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
+            style={{
+              background: "var(--accent)",
+            }}
           >
-            <span className="text-inkondark text-xs font-display font-bold">
-              JD
-            </span>
-          </button>
-          {isProfileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-surface border-2 border-accent">
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
-                onClick={() => {
-                  navigate("/teacher/quizzes");
-                  setIsProfileMenuOpen(!isProfileMenuOpen);
-                }}
-              >
-                Quizzes
-              </button>
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
-                onClick={() => {
-                  navigate("/teacher/classes");
-                  setIsProfileMenuOpen(false);
-                }}
-              >
-                Classes
-              </button>
+            Q
+          </div>
+          <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
+            QuizForge
+          </span>
+        </Link>
 
-              <div className="h-px bg-muted/20 my-1"></div>
-
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-mutedteal transition-colors"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
+        {/* RIGHT SIDE: Actions (ml-auto keeps them right even when the logo is hidden) */}
+        <div className="flex items-center gap-3 font-body ml-auto">
+          {/* Forge Quiz Button */}
+          {showFileButton && (
+            <button className={primaryBtnClass} onClick={openForgeQuizModal}>
+              Forge quiz
+            </button>
           )}
+
+          {/* PROFILE DROPDOWN */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all bg-accent"
+            >
+              <span className="text-inkondark text-xs font-display font-bold">
+                JD
+              </span>
+            </button>
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-surface border-2 border-accent">
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
+                  onClick={() => {
+                    navigate("/teacher/quizzes");
+                    setIsProfileMenuOpen(!isProfileMenuOpen);
+                  }}
+                >
+                  Quizzes
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
+                  onClick={() => {
+                    navigate("/teacher/classes");
+                    setIsProfileMenuOpen(false);
+                  }}
+                >
+                  Classes
+                </button>
+
+                <div className="h-px bg-muted/20 my-1"></div>
+
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-mutedteal transition-colors"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Forge Quiz Modal — kept OUTSIDE the frosted bar: the bar's
+          backdrop-filter creates a stacking context + fixed containing block,
+          which would trap this modal's z-50/fixed positioning behind the
+          FileViewer/QuestionEditor panels. */}
+      {isForgeQuizModalOpen && (
+        <QuizForgeModal
+          forgeQuizData={forgeQuizData}
+          setForgeQuizData={setForgeQuizData}
+          handleForgeQuiz={handleForgeQuiz}
+          isCreatingQuiz={isCreatingQuiz}
+          closeForgeQuizModal={closeForgeQuizModal}
+          userClasses={userClasses}
+          isFetchingClasses={isFetchingClasses}
+          classFetchError={classFetchError}
+        />
+      )}
+    </>
   );
 }

@@ -8,6 +8,7 @@ import TopBar from "../../components/teacher/TopBar";
 import SideBar from "../../components/teacher/SideBar";
 import FileViewer from "../../components/teacher/FileViewer";
 import QuestionEditor from "../../components/teacher/QuestionEditor";
+import mistyWoods from "../../assets/mistywoods-compressed.jpg";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -124,7 +125,15 @@ export default function QuizMakerSkeleton() {
   }
 
   return (
-    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark">
+    <div
+      className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark"
+      style={{
+        backgroundImage: `url(${mistyWoods})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', sans-serif; }

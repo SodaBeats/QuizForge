@@ -17,8 +17,8 @@ export default function QuizzesSidebar({
 
   if (isFetching) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal border-r-2 border-accent/50 p-3">
-        <div className="flex-1 rounded-lg bg-darkteal flex items-center justify-center border border-muted/20">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 p-3">
+        <div className="flex-1 rounded-lg flex items-center justify-center border border-muted/20">
           <div className="spinner"></div>
         </div>
       </div>
@@ -27,12 +27,12 @@ export default function QuizzesSidebar({
 
   if (isError) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal border-r-2 border-accent/50 font-body p-3 gap-3">
-        <div className="flex-1 rounded-lg bg-darkteal flex items-center justify-center text-red-400 text-sm border border-muted/20">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
+        <div className="flex-1 rounded-lg flex items-center justify-center text-red-400 text-sm border border-muted/20">
           Failed to fetch quizzes
         </div>
         {/* Create New Quiz Button */}
-        <div className="rounded-lg bg-darkteal p-4 border border-muted/20">
+        <div className="rounded-lg p-4 border border-muted/20">
           <button
             onClick={() =>
               navigate("/teacher", { state: { openForgeQuizModal: true } })
@@ -47,16 +47,16 @@ export default function QuizzesSidebar({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal border-r-2 border-accent/50 font-body p-3 gap-3">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-darkteal overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
         {/* Header */}
-        <div className="p-4 bg-darkteal border-b border-muted/20">
+        <div className="p-4 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             Quizzes
           </h2>
