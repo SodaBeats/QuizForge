@@ -14,10 +14,10 @@
   --color-orange-light: var(--accent);
   --color-orange-border: var(--accent);
 
-  --color-page-bg-start: var(--ink);
-  --color-page-bg-end: var(--ink);
+  --color-page-bg-start: var(--canvas);
+  --color-page-bg-end: var(--canvas);
 
-  --color-paper-bg: var(--ink);
+  --color-paper-bg: var(--offwhite);
 
   --color-board-dark: var(--surface);
   --color-board-darker: var(--surface);
@@ -25,15 +25,16 @@
   --color-clip-metallic: var(--ink);
   --color-backdrop-circle: var(--surface);
 
-  --color-text-main: var(--surface);
+  --color-text-main: var(--ink);
   --color-text-muted: var(--muted);
   --color-text-caption: var(--muted);
   --color-text-light: var(--muted);
 
-  --color-input-bg: var(--ink);
-  --color-input-border: var(--ink);
+  --color-input-bg: var(--darkslate);
+  --color-input-border: rgb(var(--muted-rgb) / 0.3);
   --color-input-focus: var(--accent);
-  --color-badge-bg: var(--ink);
+  --color-input-text: var(--inkondark);
+  --color-badge-bg: var(--surface);
 
   --font-family-main:
     "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -117,7 +118,6 @@ body {
 
   pointer-events: none;
   user-select: none;
-
 }
 
 .floating-decor img {
@@ -290,7 +290,6 @@ body {
   background: url("../assets/leaning_stage_bg_clean.png") no-repeat center
     center / contain;
 
-
   container-type: inline-size;
 
   container-name: stage;
@@ -385,7 +384,7 @@ body {
 }
 
 .logo-icon-box .q-letter {
-  color: var(--ink);
+  color: var(--canvas);
 
   font-size: 1.75rem;
 
@@ -447,7 +446,7 @@ body {
 .badge-icon {
   font-size: 1rem;
 
-  color: var(--color-text-main);
+  color: var(--inkondark);
 }
 
 .badge-text {
@@ -469,7 +468,7 @@ body {
 .badge-text .strong-text {
   font-size: 0.72rem;
 
-  color: var(--color-text-main);
+  color: var(--inkondark);
 
   font-weight: 700;
 }
@@ -558,7 +557,7 @@ body {
 }
 
 .input-wrapper:focus-within {
-  background: var(--ink);
+  background: var(--darkslate);
 
   border-color: var(--color-input-focus);
 }
@@ -608,7 +607,7 @@ body {
 
   font-weight: 600;
 
-  color: var(--color-text-main);
+  color: var(--color-input-text);
 
   width: 100%;
 
@@ -684,7 +683,7 @@ body {
 }
 
 .role-option.active {
-  color: var(--ink);
+  color: var(--inkondark);
 
   background: var(--color-orange-primary);
 }
@@ -710,7 +709,7 @@ body {
 .form-group.has-error .input-wrapper {
   border-color: #dc2626;
 
-  background: #fef2f2;
+  background: rgb(220 38 38 / 0.15);
 }
 
 .form-group.has-error .field-error {
@@ -777,7 +776,7 @@ body {
 .check-icon {
   font-size: 0.7rem;
 
-  color: var(--ink);
+  color: var(--inkondark);
 
   opacity: 0;
 
@@ -833,7 +832,7 @@ body {
 
   height: 54px;
 
-  background: var(--color-orange-primary);
+  background: var(--accept);
 
   border: none;
 
@@ -858,6 +857,8 @@ body {
 }
 
 .submit-btn:hover:not(:disabled) {
+  background: #16a34a;
+
   transform: translateY(-2px);
 }
 
@@ -884,7 +885,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  color: var(--ink);
+  color: var(--inkondark);
 
   font-size: 0.85rem;
 
@@ -896,7 +897,7 @@ body {
 }
 
 .btn-text {
-  color: var(--ink);
+  color: var(--inkondark);
 
   font-size: 1rem;
 
@@ -915,7 +916,7 @@ body {
 
   border: 2px solid rgb(var(--muted-rgb) / 0.4);
 
-  border-top-color: var(--ink);
+  border-top-color: var(--inkondark);
 
   border-radius: 50%;
 
@@ -1209,7 +1210,6 @@ body {
   height: auto;
 
   display: block;
-
 }
 
 /* ==========================================================================
