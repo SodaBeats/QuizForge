@@ -9,14 +9,13 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared flat styling tokens - cosmetic only, referenced by className below
 const wellInputClass =
-  "w-full px-3 py-2 bg-surface rounded-md text-ink text-sm placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition";
-const labelClass = "block text-sm font-medium text-ink mb-1";
+  "w-full px-3 py-2 bg-darkslate rounded-md text-muted text-sm placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition";
+const labelClass = "block text-sm font-medium text-inkondark mb-1";
 const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accent text-canvas transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600";
 const secondaryBtnClass =
-  "rounded-md px-4 py-2 transition-all text-ink bg-surface hover:bg-muted/10 border border-muted/30";
-const modalPanelClass =
-  "bg-surface rounded-lg border border-muted/20 font-body";
+  "rounded-md px-4 py-2 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark";
+const modalPanelClass = "bg-surface rounded-lg border border-accent font-body";
 
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -93,7 +92,7 @@ function ClassAccessibilityDropdown({
       {isDropdownOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 rounded-md z-20 max-h-48 overflow-y-auto bg-surface border border-muted/20">
           {/* "Anyone with the code" option */}
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-muted/10 cursor-pointer">
+          <label className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer">
             <input
               type="checkbox"
               checked={selectedClassIds.length === 0}
@@ -113,7 +112,7 @@ function ClassAccessibilityDropdown({
             userClasses.map((cls) => (
               <label
                 key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-muted/10 cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -146,7 +145,7 @@ function QuizForgeModal({
   return (
     <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
       <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
-        <h2 className="text-xl font-display font-semibold mb-4 text-ink">
+        <h2 className="text-xl font-display font-semibold mb-4 text-inkondark">
           Forge quiz
         </h2>
         <div className="space-y-4">
@@ -216,7 +215,7 @@ function QuizForgeModal({
 
           {/* Accessibility */}
           <div>
-            <label className={labelClass}>Accessibility</label>
+            <label className={labelClass}>Who can access</label>
             <ClassAccessibilityDropdown
               selectedClassIds={forgeQuizData.selectedClassIds}
               setForgeQuizData={setForgeQuizData}
@@ -310,7 +309,13 @@ function QuizForgeModal({
 //  MAIN COMPONENT
 // -------------------------------------------------------------------------------------
 
-export default function TopBar({ selectedFile, setQuizMetadata }) {
+// logoClass: extra classes for the logo link — e.g. "lg:hidden" on pages where the
+// sidebar owns the logo at lg+ (the topbar then only shows it on mobile).
+export default function TopBar({
+  selectedFile,
+  setQuizMetadata,
+  logoClass = "",
+}) {
   // -------------------------------------------------------------------------------------
   //  STATES AND VARIABLES
   // -------------------------------------------------------------------------------------
@@ -500,17 +505,17 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
   // -------------------------------------------------------------------------------------
 
   return (
-    <div className="px-5 py-3 flex items-center justify-between bg-surface border border-muted/20">
+    <div className="px-5 py-3 flex items-center justify-between bg-darkteal border-b-2 border-accent/20">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      {/* LEFT SIDE: Logo */}
+      {/* LEFT SIDE: Logo (hidden at lg+ when the sidebar owns it — see logoClass) */}
       <Link
         to="/teacher"
-        className="flex items-center gap-2.5 cursor-pointer group"
+        className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
       >
         <div
           className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
@@ -520,13 +525,13 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
         >
           Q
         </div>
-        <span className="font-display text-base font-bold text-ink group-hover:text-accent transition-colors">
+        <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
           QuizForge
         </span>
       </Link>
 
-      {/* RIGHT SIDE: Actions */}
-      <div className="flex items-center gap-3 font-body">
+      {/* RIGHT SIDE: Actions (ml-auto keeps them right even when the logo is hidden) */}
+      <div className="flex items-center gap-3 font-body ml-auto">
         {/* Forge Quiz Button */}
         {showFileButton && (
           <button className={primaryBtnClass} onClick={openForgeQuizModal}>
@@ -552,19 +557,16 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all"
-            style={{
-              background: "var(--accent)",
-            }}
+            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all bg-accent"
           >
-            <span className="text-canvas text-xs font-display font-bold">
+            <span className="text-inkondark text-xs font-display font-bold">
               JD
             </span>
           </button>
           {isProfileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-surface border border-muted/20">
+            <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-surface border-2 border-accent">
               <button
-                className="w-full text-left px-4 py-2 text-sm text-ink hover:bg-muted/10 hover:text-ink transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
                 onClick={() => {
                   navigate("/teacher/quizzes");
                   setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -573,7 +575,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
                 Quizzes
               </button>
               <button
-                className="w-full text-left px-4 py-2 text-sm text-ink hover:bg-muted/10 hover:text-ink transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
                 onClick={() => {
                   navigate("/teacher/classes");
                   setIsProfileMenuOpen(false);
@@ -585,7 +587,7 @@ export default function TopBar({ selectedFile, setQuizMetadata }) {
               <div className="h-px bg-muted/20 my-1"></div>
 
               <button
-                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-muted/10 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-mutedteal transition-colors"
                 onClick={handleLogout}
               >
                 Logout

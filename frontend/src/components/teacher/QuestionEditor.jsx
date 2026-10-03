@@ -8,32 +8,12 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =
-  "w-full bg-surface rounded-md px-3 py-2 text-sm text-ink placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
-const labelClass = "block text-sm font-medium mb-1.5 text-ink font-body";
+  "w-full bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
+const labelClass = "block text-sm font-medium mb-1.5 text-inkondark font-body";
 const primaryBtnClass =
-  "flex-1 font-display font-bold rounded-md px-4 py-2.5 bg-accent text-canvas transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "flex-1 font-display font-bold rounded-md px-4 py-2.5 bg-accept text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600";
 const secondaryBtnClass =
-  "flex-1 rounded-md px-4 py-2.5 transition-all text-ink bg-surface hover:bg-muted/10 border border-muted/30";
-
-const scrollStyles = `
-  .qe-scroll::-webkit-scrollbar {
-    width: 8px;
-  }
-  .qe-scroll::-webkit-scrollbar-track {
-    background: var(--surface);
-  }
-  .qe-scroll::-webkit-scrollbar-thumb {
-    background: var(--surface);
-    border-radius: 6px;
-  }
-  .qe-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--surface);
-  }
-  .qe-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: var(--surface) var(--surface);
-  }
-`;
+  "flex-1 rounded-md px-4 py-2.5 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark";
 
 export default function QuestionEditor({
   selectedQuestion,
@@ -45,6 +25,7 @@ export default function QuestionEditor({
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState([]);
+  const [docFetchError, setDocFetchError] = useState(false);
   const [showSourcesDropdown, setShowSourcesDropdown] = useState(false);
   const [manualQuestion, setManualQuestion] = useState({
     //question usestate
@@ -100,6 +81,7 @@ export default function QuestionEditor({
 
   // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
   const fetchDocuments = async () => {
+    setDocFetchError(false);
     try {
       const response = await authFetch(`${backendHost}/api/documents`);
       if (!response || !response.ok) {
@@ -113,6 +95,7 @@ export default function QuestionEditor({
     } catch (error) {
       console.error("Failed to fetch documents:", error);
       setDocuments([]);
+      setDocFetchError(true);
     }
   };
 
@@ -300,18 +283,17 @@ export default function QuestionEditor({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-surface font-body p-3">
+    <div className="flex-1 flex flex-col bg-deepbluegray font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
-        ${scrollStyles}
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
-        <div className="p-3.5 bg-surface flex justify-between items-center border-b border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg bg-tealgray overflow-hidden border border-accent">
+        <div className="p-3.5 bg-blackblue flex justify-between items-center border-b border-muted/20">
           <div>
-            <h2 className="text-sm font-display font-semibold text-ink">
+            <h2 className="text-sm font-display font-semibold text-inkondark">
               Question editor
             </h2>
             <p className="text-xs text-muted mt-0.5">
@@ -611,17 +593,9 @@ export default function QuestionEditor({
               </>
             ) : addMode === "generate" ? (
               <>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-display font-semibold text-ink">
-                    Generate questions
-                  </h2>
-                  <button
-                    onClick={() => setAddMode(null)}
-                    className="text-sm text-muted hover:text-ink transition-colors"
-                  >
-                    ← Back
-                  </button>
-                </div>
+                <h2 className="text-xl font-display font-semibold text-inkondark">
+                  Generate questions
+                </h2>
                 <>
                   <label className={labelClass}>Topic</label>
                   <input
@@ -698,7 +672,7 @@ export default function QuestionEditor({
                       }
                       className={`${inputClass} text-left flex justify-between items-center`}
                     >
-                      <span className="text-ink">
+                      <span className="text-muted">
                         {generateOptions.sources &&
                         generateOptions.sources.length > 0
                           ? `${generateOptions.sources.length} document(s) selected`
@@ -708,7 +682,11 @@ export default function QuestionEditor({
                     </button>
                     {showSourcesDropdown && (
                       <div className="absolute top-full left-0 right-0 rounded-md mt-1 z-10 max-h-48 overflow-y-auto qe-scroll bg-surface border border-muted/20">
-                        {documents.length > 0 ? (
+                        {docFetchError ? (
+                          <div className="px-3 py-2 text-red-400 text-sm">
+                            Unable to load documents
+                          </div>
+                        ) : documents.length > 0 ? (
                           documents.map((doc) => (
                             <label
                               key={doc.id}
@@ -722,7 +700,7 @@ export default function QuestionEditor({
                                 onChange={() => handleToggleSource(doc.id)}
                                 className="mr-2 w-4 h-4 cursor-pointer accent-accent"
                               />
-                              <span className="text-ink text-sm">
+                              <span className="text-inkondark text-sm">
                                 {doc.title}
                               </span>
                             </label>
@@ -756,10 +734,9 @@ export default function QuestionEditor({
               <div className="space-y-3 text-sm">
                 <button
                   onClick={() => handleModeSelect("generate")}
-                  className="w-full rounded-lg p-4 text-left transition-all bg-surface hover:bg-muted/10 border border-muted/20"
+                  className="w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
                 >
-                  <div className="text-base font-display font-semibold text-ink flex items-center gap-2">
-                    <span className="text-accent">✦</span>
+                  <div className="text-base font-display font-semibold text-inkondark flex items-center gap-2">
                     Generate
                   </div>
                   <div className="mt-1 text-muted">
@@ -769,9 +746,9 @@ export default function QuestionEditor({
 
                 <button
                   onClick={() => handleModeSelect("manual")}
-                  className="w-full rounded-lg p-4 text-left transition-all bg-surface hover:bg-muted/10 border border-muted/20"
+                  className="w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
                 >
-                  <div className="text-base font-display font-semibold text-ink">
+                  <div className="text-base font-display font-semibold text-inkondark">
                     Make your own
                   </div>
                   <div className="mt-1 text-muted">
@@ -781,7 +758,7 @@ export default function QuestionEditor({
               </div>
             )
           ) : (
-            <div className="text-muted text-sm">
+            <div className="text-inkondark text-sm">
               Select a file from the sidebar to start creating questions
             </div>
           )}

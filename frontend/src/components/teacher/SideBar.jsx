@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,11 +8,10 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared flat styling tokens - cosmetic only, referenced by className below
 const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accent text-canvas transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "font-display font-bold rounded-md px-4 py-2 bg-accent text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
-  "rounded-md px-4 py-2 transition-all text-ink bg-surface hover:bg-muted/10 border border-muted/30";
-const modalPanelClass =
-  "bg-surface rounded-lg border border-muted/20 font-body";
+  "rounded-md px-4 py-2 transition-all text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
+const modalPanelClass = "bg-canvas rounded-lg border-2 border-accent font-body";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -42,12 +41,12 @@ function FileModal({
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-ink">
+            <h2 className="text-xl font-display font-semibold text-inkondark">
               My documents
             </h2>
             <button
               onClick={closeFileModal}
-              className="text-muted hover:text-ink text-2xl leading-none"
+              className="text-red-500 hover:text-red-700 text-2xl leading-none"
             >
               ×
             </button>
@@ -67,18 +66,18 @@ function FileModal({
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-ink">
+            <h2 className="text-xl font-display font-semibold text-inkondark">
               My documents
             </h2>
             <button
               onClick={closeFileModal}
-              className="text-muted hover:text-ink text-2xl leading-none"
+              className="text-red-500 hover:text-red-700 text-2xl leading-none"
             >
               ×
             </button>
           </div>
           <div className="space-y-2 mb-6">
-            <p className="text-muted text-center py-4">
+            <p className="text-red-400 text-center py-4">
               Something went wrong while fetching documents
             </p>
           </div>
@@ -93,12 +92,12 @@ function FileModal({
         className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-display font-semibold text-ink">
+          <h2 className="text-xl font-display font-semibold text-inkondark">
             My documents
           </h2>
           <button
             onClick={closeFileModal}
-            className="text-muted hover:text-ink text-2xl leading-none"
+            className="text-red-500 hover:text-red-700 text-2xl leading-none"
           >
             ×
           </button>
@@ -112,8 +111,8 @@ function FileModal({
                 onClick={() => handleSelectDocument(doc)}
                 className={`p-3 rounded-md cursor-pointer transition-all truncate ${
                   selectedFileId === doc.id
-                    ? "bg-accent text-canvas font-semibold "
-                    : "bg-surface hover:bg-muted/10 text-ink border border-muted/20"
+                    ? "bg-accent text-inkondark font-semibold "
+                    : "hover:bg-muted/20 text-inkondark border border-muted/20"
                 }`}
               >
                 <span className="truncate">
@@ -187,8 +186,8 @@ function SelectQuizModal({
   if (isFetching) {
     return (
       <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-surface rounded-lg p-6 w-96 border border-muted/20 font-body">
-          <div className="flex flex-col items-center gap-3 text-ink">
+        <div className="bg-canvas rounded-lg p-6 w-96 border border-accent font-body">
+          <div className="flex flex-col items-center gap-3 text-inkondark">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
             <span>Loading quizzes...</span>
           </div>
@@ -203,20 +202,20 @@ function SelectQuizModal({
     }
     return (
       <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-surface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted/20 font-body">
+        <div className="bg-canvas rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-accent font-body">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-ink">
+            <h2 className="text-xl font-display font-semibold text-inkondark">
               Error
             </h2>
             <button
               onClick={closeSelectQuizModal}
-              className="text-muted hover:text-ink text-2xl leading-none"
+              className="text-red-500 hover:text-red-700 text-2xl leading-none"
             >
               ×
             </button>
           </div>
 
-          <div className="space-y-2 text-ink text-sm">
+          <div className="space-y-2 text-red-400 text-sm">
             <p>Something went wrong while fetching quizzes</p>
           </div>
         </div>
@@ -226,14 +225,14 @@ function SelectQuizModal({
 
   return (
     <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-      <div className="bg-surface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted/20 font-body">
+      <div className="bg-canvas rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-accent font-body">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-display font-semibold text-ink">
+          <h2 className="text-xl font-display font-semibold text-inkondark">
             Select a quiz
           </h2>
           <button
             onClick={closeSelectQuizModal}
-            className="text-muted hover:text-ink text-2xl leading-none"
+            className="text-red-500 hover:text-red-700 text-2xl leading-none"
           >
             ×
           </button>
@@ -245,7 +244,7 @@ function SelectQuizModal({
               <button
                 key={quiz.id}
                 onClick={() => handleSelectQuiz(quiz)}
-                className="w-full text-left p-3 rounded-lg transition-all text-sm bg-surface hover:bg-muted/10 text-ink border border-muted/20"
+                className="w-full text-left p-3 rounded-lg transition-all text-sm hover:bg-mutedteal text-inkondark border border-muted/20"
               >
                 <div className="font-medium truncate">{quiz.quizTitle}</div>
                 <div className="text-xs text-muted mt-1">
@@ -265,7 +264,7 @@ function SelectQuizModal({
             <button
               onClick={fetchPreviousQuizzes}
               disabled={page === 0}
-              className="px-3 py-2 rounded-md text-ink transition-all text-sm bg-surface hover:bg-muted/10 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Previous page"
             >
               ← Prev
@@ -276,7 +275,7 @@ function SelectQuizModal({
               disabled={
                 page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
               }
-              className="px-3 py-2 rounded-md text-ink transition-all text-sm bg-surface hover:bg-muted/10 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Next page"
             >
               Next →
@@ -296,6 +295,7 @@ function SideBar({
   selectedQuestionId,
   setSelectedQuestionId,
   questions,
+  questionsError,
   currentQuiz,
   setCurrentQuiz,
   isFetching,
@@ -482,30 +482,49 @@ function SideBar({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="w-full lg:w-52 bg-surface flex flex-col font-body p-3 gap-3">
+      <div className="w-full lg:w-52 bg-darkteal border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
+        {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
+            sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
+        <Link
+          to="/teacher"
+          className="hidden lg:flex items-center gap-2.5 shrink-0 px-1 cursor-pointer group"
+        >
+          <div
+            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
+            style={{
+              background: "var(--accent)",
+            }}
+          >
+            Q
+          </div>
+          <span className="font-display font-bold text-accent group-hover:text-inkondark transition-colors">
+            QuizForge
+          </span>
+        </Link>
+
         {/* File List - 30% */}
-        <div className="h-[30%] rounded-lg bg-surface p-4 overflow-y-auto border border-muted/20">
+        <div className="h-[30%] rounded-lg bg-darkteal p-2 overflow-y-auto border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-3 pb-2 border-b border-muted/20">
-            <div className="text-xs font-semibold text-ink uppercase tracking-wide">
+            <div className="text-xs font-semibold text-inkondark uppercase tracking-wide">
               Files
             </div>
             <button
               onClick={openFileModal}
               title="Add file"
-              className="w-6 h-6 flex items-center justify-center rounded-lg text-canvas bg-accent font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-inkondark bg-accent font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
             >
               +
             </button>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-0.5">
             {uploadedFiles.length > 0 ? (
               uploadedFiles.map((file) => (
                 <div
                   key={file.id}
-                  className={`py-1.5 px-2.5 rounded-md text-sm flex items-center justify-between group transition-all ${
+                  className={`py-0.5 px-2 rounded-md text-xs flex items-center justify-between group transition-all ${
                     selectedFileId === file.id
-                      ? "bg-accent text-canvas font-medium "
-                      : "bg-surface hover:bg-muted/10 text-ink border border-muted/20"
+                      ? "bg-accent text-inkondark font-medium"
+                      : "hover:bg-muted/20 text-inkondark border border-muted/20"
                   }`}
                 >
                   <div
@@ -521,7 +540,7 @@ function SideBar({
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedFileId === file.id
-                        ? "text-canvas hover:text-canvas"
+                        ? "text-inkondark hover:text-red-500"
                         : "text-red-400 hover:text-red-500"
                     }`}
                   >
@@ -536,20 +555,20 @@ function SideBar({
         </div>
 
         {/* Current Quiz - Small Section */}
-        <div className="rounded-lg p-3 bg-surface border border-muted/20">
-          <div className="text-xs font-semibold text-ink mb-3 uppercase tracking-wide border-b border-muted/20">
+        <div className="rounded-lg p-2 bg-darkteal border border-muted/20">
+          <div className="text-xs font-semibold text-inkondark mb-3 uppercase tracking-wide border-b border-muted/20">
             Current quiz
           </div>
           {currentQuiz ? (
-            <div className="flex items-center justify-between w-full rounded-md px-3 py-2 group bg-accent ">
-              <span className="text-sm text-canvas font-medium truncate flex-1">
+            <div className="flex items-center justify-between w-full rounded-md px-2 py-1 group bg-accent ">
+              <span className="text-xs text-inkondark font-medium truncate flex-1">
                 {currentQuiz.quizTitle}
               </span>
               <button
                 onClick={() => {
                   setCurrentQuiz(null);
                 }}
-                className="ml-2 text-canvas hover:text-canvas opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
+                className="ml-2 text-inkondark hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 text-lg leading-none"
               >
                 ×
               </button>
@@ -565,9 +584,9 @@ function SideBar({
         </div>
 
         {/* Question List - 70% */}
-        <div className="flex-1 rounded-lg p-4 overflow-y-auto bg-surface border border-muted/20">
+        <div className="flex-1 rounded-lg p-2 overflow-y-auto bg-darkteal border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-2 border-b border-muted/20">
-            <div className="mb-3 text-xs font-semibold text-ink uppercase tracking-wide">
+            <div className="mb-3 text-xs font-semibold text-inkondark uppercase tracking-wide">
               Questions
             </div>
           </div>
@@ -576,10 +595,10 @@ function SideBar({
               questions.map((question) => (
                 <div
                   key={question.id}
-                  className={`py-1.5 px-2.5 rounded-md text-sm flex items-center justify-between group transition-all ${
+                  className={`py-0.5 px-2 rounded-md text-sm flex items-center justify-between group transition-all ${
                     selectedQuestionId === question.id
-                      ? "bg-accent text-canvas font-medium "
-                      : "bg-surface hover:bg-muted/10 text-ink border border-muted/20"
+                      ? "bg-accent text-inkondark font-medium"
+                      : "hover:bg-muted/20 text-inkondark border border-muted/20"
                   }`}
                 >
                   <div
@@ -595,7 +614,7 @@ function SideBar({
                     }}
                     className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
                       selectedQuestionId === question.id
-                        ? "text-canvas hover:text-canvas"
+                        ? "text-inkondark hover:text-red-500"
                         : "text-red-400 hover:text-red-500"
                     }`}
                   >
@@ -605,7 +624,13 @@ function SideBar({
               ))
             ) : isFetching ? (
               <div className="space-y-1">
-                <div className="text-canvas text-sm">Fetching...</div>
+                <div className="text-muted text-sm">Fetching...</div>
+              </div>
+            ) : questionsError ? (
+              <div className="space-y-1">
+                <div className="text-red-400 text-sm">
+                  Failed to load questions
+                </div>
               </div>
             ) : (
               <div className="space-y-1">
