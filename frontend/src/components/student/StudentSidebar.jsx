@@ -56,7 +56,7 @@ export default function StudentSidebar({
                   className={`
                   w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0
                   ${isAnswered ? "bg-green-600 text-ink" : "bg-surface text-muted"}
-                  ${isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-gray-900" : ""}
+                  ${isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}
                 `}
                 >
                   {index + 1}
@@ -74,7 +74,7 @@ export default function StudentSidebar({
       {/* Submit Quiz Button */}
       <div className="border-t border-muted/20 p-4">
         <button
-          className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-inkondark rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-accept text-inkondark hover:bg-green-600 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             const unanswered = totalQuestions - answeredCount;
             if (unanswered > 0) {

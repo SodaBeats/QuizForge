@@ -11,7 +11,7 @@ function ReasoningAnswerInput({ answers, question, onAnswerChange }) {
     <div className="h-48 flex flex-col">
       {/* Fixed height for textarea to prevent takeover */}
       <textarea
-        className="w-full flex-1 bg-surface/40 border border-muted/20 rounded-md p-4 focus:border-accent focus:outline-none text-inkondark text-sm placeholder:text-muted resize-none"
+        className="w-full flex-1 bg-darkslate border border-muted/30 rounded-md p-4 focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none text-inkondark text-sm placeholder:text-muted resize-none"
         placeholder="Type your answer here..."
         value={answers[question.id] || ""}
         onChange={(e) => onAnswerChange(e.target.value)}

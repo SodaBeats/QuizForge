@@ -295,7 +295,7 @@ export default function StudentQuizPage() {
       <div className="flex h-screen overflow-hidden bg-canvas">
         {showExitWarning && (
           <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-            <div className="bg-surface p-6 rounded-md max-w-sm text-center space-y-4">
+            <div className="bg-surface border border-accent p-6 rounded-md max-w-sm text-center space-y-4">
               <h2 className="text-inkondark text-lg font-semibold">
                 Leave Quiz?
               </h2>
@@ -305,7 +305,7 @@ export default function StudentQuizPage() {
               <div className="flex justify-center gap-3">
                 <button
                   onClick={() => setShowExitWarning(false)}
-                  className="px-4 py-2 rounded bg-surface text-inkondark"
+                  className="px-4 py-2 rounded bg-surface text-inkondark border border-muted/30 hover:bg-muted/20 transition-colors"
                 >
                   Stay
                 </button>
@@ -314,7 +314,7 @@ export default function StudentQuizPage() {
                     setShowExitWarning(false);
                     handleQuizSubmit();
                   }}
-                  className="px-4 py-2 rounded bg-accent text-inkondark"
+                  className="px-4 py-2 rounded bg-accept text-inkondark hover:bg-green-600 transition-colors"
                 >
                   Submit & Exit
                 </button>
@@ -324,7 +324,7 @@ export default function StudentQuizPage() {
         )}
         {showLogoutWarning && (
           <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-            <div className="bg-surface p-6 rounded-md max-w-sm text-center space-y-4">
+            <div className="bg-surface border border-accent p-6 rounded-md max-w-sm text-center space-y-4">
               <h2 className="text-inkondark text-lg font-semibold">
                 Leave Quiz?
               </h2>
@@ -334,7 +334,7 @@ export default function StudentQuizPage() {
               <div className="flex justify-center gap-3">
                 <button
                   onClick={() => setShowLogoutWarning(false)}
-                  className="px-4 py-2 rounded bg-surface text-inkondark"
+                  className="px-4 py-2 rounded bg-surface text-inkondark border border-muted/30 hover:bg-muted/20 transition-colors"
                 >
                   Stay
                 </button>
@@ -343,7 +343,7 @@ export default function StudentQuizPage() {
                     setShowLogoutWarning(false);
                     submitAndLogout();
                   }}
-                  className="px-4 py-2 rounded bg-accent text-inkondark"
+                  className="px-4 py-2 rounded bg-accept text-inkondark hover:bg-green-600 transition-colors"
                 >
                   Submit & Logout
                 </button>
