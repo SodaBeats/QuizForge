@@ -10,7 +10,7 @@ export default function ClassesSidebar({
   deletingIds = [],
 }) {
   return (
-    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 font-body p-3">
+    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-blackblue/75 backdrop-blur border-r-2 border-accent/50 font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -25,7 +25,7 @@ export default function ClassesSidebar({
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center rounded-md px-3 py-1 text-lg font-semibold text-inkondark transition-all bg-surface hover:bg-muted/10 border border-muted/20 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+            className="inline-flex items-center justify-center rounded-md px-3 py-1 text-lg font-semibold text-inkondark transition-all bg-accent hover:bg-accent/80 border border-muted/20 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
             aria-label="Create class"
           >
             +
@@ -44,8 +44,8 @@ export default function ClassesSidebar({
                 key={cls.id}
                 className={`group flex items-center px-3 py-3 mb-1.5 rounded-md transition-all ${
                   selectedClassId === cls.id
-                    ? "bg-accent "
-                    : "bg-surface hover:bg-muted/10 border border-muted/20"
+                    ? "bg-accent"
+                    : "bg-surface hover:bg-muted/20 border border-muted/20"
                 }`}
               >
                 <button

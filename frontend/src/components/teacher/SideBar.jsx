@@ -482,7 +482,7 @@ function SideBar({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="w-full lg:w-52 bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
+      <div className="w-full lg:w-52 bg-blackblue/75 backdrop-blur border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
             sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
         <Link
@@ -490,14 +490,14 @@ function SideBar({
           className="hidden lg:flex items-center gap-2.5 shrink-0 px-1 cursor-pointer group"
         >
           <div
-            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
+            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm"
             style={{
               background: "var(--accent)",
             }}
           >
             Q
           </div>
-          <span className="font-display font-bold text-accent group-hover:text-inkondark transition-colors">
+          <span className="font-display font-bold text-inkondark group-hover:text-accent transition-colors">
             QuizForge
           </span>
         </Link>

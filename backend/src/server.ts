@@ -34,7 +34,7 @@ app.use(
   }),
 );
 
-app.use(ipRateLimiter(60, 1000)); // Ip-based Rate Limiter
+//app.use(ipRateLimiter(60, 1000)); // Ip-based Rate Limiter
 
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)

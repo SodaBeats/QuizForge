@@ -47,7 +47,7 @@ export default function QuizzesSidebar({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-darkteal/75 backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-blackblue/75 backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }

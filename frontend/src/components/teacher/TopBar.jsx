@@ -519,7 +519,7 @@ export default function TopBar({
           className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
         >
           <div
-            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-canvas text-sm"
+            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm"
             style={{
               background: "var(--accent)",
             }}
@@ -527,7 +527,7 @@ export default function TopBar({
             Q
           </div>
           <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
-            QuizForge
+            IlmariGen
           </span>
         </Link>
 

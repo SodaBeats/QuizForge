@@ -246,7 +246,7 @@ export default function QuizzesMetadata({
 
             {/* Accessibility */}
             <div>
-              <label className={labelClass}>Accessibility</label>
+              <label className={labelClass}>Who can access</label>
               <ClassAccessDropdown
                 editingQuiz={editingQuiz}
                 setEditingQuiz={setEditingQuiz}
