@@ -10,6 +10,8 @@ export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
     return current
   `;
   return async (req: Request, res: Response, next: NextFunction) => {
+    next();
+    /*
     try {
       const clientKey = `ratelimit:user:${req.user.id}`;
       const counter = (await redis.eval(
@@ -33,6 +35,6 @@ export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
         success: false,
         message: 'Something went wrong with the user-based limiter',
       });
-    }
+    }*/
   };
 }

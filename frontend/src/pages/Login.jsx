@@ -144,9 +144,9 @@ export default function LogInComponent() {
         <h1>
           Smarter
           <br />
-          Quizzes.
+          Exams
           <br />
-          <span className="accent-text">Better Learning.</span>
+          <span className="accent-text">Better Learning</span>
         </h1>
 
         <div className="accent-bar" />
@@ -201,7 +201,7 @@ export default function LogInComponent() {
 
                   <div className="brand-text">
                     <h2 className="brand-name">
-                      Quiz<span className="highlight">Forge</span>
+                      Ilmari<span className="highlight">Gen</span>
                     </h2>
 
                     <p className="brand-subtext">Learn • Practice • Achieve</p>
@@ -337,10 +337,6 @@ export default function LogInComponent() {
                     <span className="input-icon">✉</span>
 
                     <div className="input-content">
-                      <label htmlFor="emailInput" className="input-label">
-                        Email address
-                      </label>
-
                       <input
                         type="email"
                         id="emailInput"
@@ -348,7 +344,7 @@ export default function LogInComponent() {
                         className="custom-input"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@school.edu"
+                        placeholder="Email"
                         required
                         autoComplete="email"
                       />
@@ -367,10 +363,6 @@ export default function LogInComponent() {
                     <span className="input-icon">🔒</span>
 
                     <div className="input-content">
-                      <label htmlFor="passwordInput" className="input-label">
-                        Password
-                      </label>
-
                       <input
                         type="password"
                         id="passwordInput"
@@ -378,7 +370,7 @@ export default function LogInComponent() {
                         className="custom-input"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="Password"
                         required
                         autoComplete="current-password"
                       />

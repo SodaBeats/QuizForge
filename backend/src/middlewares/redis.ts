@@ -1,5 +1,8 @@
 import { Redis } from 'ioredis';
 
+// to re-ignite redis, be sure to adjust ipBasedRateLimiter and userBasedRateLimiter
+export const redis = 'temporarily disabled';
+/*
 export const redis = new Redis({
   host: process.env.REDIS_HOST || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
@@ -36,3 +39,4 @@ process.on('SIGINT', async () => {
     process.exit(0);
   }
 });
+*/
