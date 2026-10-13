@@ -283,7 +283,7 @@ export default function QuestionEditor({
   }
 
   return (
-    <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-worksurface backdrop-blur overflow-hidden border border-accent">
+    <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface backdrop-blur overflow-hidden border border-accent">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }

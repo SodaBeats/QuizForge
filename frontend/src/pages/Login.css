@@ -17,7 +17,7 @@
   --color-page-bg-start: var(--canvas);
   --color-page-bg-end: var(--canvas);
 
-  --color-paper-bg: var(--offwhite);
+  --color-paper-bg: var(--inkondark);
 
   --color-board-dark: var(--surface);
   --color-board-darker: var(--surface);

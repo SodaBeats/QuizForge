@@ -494,7 +494,7 @@ function SideBar({
             Q
           </div>
           <span className="font-display font-bold text-inkondark group-hover:text-accent transition-colors">
-            Ilmari<span className="text-ccdired">Gen</span>
+            Ilmari<span className="text-accent">Gen</span>
           </span>
         </Link>
 

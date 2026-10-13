@@ -36,7 +36,7 @@ export default function StudentQuizWindow({
     );
 
   return (
-    <div className="flex-1 flex flex-col bg-surface text-inkondark">
+    <div className="flex-1 flex flex-col bg-specialsurface text-inkondark">
       {/* Question Content */}
       <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full px-8">
         {/* Question Part */}
@@ -124,11 +124,11 @@ export default function StudentQuizWindow({
       </div>
 
       {/* Navigation Footer */}
-      <div className="border-t border-muted/20 p-6 flex justify-between items-center bg-surface/50 backdrop-blur-sm">
+      <div className="border-t border-muted/20 p-6 flex justify-between items-center bg-specialsurface">
         <button
           onClick={onPrev}
           disabled={!canPrev}
-          className="flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all disabled:opacity-20 hover:bg-muted/10"
+          className="bg-accent flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all disabled:opacity-20 hover:bg-muted/10"
         >
           ← Previous
         </button>

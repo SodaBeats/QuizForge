@@ -102,7 +102,7 @@ function ClassRow({ cls, rank, maxAverage }) {
 
       {/* Progress bar */}
       <div className="ml-8 flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-blackblue rounded-full overflow-hidden ">
+        <div className="flex-1 h-1.5 bg-ink rounded-full overflow-hidden ">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{

@@ -12,7 +12,7 @@ export default function StudentSidebar({
     totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return (
-    <div className="w-80 border-r border-muted/20 bg-surface flex flex-col h-full">
+    <div className="w-80 border-r-2 border-accent/50 bg-specialsurface flex flex-col h-full">
       {/* Header */}
       <div className="border-b border-muted/20 p-4">
         <h2 className="text-lg font-semibold text-inkondark">Questions</h2>
@@ -23,7 +23,7 @@ export default function StudentSidebar({
 
       {/* Progress Bar */}
       <div className="px-4 py-3 border-b border-muted/20">
-        <div className="w-full bg-surface rounded-full h-2">
+        <div className="w-full bg-muted/20 rounded-full h-2">
           <div
             className="bg-accent h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
@@ -55,8 +55,8 @@ export default function StudentSidebar({
                 <div
                   className={`
                   w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0
-                  ${isAnswered ? "bg-green-600 text-ink" : "bg-surface text-muted"}
-                  ${isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}
+                  ${isAnswered ? "bg-accept text-inkondark" : "bg-surface text-muted"}
+                  ${isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-specialsurface" : ""}
                 `}
                 >
                   {index + 1}

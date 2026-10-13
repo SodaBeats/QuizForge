@@ -29,7 +29,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
         ref={studentCardRef}
         className="bg-specialsurface rounded-lg max-w-xl w-full overflow-hidden border border-muted font-body"
       >
-        <div className="flex items-center justify-between px-6 py-5 bg-blackblue border-b border-muted/20">
+        <div className="flex items-center justify-between px-6 py-5 bg-ink border-b border-muted/20">
           <h2 className="text-lg font-display font-semibold text-inkondark">
             Student info
           </h2>

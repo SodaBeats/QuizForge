@@ -63,7 +63,7 @@ function CreateClassModal({
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-blackblue rounded-t-lg border-b border-muted/20">
+        <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             Create a new class
           </h2>
@@ -235,7 +235,7 @@ function AddStudentModal({
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-blackblue rounded-t-lg border-b border-muted/20">
+        <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
             Add student to {selectedClass?.name}
           </h2>
@@ -559,7 +559,7 @@ export default function ClassesPage() {
         >
           {selectedClass ? (
             <>
-              <div className="flex-1 flex flex-col rounded-lg bg-tealgray backdrop-blur overflow-hidden border border-accent">
+              <div className="flex-1 flex flex-col rounded-lg bg-surface backdrop-blur overflow-hidden border border-accent">
                 {/* Panel header */}
                 <div className="px-4 sm:px-6 py-4 bg-specialsurface flex items-center justify-between gap-3 border-b border-muted/20">
                   <div className="min-w-0">
@@ -647,7 +647,7 @@ export default function ClassesPage() {
               )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray backdrop-blur text-muted gap-2 border border-accent">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-surface backdrop-blur text-muted gap-2 border border-accent">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>

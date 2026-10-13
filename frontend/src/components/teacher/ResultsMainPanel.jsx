@@ -39,7 +39,7 @@ function difficultyTextClass(pct) {
 function MetricCard({ label, value, sub }) {
   return (
     <div
-      className={`flex-1 min-w-[45%] sm:min-w-0 bg-tealgray rounded-lg p-3 sm:p-4 flex flex-col justify-between font-body border border-accent`}
+      className={`flex-1 min-w-[45%] sm:min-w-0 bg-surface rounded-lg p-3 sm:p-4 flex flex-col justify-between font-body border border-accent`}
     >
       <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
         {label}
@@ -188,8 +188,8 @@ export default function ResultsMainPanel({
       {/* ── Row 2: Bottom panels — stacks on mobile/tablet, side-by-side on lg+ ── */}
       <div className="flex flex-col lg:flex-row gap-4 min-h-0 h-auto lg:h-[70%]">
         {/* Score distribution */}
-        <div className="w-full h-[300px] lg:h-auto lg:flex-1 min-w-0 bg-tealgray rounded-lg border border-accent flex flex-col">
-          <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+        <div className="w-full h-[300px] lg:h-auto lg:flex-1 min-w-0 bg-surface rounded-lg border border-accent flex flex-col">
+          <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
             <h2 className="text-sm font-display font-semibold text-inkondark">
               Score distribution
             </h2>
@@ -206,8 +206,8 @@ export default function ResultsMainPanel({
 
         {/* Right column: difficulty + needs review stacked */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
-          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-tealgray rounded-lg border border-accent flex flex-col">
-            <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
               <h2 className="text-sm font-display font-semibold text-inkondark">
                 Question difficulty
               </h2>
@@ -230,8 +230,8 @@ export default function ResultsMainPanel({
             )}
           </div>
 
-          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-tealgray rounded-lg border border-accent flex flex-col">
-            <div className="px-4 py-3 bg-blackblue flex-shrink-0 rounded-t-lg border-b border-muted/20">
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
               <h2 className="text-sm font-display font-semibold text-inkondark">
                 Questions needing review
               </h2>

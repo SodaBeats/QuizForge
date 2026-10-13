@@ -81,12 +81,12 @@ export default function StudentTimeLimit({
   }, [timeLimit, onTimeout, remainingSeconds]);
 
   return (
-    <div className="w-72 border-l border-muted/20 bg-surface p-6 hidden lg:flex flex-col gap-8">
+    <div className="w-72 border-l-2 border-accent/50 bg-specialsurface p-6 hidden lg:flex flex-col gap-8">
       {/* Timer Section */}
       <>
         <h2 className="text-inkondark font-bold mb-2">{`Attempt: ${attemptCount} of ${maxAttempts}`}</h2>
       </>
-      <div className="bg-surface/50 rounded-lg p-6 border border-muted/20 text-center">
+      <div className="bg-darkslate rounded-lg p-6 border border-muted/20 text-center">
         <p className="text-xs text-muted font-bold uppercase tracking-widest mb-2">
           Time Remaining
         </p>

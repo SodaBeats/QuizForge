@@ -271,12 +271,12 @@ export default function StudentQuizPage() {
     return (
       <div className="h-screen flex items-center justify-center bg-canvas text-inkondark">
         <div className="text-center">
-          <p className="text-red-500">{error?.message}</p>
+          <p className="text-red-400">{error?.message}</p>
           <button
             onClick={() => {
               deleteAttempt();
             }}
-            className="mt-4 bg-accent text-inkondark px-4 py-2 rounded"
+            className="mt-4 bg-accept text-inkondark hover:bg-green-600 font-display font-bold px-4 py-2 rounded-md transition-all hover:-translate-y-0.5 active:translate-y-0.5"
           >
             Back to Student Page
           </button>
@@ -294,8 +294,8 @@ export default function StudentQuizPage() {
       <StudentTopbar onLogout={handleLogout} />
       <div className="flex h-screen overflow-hidden bg-canvas">
         {showExitWarning && (
-          <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-            <div className="bg-surface border border-accent p-6 rounded-md max-w-sm text-center space-y-4">
+          <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
+            <div className="bg-specialsurface border border-muted p-6 rounded-lg max-w-sm text-center space-y-4">
               <h2 className="text-inkondark text-lg font-semibold">
                 Leave Quiz?
               </h2>
@@ -323,8 +323,8 @@ export default function StudentQuizPage() {
           </div>
         )}
         {showLogoutWarning && (
-          <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-            <div className="bg-surface border border-accent p-6 rounded-md max-w-sm text-center space-y-4">
+          <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
+            <div className="bg-specialsurface border border-muted p-6 rounded-lg max-w-sm text-center space-y-4">
               <h2 className="text-inkondark text-lg font-semibold">
                 Leave Quiz?
               </h2>

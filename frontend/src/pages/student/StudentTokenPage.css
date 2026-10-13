@@ -8,7 +8,6 @@
   /* Student-only variables */
   --bg: var(--canvas);
   --card-bg: var(--specialsurface);
-  --card-border: var(--accent);
   --orange: var(--accent);
   --orange-2: var(--accent);
   --text: var(--inkondark);
@@ -48,37 +47,6 @@
 .student-token-page *::before,
 .student-token-page *::after {
   box-sizing: border-box;
-}
-
-/* =========================================================
-   AMBIENT BACKGROUND GLOW
-   ========================================================= */
-
-.student-token-page::before,
-.student-token-page::after {
-  content: "";
-  position: fixed;
-
-  width: 520px;
-  height: 520px;
-
-  border-radius: 50%;
-
-  filter: blur(10px);
-  opacity: 0.28;
-
-  z-index: 0;
-  pointer-events: none;
-}
-
-.student-token-page::before {
-  bottom: -260px;
-  left: -220px;
-}
-
-.student-token-page::after {
-  top: -260px;
-  right: -220px;
 }
 
 /* =========================================================
@@ -163,7 +131,7 @@
   font-weight: 800;
   font-size: 22px;
 
-  color: var(--canvas);
+  color: var(--inkondark);
 
   flex-shrink: 0;
 }
@@ -271,7 +239,7 @@
 
   background: var(--card-bg);
 
-  border: 2px solid var(--card-border);
+  border: 1px solid var(--accent);
 
   border-radius: 12px;
 

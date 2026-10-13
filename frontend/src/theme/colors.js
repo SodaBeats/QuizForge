@@ -29,24 +29,12 @@ export const colors = {
   inkondark: "#F8FAFC",
   muted: "#6E92A9",
   accent: "#A01412",
-  //accent: "#4E7385",
   specialsurface: "#0E112F",
-  specialheader: "#0C171D",
   modalback: "#1B262D",
   accept: "#22C55E",
-  worksurface: "#395A69",
-  darkslate: "#1E293B", //-------------------------------------
-  paleblue: "#96B9C9",
-  offwhite: "#F8FAFC", // text on dark
-  mutedblue: "#6E92A9",
-  steelblue: "#4E7385",
-  tealgray: "#395A69",
+  darkslate: "#1E293B",
   mutedteal: "#2B4552",
-  bluegray: "#20343F", // main dark surface
-  deepbluegray: "#1B262D", //dark neutral
   darkteal: "#012C36",
-  blackblue: "#0C171D",
-  ccdired: "#A01412",
   ccdiblue: "#000B6D",
 };
 
