@@ -11,7 +11,7 @@
  *               border-muted/20  → panel edge
  *               border-muted/30  → input / interactive edge
  *               bg-muted/10      → hover lift
- *   accent  — brand orange: solid buttons, focus rings, selected/active state
+ *   accent  — brand red: solid buttons, focus rings, selected/active state
  *
  * Loaded by `tailwind.config.js`, which:
  *   1. exposes them as Tailwind utilities (bg-canvas, text-ink, border-muted/20 …)
