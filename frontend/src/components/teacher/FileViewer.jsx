@@ -64,14 +64,14 @@ export default function FileViewer({ selectedFile }) {
 
   if (isFetching) {
     return (
-      <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+      <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-tealgray backdrop-blur overflow-hidden border border-accent">
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
           .font-display { font-family: 'Baloo 2', sans-serif; }
           .font-body { font-family: 'Inter', sans-serif; }
           ${scrollStyles}
         `}</style>
-        <div className="p-3.5 bg-blackblue/75 border-b border-muted/20">
+        <div className="p-3.5 bg-blackblue border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             {selectedFile ? selectedFile.name : "File viewer"}
           </h2>
@@ -85,14 +85,14 @@ export default function FileViewer({ selectedFile }) {
   }
 
   return (
-    <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+    <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-worksurface backdrop-blur overflow-hidden border border-accent">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
         ${scrollStyles}
       `}</style>
-      <div className="p-3.5 bg-blackblue/75 border-b border-muted/20">
+      <div className="p-3.5 bg-specialsurface border-b border-muted/20">
         <h2 className="text-sm font-display font-semibold text-inkondark">
           {selectedFile ? selectedFile.name : "File viewer"}
         </h2>

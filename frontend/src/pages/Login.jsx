@@ -144,9 +144,9 @@ export default function LogInComponent() {
         <h1>
           Smarter
           <br />
-          Quizzes.
+          Exams
           <br />
-          <span className="accent-text">Better Learning.</span>
+          <span className="accent-text">Better Learning</span>
         </h1>
 
         <div className="accent-bar" />
@@ -201,7 +201,7 @@ export default function LogInComponent() {
 
                   <div className="brand-text">
                     <h2 className="brand-name">
-                      Quiz<span className="highlight">Forge</span>
+                      Ilmari<span className="highlight">Gen</span>
                     </h2>
 
                     <p className="brand-subtext">Learn • Practice • Achieve</p>

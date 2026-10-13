@@ -373,7 +373,7 @@ body {
   width: 46px;
   height: 46px;
 
-  background: var(--color-orange-primary);
+  background: var(--accent);
 
   border-radius: 8px;
 
@@ -384,7 +384,7 @@ body {
 }
 
 .logo-icon-box .q-letter {
-  color: var(--canvas);
+  color: white;
 
   font-size: 1.75rem;
 
@@ -410,7 +410,7 @@ body {
 }
 
 .brand-text .brand-name .highlight {
-  color: var(--color-orange-primary);
+  color: var(--accent);
 }
 
 .brand-text .brand-subtext {

@@ -31,3 +31,6 @@ dist-ssr
 /backend/uploads
 /backend/.env.test
 /frontend/.env
+
+# misc
+plan.md

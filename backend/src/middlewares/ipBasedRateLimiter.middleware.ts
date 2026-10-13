@@ -12,7 +12,8 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
   `;
 
   return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    next();
+    /*try {
       const clientIp = req.ip?.replace(/^::ffff:/, '');
       if (!clientIp) {
         console.error('IP address unavailable, blocking request');
@@ -43,6 +44,6 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
       return res
         .status(500)
         .json({ success: false, message: 'Redis error, try again later' });
-    }
+    }*/
   };
 }

@@ -57,7 +57,7 @@ function ClassAccessDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="w-full bg-darkslate rounded-md p-2.5 text-sm text-muted text-left flex items-center justify-between border border-muted/30 hover:bg-muted/10 transition-all font-body"
+        className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
       >
         <span className="truncate">{displayText}</span>
         <svg
@@ -77,7 +77,7 @@ function ClassAccessDropdown({
         </svg>
       </button>
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-muted/20 rounded-md z-20 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-specialsurface border border-muted/20 rounded-md z-20 max-h-48 overflow-y-auto">
           <label className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20">
             <input
               type="checkbox"
@@ -138,7 +138,7 @@ export default function QuizzesMetadata({
   if (!quiz) {
     return (
       <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full p-3">
-        <div className="w-full h-full rounded-lg bg-tealgray/75 backdrop-blur flex items-center justify-center border border-accent">
+        <div className="w-full h-full rounded-lg bg-tealgray backdrop-blur flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
       </div>
@@ -153,9 +153,9 @@ export default function QuizzesMetadata({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+      <div className="flex-1 flex flex-col rounded-lg bg-worksurface backdrop-blur overflow-hidden border border-accent">
         {/* Header */}
-        <div className="p-4 bg-blackblue/75 border-b border-muted/20">
+        <div className="p-4 bg-specialsurface border-b border-muted/20">
           <input
             type="text"
             name="quizTitle"
@@ -204,7 +204,7 @@ export default function QuizzesMetadata({
                 type="text"
                 value={quiz.shareToken?.toUpperCase() || "N/A"}
                 readOnly
-                className="flex-1 px-3 py-2 rounded-md text-muted text-sm min-w-0 bg-darkslate border border-muted/30"
+                className="flex-1 px-3 py-2 rounded-md text-muted text-sm min-w-0 bg-darkslate"
               />
               {quiz.shareToken && (
                 <button
@@ -215,7 +215,7 @@ export default function QuizzesMetadata({
                       duration: 2000,
                       style: {
                         background: "#10B981",
-                        color: "var(--ink)",
+                        color: "var(--inkondark)",
                       },
                     });
                   }}

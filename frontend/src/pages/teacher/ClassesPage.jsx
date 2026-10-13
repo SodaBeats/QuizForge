@@ -8,7 +8,6 @@ import { AuthContext } from "../../components/AuthProvider";
 import TopBar from "../../components/teacher/TopBar";
 import ClassesSidebar from "../../components/teacher/ClassesSidebar";
 import StudentInfoModal from "../../components/teacher/StudentInfoModal";
-import background from "../../assets/mistywoods-compressed.jpg";
 import { getInitials } from "../../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
@@ -17,7 +16,7 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 const wellInputClass =
   "bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
 const modalPanelClass =
-  "bg-canvas rounded-lg w-[420px] max-w-full relative font-body border border-accent";
+  "bg-specialsurface rounded-lg w-[420px] max-w-full relative font-body border border-muted";
 const primaryBtnClass =
   "px-4 py-2 text-sm bg-accept text-inkondark hover:bg-green-600 font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
@@ -61,10 +60,10 @@ function CreateClassModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
+        <div className="flex items-center justify-between px-5 py-4 bg-blackblue rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             Create a new class
           </h2>
@@ -79,7 +78,9 @@ function CreateClassModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">Class name</label>
+            <label className="text-xs font-medium text-inkondark">
+              Class name
+            </label>
             <input
               name="className"
               value={form.className}
@@ -91,7 +92,9 @@ function CreateClassModal({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">Subject</label>
+            <label className="text-xs font-medium text-inkondark">
+              Subject
+            </label>
             <input
               name="subject"
               value={form.subject}
@@ -122,7 +125,7 @@ function CreateClassModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
             <div className="text-sm text-muted">Creating...</div>
@@ -229,10 +232,10 @@ function AddStudentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
       <div className={modalPanelClass}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-surface rounded-t-lg">
+        <div className="flex items-center justify-between px-5 py-4 bg-blackblue rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
             Add student to {selectedClass?.name}
           </h2>
@@ -247,7 +250,7 @@ function AddStudentModal({
         {/* Body */}
         <div className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">
+            <label className="text-xs font-medium text-inkondark">
               Student email
             </label>
             <input
@@ -297,7 +300,7 @@ function AddStudentModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-canvas/50 backdrop-blur-sm rounded-lg">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 backdrop-blur-sm rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
             <div className="text-sm text-muted">Adding...</div>
@@ -493,23 +496,7 @@ export default function ClassesPage() {
     return <Navigate to="/error" replace />;
   }
   return (
-    <div
-      className="relative isolate h-screen flex flex-col bg-canvas text-inkondark"
-      style={{
-        backgroundImage: `url(${background})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Flat scrim that darkens the background image. -z-10 inside the
-          isolated root keeps it above the root's own background image but
-          behind all content — so gutters show a darkened image and the
-          frosted panels blur the darkened image, never the raw one. */}
-      <div
-        className="absolute inset-0 -z-10 bg-canvas/70 pointer-events-none"
-        aria-hidden="true"
-      />
+    <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -572,9 +559,9 @@ export default function ClassesPage() {
         >
           {selectedClass ? (
             <>
-              <div className="flex-1 flex flex-col rounded-lg bg-tealgray/75 backdrop-blur overflow-hidden border border-accent">
+              <div className="flex-1 flex flex-col rounded-lg bg-tealgray backdrop-blur overflow-hidden border border-accent">
                 {/* Panel header */}
-                <div className="px-4 sm:px-6 py-4 bg-blackblue/75 flex items-center justify-between gap-3 border-b border-muted/20">
+                <div className="px-4 sm:px-6 py-4 bg-specialsurface flex items-center justify-between gap-3 border-b border-muted/20">
                   <div className="min-w-0">
                     <h2 className="text-base font-display font-semibold text-inkondark truncate">
                       {selectedClass.name}
@@ -598,13 +585,13 @@ export default function ClassesPage() {
                   {selectedClass.students?.map((student) => (
                     <div
                       key={student?.id}
-                      className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
+                      className="flex items-center justify-between rounded-md px-4 py-3 transition-all bg-darkslate hover:bg-darkslate/70 border border-muted/20"
                     >
                       <div
                         onClick={() => setSelectedStudent(student)}
                         className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
                       >
-                        <div className="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-accent text-xs font-display font-semibold flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-ccdiblue text-xs font-display font-semibold flex-shrink-0">
                           {getInitials(student?.name)}
                         </div>
                         <div className="overflow-hidden">
@@ -660,7 +647,7 @@ export default function ClassesPage() {
               )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray/75 backdrop-blur text-muted gap-2 border border-accent">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-tealgray backdrop-blur text-muted gap-2 border border-accent">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>

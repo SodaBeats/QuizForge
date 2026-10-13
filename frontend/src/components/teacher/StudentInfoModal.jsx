@@ -19,7 +19,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
   }, []); // eslint-disable-line
 
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50 px-4 py-6">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4 py-6">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -27,9 +27,9 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
       `}</style>
       <div
         ref={studentCardRef}
-        className="bg-canvas rounded-lg max-w-xl w-full overflow-hidden border border-accent font-body"
+        className="bg-specialsurface rounded-lg max-w-xl w-full overflow-hidden border border-muted font-body"
       >
-        <div className="flex items-center justify-between px-6 py-5 bg-surface">
+        <div className="flex items-center justify-between px-6 py-5 bg-blackblue border-b border-muted/20">
           <h2 className="text-lg font-display font-semibold text-inkondark">
             Student info
           </h2>
@@ -37,12 +37,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
 
         <div className="px-6 py-5 space-y-5">
           <div className="flex items-center gap-4">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold flex-shrink-0 text-accent"
-              style={{
-                background: "var(--surface)",
-              }}
-            >
+            <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-display font-bold flex-shrink-0 text-ink bg-white">
               {getInitials(student.name)}
             </div>
             <div className="min-w-0">
@@ -74,7 +69,7 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 bg-surface">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-muted/20">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-md text-sm font-medium text-inkondark transition-all bg-surface hover:bg-muted/20 border border-muted/30"

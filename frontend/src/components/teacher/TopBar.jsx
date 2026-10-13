@@ -15,7 +15,8 @@ const primaryBtnClass =
   "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600";
 const secondaryBtnClass =
   "rounded-md px-4 py-2 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark";
-const modalPanelClass = "bg-surface rounded-lg border border-accent font-body";
+const modalPanelClass =
+  "bg-specialsurface rounded-lg border border-muted font-body";
 
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -143,7 +144,7 @@ function QuizForgeModal({
   classFetchError,
 }) {
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
       <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
         <h2 className="text-xl font-display font-semibold mb-4 text-inkondark">
           Forge quiz
@@ -506,7 +507,7 @@ export default function TopBar({
 
   return (
     <>
-      <div className="px-5 py-3 flex items-center justify-between bg-darkteal/75 backdrop-blur z-40 border-b-2 border-accent/20">
+      <div className="px-5 py-3 flex items-center justify-between bg-specialsurface backdrop-blur z-40 border-b-2 border-accent/20">
         <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -527,7 +528,7 @@ export default function TopBar({
             Q
           </div>
           <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
-            IlmariGen
+            Ilmari<span className="text-ccdired">Gen</span>
           </span>
         </Link>
 
@@ -551,7 +552,7 @@ export default function TopBar({
               </span>
             </button>
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-surface border-2 border-accent">
+              <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-specialsurface border-2 border-muted">
                 <button
                   className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
                   onClick={() => {

@@ -23,15 +23,18 @@
  *   style={{ background: colors.accent }}
  */
 export const colors = {
-  canvas: "#1B262D",
-  surface: "#1B262D",
+  surface: "#395A69",
+  canvas: "#C3D1D5",
   ink: "#0C171D",
   inkondark: "#F8FAFC",
   muted: "#6E92A9",
-  accent: "#4E7385",
-  specialsurface: "#012C36",
+  accent: "#A01412",
+  //accent: "#4E7385",
+  specialsurface: "#0E112F",
   specialheader: "#0C171D",
+  modalback: "#1B262D",
   accept: "#22C55E",
+  worksurface: "#395A69",
   darkslate: "#1E293B", //-------------------------------------
   paleblue: "#96B9C9",
   offwhite: "#F8FAFC", // text on dark
@@ -43,6 +46,8 @@ export const colors = {
   deepbluegray: "#1B262D", //dark neutral
   darkteal: "#012C36",
   blackblue: "#0C171D",
+  ccdired: "#A01412",
+  ccdiblue: "#000B6D",
 };
 
 export default colors;

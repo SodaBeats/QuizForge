@@ -8,7 +8,6 @@ import TopBar from "../../components/teacher/TopBar";
 import SideBar from "../../components/teacher/SideBar";
 import FileViewer from "../../components/teacher/FileViewer";
 import QuestionEditor from "../../components/teacher/QuestionEditor";
-import background from "../../assets/mistywoods-compressed.jpg";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -125,23 +124,7 @@ export default function QuizMakerSkeleton() {
   }
 
   return (
-    <div
-      className="relative isolate h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark"
-      style={{
-        backgroundImage: `url(${background})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Flat scrim that darkens the background image. -z-10 inside the
-          isolated root keeps it above the root's own background image but
-          behind all content — so gutters show a darkened image and the
-          frosted panels blur the darkened image, never the raw one. */}
-      <div
-        className="absolute inset-0 -z-10 bg-canvas/70 pointer-events-none"
-        aria-hidden="true"
-      />
+    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', sans-serif; }

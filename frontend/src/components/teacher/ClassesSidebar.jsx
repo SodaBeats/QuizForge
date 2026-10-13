@@ -10,7 +10,7 @@ export default function ClassesSidebar({
   deletingIds = [],
 }) {
   return (
-    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-blackblue/75 backdrop-blur border-r-2 border-accent/50 font-body p-3">
+    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-specialsurface font-body p-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -25,7 +25,7 @@ export default function ClassesSidebar({
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center rounded-md px-3 py-1 text-lg font-semibold text-inkondark transition-all bg-accent hover:bg-accent/80 border border-muted/20 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+            className="inline-flex items-center justify-center rounded-md px-2 text-lg font-semibold text-inkondark transition-all bg-accent hover:bg-accent/80 border border-muted/20"
             aria-label="Create class"
           >
             +
@@ -34,7 +34,7 @@ export default function ClassesSidebar({
 
         <div className="themed-scroll flex-1 overflow-y-auto relative p-2">
           {isFetching ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-darkteal/95 text-center px-4">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-specialsurface text-center px-4">
               <div className="w-10 h-10 border-4 border-t-transparent border-accent rounded-full animate-spin" />
               <div className="text-sm text-muted">Loading classes...</div>
             </div>
@@ -44,8 +44,8 @@ export default function ClassesSidebar({
                 key={cls.id}
                 className={`group flex items-center px-3 py-3 mb-1.5 rounded-md transition-all ${
                   selectedClassId === cls.id
-                    ? "bg-accent"
-                    : "bg-surface hover:bg-muted/20 border border-muted/20"
+                    ? "bg-accent text-inkondark"
+                    : "hover:bg-muted/20 text-inkondark border border-muted/20"
                 }`}
               >
                 <button
@@ -55,11 +55,7 @@ export default function ClassesSidebar({
                   className="flex-1 flex items-center gap-3 text-left"
                 >
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-display font-semibold flex-shrink-0 ${
-                      selectedClassId === cls.id
-                        ? "bg-accent/25 text-inkondark"
-                        : "bg-surface text-accent"
-                    }`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-display font-semibold flex-shrink-0 bg-white text-ccdiblue`}
                   >
                     {cls.name.slice(0, 2)}
                   </div>

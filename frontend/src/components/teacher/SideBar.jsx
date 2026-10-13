@@ -8,10 +8,11 @@ const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 // shared flat styling tokens - cosmetic only, referenced by className below
 const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accent text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
+  "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
 const secondaryBtnClass =
   "rounded-md px-4 py-2 transition-all text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
-const modalPanelClass = "bg-canvas rounded-lg border-2 border-accent font-body";
+const modalPanelClass =
+  "bg-specialsurface rounded-lg border-2 border-muted font-body";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -36,13 +37,13 @@ function FileModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
         <div
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
-              My documents
+              My Documents
             </h2>
             <button
               onClick={closeFileModal}
@@ -61,13 +62,13 @@ function FileModal({
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
         <div
           className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
-              My documents
+              My Documents
             </h2>
             <button
               onClick={closeFileModal}
@@ -87,13 +88,13 @@ function FileModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
       <div
         className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
-            My documents
+            My Documents
           </h2>
           <button
             onClick={closeFileModal}
@@ -185,8 +186,8 @@ function SelectQuizModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-canvas rounded-lg p-6 w-96 border border-accent font-body">
+      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
+        <div className="bg-canvas rounded-lg p-6 w-96 border border-muted font-body">
           <div className="flex flex-col items-center gap-3 text-inkondark">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
             <span>Loading quizzes...</span>
@@ -202,7 +203,7 @@ function SelectQuizModal({
     }
     return (
       <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-canvas rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-accent font-body">
+        <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
               Error
@@ -224,8 +225,8 @@ function SelectQuizModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-      <div className="bg-canvas rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-accent font-body">
+    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
+      <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
             Select a quiz
@@ -482,23 +483,18 @@ function SideBar({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="w-full lg:w-52 bg-blackblue/75 backdrop-blur border-r-2 border-accent/50 flex flex-col font-body p-2 gap-2">
+      <div className="w-full lg:w-52 bg-specialsurface backdrop-blur flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
             sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
         <Link
           to="/teacher"
           className="hidden lg:flex items-center gap-2.5 shrink-0 px-1 cursor-pointer group"
         >
-          <div
-            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm"
-            style={{
-              background: "var(--accent)",
-            }}
-          >
+          <div className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm bg-accent">
             Q
           </div>
           <span className="font-display font-bold text-inkondark group-hover:text-accent transition-colors">
-            QuizForge
+            Ilmari<span className="text-ccdired">Gen</span>
           </span>
         </Link>
 

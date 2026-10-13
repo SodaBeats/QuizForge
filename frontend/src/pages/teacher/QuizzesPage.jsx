@@ -8,7 +8,6 @@ import TopBar from "../../components/teacher/TopBar";
 import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
 import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
 import { classServices } from "../../services/classServices";
-import background from "../../assets/mistywoods-compressed.jpg";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
@@ -239,23 +238,7 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div
-      className="relative isolate h-screen flex flex-col bg-canvas text-inkondark"
-      style={{
-        backgroundImage: `url(${background})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Flat scrim that darkens the background image. -z-10 inside the
-          isolated root keeps it above the root's own background image but
-          behind all content — so gutters show a darkened image and the
-          frosted panels blur the darkened image, never the raw one. */}
-      <div
-        className="absolute inset-0 -z-10 bg-canvas/70 pointer-events-none"
-        aria-hidden="true"
-      />
+    <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -292,8 +275,7 @@ export default function QuizzesPage() {
       )}
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Main Content Area */}
-
+        {/* Sidebar */}
         <div
           className={`${
             !selectedQuizId || mobileTab === "list" ? "flex" : "hidden"
@@ -308,6 +290,7 @@ export default function QuizzesPage() {
             onDeleteQuiz={handleDeleteQuiz}
           />
         </div>
+
         {selectedQuizId ? (
           <>
             <div
@@ -340,7 +323,7 @@ export default function QuizzesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 min-w-0 flex items-center justify-center text-muted text-sm font-body p-3">
+          <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
             Select a quiz to view details
           </div>
         )}
