@@ -37,13 +37,13 @@ Dependency rules to enforce (architecture doc §3.3):
 
 Goal: make the refactor verifiable. The frontend has no tests, so a manual checklist is the primary safety net.
 
-- [ ] Record a manual smoke checklist covering all 9 routes, happy path + one failure path each:
+- [x] Record a manual smoke checklist covering all 9 routes, happy path + one failure path each:
   - login/logout for both roles
   - upload → forge quiz → edit question → view results
   - classes CRUD
   - student token → answer → submit
-- [ ] Baseline `npm run lint` and `npm run build` at HEAD; record results.
-- [ ] Optional: add Vitest + React Testing Library and cover only the 3 flows that will be touched heavily later — quiz submit payload, `apiFetch` error normalization, `RequireRole`.
+- [x] Baseline `npm run lint` and `npm run build` at HEAD; record results.
+- [x] Optional: add Vitest + React Testing Library and cover only the 3 flows that will be touched heavily later — quiz submit payload, `apiFetch` error normalization, `RequireRole`.
 
 Findings addressed: none directly — this phase exists because there is no test suite (F-level gaps around verification).
 
@@ -72,7 +72,7 @@ Goal: one cache, one client, one error vocabulary. Server state belongs to React
 - [ ] **Query key factory (fixes F1).** Create `lib/queryKeys.js` (`quizKeys`, `classKeys`, `docKeys`, `attemptKeys`) and rename keys so each endpoint has exactly one key:
   - merge `["queryQuestions", quizId]` and `["quizQuestions", quizId]` → `quizKeys.questions(id)`
   - merge `["queryQuizzes"]` and `["userQuizzes", page]` → `quizKeys.list(params)`
-  This kills the stale-list bugs (invalidations written on one side never reached the other).
+    This kills the stale-list bugs (invalidations written on one side never reached the other).
 - [ ] **Global QueryClient defaults (fixes F5).** Create `lib/queryClient.js` with `staleTime: 5 * 60_000`, `refetchOnWindowFocus: false`, `retry: 1`; delete per-call `staleTime` / `refetchOnWindowFocus` overrides across the ~12 `useQuery` calls.
 - [ ] **Per-feature API layer (fixes F2, F3, F6).** For each feature (quizzes, classes, documents, student-quiz, auth) create `api/<f>.api.js` (move the 3 existing service modules + all inline fetchers out of JSX), `api/queries.js`, `api/mutations.js`. Remove the `response.ok` boilerplate and string-matching on error text (`"Unauthorized action"` in `QuizResultDashboard`).
 - [ ] **Mutations via `useMutation` (fixes F4).** Convert the ~6 hand-rolled optimistic-update handlers (`handleDeleteQuiz`, `handleQuizMetaUpdate`, `handleQuestionUpdate` in `QuizzesPage`; 2 in `ClassesPage`; `handleQuestionDelete` in `SideBar`) to `useMutation` with `onMutate`/`onError`/`onSettled`. Because `quizKeys.all` is a prefix, an edit in the quiz maker now invalidates the quizzes page automatically. Convert the 4 plain fetch-then-invalidate handlers in `ClassesPage` too.
@@ -123,13 +123,13 @@ Exit criteria: `Login.css` / `StudentTokenPage.css` gone or reduced to page-spec
 
 ## PR slicing
 
-| PR    | Contents                                                        | Risk                          |
-| ----- | --------------------------------------------------------------- | ----------------------------- |
-| 1     | Phase 0 checklist + Vitest scaffold                             | none                          |
-| 2     | Fonts + `@layer components` style recipes (Phase 1.3–1.4)       | low, visual review            |
-| 3     | `lib/env.js` + `lib/api.js` + `AuthProvider` slimming (1.1–1.2) | medium, auth paths            |
-| 4     | `components/ui` primitives + swap modals/dropdowns (Phase 1.5)  | low–medium                    |
-| 5     | Query key factory + key unification (Phase 2.1–2.2)             | **high payoff**, medium risk  |
-| 6+    | Per-feature `api/queries/mutations` extraction (Phase 2.3–2.4) | one PR per feature, low each  |
-| n     | `features/` folder moves (Phase 3)                              | one feature per PR, mechanical|
-| last   | Shell/`PanelTabs`, alert cleanup, CSS split (Phase 4–5)         | low                           |
+| PR   | Contents                                                        | Risk                           |
+| ---- | --------------------------------------------------------------- | ------------------------------ |
+| 1    | Phase 0 checklist + Vitest scaffold                             | none                           |
+| 2    | Fonts + `@layer components` style recipes (Phase 1.3–1.4)       | low, visual review             |
+| 3    | `lib/env.js` + `lib/api.js` + `AuthProvider` slimming (1.1–1.2) | medium, auth paths             |
+| 4    | `components/ui` primitives + swap modals/dropdowns (Phase 1.5)  | low–medium                     |
+| 5    | Query key factory + key unification (Phase 2.1–2.2)             | **high payoff**, medium risk   |
+| 6+   | Per-feature `api/queries/mutations` extraction (Phase 2.3–2.4)  | one PR per feature, low each   |
+| n    | `features/` folder moves (Phase 3)                              | one feature per PR, mechanical |
+| last | Shell/`PanelTabs`, alert cleanup, CSS split (Phase 4–5)         | low                            |
