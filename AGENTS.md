@@ -3,9 +3,11 @@
 ## Repo shape
 
 - Two independent npm packages, **no root package.json / no workspaces**: `backend/` and `frontend/`. Run every npm command from inside those directories.
-- **Backend** — Express 5 + TypeScript ESM (`"type": "module"`), Drizzle ORM + Postgres. Entry: `src/index.ts` (listens on `:3000`) → `src/server.ts`, which mounts all routes (`/api/*`, `/auth/*`), the global IP rate limiter, and the central error handler. Layers: `routes/ → middlewares/ → services/ → repository/ → db/`.
-- **Frontend** — React 19 + Vite 7, **plain JS/JSX: no TypeScript and no typecheck** (the README's "TypeScript" claim is wrong). Entry: `src/main.jsx` → `src/App.jsx` (whole route table + inline `ProtectedRoute`/`StudentRoute` guards reading `AuthContext`). Tailwind 3.
+- **Backend** — Express 5 + TypeScript ESM (`"type": "module"`), Drizzle ORM + Postgres. Entry: `src/index.ts` (listens on `:3000`) → `src/server.ts`, which mounts all routes (`/api/*`, `/auth/*`) and the central error handler. Layers: `routes/ → middlewares/ → services/ → repository/ → db/`.
+- **Frontend** — React 19 + Vite 7, **plain JS/JSX: no TypeScript and no typecheck script** (the `frontend/README.md` TypeScript notes are stock Vite-template boilerplate). Entry `src/main.jsx` → `src/App.jsx` (whole route table + inline `ProtectedRoute`/`StudentRoute` guards reading `AuthContext`). Tailwind 3.
 - `README.md` is truncated mid-"Getting Started" — it contains no run/test instructions. Trust package.json/scripts over docs.
+- **Active frontend refactor**: `docs/frontend-refactor-plan.md` (status: active, phases 0–5), derived from `docs/frontend-architecture.md`. Rules: `npm run lint` + `npm run build` green at the end of every phase; one phase per PR; never combine a folder move with a logic change; no behavior changes in Phases 1–3; non-goals: no TypeScript, no Redux/Zustand, no router rewrite. Don't kick off uncoordinated refactors — follow this plan or ask. Note: the merged `refactor/phase-1` PR (#26) was a _visual_ restyle, not plan-Phase 1 — the plan's checkboxes are all still unchecked.
+- Stale docs (don't trust): `docs/past-changes/frontend-refactor-notes.md` is a copy of an older AGENTS.md (flat `pages/`/`components/` layout, `reference.jsx`). `backend/TEST_RUN_TROUBLESHOOTING.md` describes a Jest config problem that has since been fixed.
 
 ## Commands
 
@@ -19,45 +21,50 @@ Backend (`backend/`):
 
 Frontend (`frontend/`):
 
-- `npm run dev` (Vite, `:5173`), `npm run lint`, `npm run build`, `npm run preview`. **No tests exist for the frontend.**
+- `npm run dev` (Vite, default `:5173`), `npm run lint`, `npm run build`, `npm run preview`. **No tests exist for the frontend** — for any frontend change, `npm run lint` + `npm run build` is the verification.
+
+Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.
 
 ## Environment / services
 
-- Backend reads `backend/.env` (gitignored; copy `backend/.env.example`). `DATABASE_URL`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET` are hard-required at import time (`src/db/db.ts`). Also used: `GROQ_API_KEY` (AI grading), `CORS_ORIGIN` (defaults to `http://localhost:5173`), `REDIS_HOST/PORT/PASSWORD/DB`.
-- **Redis must be running for any backend request to succeed**: the global IP rate limiter (`src/middlewares/ipBasedRateLimiter.middleware.ts`) runs on every route and returns 500 if Redis is unreachable — this also applies to supertest calls in integration tests. Default `localhost:6379`.
-- Frontend needs `frontend/.env` with `VITE_BACKEND_HOST` (e.g. `http://localhost:3000`); every service/page builds API URLs from it.
-- DB schema: `npm run db:migrate` = `drizzle-kit push` (push is the source of truth; `src/db/migration/` is gitignored, so **no committed migration files**). `npm run db:generate` writes generated SQL.
-- Fresh clone: `backend/.env`, `backend/.env.test`, and `frontend/.env` are all gitignored — create them yourself.
+- Backend reads `backend/.env` (dotenv, at import). **Hard-required at import time** (`src/db/db.ts`): `DATABASE_URL`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET`. Also used: `GROQ_API_KEY` (AI grading — checked lazily at call time, not at boot), `CORS_ORIGIN` (defaults to `http://localhost:5173`).
+- **Redis is NOT required — rate limiting is currently disabled** ("temporarily disable rate limiting" commit): `src/middlewares/redis.ts` exports `redis = 'temporarily disabled'` (real client commented out), `server.ts` does not mount `ipRateLimiter`, and `userBasedRateLimiter` (used on most routes) calls `next()` immediately. `ioredis` is still in package.json. To re-enable, follow the comment in `redis.ts` and adjust both limiter middlewares.
+- Migrations: **no committed migration files** — `/backend/src/db/migration/` is gitignored. `npm run db:migrate` = `drizzle-kit push` (schema push is the source of truth; `npm run db:generate` writes SQL files locally).
+- Fresh clone: `backend/.env`, `backend/.env.test`, and `frontend/.env` are all gitignored — copy the tracked `.env.example` files. `frontend/.env` needs `VITE_BACKEND_HOST=http://localhost:3000`; it is read ad-hoc in ~14 files (plan Phase 1 will centralize it).
 
 ## Testing quirks
 
 - Configs: `jest.config.js` → re-exports `jest.config.unit.js` (default run = unit). `jest.config.integration.js` adds `globalSetup`/`globalTeardown`/`loadEnv`. Base is ESM + ts-jest, so jest must run via `node --experimental-vm-modules ...` — the npm scripts already do this; don't hand-roll jest commands.
 - Layout: unit tests `src/tests/unit/*.unit.test.ts`, integration `src/tests/integration/*.int.test.ts`.
-- Integration prerequisites: a pgvector Postgres reachable via **`backend/.env.test` → `DATABASE_URL` (ships empty — fill it)**, plus running Redis. `globalSetup.ts` itself runs `npx drizzle-kit push`, creates the `vector` extension, truncates every table, and seeds:
+- Unit suite is pure (3 suites / 10 tests) — needs no DB, Redis, or API keys.
+- Integration prerequisites: a pgvector Postgres reachable via **`backend/.env.test` → `DATABASE_URL` (ships empty — fill it)**. No Redis needed. `globalSetup.ts` itself runs `npx drizzle-kit push`, truncates every table, and seeds:
   - `teacher@test.com` / `TeacherPass1!`
   - `student@test.com` / `StudentPass1!`
   - `student2@test.com` / `Student2Pass2!`
-  - Shared helpers (`loginAs`, `authHeader`, `*_CREDS`) live in `src/tests/integration/setup/testHelpers.ts`.
-
-## Baseline at HEAD (verified 2026-09-27)
-
-No known fails — frontend `npm run build` and `npm run lint`, backend `npx tsc --noEmit` and `npm test` (unit suite) all pass at HEAD. Re-verify your own baseline instead of assuming you broke it: if any of these fail before you change something, that's new information — update this section.
+- **Gotcha**: create the `vector` extension on the test DB _before_ running `test:int` — `globalSetup` pushes the schema before it creates the extension (CI does extension → push for the same reason).
+- Shared helpers (`loginAs`, `authHeader`, `*_CREDS`, `generateShareToken`) live in `src/tests/integration/setup/testHelpers.ts`.
 
 ## CI
 
-- Only workflow: `.github/workflows/integration-tests.yml` (on PRs). It installs deps, enables pgvector, and runs `drizzle-kit push` — but the **test step is `if: false`, so no tests actually run in CI**. Don't assume CI validates your change.
+- Only workflow: `.github/workflows/integration-tests.yml` (on PRs). It installs backend deps, enables pgvector, and runs `drizzle-kit push` — but the **test step is `if: false`, so no tests actually run in CI**. Don't assume CI validates your change.
 - `CODEOWNERS`: everything → `@SodaBeats`.
 
-## Conventions & stale docs
+## Conventions (frontend styling)
 
-- Colors: flat 5-token palette in `src/theme/colors.js` (no shades): `canvas` (page bg), `surface` (panels/cards/inputs), `ink` (primary text), `muted` (subtitles/placeholders **and** hairline borders/hover lifts via alpha — `border-muted/20`, `border-muted/30` on inputs, `hover:bg-muted/10`), `accent` (brand orange, solid). Use Tailwind utilities (`bg-canvas`, `text-ink`, `bg-accent`), the emitted `:root` vars (`var(--surface)`, `rgb(var(--accent-rgb) / 0.4)`), or `colors.*` for inline styles — never raw hex (status colors are the exception: Tailwind defaults like `emerald-500`). Design is flat: no gradients, no shadows — panels are defined by `bg-surface` + a hairline border, radius tops out at `rounded-lg` (cards) / `rounded-md` (buttons, inputs), `rounded-full` only for true circles.
-- `docs/past-changes/frontend-refactor-notes.md` is a copy of the pre-refactor AGENTS.md: its flat `pages/`/`components/` layout, `reference.jsx`, and "no subfolders" notes are outdated (both `pages/` and `components/` now have `teacher/` + `student/` subfolders; `reference.jsx` was deleted).
-- Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.
+- Colors: single source of truth is `src/theme/colors.js`; `tailwind.config.js` exposes tokens as Tailwind utilities (`bg-surface`, `text-ink`, `border-muted/20`), emits `:root` vars (`var(--surface)`, `rgb(var(--accent-rgb) / 0.4)` via `--*-rgb` channels), and `colors.*` for inline styles — **never raw hex outside `colors.js`** (status colors are the exception: Tailwind defaults like `red-400`/`green-600`/`amber-500`).
+- Palette facts: **13 tokens**, despite the header comment still saying "flat 5-token palette" — trust the object. `accent` is brand **red** (`#A01412`); solid primary buttons are `accept` green (`bg-accept hover:bg-green-600`).
+- Design: no gradients, no box-shadows (the single `box-shadow` is a focus ring); radius tops out at `rounded-lg` (cards) / `rounded-md` (buttons, inputs), `rounded-full` only for true circles.
+- Fonts: Google Fonts `@import` blocks are copy-pasted into inline `<style>` in ~15 JSX files (Baloo 2 / Space Grotesk / Inter) — plan Phase 1 will centralize them; don't invent a second pattern.
 
 ## Known Gotchas (read before touching these areas)
 
-- TanStack Query: `cacheTime` is dead — it's `gcTime` now. `staleTime: Infinity` + `refetchOnMount: false` can permanently cache a bad transient state.
-- Drizzle: `pgTable`'s third argument must be an array, not an object (old object-callback form is deprecated). `primaryKey()` requires a `name` property.
-- SQL: plain INNER JOINs silently drop zero-attempt records — use LEFT JOIN where absence is meaningful.
-- Backend: `db.ts` needs a `pool.on('error')` listener or Neon's serverless pool idle-timeout crashes the process.
-- Git: prefer `git switch` / `git restore` over `git checkout`. `gh pr checkout <PR-number>` works from any branch.
+- TanStack Query: `cacheTime` is dead — it's `gcTime` now. `staleTime` is set per call today (typically 5 min; `FileViewer` uses 30 min + `refetchOnMount: false`) — avoid `staleTime: Infinity`-style settings that can permanently cache a bad transient state; plan Phase 2 centralizes defaults.
+- Drizzle: `pgTable`'s third argument must be an **array**, not an object (see `quiz_access_db` in `src/db/schema.js`); `primaryKey()` requires a `name` property.
+- SQL: plain INNER JOINs silently drop zero-attempt records — use LEFT JOIN where absence is meaningful (see `QuizAttemptsRepository`).
+- Backend: `db.ts` has a `pool.on('error')` listener to survive Neon idle-connection errors — keep it if you touch pools.
+
+## Baseline at HEAD (re-verified 2026-10-14)
+
+- Backend: `npx tsc --noEmit` ✓ and `npm test` ✓ (3 suites / 10 tests).
+- Frontend: `npm run lint` ✓ and `npm run build` ✓ (the 500 kB chunk-size warning is expected).
+- If any of these fail before you change something, that's new information — update this section.

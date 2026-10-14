@@ -138,7 +138,7 @@ export default function QuizzesMetadata({
   if (!quiz) {
     return (
       <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full p-3">
-        <div className="w-full h-full rounded-lg bg-surface backdrop-blur flex items-center justify-center border border-accent">
+        <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
       </div>
@@ -153,7 +153,7 @@ export default function QuizzesMetadata({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="flex-1 flex flex-col rounded-lg bg-surface backdrop-blur overflow-hidden border border-accent">
+      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <input

@@ -125,7 +125,7 @@ function CreateClassModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 backdrop-blur-sm rounded-lg">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
             <div className="text-sm text-muted">Creating...</div>
@@ -300,7 +300,7 @@ function AddStudentModal({
         </div>
       </div>
       {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 backdrop-blur-sm rounded-lg">
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
             <div className="text-sm text-muted">Adding...</div>
@@ -559,7 +559,7 @@ export default function ClassesPage() {
         >
           {selectedClass ? (
             <>
-              <div className="flex-1 flex flex-col rounded-lg bg-surface backdrop-blur overflow-hidden border border-accent">
+              <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
                 {/* Panel header */}
                 <div className="px-4 sm:px-6 py-4 bg-specialsurface flex items-center justify-between gap-3 border-b border-muted/20">
                   <div className="min-w-0">
@@ -622,8 +622,7 @@ export default function ClassesPage() {
                 </div>
               </div>
 
-              {/* Modals live OUTSIDE the frosted card — its backdrop-filter
-                  would trap their z-50/fixed positioning behind the panels */}
+              {/* Modals live OUTSIDE the card */}
               {showAddStudentModal && (
                 <AddStudentModal
                   selectedClass={selectedClass}
@@ -647,7 +646,7 @@ export default function ClassesPage() {
               )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-surface backdrop-blur text-muted gap-2 border border-accent">
+            <div className="flex-1 flex flex-col items-center justify-center rounded-lg bg-surface text-muted gap-2 border border-accent">
               <span className="text-3xl">👥</span>
               <p className="text-sm">Select a class to view students</p>
             </div>
