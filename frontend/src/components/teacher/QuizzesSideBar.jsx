@@ -17,7 +17,7 @@ export default function QuizzesSidebar({
 
   if (isFetching) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface backdrop-blur border-r-2 border-accent/50 p-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 p-3">
         <div className="flex-1 rounded-lg flex items-center justify-center border border-muted/20">
           <div className="spinner"></div>
         </div>
@@ -27,7 +27,7 @@ export default function QuizzesSidebar({
 
   if (isError) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
         <div className="flex-1 rounded-lg flex items-center justify-center text-red-400 text-sm border border-muted/20">
           Failed to fetch quizzes
         </div>
@@ -47,7 +47,7 @@ export default function QuizzesSidebar({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface backdrop-blur border-r-2 border-accent/50 font-body p-3 gap-3">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }

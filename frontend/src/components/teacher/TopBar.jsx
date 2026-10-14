@@ -507,7 +507,7 @@ export default function TopBar({
 
   return (
     <>
-      <div className="px-5 py-3 flex items-center justify-between bg-specialsurface backdrop-blur z-40 border-b-2 border-accent/20">
+      <div className="px-5 py-3 flex items-center justify-between bg-specialsurface z-40 border-b-2 border-accent/20">
         <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Baloo 2', sans-serif; }
@@ -586,10 +586,7 @@ export default function TopBar({
         </div>
       </div>
 
-      {/* Forge Quiz Modal — kept OUTSIDE the frosted bar: the bar's
-          backdrop-filter creates a stacking context + fixed containing block,
-          which would trap this modal's z-50/fixed positioning behind the
-          FileViewer/QuestionEditor panels. */}
+      {/* Forge Quiz Modal — kept OUTSIDE the top bar */}
       {isForgeQuizModalOpen && (
         <QuizForgeModal
           forgeQuizData={forgeQuizData}

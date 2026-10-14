@@ -25,7 +25,7 @@ const QuestionList = ({
   if (isFetching) {
     return (
       <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body p-3">
-        <div className="w-full h-full rounded-lg bg-surface backdrop-blur flex items-center justify-center border border-accent">
+        <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           <div className="flex flex-col items-center gap-3 text-inkondark">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
             <span className="text-sm">Loading questions...</span>
@@ -44,7 +44,7 @@ const QuestionList = ({
           .font-display { font-family: 'Baloo 2', sans-serif; }
           .font-body { font-family: 'Inter', sans-serif; }
         `}</style>
-        <div className="flex-1 rounded-lg bg-surface backdrop-blur border border-accent p-4 sm:p-6 overflow-y-auto">
+        <div className="flex-1 rounded-lg bg-surface border border-accent p-4 sm:p-6 overflow-y-auto">
           <div className="flex items-center mb-6">
             <button
               onClick={() => setEditingQuestion(null)}
@@ -195,7 +195,7 @@ const QuestionList = ({
         .font-display { font-family: 'Baloo 2', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
-      <div className="flex-1 flex flex-col rounded-lg bg-surface backdrop-blur overflow-hidden border border-accent">
+      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <h3 className="text-base font-display font-semibold text-inkondark">
             Questions

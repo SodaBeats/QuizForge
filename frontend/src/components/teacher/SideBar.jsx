@@ -483,7 +483,7 @@ function SideBar({
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      <div className="w-full lg:w-52 bg-specialsurface backdrop-blur flex flex-col font-body p-2 gap-2">
+      <div className="w-full lg:w-52 bg-specialsurface flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
             sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
         <Link

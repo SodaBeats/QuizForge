@@ -18,7 +18,7 @@ export default function SudentTopbar({ onLogout }) {
   }, []);
 
   return (
-    <div className="border-b-2 border-accent/20 p-4 flex items-center justify-between bg-specialsurface backdrop-blur">
+    <div className="border-b-2 border-accent/20 p-4 flex items-center justify-between bg-specialsurface">
       {/* LEFT SIDE: Logo */}
       <span className="text-xl font-bold text-inkondark cursor-pointer hover:text-inkondark/80 transition-colors">
         QuizForge
