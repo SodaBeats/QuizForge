@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../AuthProvider";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =
@@ -274,9 +273,6 @@ export default function QuestionEditor({
     }
   };
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   return (
     <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">

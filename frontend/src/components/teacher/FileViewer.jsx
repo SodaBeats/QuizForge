@@ -3,7 +3,7 @@ import { AuthContext } from "../AuthProvider";
 import { useContext } from "react";
 import LoadingScreen from "../LoadingScreen";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------
 function NoFileIcon() {

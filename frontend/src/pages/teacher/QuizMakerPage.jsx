@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../components/AuthProvider";
@@ -9,7 +8,7 @@ import SideBar from "../../components/teacher/SideBar";
 import FileViewer from "../../components/teacher/FileViewer";
 import QuestionEditor from "../../components/teacher/QuestionEditor";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -119,9 +118,6 @@ export default function QuizMakerSkeleton() {
       (q) => q.id === selectedQuestionId,
     ) ?? null;
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   return (
     <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark alt-display-root font-displayAlt">

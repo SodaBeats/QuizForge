@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { documentServices } from "../../services/documentServices";
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -459,9 +459,6 @@ function SideBar({
   // ERROR BOUNDARY
   // ----------------------------------------------------------------------------
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   // ------------------------------------------------------------------------------------
   // MAIN COMPONENT

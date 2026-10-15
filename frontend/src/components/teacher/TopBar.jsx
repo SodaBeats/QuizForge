@@ -1,11 +1,11 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
 import { classServices } from "../../services/classServices";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 const labelClass = "block text-sm font-medium text-inkondark mb-1";
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -483,12 +483,6 @@ export default function TopBar({
     staleTime: 1000 * 60 * 5,
   });
 
-  // ----------------------------------------------------------------------------
-  // ERROR BOUNDARY
-  // ----------------------------------------------------------------------------
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   // -------------------------------------------------------------------------------------
   //  RETURN

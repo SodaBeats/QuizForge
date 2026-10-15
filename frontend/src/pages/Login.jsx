@@ -1,10 +1,10 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
 import "./Login.css";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../lib/env.js";
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -107,9 +107,6 @@ export default function LogInComponent() {
     }
   };
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   return (
     <main className="page-container leaning-mode" id="pageContainer">

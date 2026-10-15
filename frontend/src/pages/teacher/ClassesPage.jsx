@@ -1,7 +1,6 @@
 // src/pages/ClassesPage.jsx
 
 import { useState, useEffect, useContext } from "react";
-import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../components/AuthProvider";
@@ -10,7 +9,7 @@ import ClassesSidebar from "../../components/teacher/ClassesSidebar";
 import StudentInfoModal from "../../components/teacher/StudentInfoModal";
 import { getInitials } from "../../util/getInitials";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -479,12 +478,7 @@ export default function ClassesPage() {
   // derive selected class from query data to keep it in sync
   const selectedClass = queryClasses?.find((c) => c.id === selectedClassId);
 
-  // ------------------------------------------------------------------------
-  // ERROR BOUNDARY
-  // ------------------------------------------------------------------------
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
+
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
 
