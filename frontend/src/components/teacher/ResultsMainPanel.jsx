@@ -153,29 +153,6 @@ export default function ResultsMainPanel({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 p-3 sm:p-4 gap-4 bg-surface font-body">
-      <style>{`
-  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-  .font-display { font-family: 'Baloo 2', sans-serif; }
-  .font-body { font-family: 'Inter', sans-serif; }
-
-  .themed-scroll::-webkit-scrollbar {
-    width: 6px;
-  }
-  .themed-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .themed-scroll::-webkit-scrollbar-thumb {
-    background-color: var(--surface);
-    border-radius: 999px;
-  }
-  .themed-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent);
-  }
-  .themed-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: var(--surface) transparent;
-  }
-`}</style>
       {/* ── Row 1: Metric cards — wraps to 2x2 on mobile instead of squishing 4-across ── */}
       <div className="flex flex-wrap sm:flex-nowrap gap-3 h-auto sm:h-[30%]">
         {!METRICS || !Array.isArray(METRICS) || METRICS.length === 0 ? (

@@ -239,11 +239,6 @@ export default function QuizzesPage() {
 
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
 
       {/*Top Bar */}
       <TopBar />

@@ -33,6 +33,7 @@ export default {
       colors,
       fontFamily: {
         display: ["Baloo 2", "sans-serif"],
+        displayAlt: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
     },

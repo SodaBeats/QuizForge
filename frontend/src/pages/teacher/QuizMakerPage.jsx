@@ -124,12 +124,7 @@ export default function QuizMakerSkeleton() {
   }
 
   return (
-    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Space Grotesk', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
+    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark alt-display-root font-displayAlt">
 
       {/* Left: Sidebar — upload lives here. On mobile it's a tab panel ordered
           below the topbar; at lg+ it cuts into the topbar's row, spanning the

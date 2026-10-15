@@ -6,14 +6,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { documentServices } from "../../services/documentServices";
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
-// shared flat styling tokens - cosmetic only, referenced by className below
-const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const secondaryBtnClass =
-  "rounded-md px-4 py-2 transition-all text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
-const modalPanelClass =
-  "bg-specialsurface rounded-lg border-2 border-muted font-body";
-
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
 // -------------------------------------------------------------------------------------
@@ -39,7 +31,7 @@ function FileModal({
     return (
       <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
         <div
-          className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
+          className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
@@ -64,7 +56,7 @@ function FileModal({
     return (
       <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
         <div
-          className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
+          className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
@@ -90,7 +82,7 @@ function FileModal({
   return (
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
       <div
-        className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
+        className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
@@ -132,7 +124,7 @@ function FileModal({
             <button
               onClick={fetchPreviousDocuments}
               disabled={page === 0}
-              className={secondaryBtnClass}
+              className="btn-secondary py-2"
               title="Previous page"
             >
               ← Prev
@@ -143,7 +135,7 @@ function FileModal({
               disabled={
                 page * 5 + (data?.documents?.length || 0) >= totalDocuments
               }
-              className={secondaryBtnClass}
+              className="btn-secondary py-2"
               title="Next page"
             >
               Next →
@@ -155,7 +147,7 @@ function FileModal({
           <button
             onClick={() => document.getElementById("file-upload").click()}
             disabled={isUploading}
-            className={`w-full ${primaryBtnClass}`}
+            className="w-full btn-primary py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5"
           >
             {isUploading ? "Uploading..." : "Upload new document"}
           </button>
@@ -477,11 +469,6 @@ function SideBar({
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
 
       <div className="w-full lg:w-52 bg-specialsurface flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the

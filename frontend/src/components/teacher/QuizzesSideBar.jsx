@@ -2,8 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import "../LoadingScreen.css";
 
-const primaryBtnClass =
-  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm bg-accept text-inkondark hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5";
 
 export default function QuizzesSidebar({
   isFetching,
@@ -37,7 +35,7 @@ export default function QuizzesSidebar({
             onClick={() =>
               navigate("/teacher", { state: { openForgeQuizModal: true } })
             }
-            className={primaryBtnClass}
+            className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           >
             + Create new quiz
           </button>
@@ -48,11 +46,6 @@ export default function QuizzesSidebar({
 
   return (
     <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
 
       <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
         {/* Header */}
@@ -121,7 +114,7 @@ export default function QuizzesSidebar({
             onClick={() =>
               navigate("/teacher", { state: { openForgeQuizModal: true } })
             }
-            className={primaryBtnClass}
+            className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           >
             + Create new quiz
           </button>

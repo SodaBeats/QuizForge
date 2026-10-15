@@ -1,5 +1,23 @@
 /* Tailwind entrypoint. The palette lives in src/theme/colors.js
    (canvas / surface / ink / muted / accent) — see tailwind.config.js. */
+
+/* Fonts (Phase 1.3 / F12): the single declaration of the three Google fonts.
+   Components used to copy this @import into inline <style> blocks — two of
+   them (QuizMakerPage, QuizResultDashboard) declared .font-display as Space
+   Grotesk instead of Baloo 2, so the winning display font depended on which
+   page happened to mount last. */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "./styles/components.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Phase 1.3 (F12 fix): QuizMakerPage + QuizResultDashboard were the two
+   "Space Grotesk" pages. Their roots carry `alt-display-root font-displayAlt`;
+   this scoped rule keeps their descendants' `font-display` utilities rendering
+   Space Grotesk exactly like before, without leaking to the rest of the app.
+   Deliberately outside @layer: unlayered CSS outranks layered utilities. */
+.alt-display-root .font-display {
+  font-family: "Space Grotesk", sans-serif;
+}

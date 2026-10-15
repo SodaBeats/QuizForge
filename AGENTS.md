@@ -6,7 +6,7 @@
 - **Backend** — Express 5 + TypeScript ESM (`"type": "module"`), Drizzle ORM + Postgres. Entry: `src/index.ts` (listens on `:3000`) → `src/server.ts`, which mounts all routes (`/api/*`, `/auth/*`) and the central error handler. Layers: `routes/ → middlewares/ → services/ → repository/ → db/`.
 - **Frontend** — React 19 + Vite 7, **plain JS/JSX: no TypeScript and no typecheck script** (the `frontend/README.md` TypeScript notes are stock Vite-template boilerplate). Entry `src/main.jsx` → `src/App.jsx` (whole route table + inline `ProtectedRoute`/`StudentRoute` guards reading `AuthContext`). Tailwind 3.
 - `README.md` is truncated mid-"Getting Started" — it contains no run/test instructions. Trust package.json/scripts over docs.
-- **Active frontend refactor**: `docs/frontend-refactor-plan.md` (status: active, phases 0–5), derived from `docs/frontend-architecture.md`. Rules: `npm run lint` + `npm run build` green at the end of every phase; one phase per PR; never combine a folder move with a logic change; no behavior changes in Phases 1–3; non-goals: no TypeScript, no Redux/Zustand, no router rewrite. Don't kick off uncoordinated refactors — follow this plan or ask. Note: the merged `refactor/phase-1` PR (#26) was a _visual_ restyle, not plan-Phase 1 — the plan's checkboxes are all still unchecked.
+- **Active frontend refactor**: `docs/frontend-refactor-plan.md` (status: active, phases 0–5), derived from `docs/frontend-architecture.md`. Rules: `npm run lint` + `npm run build` green at the end of every phase; one phase per PR; never combine a folder move with a logic change; no behavior changes in Phases 1–3; non-goals: no TypeScript, no Redux/Zustand, no router rewrite. Don't kick off uncoordinated refactors — follow this plan or ask. Progress: **Phase 0 merged as PR #27** (2026-10-15 — smoke checklist `docs/smoke-checklist.md` executed & signed off, Vitest added); **Phase 1 (foundations) is in progress** on branch `refactor/phase-1-foundations`. (Historical: the earlier `refactor/phase-1` PR #26 was a _visual_ restyle, not plan-Phase 1.)
 - Stale docs (don't trust): `docs/past-changes/frontend-refactor-notes.md` is a copy of an older AGENTS.md (flat `pages/`/`components/` layout, `reference.jsx`). `backend/TEST_RUN_TROUBLESHOOTING.md` describes a Jest config problem that has since been fixed.
 
 ## Commands
@@ -21,7 +21,7 @@ Backend (`backend/`):
 
 Frontend (`frontend/`):
 
-- `npm run dev` (Vite, default `:5173`), `npm run lint`, `npm run build`, `npm run preview`. **No tests exist for the frontend** — for any frontend change, `npm run lint` + `npm run build` is the verification.
+- `npm run dev` (Vite, default `:5173`), `npm run lint`, `npm run build`, `npm run preview`, `npm test` (Vitest; suites live in `frontend/src/tests/*.test.jsx` — small by design, a refactor safety net, not coverage). Verification for any frontend change: `npm run lint` + `npm run build` + `npm test`.
 
 Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no format script exists.
 
@@ -63,8 +63,8 @@ Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no form
 - SQL: plain INNER JOINs silently drop zero-attempt records — use LEFT JOIN where absence is meaningful (see `QuizAttemptsRepository`).
 - Backend: `db.ts` has a `pool.on('error')` listener to survive Neon idle-connection errors — keep it if you touch pools.
 
-## Baseline at HEAD (re-verified 2026-10-14)
+## Baseline at HEAD (backend re-verified 2026-10-14; frontend re-verified on `refactor/phase-1-foundations` 2026-10-15)
 
 - Backend: `npx tsc --noEmit` ✓ and `npm test` ✓ (3 suites / 10 tests).
-- Frontend: `npm run lint` ✓ and `npm run build` ✓ (the 500 kB chunk-size warning is expected).
+- Frontend: `npm run lint` ✓, `npm run build` ✓ (the 500 kB chunk-size warning is expected), `npm test` ✓ (Vitest, 2/2).
 - If any of these fail before you change something, that's new information — update this section.

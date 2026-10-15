@@ -1,0 +1,76 @@
+/* Shared component recipes — Phase 1.4 (F13). One owner per concern: these
+   replace the primaryBtnClass / secondaryBtnClass / wellInputClass /
+   modalPanelClass constants that were copy-pasted (with drift) across 6 files.
+
+   IMPORTANT: a recipe only carries what every former copy had in common. Each
+   call site appends its own spacing / transition / hover / disabled deltas, so
+   the final class list on each element is identical to before — this extracts,
+   it does not restyle. Colors come only from src/theme/colors.js tokens
+   (red-500/red-700 are the allowed Tailwind status-color exception). */
+
+@layer components {
+  /* Green brand action button (was: primaryBtnClass) */
+  .btn-primary {
+    @apply font-display font-bold rounded-md px-4 bg-accept text-inkondark;
+  }
+
+  /* Quiet neutral button (was: the neutral-flavored secondaryBtnClass copies) */
+  .btn-secondary {
+    @apply rounded-md px-4 transition-all text-inkondark bg-surface hover:bg-muted/20 border border-muted/30;
+  }
+
+  /* Red destructive button (was: the red-flavored secondaryBtnClass copies) */
+  .btn-danger {
+    @apply rounded-md px-4 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark;
+  }
+
+  /* Dark input "well" (was: wellInputClass) */
+  .input-well {
+    @apply bg-darkslate rounded-md text-sm placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30;
+  }
+
+  /* Modal panel shell (was: modalPanelClass) */
+  .modal-panel {
+    @apply bg-specialsurface rounded-lg font-body;
+  }
+}
+
+/* Thin, themed scrollbars. These used to live in inline <style> blocks
+   (FileViewer, ResultsMainPanel) where they only existed while that component
+   happened to be mounted — now they are deterministic and app-wide. */
+.themed-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.themed-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.themed-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--surface);
+  border-radius: 999px;
+}
+.themed-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+.themed-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface) transparent;
+}
+
+.file-viewer-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.file-viewer-scroll::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+.file-viewer-scroll::-webkit-scrollbar-thumb {
+  background: var(--surface);
+  border-radius: 6px;
+}
+.file-viewer-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--surface);
+}
+.file-viewer-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface) var(--surface);
+  -webkit-overflow-scrolling: touch;
+}

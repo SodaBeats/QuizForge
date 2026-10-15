@@ -12,16 +12,6 @@ import { getInitials } from "../../util/getInitials";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
-// shared flat styling tokens - cosmetic only, referenced by className below
-const wellInputClass =
-  "bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
-const modalPanelClass =
-  "bg-specialsurface rounded-lg w-[420px] max-w-full relative font-body border border-muted";
-const primaryBtnClass =
-  "px-4 py-2 text-sm bg-accept text-inkondark hover:bg-green-600 font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const secondaryBtnClass =
-  "px-4 py-2 text-sm text-inkondark rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface hover:bg-muted/20 border border-muted/30";
-
 // ---------------------------------------------------------------
 // SUB COMPONENT
 // ---------------------------------------------------------------
@@ -61,7 +51,7 @@ function CreateClassModal({
 
   return (
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className={modalPanelClass}>
+      <div className="modal-panel border border-muted w-[420px] max-w-full relative">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -87,7 +77,7 @@ function CreateClassModal({
               onChange={handleChange}
               disabled={isSubmitting}
               placeholder="e.g. BSCS 1-A"
-              className={wellInputClass}
+              className="input-well px-3 py-2 text-inkondark transition-all"
             />
           </div>
 
@@ -101,7 +91,7 @@ function CreateClassModal({
               onChange={handleChange}
               disabled={isSubmitting}
               placeholder="e.g. Introduction to Programming"
-              className={wellInputClass}
+              className="input-well px-3 py-2 text-inkondark transition-all"
             />
           </div>
         </div>
@@ -110,14 +100,14 @@ function CreateClassModal({
         <div className="flex justify-end gap-2 px-5 py-4">
           <button
             onClick={onClose}
-            className={secondaryBtnClass}
+            className="btn-secondary py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className={primaryBtnClass}
+            className="btn-primary py-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
             disabled={isSubmitting}
           >
             Create class
@@ -233,7 +223,7 @@ function AddStudentModal({
 
   return (
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className={modalPanelClass}>
+      <div className="modal-panel border border-muted w-[420px] max-w-full relative">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
@@ -260,7 +250,7 @@ function AddStudentModal({
               onChange={handleChange}
               disabled={isSubmitting}
               placeholder="e.g. student@example.com"
-              className={wellInputClass}
+              className="input-well px-3 py-2 text-inkondark transition-all"
             />
             <div className="min-h-[1.25rem] text-xs">
               {isCheckingEmail && (
@@ -280,14 +270,14 @@ function AddStudentModal({
         <div className="flex justify-end gap-2 px-5 py-4">
           <button
             onClick={onClose}
-            className={secondaryBtnClass}
+            className="btn-secondary py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className={primaryBtnClass}
+            className="btn-primary py-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
             disabled={
               isSubmitting ||
               isCheckingEmail ||
@@ -497,11 +487,6 @@ export default function ClassesPage() {
   }
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
 
       <TopBar />
 

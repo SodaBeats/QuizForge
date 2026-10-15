@@ -6,18 +6,7 @@ import toast from "react-hot-toast";
 import { classServices } from "../../services/classServices";
 
 const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-// shared flat styling tokens - cosmetic only, referenced by className below
-const wellInputClass =
-  "w-full px-3 py-2 bg-darkslate rounded-md text-muted text-sm placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition";
 const labelClass = "block text-sm font-medium text-inkondark mb-1";
-const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600";
-const secondaryBtnClass =
-  "rounded-md px-4 py-2 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark";
-const modalPanelClass =
-  "bg-specialsurface rounded-lg border border-muted font-body";
-
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
 // -------------------------------------------------------------------------------------
@@ -70,7 +59,7 @@ function ClassAccessibilityDropdown({
     <div className="relative font-body" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`${wellInputClass} text-left flex items-center justify-between`}
+        className="input-well w-full px-3 py-2 text-muted transition text-left flex items-center justify-between"
       >
         <span className="truncate">{displayText}</span>
         <svg
@@ -145,7 +134,7 @@ function QuizForgeModal({
 }) {
   return (
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div className={`${modalPanelClass} p-6 w-[500px] max-w-full mx-4`}>
+      <div className="modal-panel border border-muted p-6 w-[500px] max-w-full mx-4">
         <h2 className="text-xl font-display font-semibold mb-4 text-inkondark">
           Forge quiz
         </h2>
@@ -162,7 +151,7 @@ function QuizForgeModal({
                   quizTitle: e.target.value,
                 }))
               }
-              className={wellInputClass}
+              className="input-well w-full px-3 py-2 text-muted transition"
               placeholder="Enter quiz title"
             />
           </div>
@@ -178,7 +167,7 @@ function QuizForgeModal({
                   description: e.target.value,
                 }))
               }
-              className={`${wellInputClass} resize-none`}
+              className="input-well w-full px-3 py-2 text-muted transition resize-none"
               rows="3"
               placeholder="Enter quiz description"
             />
@@ -192,7 +181,7 @@ function QuizForgeModal({
                 type="text"
                 value={forgeQuizData.shareToken}
                 readOnly
-                className={`flex-1 ${wellInputClass} text-muted`}
+                className="flex-1 input-well w-full px-3 py-2 transition text-muted"
                 placeholder="Generating token..."
               />
               <button
@@ -206,7 +195,7 @@ function QuizForgeModal({
                     },
                   });
                 }}
-                className={primaryBtnClass}
+                className="btn-primary py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
                 disabled={!forgeQuizData.shareToken}
               >
                 Copy
@@ -243,7 +232,7 @@ function QuizForgeModal({
                     maxAttempts: e.target.value,
                   }))
                 }
-                className={wellInputClass}
+                className="input-well w-full px-3 py-2 text-muted transition"
                 placeholder="1"
                 min="1"
               />
@@ -259,7 +248,7 @@ function QuizForgeModal({
                     status: e.target.value.toLowerCase(),
                   }))
                 }
-                className={wellInputClass}
+                className="input-well w-full px-3 py-2 text-muted transition"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -279,7 +268,7 @@ function QuizForgeModal({
                   dueDate: e.target.value,
                 }))
               }
-              className={wellInputClass}
+              className="input-well w-full px-3 py-2 text-muted transition"
             />
           </div>
         </div>
@@ -289,14 +278,14 @@ function QuizForgeModal({
           <button
             onClick={handleForgeQuiz}
             disabled={isCreatingQuiz}
-            className={`flex-1 ${primaryBtnClass}`}
+            className="flex-1 btn-primary py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
           >
             {isCreatingQuiz ? "Creating quiz..." : "Create quiz"}
           </button>
           <button
             onClick={closeForgeQuizModal}
             disabled={isCreatingQuiz}
-            className={`flex-1 ${secondaryBtnClass}`}
+            className="flex-1 btn-danger py-2"
           >
             Cancel
           </button>
@@ -508,12 +497,7 @@ export default function TopBar({
   return (
     <>
       <div className="px-5 py-3 flex items-center justify-between bg-specialsurface z-40 border-b-2 border-accent/20">
-        <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
+  
         {/* LEFT SIDE: Logo (hidden at lg+ when the sidebar owns it — see logoClass) */}
         <Link
           to="/teacher"
@@ -536,7 +520,7 @@ export default function TopBar({
         <div className="flex items-center gap-3 font-body ml-auto">
           {/* Forge Quiz Button */}
           {showFileButton && (
-            <button className={primaryBtnClass} onClick={openForgeQuizModal}>
+            <button className="btn-primary py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600" onClick={openForgeQuizModal}>
               Forge quiz
             </button>
           )}

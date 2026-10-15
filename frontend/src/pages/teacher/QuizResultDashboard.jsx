@@ -231,12 +231,7 @@ export default function QuizResultDashboard() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Space Grotesk', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
+    <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">
 
       <TopBar />
 

@@ -20,11 +20,6 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4 py-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
       <div
         ref={studentCardRef}
         className="bg-specialsurface rounded-lg max-w-xl w-full overflow-hidden border border-muted font-body"

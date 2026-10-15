@@ -120,10 +120,6 @@ function ClassAccessDropdown({
 const inputClass =
   "w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
 const labelClass = "text-sm font-semibold text-inkondark block mb-2 font-body";
-const primaryBtnClass =
-  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm bg-accept text-inkondark hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5";
-const secondaryBtnClass =
-  "w-full px-4 py-2.5 rounded-md transition-all font-display font-bold text-sm text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
 
 export default function QuizzesMetadata({
   quiz,
@@ -147,11 +143,6 @@ export default function QuizzesMetadata({
 
   return (
     <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
 
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         {/* Header */}
@@ -302,13 +293,13 @@ export default function QuizzesMetadata({
         {/* Actions */}
         <div className="p-4 space-y-2">
           <button
-            className={primaryBtnClass}
+            className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
             onClick={() => onUpdateQuizMeta(editingQuiz)}
           >
             Save changes
           </button>
           <button
-            className={secondaryBtnClass}
+            className="btn-secondary w-full py-2.5 font-display font-bold text-sm"
             onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)}
           >
             View results
