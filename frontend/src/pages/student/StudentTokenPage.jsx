@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { AuthContext } from "../../components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import "./StudentTokenPage.css";
+import { backendHost } from "../../lib/env.js";
 
 // image imports
 import avatarPeeking from "../../assets/avatar_token.png";
@@ -16,9 +17,6 @@ export default function StudentTokenPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const { authFetch, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-  if (!backendHost) throw new Error("Missing backend host");
 
   const inputRefs = useRef([]);
 

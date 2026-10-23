@@ -1,18 +1,11 @@
 import { useContext, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { documentServices } from "../../services/documentServices";
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-// shared flat styling tokens - cosmetic only, referenced by className below
-const primaryBtnClass =
-  "font-display font-bold rounded-md px-4 py-2 bg-accept text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const secondaryBtnClass =
-  "rounded-md px-4 py-2 transition-all text-inkondark bg-surface hover:bg-muted/20 border border-muted/30";
-const modalPanelClass =
-  "bg-specialsurface rounded-lg border-2 border-muted font-body";
+import { backendHost } from "../../lib/env.js";
+import Modal from "../ui/Modal";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -37,60 +30,9 @@ function FileModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div
-          className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-inkondark">
-              My Documents
-            </h2>
-            <button
-              onClick={closeFileModal}
-              className="text-red-500 hover:text-red-700 text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2 mb-6">
-            <p className="text-muted text-center py-4">Fetching...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div
-          className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-inkondark">
-              My Documents
-            </h2>
-            <button
-              onClick={closeFileModal}
-              className="text-red-500 hover:text-red-700 text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2 mb-6">
-            <p className="text-red-400 text-center py-4">
-              Something went wrong while fetching documents
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div
-        className={`${modalPanelClass} w-96 max-h-[80vh] overflow-y-auto p-6`}
+      <Modal
+        onClose={closeFileModal}
+        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
@@ -103,65 +45,113 @@ function FileModal({
             ×
           </button>
         </div>
-
         <div className="space-y-2 mb-6">
-          {data.documents.length > 0 ? (
-            data.documents.map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => handleSelectDocument(doc)}
-                className={`p-3 rounded-md cursor-pointer transition-all truncate ${
-                  selectedFileId === doc.id
-                    ? "bg-accent text-inkondark font-semibold "
-                    : "hover:bg-muted/20 text-inkondark border border-muted/20"
-                }`}
-              >
-                <span className="truncate">
-                  {doc.title || `Document ${doc.id}` || "Untitled"}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted text-center py-4">No documents found</p>
-          )}
+          <p className="text-muted text-center py-4">Fetching...</p>
         </div>
+      </Modal>
+    );
+  }
 
-        {/* Pagination Controls */}
-        {totalDocuments > 5 && (
-          <div className="flex items-center justify-center gap-4 mb-4 pt-4">
-            <button
-              onClick={fetchPreviousDocuments}
-              disabled={page === 0}
-              className={secondaryBtnClass}
-              title="Previous page"
-            >
-              ← Prev
-            </button>
-            <span className="text-muted text-sm">Page {page + 1}</span>
-            <button
-              onClick={fetchMoreDocuments}
-              disabled={
-                page * 5 + (data?.documents?.length || 0) >= totalDocuments
-              }
-              className={secondaryBtnClass}
-              title="Next page"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
-        <div className="pt-4">
+  if (error) {
+    return (
+      <Modal
+        onClose={closeFileModal}
+        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-display font-semibold text-inkondark">
+            My Documents
+          </h2>
           <button
-            onClick={() => document.getElementById("file-upload").click()}
-            disabled={isUploading}
-            className={`w-full ${primaryBtnClass}`}
+            onClick={closeFileModal}
+            className="text-red-500 hover:text-red-700 text-2xl leading-none"
           >
-            {isUploading ? "Uploading..." : "Upload new document"}
+            ×
           </button>
         </div>
+        <div className="space-y-2 mb-6">
+          <p className="text-red-400 text-center py-4">
+            Something went wrong while fetching documents
+          </p>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      onClose={closeFileModal}
+      panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-display font-semibold text-inkondark">
+          My Documents
+        </h2>
+        <button
+          onClick={closeFileModal}
+          className="text-red-500 hover:text-red-700 text-2xl leading-none"
+        >
+          ×
+        </button>
       </div>
-    </div>
+
+      <div className="space-y-2 mb-6">
+        {data.documents.length > 0 ? (
+          data.documents.map((doc) => (
+            <div
+              key={doc.id}
+              onClick={() => handleSelectDocument(doc)}
+              className={`p-3 rounded-md cursor-pointer transition-all truncate ${
+                selectedFileId === doc.id
+                  ? "bg-accent text-inkondark font-semibold "
+                  : "hover:bg-muted/20 text-inkondark border border-muted/20"
+              }`}
+            >
+              <span className="truncate">
+                {doc.title || `Document ${doc.id}` || "Untitled"}
+              </span>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted text-center py-4">No documents found</p>
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      {totalDocuments > 5 && (
+        <div className="flex items-center justify-center gap-4 mb-4 pt-4">
+          <button
+            onClick={fetchPreviousDocuments}
+            disabled={page === 0}
+            className="btn-secondary py-2"
+            title="Previous page"
+          >
+            ← Prev
+          </button>
+          <span className="text-muted text-sm">Page {page + 1}</span>
+          <button
+            onClick={fetchMoreDocuments}
+            disabled={
+              page * 5 + (data?.documents?.length || 0) >= totalDocuments
+            }
+            className="btn-secondary py-2"
+            title="Next page"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      <div className="pt-4">
+        <button
+          onClick={() => document.getElementById("file-upload").click()}
+          disabled={isUploading}
+          className="w-full btn-primary py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5"
+        >
+          {isUploading ? "Uploading..." : "Upload new document"}
+        </button>
+      </div>
+    </Modal>
   );
 }
 
@@ -186,14 +176,15 @@ function SelectQuizModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div className="bg-canvas rounded-lg p-6 w-96 border border-muted font-body">
-          <div className="flex flex-col items-center gap-3 text-inkondark">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-            <span>Loading quizzes...</span>
-          </div>
+      <Modal
+        onClose={closeSelectQuizModal}
+        panelClassName="bg-canvas rounded-lg p-6 w-96 border border-muted font-body"
+      >
+        <div className="flex flex-col items-center gap-3 text-inkondark">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+          <span>Loading quizzes...</span>
         </div>
-      </div>
+      </Modal>
     );
   }
 
@@ -202,34 +193,14 @@ function SelectQuizModal({
       console.error(error);
     }
     return (
-      <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-display font-semibold text-inkondark">
-              Error
-            </h2>
-            <button
-              onClick={closeSelectQuizModal}
-              className="text-red-500 hover:text-red-700 text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="space-y-2 text-red-400 text-sm">
-            <p>Something went wrong while fetching quizzes</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
+      <Modal
+        onClose={closeSelectQuizModal}
+        backdropClassName="bg-canvas/70"
+        panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
+      >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
-            Select a quiz
+            Error
           </h2>
           <button
             onClick={closeSelectQuizModal}
@@ -239,52 +210,75 @@ function SelectQuizModal({
           </button>
         </div>
 
-        <div className="space-y-2">
-          {data?.userQuizzes?.length > 0 ? (
-            data.userQuizzes.map((quiz) => (
-              <button
-                key={quiz.id}
-                onClick={() => handleSelectQuiz(quiz)}
-                className="w-full text-left p-3 rounded-lg transition-all text-sm hover:bg-mutedteal text-inkondark border border-muted/20"
-              >
-                <div className="font-medium truncate">{quiz.quizTitle}</div>
-                <div className="text-xs text-muted mt-1">
-                  Token: {quiz.shareToken}
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="text-center text-muted py-6 text-sm">
-              No quizzes available
-            </div>
-          )}
+        <div className="space-y-2 text-red-400 text-sm">
+          <p>Something went wrong while fetching quizzes</p>
         </div>
-        {/* pagination controls */}
-        {totalQuizzes > 5 && (
-          <div className="flex items-center justify-center gap-4 mb-4 mt-2 pt-4">
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      onClose={closeSelectQuizModal}
+      panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-display font-semibold text-inkondark">
+          Select a quiz
+        </h2>
+        <button
+          onClick={closeSelectQuizModal}
+          className="text-red-500 hover:text-red-700 text-2xl leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {data?.userQuizzes?.length > 0 ? (
+          data.userQuizzes.map((quiz) => (
             <button
-              onClick={fetchPreviousQuizzes}
-              disabled={page === 0}
-              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Previous page"
+              key={quiz.id}
+              onClick={() => handleSelectQuiz(quiz)}
+              className="w-full text-left p-3 rounded-lg transition-all text-sm hover:bg-mutedteal text-inkondark border border-muted/20"
             >
-              ← Prev
+              <div className="font-medium truncate">{quiz.quizTitle}</div>
+              <div className="text-xs text-muted mt-1">
+                Token: {quiz.shareToken}
+              </div>
             </button>
-            <span className="text-muted text-sm">Page {page + 1}</span>
-            <button
-              onClick={fetchMoreQuizzes}
-              disabled={
-                page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
-              }
-              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Next page"
-            >
-              Next →
-            </button>
+          ))
+        ) : (
+          <div className="text-center text-muted py-6 text-sm">
+            No quizzes available
           </div>
         )}
       </div>
-    </div>
+      {/* pagination controls */}
+      {totalQuizzes > 5 && (
+        <div className="flex items-center justify-center gap-4 mb-4 mt-2 pt-4">
+          <button
+            onClick={fetchPreviousQuizzes}
+            disabled={page === 0}
+            className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Previous page"
+          >
+            ← Prev
+          </button>
+          <span className="text-muted text-sm">Page {page + 1}</span>
+          <button
+            onClick={fetchMoreQuizzes}
+            disabled={
+              page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
+            }
+            className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Next page"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -467,22 +461,12 @@ function SideBar({
   // ERROR BOUNDARY
   // ----------------------------------------------------------------------------
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
-
   // ------------------------------------------------------------------------------------
   // MAIN COMPONENT
   //-------------------------------------------------------------------------------------
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
       <div className="w-full lg:w-52 bg-specialsurface flex flex-col font-body p-2 gap-2">
         {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
             sidebar cuts into the topbar's row (below lg the topbar keeps it) */}

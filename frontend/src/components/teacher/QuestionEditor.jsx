@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../AuthProvider";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =
   "w-full bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
 const labelClass = "block text-sm font-medium mb-1.5 text-inkondark font-body";
-const primaryBtnClass =
-  "flex-1 font-display font-bold rounded-md px-4 py-2.5 bg-accept text-inkondark transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600";
-const secondaryBtnClass =
-  "flex-1 rounded-md px-4 py-2.5 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark";
 
 export default function QuestionEditor({
   selectedQuestion,
@@ -278,18 +273,8 @@ export default function QuestionEditor({
     }
   };
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
-
   return (
     <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
       <div className="p-3.5 bg-specialsurface flex justify-between items-center border-b border-muted/20">
         <div>
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -441,7 +426,7 @@ export default function QuestionEditor({
                   <div className="flex space-x-2 mt-4">
                     <button
                       onClick={handleManualSubmit}
-                      className={primaryBtnClass}
+                      className="btn-primary flex-1 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
                     >
                       {addMode === "edit" ? "Update" : "Done"}
                     </button>
@@ -461,7 +446,7 @@ export default function QuestionEditor({
                           timeLimit: 60,
                         });
                       }}
-                      className={secondaryBtnClass}
+                      className="btn-danger flex-1 py-2.5"
                     >
                       Cancel
                     </button>
@@ -514,7 +499,7 @@ export default function QuestionEditor({
                   <div className="flex space-x-2 mt-4">
                     <button
                       onClick={handleManualSubmit}
-                      className={primaryBtnClass}
+                      className="btn-primary flex-1 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
                     >
                       {addMode === "edit" ? "Update" : "Done"}
                     </button>
@@ -534,7 +519,7 @@ export default function QuestionEditor({
                           timeLimit: 60,
                         });
                       }}
-                      className={secondaryBtnClass}
+                      className="btn-danger flex-1 py-2.5"
                     >
                       Cancel
                     </button>
@@ -562,7 +547,7 @@ export default function QuestionEditor({
                   <div className="flex space-x-2 mt-4">
                     <button
                       onClick={handleManualSubmit}
-                      className={primaryBtnClass}
+                      className="btn-primary flex-1 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
                     >
                       {addMode === "edit" ? "Update" : "Done"}
                     </button>
@@ -582,7 +567,7 @@ export default function QuestionEditor({
                           timeLimit: 60,
                         });
                       }}
-                      className={secondaryBtnClass}
+                      className="btn-danger flex-1 py-2.5"
                     >
                       Cancel
                     </button>
@@ -713,7 +698,7 @@ export default function QuestionEditor({
               </>
               <div className="flex space-x-2 mt-4">
                 <button
-                  className={primaryBtnClass}
+                  className="btn-primary flex-1 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600"
                   onClick={handleGenerate}
                   disabled={loading}
                 >
@@ -721,7 +706,7 @@ export default function QuestionEditor({
                 </button>
                 <button
                   onClick={() => setAddMode(null)}
-                  className={secondaryBtnClass}
+                  className="btn-danger flex-1 py-2.5"
                 >
                   Cancel
                 </button>

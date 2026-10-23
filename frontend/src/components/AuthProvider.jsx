@@ -1,11 +1,12 @@
 import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
+import { backendHost } from "../lib/env.js";
+import { createApiClient } from "../lib/api.js";
 
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
 export { AuthContext };
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
 
 //make component called AuthProvider
 //children is a prop = whatever components you wrap inside <AuthProvider>
@@ -14,12 +15,11 @@ export function AuthProvider({ children }) {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const refreshPromiseRef = useRef(null);
 
   // Logout function to clear token
   const logout = useCallback(async () => {
     try {
-      await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/logout`, {
+      await fetch(`${backendHost}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -35,13 +35,10 @@ export function AuthProvider({ children }) {
     try {
       // We include 'credentials: include' so the browser
       // sends the HTTP-only Refresh Cookie to the server
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_HOST}/auth/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`${backendHost}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       //if the refresh token is also invalid, navigate to login
       if (!response.ok) {
@@ -65,59 +62,32 @@ export function AuthProvider({ children }) {
   }, [logout, navigate]);
 
   useEffect(() => {
-    if (!backendHost) {
-      console.error("Missing VITE_BACKEND_HOST env variable");
-      setLoading(false);
-      navigate("/error");
-      return;
-    }
+    // the !backendHost check moved to the app entry (main.jsx, Phase 1.1)
     silentRefresh();
-  }, [silentRefresh, navigate]);
+  }, [silentRefresh]);
+
+  // One API client for the whole app (Phase 1.2 / F2): it owns the auth
+  // header, the single-flight 401 → refresh → retry flow (previously
+  // refreshPromiseRef + the authFetch body below), and always sends cookies.
+  const tokenRef = useRef(null);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  const apiClientRef = useRef(null);
+  if (!apiClientRef.current) {
+    apiClientRef.current = createApiClient({
+      getAccessToken: () => tokenRef.current,
+      refresh: () => silentRefresh(),
+      // a failed silentRefresh already logs out on its own (see above),
+      // so nothing extra to do here
+      onUnauthorized: () => {},
+    });
+  }
 
   const authFetch = useCallback(
-    async (url, options = {}) => {
-      try {
-        //get custom headers inside options and add authz
-        const headers = {
-          ...options.headers,
-          authorization: `Bearer ${token}`,
-        };
-
-        //only add JSON content-type if not sending FormData
-        if (!(options.body instanceof FormData)) {
-          headers["Content-Type"] = "application/json";
-        }
-
-        let response = await fetch(url, { ...options, headers });
-
-        // 2. If the token expired (401 error), try to refresh it
-        if (response.status === 401) {
-          console.log("Token expired, attempting to refresh...");
-
-          // prevent multiple simultaneous refresh calls
-          if (!refreshPromiseRef.current) {
-            refreshPromiseRef.current = silentRefresh().finally(() => {
-              refreshPromiseRef.current = null;
-            });
-          }
-          const newToken = await refreshPromiseRef.current; // Call your refresh logic
-
-          if (newToken) {
-            // Retry with the fresh token
-            headers["authorization"] = `Bearer ${newToken}`;
-            response = await fetch(url, { ...options, headers });
-          } else {
-            throw new Error("Session expired");
-          }
-        }
-
-        return response;
-      } catch (error) {
-        console.error("authFetch error: ", error);
-        throw error;
-      }
-    },
-    [token, silentRefresh],
+    (url, options = {}) => apiClientRef.current(url, options),
+    [],
   );
 
   // Don't render children until auth check is complete

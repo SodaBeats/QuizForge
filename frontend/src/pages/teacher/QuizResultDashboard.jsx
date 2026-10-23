@@ -1,13 +1,13 @@
 import { useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import TopBar from "../../components/teacher/TopBar";
 import ResultsLeaderboard from "../../components/teacher/ResultsLeaderboard";
 import ResultsMainPanel from "../../components/teacher/ResultsMainPanel";
 import { AuthContext } from "../../components/AuthProvider";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 const DEFAULT_METRICS = [
   { label: "Total Takers", value: "No Data Yet", sub: "unique students" },
@@ -226,18 +226,8 @@ export default function QuizResultDashboard() {
   const classesRanking =
     dashboardData?.classesAverage ?? DEFAULT_DASHBOARD_DATA.classAverage;
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
-
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Space Grotesk', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
+    <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">
       <TopBar />
 
       {/* Mobile/tablet panel switcher — hidden on desktop, where both panels show at once */}

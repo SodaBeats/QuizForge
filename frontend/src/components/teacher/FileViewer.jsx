@@ -3,28 +3,7 @@ import { AuthContext } from "../AuthProvider";
 import { useContext } from "react";
 import LoadingScreen from "../LoadingScreen";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-const scrollStyles = `
-  .file-viewer-scroll::-webkit-scrollbar {
-    width: 8px;
-  }
-  .file-viewer-scroll::-webkit-scrollbar-track {
-    background: var(--surface);
-  }
-  .file-viewer-scroll::-webkit-scrollbar-thumb {
-    background: var(--surface);
-    border-radius: 6px;
-  }
-  .file-viewer-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--surface);
-  }
-  .file-viewer-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: var(--surface) var(--surface);
-    -webkit-overflow-scrolling: touch;
-  }
-`;
+import { backendHost } from "../../lib/env.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------
 function NoFileIcon() {
@@ -65,12 +44,6 @@ export default function FileViewer({ selectedFile }) {
   if (isFetching) {
     return (
       <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-          .font-display { font-family: 'Baloo 2', sans-serif; }
-          .font-body { font-family: 'Inter', sans-serif; }
-          ${scrollStyles}
-        `}</style>
         <div className="p-3.5 bg-ink border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
             {selectedFile ? selectedFile.name : "File viewer"}
@@ -86,12 +59,6 @@ export default function FileViewer({ selectedFile }) {
 
   return (
     <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-        ${scrollStyles}
-      `}</style>
       <div className="p-3.5 bg-specialsurface border-b border-muted/20">
         <h2 className="text-sm font-display font-semibold text-inkondark">
           {selectedFile ? selectedFile.name : "File viewer"}

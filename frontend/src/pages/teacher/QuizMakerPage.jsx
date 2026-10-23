@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../components/AuthProvider";
@@ -9,7 +8,7 @@ import SideBar from "../../components/teacher/SideBar";
 import FileViewer from "../../components/teacher/FileViewer";
 import QuestionEditor from "../../components/teacher/QuestionEditor";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -119,17 +118,9 @@ export default function QuizMakerSkeleton() {
       (q) => q.id === selectedQuestionId,
     ) ?? null;
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
 
   return (
-    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Space Grotesk', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
+    <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark alt-display-root font-displayAlt">
 
       {/* Left: Sidebar — upload lives here. On mobile it's a tab panel ordered
           below the topbar; at lg+ it cuts into the topbar's row, spanning the

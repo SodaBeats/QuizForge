@@ -39,11 +39,6 @@ const QuestionList = ({
   if (editingQuestion) {
     return (
       <div className="flex-1 min-w-0 h-full w-full flex flex-col p-3 font-body">
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-          .font-display { font-family: 'Baloo 2', sans-serif; }
-          .font-body { font-family: 'Inter', sans-serif; }
-        `}</style>
         <div className="flex-1 rounded-lg bg-surface border border-accent p-4 sm:p-6 overflow-y-auto">
           <div className="flex items-center mb-6">
             <button
@@ -190,11 +185,6 @@ const QuestionList = ({
   // --- List View
   return (
     <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <h3 className="text-base font-display font-semibold text-inkondark">

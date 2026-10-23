@@ -1,7 +1,6 @@
 // src/pages/ClassesPage.jsx
 
 import { useState, useEffect, useContext } from "react";
-import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../components/AuthProvider";
@@ -10,17 +9,8 @@ import ClassesSidebar from "../../components/teacher/ClassesSidebar";
 import StudentInfoModal from "../../components/teacher/StudentInfoModal";
 import { getInitials } from "../../util/getInitials";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
-
-// shared flat styling tokens - cosmetic only, referenced by className below
-const wellInputClass =
-  "bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all";
-const modalPanelClass =
-  "bg-specialsurface rounded-lg w-[420px] max-w-full relative font-body border border-muted";
-const primaryBtnClass =
-  "px-4 py-2 text-sm bg-accept text-inkondark hover:bg-green-600 font-display font-bold rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5";
-const secondaryBtnClass =
-  "px-4 py-2 text-sm text-inkondark rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-surface hover:bg-muted/20 border border-muted/30";
+import { backendHost } from "../../lib/env.js";
+import Modal from "../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -60,79 +50,82 @@ function CreateClassModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className={modalPanelClass}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
-          <h2 className="text-sm font-display font-semibold text-inkondark">
-            Create a new class
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-red-500 hover:text-red-700 text-xl leading-none border-none"
-          >
-            ×
-          </button>
+    <Modal
+      onClose={onClose}
+      overlayClassName="px-4"
+      panelClassName="modal-panel border border-muted w-[420px] max-w-full relative"
+      closeOnBackdropClick={false}
+      overlayChild={
+        isSubmitting && (
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <div className="text-sm text-muted">Creating...</div>
+            </div>
+          </div>
+        )
+      }
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
+        <h2 className="text-sm font-display font-semibold text-inkondark">
+          Create a new class
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-xl leading-none border-none"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 py-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-inkondark">
+            Class name
+          </label>
+          <input
+            name="className"
+            value={form.className}
+            onChange={handleChange}
+            disabled={isSubmitting}
+            placeholder="e.g. BSCS 1-A"
+            className="input-well px-3 py-2 text-inkondark transition-all"
+          />
         </div>
 
-        {/* Body */}
-        <div className="px-5 py-4 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-inkondark">
-              Class name
-            </label>
-            <input
-              name="className"
-              value={form.className}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              placeholder="e.g. BSCS 1-A"
-              className={wellInputClass}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-inkondark">
-              Subject
-            </label>
-            <input
-              name="subject"
-              value={form.subject}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              placeholder="e.g. Introduction to Programming"
-              className={wellInputClass}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-2 px-5 py-4">
-          <button
-            onClick={onClose}
-            className={secondaryBtnClass}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-inkondark">Subject</label>
+          <input
+            name="subject"
+            value={form.subject}
+            onChange={handleChange}
             disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className={primaryBtnClass}
-            disabled={isSubmitting}
-          >
-            Create class
-          </button>
+            placeholder="e.g. Introduction to Programming"
+            className="input-well px-3 py-2 text-inkondark transition-all"
+          />
         </div>
       </div>
-      {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-muted">Creating...</div>
-          </div>
-        </div>
-      )}
-    </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-2 px-5 py-4">
+        <button
+          onClick={onClose}
+          className="btn-secondary py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          className="btn-primary py-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
+          disabled={isSubmitting}
+        >
+          Create class
+        </button>
+      </div>
+    </Modal>
   );
 }
 
@@ -232,82 +225,84 @@ function AddStudentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className={modalPanelClass}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
-          <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
-            Add student to {selectedClass?.name}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-red-500 hover:text-red-700 text-xl leading-none border-none flex-shrink-0"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-5 py-4 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-inkondark">
-              Student email
-            </label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              placeholder="e.g. student@example.com"
-              className={wellInputClass}
-            />
-            <div className="min-h-[1.25rem] text-xs">
-              {isCheckingEmail && (
-                <span className="text-accent">Checking email...</span>
-              )}
-              {!isCheckingEmail && emailCheckError && (
-                <span className="text-red-400">{emailCheckError}</span>
-              )}
-              {!isCheckingEmail && emailValid && (
-                <span className="text-green-400">User exists</span>
-              )}
+    <Modal
+      onClose={onClose}
+      overlayClassName="px-4"
+      panelClassName="modal-panel border border-muted w-[420px] max-w-full relative"
+      closeOnBackdropClick={false}
+      overlayChild={
+        isSubmitting && (
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <div className="text-sm text-muted">Adding...</div>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-2 px-5 py-4">
-          <button
-            onClick={onClose}
-            className={secondaryBtnClass}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className={primaryBtnClass}
-            disabled={
-              isSubmitting ||
-              isCheckingEmail ||
-              !!emailCheckError ||
-              !emailValid
-            }
-          >
-            Add student
-          </button>
-        </div>
+        )
+      }
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
+        <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
+          Add student to {selectedClass?.name}
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-xl leading-none border-none flex-shrink-0"
+        >
+          ×
+        </button>
       </div>
-      {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-muted">Adding...</div>
+
+      {/* Body */}
+      <div className="px-5 py-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-inkondark">
+            Student email
+          </label>
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            disabled={isSubmitting}
+            placeholder="e.g. student@example.com"
+            className="input-well px-3 py-2 text-inkondark transition-all"
+          />
+          <div className="min-h-[1.25rem] text-xs">
+            {isCheckingEmail && (
+              <span className="text-accent">Checking email...</span>
+            )}
+            {!isCheckingEmail && emailCheckError && (
+              <span className="text-red-400">{emailCheckError}</span>
+            )}
+            {!isCheckingEmail && emailValid && (
+              <span className="text-green-400">User exists</span>
+            )}
           </div>
         </div>
-      )}
-    </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-2 px-5 py-4">
+        <button
+          onClick={onClose}
+          className="btn-secondary py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          className="btn-primary py-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
+          disabled={
+            isSubmitting || isCheckingEmail || !!emailCheckError || !emailValid
+          }
+        >
+          Add student
+        </button>
+      </div>
+    </Modal>
   );
 }
 // ------------------------------------------------------------------------
@@ -489,20 +484,8 @@ export default function ClassesPage() {
   // derive selected class from query data to keep it in sync
   const selectedClass = queryClasses?.find((c) => c.id === selectedClassId);
 
-  // ------------------------------------------------------------------------
-  // ERROR BOUNDARY
-  // ------------------------------------------------------------------------
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
       <TopBar />
 
       {/* Mobile/tablet panel switcher — only relevant once a class is selected, hidden on desktop */}

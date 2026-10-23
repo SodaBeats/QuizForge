@@ -127,12 +127,6 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
 
   return (
     <div className="w-full lg:w-[30%] flex-shrink-0 flex flex-col gap-3 h-full bg-surface font-body p-3">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
       {/* ── Top half: Student ranking ─────────────────────────────── */}
       <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-darkteal overflow-hidden border border-muted/20">
         {/* Header */}

@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../components/AuthProvider";
@@ -9,7 +8,7 @@ import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
 import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
 import { classServices } from "../../services/classServices";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 export default function QuizzesPage() {
   const { authFetch } = useContext(AuthContext);
@@ -233,18 +232,8 @@ export default function QuizzesPage() {
     }
   };
 
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
-  }
-
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Baloo 2', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-      `}</style>
-
       {/*Top Bar */}
       <TopBar />
 

@@ -1,4 +1,4 @@
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../lib/env.js";
 
 export const classServices = {
   async fetchClasses(authFetch) {

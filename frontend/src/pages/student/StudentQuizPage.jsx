@@ -1,10 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from "react";
-import {
-  useParams,
-  useNavigate,
-  Navigate,
-  useBeforeUnload,
-} from "react-router-dom";
+import { useParams, useNavigate, useBeforeUnload } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingScreen from "../../components/LoadingScreen";
@@ -15,7 +10,7 @@ import StudentSidebar from "../../components/student/StudentSidebar";
 import StudentQuizWindow from "../../components/student/StudentQuizWindow";
 import StudentTimeLimit from "../../components/student/StudentTimeLimit";
 
-const backendHost = import.meta.env.VITE_BACKEND_HOST;
+import { backendHost } from "../../lib/env.js";
 
 export default function StudentQuizPage() {
   // ----------------------------------------------------------------
@@ -283,10 +278,6 @@ export default function StudentQuizPage() {
         </div>
       </div>
     );
-  }
-
-  if (!backendHost) {
-    return <Navigate to="/error" replace />;
   }
 
   return (
