@@ -226,10 +226,8 @@ export default function QuizResultDashboard() {
   const classesRanking =
     dashboardData?.classesAverage ?? DEFAULT_DASHBOARD_DATA.classAverage;
 
-
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">
-
       <TopBar />
 
       {/* Mobile/tablet panel switcher — hidden on desktop, where both panels show at once */}

@@ -107,7 +107,6 @@ export default function LogInComponent() {
     }
   };
 
-
   return (
     <main className="page-container leaning-mode" id="pageContainer">
       {/* =====================================================

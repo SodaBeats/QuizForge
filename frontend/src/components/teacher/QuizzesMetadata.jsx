@@ -45,64 +45,68 @@ function ClassAccessDropdown({
     <Dropdown>
       {({ open: isDropdownOpen, toggle }) => (
         <>
-      <button
-        onClick={toggle}
-        className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
-      >
-        <span className="truncate">{displayText}</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${
-            isDropdownOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 14l-7 7m0 0l-7-7m7 7V3"
-          />
-        </svg>
-      </button>
-      {isDropdownOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-specialsurface border border-muted/20 rounded-md z-20 max-h-48 overflow-y-auto">
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20">
-            <input
-              type="checkbox"
-              checked={editingQuiz?.classIds?.length === 0}
-              onChange={handleClearAll}
-              className="h-4 w-4 rounded border-muted/20 bg-surface text-accent focus:ring-accent cursor-pointer"
-            />
-            <span>Anyone with the code</span>
-          </label>
-          {isFetchingClasses ? (
-            <p className="px-3 py-2 text-muted text-sm">Loading classes...</p>
-          ) : classFetchError ? (
-            <p className="px-3 py-2 text-red-400 text-xs">
-              Unable to load classes.
-            </p>
-          ) : userClasses?.length ? (
-            userClasses.map((cls) => (
-              <label
-                key={cls.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20 last:border-b-0"
-              >
+          <button
+            onClick={toggle}
+            className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
+          >
+            <span className="truncate">{displayText}</span>
+            <svg
+              className={`w-4 h-4 transition-transform ${
+                isDropdownOpen ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              />
+            </svg>
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-specialsurface border border-muted/20 rounded-md z-20 max-h-48 overflow-y-auto">
+              <label className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20">
                 <input
                   type="checkbox"
-                  checked={editingQuiz.classIds.includes(cls.id)}
-                  onChange={() => handleToggleClass(cls.id)}
+                  checked={editingQuiz?.classIds?.length === 0}
+                  onChange={handleClearAll}
                   className="h-4 w-4 rounded border-muted/20 bg-surface text-accent focus:ring-accent cursor-pointer"
                 />
-                <span>{cls.name}</span>
+                <span>Anyone with the code</span>
               </label>
-            ))
-          ) : (
-            <p className="px-3 py-2 text-muted text-sm">No classes found.</p>
+              {isFetchingClasses ? (
+                <p className="px-3 py-2 text-muted text-sm">
+                  Loading classes...
+                </p>
+              ) : classFetchError ? (
+                <p className="px-3 py-2 text-red-400 text-xs">
+                  Unable to load classes.
+                </p>
+              ) : userClasses?.length ? (
+                userClasses.map((cls) => (
+                  <label
+                    key={cls.id}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-inkondark hover:bg-muted/10 cursor-pointer border-b border-muted/20 last:border-b-0"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editingQuiz.classIds.includes(cls.id)}
+                      onChange={() => handleToggleClass(cls.id)}
+                      className="h-4 w-4 rounded border-muted/20 bg-surface text-accent focus:ring-accent cursor-pointer"
+                    />
+                    <span>{cls.name}</span>
+                  </label>
+                ))
+              ) : (
+                <p className="px-3 py-2 text-muted text-sm">
+                  No classes found.
+                </p>
+              )}
+            </div>
           )}
-        </div>
-      )}
         </>
       )}
     </Dropdown>
@@ -135,7 +139,6 @@ export default function QuizzesMetadata({
 
   return (
     <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
-
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">

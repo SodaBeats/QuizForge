@@ -273,10 +273,8 @@ export default function QuestionEditor({
     }
   };
 
-
   return (
     <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">
-
       <div className="p-3.5 bg-specialsurface flex justify-between items-center border-b border-muted/20">
         <div>
           <h2 className="text-sm font-display font-semibold text-inkondark">

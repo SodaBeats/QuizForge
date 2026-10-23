@@ -232,10 +232,8 @@ export default function QuizzesPage() {
     }
   };
 
-
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
-
       {/*Top Bar */}
       <TopBar />
 

@@ -1,9 +1,5 @@
 import { useState, useContext, useCallback, useEffect } from "react";
-import {
-  useParams,
-  useNavigate,
-  useBeforeUnload,
-} from "react-router-dom";
+import { useParams, useNavigate, useBeforeUnload } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingScreen from "../../components/LoadingScreen";
@@ -283,7 +279,6 @@ export default function StudentQuizPage() {
       </div>
     );
   }
-
 
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">

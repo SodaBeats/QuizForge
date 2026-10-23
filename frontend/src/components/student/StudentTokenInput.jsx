@@ -50,9 +50,7 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
       <div className="bg-surface rounded-lg p-8 w-96 max-w-full mx-4 border border-muted/20">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-ink mb-2">
-            Enter Quiz Token
-          </h2>
+          <h2 className="text-2xl font-bold text-ink mb-2">Enter Quiz Token</h2>
           <p className="text-sm text-muted">
             Enter the 6-character token provided by your instructor
           </p>

@@ -35,13 +35,10 @@ export function AuthProvider({ children }) {
     try {
       // We include 'credentials: include' so the browser
       // sends the HTTP-only Refresh Cookie to the server
-      const response = await fetch(
-        `${backendHost}/auth/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`${backendHost}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       //if the refresh token is also invalid, navigate to login
       if (!response.ok) {

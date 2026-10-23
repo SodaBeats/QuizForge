@@ -2,7 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import "../LoadingScreen.css";
 
-
 export default function QuizzesSidebar({
   isFetching,
   quizzes,
@@ -46,7 +45,6 @@ export default function QuizzesSidebar({
 
   return (
     <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
-
       <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
         {/* Header */}
         <div className="p-4 border-b border-muted/20">

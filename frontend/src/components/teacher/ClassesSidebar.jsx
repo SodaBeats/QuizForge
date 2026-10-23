@@ -11,7 +11,6 @@ export default function ClassesSidebar({
 }) {
   return (
     <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-specialsurface font-body p-3">
-
       <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
         <div className="p-4 flex items-center justify-between gap-2 border-b border-muted/20">
           <p className="text-xs font-display font-semibold text-muted uppercase tracking-widest">

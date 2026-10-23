@@ -127,7 +127,6 @@ export default function ResultsLeaderboard({ STUDENTS, classes }) {
 
   return (
     <div className="w-full lg:w-[30%] flex-shrink-0 flex flex-col gap-3 h-full bg-surface font-body p-3">
-
       {/* ── Top half: Student ranking ─────────────────────────────── */}
       <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-darkteal overflow-hidden border border-muted/20">
         {/* Header */}
