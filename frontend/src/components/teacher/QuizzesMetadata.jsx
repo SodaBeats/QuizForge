@@ -1,8 +1,9 @@
 // QuizMetadata.jsx
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { toDatetimeLocal } from "../../util/toDateTimeLocal";
+import Dropdown from "../ui/Dropdown";
 
 function ClassAccessDropdown({
   editingQuiz,
@@ -11,19 +12,6 @@ function ClassAccessDropdown({
   isFetchingClasses,
   classFetchError,
 }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleToggleClass = (classId) => {
     setEditingQuiz((prev) => {
       const classesWithAccessIds = prev.classIds;
@@ -54,9 +42,11 @@ function ClassAccessDropdown({
         : `${editingQuiz.classIds.length} classes selected`;
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <Dropdown>
+      {({ open: isDropdownOpen, toggle }) => (
+        <>
       <button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={toggle}
         className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
       >
         <span className="truncate">{displayText}</span>
@@ -113,7 +103,9 @@ function ClassAccessDropdown({
           )}
         </div>
       )}
-    </div>
+        </>
+      )}
+    </Dropdown>
   );
 }
 

@@ -10,6 +10,7 @@ import StudentInfoModal from "../../components/teacher/StudentInfoModal";
 import { getInitials } from "../../util/getInitials";
 
 import { backendHost } from "../../lib/env.js";
+import Modal from "../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -49,8 +50,22 @@ function CreateClassModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className="modal-panel border border-muted w-[420px] max-w-full relative">
+    <Modal
+      onClose={onClose}
+      overlayClassName="px-4"
+      panelClassName="modal-panel border border-muted w-[420px] max-w-full relative"
+      closeOnBackdropClick={false}
+      overlayChild={
+        isSubmitting && (
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <div className="text-sm text-muted">Creating...</div>
+            </div>
+          </div>
+        )
+      }
+    >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -112,16 +127,7 @@ function CreateClassModal({
             Create class
           </button>
         </div>
-      </div>
-      {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-muted">Creating...</div>
-          </div>
-        </div>
-      )}
-    </div>
+    </Modal>
   );
 }
 
@@ -221,8 +227,22 @@ function AddStudentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4">
-      <div className="modal-panel border border-muted w-[420px] max-w-full relative">
+    <Modal
+      onClose={onClose}
+      overlayClassName="px-4"
+      panelClassName="modal-panel border border-muted w-[420px] max-w-full relative"
+      closeOnBackdropClick={false}
+      overlayChild={
+        isSubmitting && (
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <div className="text-sm text-muted">Adding...</div>
+            </div>
+          </div>
+        )
+      }
+    >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-ink rounded-t-lg border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark truncate pr-2">
@@ -287,16 +307,7 @@ function AddStudentModal({
             Add student
           </button>
         </div>
-      </div>
-      {isSubmitting && (
-        <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
-            <div className="text-sm text-muted">Adding...</div>
-          </div>
-        </div>
-      )}
-    </div>
+    </Modal>
   );
 }
 // ------------------------------------------------------------------------

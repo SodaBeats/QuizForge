@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { documentServices } from "../../services/documentServices";
 import { backendHost } from "../../lib/env.js";
+import Modal from "../ui/Modal";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -29,10 +30,10 @@ function FileModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div
-          className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-        >
+      <Modal
+        onClose={closeFileModal}
+        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
+      >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
               My Documents
@@ -47,17 +48,16 @@ function FileModal({
           <div className="space-y-2 mb-6">
             <p className="text-muted text-center py-4">Fetching...</p>
           </div>
-        </div>
-      </div>
+      </Modal>
     );
   }
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div
-          className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-        >
+      <Modal
+        onClose={closeFileModal}
+        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
+      >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
               My Documents
@@ -74,16 +74,15 @@ function FileModal({
               Something went wrong while fetching documents
             </p>
           </div>
-        </div>
-      </div>
+      </Modal>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div
-        className="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-      >
+    <Modal
+      onClose={closeFileModal}
+      panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
+    >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
             My Documents
@@ -152,8 +151,7 @@ function FileModal({
             {isUploading ? "Uploading..." : "Upload new document"}
           </button>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }
 
@@ -178,14 +176,15 @@ function SelectQuizModal({
 
   if (isFetching) {
     return (
-      <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-        <div className="bg-canvas rounded-lg p-6 w-96 border border-muted font-body">
+      <Modal
+        onClose={closeSelectQuizModal}
+        panelClassName="bg-canvas rounded-lg p-6 w-96 border border-muted font-body"
+      >
           <div className="flex flex-col items-center gap-3 text-inkondark">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
             <span>Loading quizzes...</span>
           </div>
-        </div>
-      </div>
+      </Modal>
     );
   }
 
@@ -194,8 +193,11 @@ function SelectQuizModal({
       console.error(error);
     }
     return (
-      <div className="fixed inset-0 bg-canvas/70 flex items-center justify-center z-50">
-        <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
+      <Modal
+        onClose={closeSelectQuizModal}
+        backdropClassName="bg-canvas/70"
+        panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
+      >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-display font-semibold text-inkondark">
               Error
@@ -211,14 +213,15 @@ function SelectQuizModal({
           <div className="space-y-2 text-red-400 text-sm">
             <p>Something went wrong while fetching quizzes</p>
           </div>
-        </div>
-      </div>
+      </Modal>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div className="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body">
+    <Modal
+      onClose={closeSelectQuizModal}
+      panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
+    >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-display font-semibold text-inkondark">
             Select a quiz
@@ -275,8 +278,7 @@ function SelectQuizModal({
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </Modal>
   );
 }
 

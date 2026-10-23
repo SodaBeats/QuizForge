@@ -55,13 +55,15 @@ Exit criteria: checklist exists, baseline recorded and green.
 
 ## Phase 1 — Foundations (purely additive, visually identical)
 
+**Shipped: PRs 2–4 on `refactor/phase-1-foundations` (code complete 2026-10-23).** PR 2 (`fe82d9f`, fonts + class recipes, visual pass ✓), PR 3 (`9311418`, `lib/env.js` + `lib/api.js` + the `apiFetch` test), PR 4 (UI primitives: `hooks/useClickOutside` + `components/ui/` with Modal/Dropdown swapped into all teacher menus and modals; primitives-only ships for Button/ConfirmDialog/Spinner/EmptyState/ErrorState/PanelTabs). Exit checks green: 1 env read, 0 inline font imports, 13/6 alert/confirm unchanged, lint/build/test green (29/29). PR 4's human visual pass pending.
+
 Goal: build the shared plumbing and UI primitives without changing any call site yet.
 
 - [x] **Single env read (fixes F3).** Create `lib/env.js` exporting `backendHost` + `isConfigured`; read `import.meta.env.VITE_BACKEND_HOST` in exactly one place. Move the `!backendHost` checks out of components — one check at the entry (`main.jsx` mounts `ErrorPage` instead of 10 components doing `<Navigate to="/error">`).
 - [x] **API client (fixes F2, part of F18).** Create `lib/api.js` with `createApiClient({ getAccessToken, refresh, onUnauthorized })` → `apiFetch` + `ApiError`. Port `authFetch`'s single-flight refresh logic verbatim. `AuthProvider` keeps its public API (`authFetch` re-exported as a shim) so no call site changes yet. The repeated `response.ok` / error-JSON boilerplate now lives in one place; `credentials: "include"` is always set by the client.
 - [x] **Fonts declared once (fixes F12).** Add `fontFamily` entries (`display` = Baloo 2, `displayAlt` = Space Grotesk, `body` = Inter) to `tailwind.config.js`; move the Google `@import` to the top of `src/styles/index.css`; delete all 17 copy-pasted inline `<style>` blocks from JSX. This also fixes the Baloo 2 vs Space Grotesk conflict (order-of-mount dependent display font today).
 - [x] **Shared class recipes (fixes F13).** Create `styles/components.css` with `@layer components` recipes: `.btn-primary`, `.btn-secondary`, `.input-well`, `.panel`, `.modal-panel`. Replace the duplicated `primaryBtnClass` / `wellInputClass` / `modalPanelClass` / `secondaryBtnClass` constants file-by-file. Use only `theme/colors.js` tokens — no raw hex, no gradients, no shadows.
-- [ ] **UI primitives (fixes F14 groundwork).** Add `components/ui/`: `Modal` (portal + Escape + click-outside + focus trap + scroll lock), `Button` (primary | secondary | ghost | danger), `ConfirmDialog` (replaces `window.confirm()`), `Dropdown` (replaces the 5 hand-rolled click-outside menus), `Spinner`, `EmptyState`, `ErrorState`, `PanelTabs`; add `hooks/useClickOutside`.
+- [x] **UI primitives (fixes F14 groundwork).** Add `components/ui/`: `Modal` (portal + Escape + click-outside + focus trap + scroll lock), `Button` (primary | secondary | ghost | danger), `ConfirmDialog` (replaces `window.confirm()`), `Dropdown` (replaces the 5 hand-rolled click-outside menus), `Spinner`, `EmptyState`, `ErrorState`, `PanelTabs`; add `hooks/useClickOutside`.
 
 Exit criteria: app visually identical; zero `<style>@import` blocks in `src/**/*.jsx`; no duplicated `primaryBtnClass`-style declarations; no behavior change.
 

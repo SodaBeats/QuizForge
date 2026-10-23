@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../AuthProvider";
@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import { classServices } from "../../services/classServices";
 
 import { backendHost } from "../../lib/env.js";
+import Dropdown from "../ui/Dropdown";
+import Modal from "../ui/Modal";
 const labelClass = "block text-sm font-medium text-inkondark mb-1";
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -17,19 +19,6 @@ function ClassAccessibilityDropdown({
   isFetchingClasses,
   classFetchError,
 }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleToggleClass = (classId) => {
     setForgeQuizData((prev) => {
       const currentIds = prev.selectedClassIds || [];
@@ -56,9 +45,11 @@ function ClassAccessibilityDropdown({
         : `${selectedClassIds.length} classes selected`;
 
   return (
-    <div className="relative font-body" ref={dropdownRef}>
+    <Dropdown className="relative font-body">
+      {({ open: isDropdownOpen, toggle }) => (
+        <>
       <button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={toggle}
         className="input-well w-full px-3 py-2 text-muted transition text-left flex items-center justify-between"
       >
         <span className="truncate">{displayText}</span>
@@ -118,7 +109,9 @@ function ClassAccessibilityDropdown({
           )}
         </div>
       )}
-    </div>
+        </>
+      )}
+    </Dropdown>
   );
 }
 
@@ -133,8 +126,11 @@ function QuizForgeModal({
   classFetchError,
 }) {
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-      <div className="modal-panel border border-muted p-6 w-[500px] max-w-full mx-4">
+    <Modal
+      onClose={closeForgeQuizModal}
+      panelClassName="modal-panel border border-muted p-6 w-[500px] max-w-full mx-4"
+      closeOnBackdropClick={false}
+    >
         <h2 className="text-xl font-display font-semibold mb-4 text-inkondark">
           Forge quiz
         </h2>
@@ -290,8 +286,7 @@ function QuizForgeModal({
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -311,7 +306,6 @@ export default function TopBar({
   // -------------------------------------------------------------------------------------
   //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
   const [forgeQuizData, setForgeQuizData] = useState({
@@ -325,7 +319,6 @@ export default function TopBar({
     selectedClassIds: [],
   });
 
-  const menuRef = useRef(null);
   const { logout, authFetch } = useContext(AuthContext);
   const location = useLocation();
   const showFileButton = location.pathname === "/teacher";
@@ -334,17 +327,6 @@ export default function TopBar({
   // -------------------------------------------------------------------------------------
   //  FUNCTIONS
   // -------------------------------------------------------------------------------------
-
-  // Close profile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleLogout = async () => {
     const confirmMessage = "Are you sure you want to log out?";
@@ -520,22 +502,24 @@ export default function TopBar({
           )}
 
           {/* PROFILE DROPDOWN */}
-          <div className="relative" ref={menuRef}>
+          <Dropdown>
+            {({ open, toggle, close }) => (
+              <>
             <button
-              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              onClick={toggle}
               className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden transition-all bg-accent"
             >
               <span className="text-inkondark text-xs font-display font-bold">
                 JD
               </span>
             </button>
-            {isProfileMenuOpen && (
+            {open && (
               <div className="absolute right-0 mt-2 w-48 rounded-lg py-2 z-50 bg-specialsurface border-2 border-muted">
                 <button
                   className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
                   onClick={() => {
                     navigate("/teacher/quizzes");
-                    setIsProfileMenuOpen(!isProfileMenuOpen);
+                    close();
                   }}
                 >
                   Quizzes
@@ -544,7 +528,7 @@ export default function TopBar({
                   className="w-full text-left px-4 py-2 text-sm text-inkondark hover:bg-mutedteal transition-colors"
                   onClick={() => {
                     navigate("/teacher/classes");
-                    setIsProfileMenuOpen(false);
+                    close();
                   }}
                 >
                   Classes
@@ -560,7 +544,9 @@ export default function TopBar({
                 </button>
               </div>
             )}
-          </div>
+              </>
+            )}
+          </Dropdown>
         </div>
       </div>
 

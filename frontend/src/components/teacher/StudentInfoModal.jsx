@@ -1,29 +1,13 @@
-import { useRef, useEffect } from "react";
 import { getInitials } from "../../util/getInitials";
+import Modal from "../ui/Modal";
 
 export default function StudentInfoModal({ student, studentClasses, onClose }) {
-  const studentCardRef = useRef(null);
-
-  // closes modal when clicking away from student card
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        studentCardRef.current &&
-        !studentCardRef.current.contains(event.target)
-      ) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []); // eslint-disable-line
-
   return (
-    <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50 px-4 py-6">
-      <div
-        ref={studentCardRef}
-        className="bg-specialsurface rounded-lg max-w-xl w-full overflow-hidden border border-muted font-body"
-      >
+    <Modal
+      onClose={onClose}
+      overlayClassName="px-4 py-6"
+      panelClassName="bg-specialsurface rounded-lg max-w-xl w-full overflow-hidden border border-muted font-body"
+    >
         <div className="flex items-center justify-between px-6 py-5 bg-ink border-b border-muted/20">
           <h2 className="text-lg font-display font-semibold text-inkondark">
             Student info
@@ -72,7 +56,6 @@ export default function StudentInfoModal({ student, studentClasses, onClose }) {
             Close
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
