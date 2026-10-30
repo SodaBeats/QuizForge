@@ -1,11 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
-import { classServices } from "../../services/classServices";
-
-import { backendHost } from "../../lib/env.js";
+import { useClasses } from "../../features/classes/api/queries.js";
+import { useCreateQuiz } from "../../features/quizzes/api/mutations.js";
+import ConfirmDialog from "../ui/ConfirmDialog";
 import Dropdown from "../ui/Dropdown";
 import Modal from "../ui/Modal";
 const labelClass = "block text-sm font-medium text-inkondark mb-1";
@@ -312,6 +311,7 @@ export default function TopBar({
   const [isLoading, setIsLoading] = useState(false);
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [forgeQuizData, setForgeQuizData] = useState({
     quizTitle: "",
     description: "",
@@ -323,23 +323,27 @@ export default function TopBar({
     selectedClassIds: [],
   });
 
-  const { logout, authFetch } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const location = useLocation();
   const showFileButton = location.pathname === "/teacher";
   const navigate = useNavigate();
+  const createQuiz = useCreateQuiz();
 
   // -------------------------------------------------------------------------------------
   //  FUNCTIONS
   // -------------------------------------------------------------------------------------
 
-  const handleLogout = async () => {
-    const confirmMessage = "Are you sure you want to log out?";
-    if (!window.confirm(confirmMessage)) return;
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
     try {
       setIsLoading(true);
       await logout();
     } catch (error) {
-      alert("Error: " + error);
+      toast.error(error.message || "Something went wrong while logging out");
     } finally {
       setIsLoading(false);
     }
@@ -420,39 +424,22 @@ export default function TopBar({
     try {
       const finalDueDate = new Date(forgeQuizData.dueDate).toISOString();
 
-      const response = await authFetch(`${backendHost}/api/quizzes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quizTitle: forgeQuizData.quizTitle,
-          description: forgeQuizData.description,
-          shareToken: forgeQuizData.shareToken,
-          maxAttempts: maxAttempts,
-          dueDate: finalDueDate,
-          status: forgeQuizData.status,
-          accessibility,
-          classIds: selectedClassIds,
-        }),
-        credentials: "include",
+      const data = await createQuiz.mutateAsync({
+        quizTitle: forgeQuizData.quizTitle,
+        description: forgeQuizData.description,
+        shareToken: forgeQuizData.shareToken,
+        maxAttempts: maxAttempts,
+        dueDate: finalDueDate,
+        status: forgeQuizData.status,
+        accessibility,
+        classIds: selectedClassIds,
       });
-
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "Quiz creation failed",
-        );
-      }
-
-      const data = await response.json();
 
       setQuizMetadata(data.quiz);
       toast.success(data.message);
       closeForgeQuizModal();
     } catch (error) {
       console.error("Error creating quiz: ", error);
-      toast.error(error.message);
     } finally {
       setIsCreatingQuiz(false);
     }
@@ -462,12 +449,7 @@ export default function TopBar({
     data: userClasses,
     isFetching: isFetchingClasses,
     error: classFetchError,
-  } = useQuery({
-    queryKey: ["userClasses"],
-    queryFn: () => classServices.fetchClasses(authFetch),
-    enabled: isForgeQuizModalOpen,
-    staleTime: 1000 * 60 * 5,
-  });
+  } = useClasses({ enabled: isForgeQuizModalOpen });
 
   // -------------------------------------------------------------------------------------
   //  RETURN
@@ -568,6 +550,15 @@ export default function TopBar({
           classFetchError={classFetchError}
         />
       )}
+
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Log out?"
+        message="Are you sure you want to log out?"
+        confirmLabel="Log out"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </>
   );
 }

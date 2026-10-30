@@ -1,8 +1,15 @@
-import { createContext, useState, useEffect, useCallback, useRef } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "./LoadingScreen";
-import { backendHost } from "../lib/env.js";
-import { createApiClient } from "../lib/api.js";
+import { configureApiClient } from "../lib/api.js";
+import { authApi } from "../features/auth/api/auth.api.js";
 
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
@@ -19,12 +26,9 @@ export function AuthProvider({ children }) {
   // Logout function to clear token
   const logout = useCallback(async () => {
     try {
-      await fetch(`${backendHost}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      await authApi.logout();
     } catch (err) {
-      console.error("logout fetch failed", err);
+      console.error("logout failed", err);
     } finally {
       setToken(null);
       navigate("/login");
@@ -33,20 +37,8 @@ export function AuthProvider({ children }) {
 
   const silentRefresh = useCallback(async () => {
     try {
-      // We include 'credentials: include' so the browser
-      // sends the HTTP-only Refresh Cookie to the server
-      const response = await fetch(`${backendHost}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      //if the refresh token is also invalid, navigate to login
-      if (!response.ok) {
-        logout();
-        return;
-      }
-
-      const data = await response.json();
+      // the refresh cookie travels with the request (credentials: include)
+      const data = await authApi.refresh();
 
       setToken(data.accessToken); // Put the new access token in state
       setUserInfo(data.user);
@@ -59,36 +51,31 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [logout, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
-    // the !backendHost check moved to the app entry (main.jsx, Phase 1.1)
     silentRefresh();
   }, [silentRefresh]);
 
-  // One API client for the whole app (Phase 1.2 / F2): it owns the auth
-  // header, the single-flight 401 → refresh → retry flow (previously
-  // refreshPromiseRef + the authFetch body below), and always sends cookies.
+  // One API client for the whole app (Phase 1.2 / F2, wired app-wide in Phase
+  // 2.3): it owns the auth header, the single-flight 401 → refresh → retry
+  // flow, and always sends cookies. Feature `api/` modules use it directly.
   const tokenRef = useRef(null);
-  useEffect(() => {
+  // Layout effect so the API client sees the fresh token before child pages'
+  // passive effects fire their first query after login.
+  useLayoutEffect(() => {
     tokenRef.current = token;
   }, [token]);
 
-  const apiClientRef = useRef(null);
-  if (!apiClientRef.current) {
-    apiClientRef.current = createApiClient({
+  useEffect(() => {
+    configureApiClient({
       getAccessToken: () => tokenRef.current,
       refresh: () => silentRefresh(),
       // a failed silentRefresh already logs out on its own (see above),
       // so nothing extra to do here
       onUnauthorized: () => {},
     });
-  }
-
-  const authFetch = useCallback(
-    (url, options = {}) => apiClientRef.current(url, options),
-    [],
-  );
+  }, [silentRefresh]);
 
   // Don't render children until auth check is complete
   if (loading) {
@@ -96,7 +83,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    //any component inside can access token, setToken, logout, silentRefresh, and authFetch
+    //any component inside can access token, setToken, logout, silentRefresh, and userInfo
     <AuthContext.Provider
       value={{
         token,
@@ -105,7 +92,6 @@ export function AuthProvider({ children }) {
         setUserInfo,
         logout,
         silentRefresh,
-        authFetch,
         loading,
       }}
     >

@@ -1,9 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "../AuthProvider";
-import { useContext } from "react";
 import LoadingScreen from "../LoadingScreen";
-
-import { backendHost } from "../../lib/env.js";
+import { useDocumentContent } from "../../features/documents/api/queries.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------
 function NoFileIcon() {
@@ -17,29 +13,7 @@ function NoFileIcon() {
 
 // MAIN COMPONENT -------------------------------------------------------------
 export default function FileViewer({ selectedFile }) {
-  const { authFetch } = useContext(AuthContext);
-
-  // FUNCTION -------------------------------------------------------------------
-  const fetchFileContent = async (id) => {
-    const resp = await authFetch(`${backendHost}/api/documents/${id}`, {
-      credentials: "include",
-    });
-    if (!resp) {
-      throw new Error("Authentication failed or no response received");
-    }
-    if (!resp.ok) {
-      throw new Error(`HTTP error! status: ${resp.status}`);
-    }
-    return await resp.json();
-  };
-
-  const { data, isFetching, error } = useQuery({
-    queryKey: ["fileContent", selectedFile?.id],
-    queryFn: () => fetchFileContent(selectedFile?.id),
-    enabled: !!selectedFile?.id,
-    staleTime: 1000 * 60 * 30,
-    refetchOnMount: false,
-  });
+  const { data, isFetching, error } = useDocumentContent(selectedFile?.id);
 
   if (isFetching) {
     return (

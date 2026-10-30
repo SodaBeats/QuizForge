@@ -1,16 +1,17 @@
 import { useState, useContext, useCallback, useEffect } from "react";
 import { useParams, useNavigate, useBeforeUnload } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingScreen from "../../components/LoadingScreen";
 import { AuthContext } from "../../components/AuthProvider";
-import { studentQuizService } from "../../services/studentQuizService";
 import StudentTopbar from "../../components/student/StudentTopbar";
 import StudentSidebar from "../../components/student/StudentSidebar";
 import StudentQuizWindow from "../../components/student/StudentQuizWindow";
 import StudentTimeLimit from "../../components/student/StudentTimeLimit";
-
-import { backendHost } from "../../lib/env.js";
+import {
+  useDeleteStudentQuizAttempt,
+  useSubmitStudentQuiz,
+} from "../../features/student-quiz/api/mutations.js";
+import { useStudentQuiz } from "../../features/student-quiz/api/queries.js";
 
 export default function StudentQuizPage() {
   // ----------------------------------------------------------------
@@ -18,7 +19,7 @@ export default function StudentQuizPage() {
   // ----------------------------------------------------------------
   const { quizToken } = useParams();
   const storageKey = `quiz_progress_${quizToken}`;
-  const { authFetch, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [answers, setAnswers] = useState(() => {
@@ -39,19 +40,7 @@ export default function StudentQuizPage() {
   const [showLogoutWarning, setShowLogoutWarning] = useState(false);
 
   // Fetch quiz data
-  const {
-    data: quizData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["studentQuiz", quizToken],
-    queryFn: () =>
-      studentQuizService.fetchStudentQuiz(authFetch, quizToken, backendHost),
-    enabled: !!quizToken && !!authFetch && !!backendHost,
-    staleTime: 5000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+  const { data: quizData, isLoading, error } = useStudentQuiz(quizToken);
 
   // Extract quiz data for readability
   const quiz = quizData?.quiz;
@@ -118,47 +107,9 @@ export default function StudentQuizPage() {
   // ----------------------------------------------------------
   // MUTATION FUNCTIONS
   // ----------------------------------------------------------
-  const submitQuizMutation = useMutation({
-    mutationFn: (payload) =>
-      studentQuizService.submitStudentQuiz(
-        authFetch,
-        quizToken,
-        backendHost,
-        payload,
-      ),
-    onSuccess: () => {
-      // Remove session storage
-      sessionStorage.removeItem(storageKey);
-      clearTimerStorage();
-      toast.success("Attempt received!");
-      navigate("/student", { replace: true });
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error(
-        error?.message || "Something went wrong while submitting attempt",
-      );
-    },
-  });
+  const submitQuizMutation = useSubmitStudentQuiz();
 
-  const deleteAttemptMutation = useMutation({
-    mutationFn: () =>
-      studentQuizService.deleteStudentQuizAttempt(
-        authFetch,
-        quizToken,
-        backendHost,
-      ),
-    onSuccess: () => {
-      // Remove session storage
-      sessionStorage.removeItem(storageKey);
-      clearTimerStorage();
-      navigate("/student");
-    },
-    onError: (error) => {
-      console.error("Failed delete attempt", error);
-      toast.error("Failed to delete attempt");
-    },
-  });
+  const deleteAttemptMutation = useDeleteStudentQuizAttempt();
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
@@ -208,12 +159,24 @@ export default function StudentQuizPage() {
   );
 
   const handleQuizSubmit = async () => {
-    return submitQuizMutation.mutateAsync({
-      questions,
-      answers,
-      quiz,
-      attemptId,
-    });
+    return submitQuizMutation.mutateAsync(
+      {
+        questions,
+        answers,
+        quiz,
+        attemptId,
+      },
+      {
+        onSuccess: () => {
+          // Remove session storage
+          sessionStorage.removeItem(storageKey);
+          clearTimerStorage();
+          toast.success("Attempt received!");
+          navigate("/student", { replace: true });
+        },
+        onError: (error) => console.error(error),
+      },
+    );
   };
 
   const hasActiveQuizProgress = () => {
@@ -230,7 +193,16 @@ export default function StudentQuizPage() {
   };
 
   const deleteAttempt = () => {
-    deleteAttemptMutation.mutate();
+    deleteAttemptMutation.mutate(quizToken, {
+      onSuccess: () => {
+        // Remove session storage
+        sessionStorage.removeItem(storageKey);
+        clearTimerStorage();
+        navigate("/student");
+      },
+      onError: (deleteError) =>
+        console.error("Failed delete attempt", deleteError),
+    });
   };
 
   const handleLogout = async () => {
@@ -241,7 +213,7 @@ export default function StudentQuizPage() {
       await logout();
     } catch (err) {
       console.error(err);
-      alert("Something went wrong while logging out");
+      toast.error("Something went wrong while logging out");
     }
   };
 
@@ -251,7 +223,7 @@ export default function StudentQuizPage() {
       await logout();
     } catch (err) {
       console.error(err);
-      alert("Something went wrong on submit and logout");
+      toast.error("Something went wrong on submit and logout");
     }
   };
 

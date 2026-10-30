@@ -1,13 +1,10 @@
-import { useContext, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import TopBar from "../../components/teacher/TopBar";
 import ResultsLeaderboard from "../../components/teacher/ResultsLeaderboard";
 import ResultsMainPanel from "../../components/teacher/ResultsMainPanel";
-import { AuthContext } from "../../components/AuthProvider";
-
-import { backendHost } from "../../lib/env.js";
+import { useQuizDashboard } from "../../features/quizzes/api/queries.js";
 
 const DEFAULT_METRICS = [
   { label: "Total Takers", value: "No Data Yet", sub: "unique students" },
@@ -21,7 +18,7 @@ const DEFAULT_DASHBOARD_DATA = {
   students: [],
   questions: [],
   scoreDistribution: [],
-  classAverage: [],
+  classesAverage: [],
 };
 
 function buildMetrics(data) {
@@ -78,153 +75,37 @@ function getScoreDistribution(data) {
   return buckets.map((b) => b.count);
 }
 
-async function fetchDashboardData({ quizId, authFetch, logout }) {
-  try {
-    const existRes = await authFetch(
-      `${backendHost}/api/quizzes/${quizId}/attempts`,
-      {
-        method: "GET",
-        credentials: "include",
-      },
-    );
-    const attemptsExist = await existRes.json();
-
-    if (!attemptsExist.success) {
-      return DEFAULT_DASHBOARD_DATA;
-    }
-
-    const [metricRes, studentsRes, questionsRes, scoreRes, classesAverageRes] =
-      await Promise.all([
-        authFetch(`${backendHost}/api/quizzes/${quizId}/metrics`, {
-          method: "GET",
-          credentials: "include",
-        }),
-        authFetch(`${backendHost}/api/quizzes/${quizId}/students`, {
-          method: "GET",
-          credentials: "include",
-        }),
-        authFetch(`${backendHost}/api/quizzes/${quizId}/questions`, {
-          method: "GET",
-          credentials: "include",
-        }),
-        authFetch(`${backendHost}/api/quizzes/${quizId}/score`, {
-          method: "GET",
-          credentials: "include",
-        }),
-        authFetch(`${backendHost}/api/quizzes/${quizId}/classesavg`, {
-          method: "GET",
-          credentials: "include",
-        }),
-      ]);
-
-    const [metrics, students, questions, scores, classesAverage] =
-      await Promise.all([
-        metricRes.json(),
-        studentsRes.json(),
-        questionsRes.json(),
-        scoreRes.json(),
-        classesAverageRes.json(),
-      ]);
-
-    if (!metrics.success) {
-      if (metrics.message === "Unauthorized action") {
-        await logout();
-        return DEFAULT_DASHBOARD_DATA;
-      }
-      throw new Error(
-        metrics?.message ||
-          metrics?.error ||
-          "Something went wrong while fetching metrics",
-      );
-    }
-
-    if (!students.success) {
-      if (students.message === "Unauthorized action") {
-        await logout();
-        return DEFAULT_DASHBOARD_DATA;
-      }
-      throw new Error(
-        students?.message ||
-          students?.error ||
-          "Something went wrong while fetching student ranking",
-      );
-    }
-
-    if (!questions.success) {
-      if (questions.message === "Unauthorized action") {
-        await logout();
-        return DEFAULT_DASHBOARD_DATA;
-      }
-      throw new Error(
-        questions?.message ||
-          questions?.error ||
-          "Something went wrong while fetching questions data",
-      );
-    }
-
-    if (!scores.success) {
-      if (scores.message === "Unauthorized action") {
-        await logout();
-        return DEFAULT_DASHBOARD_DATA;
-      }
-      throw new Error(
-        scores?.message ||
-          scores?.error ||
-          "Something went wrong while fetching score distribution data",
-      );
-    }
-    if (!classesAverage.success) {
-      if (classesAverage.message === "Unauthorized action") {
-        await logout();
-        return DEFAULT_DASHBOARD_DATA;
-      }
-      throw new Error(
-        classesAverage?.message ||
-          classesAverage?.error ||
-          "Something went wrong while fetching classes average ranking",
-      );
-    }
-
-    return {
-      metrics: buildMetrics(metrics),
-      students: students.data,
-      questions: buildQuestionCorrectionRate(questions.data),
-      scoreDistribution: getScoreDistribution(scores.data),
-      classesAverage: classesAverage.data,
-    };
-  } catch (error) {
-    console.error(error);
-    toast.error(
-      error.message ||
-        error.error ||
-        "Something went wrong while fetching dashboard data",
-    );
-    return DEFAULT_DASHBOARD_DATA;
-  }
-}
-
 export default function QuizResultDashboard() {
-  const { authFetch, logout } = useContext(AuthContext);
   const { quizId } = useParams();
   const [mobileTab, setMobileTab] = useState("results"); // mobile-only panel switcher — purely UI state, no data logic
 
-  const { data: dashboardData } = useQuery({
-    queryKey: ["quizResultDashboard", quizId],
-    queryFn: () => fetchDashboardData({ quizId, authFetch, logout }),
-    enabled: !!quizId,
-    staleTime: 1000 * 60 * 5,
-    retry: false,
-  });
+  const { data: dashboardData, error } = useQuizDashboard(quizId);
 
-  const metrics = dashboardData?.metrics ?? DEFAULT_DASHBOARD_DATA.metrics;
-  const students = dashboardData?.students ?? DEFAULT_DASHBOARD_DATA.students;
-  const questions =
-    dashboardData?.questions ?? DEFAULT_DASHBOARD_DATA.questions;
-  const scoreDistribution =
-    dashboardData?.scoreDistribution ??
-    DEFAULT_DASHBOARD_DATA.scoreDistribution;
-  const classesRanking =
-    dashboardData?.classesAverage ?? DEFAULT_DASHBOARD_DATA.classAverage;
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+      toast.error(
+        error.message ||
+          "Something went wrong while fetching dashboard data",
+      );
+    }
+  }, [error]);
+
+  const results = dashboardData
+    ? {
+        metrics: buildMetrics(dashboardData.metrics),
+        students: dashboardData.students,
+        questions: buildQuestionCorrectionRate(dashboardData.questions),
+        scoreDistribution: getScoreDistribution(dashboardData.scores),
+        classesAverage: dashboardData.classesAverage,
+      }
+    : DEFAULT_DASHBOARD_DATA;
+
+  const metrics = results.metrics;
+  const students = results.students;
+  const questions = results.questions;
+  const scoreDistribution = results.scoreDistribution;
+  const classesRanking = results.classesAverage;
 
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">

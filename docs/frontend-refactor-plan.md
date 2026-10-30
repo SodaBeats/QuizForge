@@ -71,16 +71,18 @@ Exit criteria: app visually identical; zero `<style>@import` blocks in `src/**/*
 
 ## Phase 2 — Data layer (highest bug payoff)
 
+**Code complete on `refactor/phase-2-data-layer` (2026-10-24).** Exit checks green: `fetch(` only in `lib/api.js` + `features/*/api/*.js`; no `alert(`/`window.confirm(`; lint/build/test green (37/37). The stale `services/` modules are gone; `features/{auth,quizzes,classes,documents,student-quiz}/api/` now own every request.
+
 Goal: one cache, one client, one error vocabulary. Server state belongs to React Query.
 
-- [ ] **Query key factory (fixes F1).** Create `lib/queryKeys.js` (`quizKeys`, `classKeys`, `docKeys`, `attemptKeys`) and rename keys so each endpoint has exactly one key:
+- [x] **Query key factory (fixes F1).** Create `lib/queryKeys.js` (`quizKeys`, `classKeys`, `docKeys`, `attemptKeys`) and rename keys so each endpoint has exactly one key:
   - merge `["queryQuestions", quizId]` and `["quizQuestions", quizId]` → `quizKeys.questions(id)`
   - merge `["queryQuizzes"]` and `["userQuizzes", page]` → `quizKeys.list(params)`
     This kills the stale-list bugs (invalidations written on one side never reached the other).
-- [ ] **Global QueryClient defaults (fixes F5).** Create `lib/queryClient.js` with `staleTime: 5 * 60_000`, `refetchOnWindowFocus: false`, `retry: 1`; delete per-call `staleTime` / `refetchOnWindowFocus` overrides across the ~12 `useQuery` calls.
-- [ ] **Per-feature API layer (fixes F2, F3, F6).** For each feature (quizzes, classes, documents, student-quiz, auth) create `api/<f>.api.js` (move the 3 existing service modules + all inline fetchers out of JSX), `api/queries.js`, `api/mutations.js`. Remove the `response.ok` boilerplate and string-matching on error text (`"Unauthorized action"` in `QuizResultDashboard`).
-- [ ] **Mutations via `useMutation` (fixes F4).** Convert the ~6 hand-rolled optimistic-update handlers (`handleDeleteQuiz`, `handleQuizMetaUpdate`, `handleQuestionUpdate` in `QuizzesPage`; 2 in `ClassesPage`; `handleQuestionDelete` in `SideBar`) to `useMutation` with `onMutate`/`onError`/`onSettled`. Because `quizKeys.all` is a prefix, an edit in the quiz maker now invalidates the quizzes page automatically. Convert the 4 plain fetch-then-invalidate handlers in `ClassesPage` too.
-- [ ] **One feedback vocabulary (fixes F16, part of F6).** Replace every `alert()` (7 files: `Login`, `QuizMakerPage`, `SideBar`, `TopBar`, `StudentQuizPage`, `StudentTokenInput`, `StudentTokenPage`) with `toast`; replace every `window.confirm()` (6 files) with `ConfirmDialog`. Centralize server-error → message mapping (`queryClient.onError` or a `useApiError()` helper → `toast.error(err.message)`).
+- [x] **Global QueryClient defaults (fixes F5).** Create `lib/queryClient.js` with `staleTime: 5 * 60_000`, `refetchOnWindowFocus: false`, `retry: 1`; delete per-call `staleTime` / `refetchOnWindowFocus` overrides across the ~12 `useQuery` calls.
+- [x] **Per-feature API layer (fixes F2, F3, F6).** For each feature (quizzes, classes, documents, student-quiz, auth) create `api/<f>.api.js` (move the 3 existing service modules + all inline fetchers out of JSX), `api/queries.js`, `api/mutations.js`. Remove the `response.ok` boilerplate and string-matching on error text (`"Unauthorized action"` in `QuizResultDashboard`).
+- [x] **Mutations via `useMutation` (fixes F4).** Convert the ~6 hand-rolled optimistic-update handlers (`handleDeleteQuiz`, `handleQuizMetaUpdate`, `handleQuestionUpdate` in `QuizzesPage`; 2 in `ClassesPage`; `handleQuestionDelete` in `SideBar`) to `useMutation` with `onMutate`/`onError`/`onSettled`. Because `quizKeys.all` is a prefix, an edit in the quiz maker now invalidates the quizzes page automatically. Convert the 4 plain fetch-then-invalidate handlers in `ClassesPage` too.
+- [x] **One feedback vocabulary (fixes F16, part of F6).** Replace every `alert()` (7 files: `Login`, `QuizMakerPage`, `SideBar`, `TopBar`, `StudentQuizPage`, `StudentTokenInput`, `StudentTokenPage`) with `toast`; replace every `window.confirm()` (6 files) with `ConfirmDialog`. Centralize server-error → message mapping (`queryClient.onError` or a `useApiError()` helper → `toast.error(err.message)`).
 
 Exit criteria: `grep "fetch("` returns hits only in `lib/api.js` and `features/*/api/*.js`; exactly one query key per endpoint; no `alert(` and no `window.confirm(` anywhere in `src`.
 

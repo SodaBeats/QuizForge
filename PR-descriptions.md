@@ -56,3 +56,16 @@ Menus and modals were the last big copy-paste pile: every overlay re-implemented
 - `npm run lint` → 0 problems · `npm run build` → passes (only the known chunk-size warning) · `npm test` → 29/29.
 - Backend-origin reads: exactly 1 (`lib/env.js`). Inline font imports in components: 0. Old duplicated class constants: 0.
 - `alert(` (13) and real `window.confirm(` (6) untouched on purpose — replacing those is Phase 2's job.
+
+## PR 5 — Data layer (Phase 2)
+
+**Summary**
+Move frontend server state and request handling into a shared React Query data layer.
+
+**Changes**
+- Add shared query keys and QueryClient defaults; consolidate query invalidation.
+- Add feature API, query, and mutation modules; remove obsolete service modules and inline fetchers.
+- Convert write handlers to `useMutation` and replace alerts/confirms with toast and `ConfirmDialog`.
+
+**Notes**
+- Phase 2 exit criteria are met. Lint and build pass; all 37 tests pass (the build reports the existing chunk-size warning).

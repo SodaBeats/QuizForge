@@ -1,4 +1,7 @@
 // StudentQuizSidebar.jsx
+import { useState } from "react";
+import ConfirmDialog from "../ui/ConfirmDialog";
+
 export default function StudentSidebar({
   questions,
   currentQuestionIndex,
@@ -6,10 +9,20 @@ export default function StudentSidebar({
   answeredQuestions,
   onQuizSubmit,
 }) {
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const totalQuestions = questions?.length ?? 0;
   const answeredCount = answeredQuestions?.size || 0;
+  const unansweredCount = totalQuestions - answeredCount;
   const progressPercentage =
     totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+
+  const handleSubmitClick = () => {
+    if (unansweredCount > 0) {
+      setShowSubmitConfirm(true);
+      return;
+    }
+    onQuizSubmit();
+  };
 
   return (
     <div className="w-80 border-r-2 border-accent/50 bg-specialsurface flex flex-col h-full">
@@ -75,21 +88,23 @@ export default function StudentSidebar({
       <div className="border-t border-muted/20 p-4">
         <button
           className="w-full px-4 py-3 bg-accept text-inkondark hover:bg-green-600 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => {
-            const unanswered = totalQuestions - answeredCount;
-            if (unanswered > 0) {
-              const confirm = window.confirm(
-                `You have ${unanswered} unanswered question(s). Submit anyway?`,
-              );
-              console.log(confirm);
-              if (!confirm) return;
-            }
-            onQuizSubmit();
-          }}
+          onClick={handleSubmitClick}
         >
           Submit Quiz
         </button>
       </div>
+
+      <ConfirmDialog
+        open={showSubmitConfirm}
+        title="Submit quiz?"
+        message={`You have ${unansweredCount} unanswered question(s). Submit anyway?`}
+        confirmLabel="Submit anyway"
+        onConfirm={() => {
+          setShowSubmitConfirm(false);
+          onQuizSubmit();
+        }}
+        onCancel={() => setShowSubmitConfirm(false)}
+      />
     </div>
   );
 }

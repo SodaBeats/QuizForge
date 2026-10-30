@@ -1,8 +1,8 @@
 // Characterization test for the student quiz submit payload (plan.md §0.4.1).
-// It locks the contract that StudentQuizPage.handleQuizSubmit passes to
-// studentQuizService.submitStudentQuiz — { questions, answers, quiz, attemptId }
-// — so the Phase 2 service extraction / useMutation conversion can't silently
-// change the request body the backend receives.
+// It locks the contract that StudentQuizPage.handleQuizSubmit passes to the
+// student-quiz API — { questions, answers, quiz, attemptId } — so the Phase 2
+// service extraction / useMutation conversion can't silently change the
+// request body the backend receives.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
@@ -10,13 +10,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import StudentQuizPage from "../pages/student/StudentQuizPage";
 import { AuthContext } from "../components/AuthProvider";
-import { studentQuizService } from "../services/studentQuizService";
+import { studentQuizApi } from "../features/student-quiz/api/studentQuiz.api";
 
-vi.mock("../services/studentQuizService", () => ({
-  studentQuizService: {
-    fetchStudentQuiz: vi.fn(),
-    submitStudentQuiz: vi.fn(),
-    deleteStudentQuizAttempt: vi.fn(),
+vi.mock("../features/student-quiz/api/studentQuiz.api", () => ({
+  studentQuizApi: {
+    fetch: vi.fn(),
+    submit: vi.fn(),
+    deleteAttempt: vi.fn(),
   },
 }));
 
@@ -39,16 +39,13 @@ const questions = [
 ];
 const attemptId = "att-1";
 
-const authFetch = vi.fn();
 const logout = vi.fn();
-const originalConfirm = window.confirm;
 
 function renderStudentQuizPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   const authValue = {
-    authFetch,
     logout,
     token: "test-token",
     userInfo: { role: "student" },
@@ -74,25 +71,18 @@ function renderStudentQuizPage() {
 
 beforeEach(() => {
   sessionStorage.clear();
-  authFetch.mockReset();
   logout.mockReset();
-  studentQuizService.fetchStudentQuiz.mockResolvedValue({
+  studentQuizApi.fetch.mockResolvedValue({
     quiz,
     questions,
     attemptId,
     totalAttempts: 0,
   });
-  studentQuizService.submitStudentQuiz.mockResolvedValue({ success: true });
-  studentQuizService.deleteStudentQuizAttempt.mockResolvedValue({
-    success: true,
-  });
-  // jsdom's confirm() is a no-op returning undefined, which would silently
-  // abort any flow guarded by window.confirm — stub it deterministically.
-  window.confirm = vi.fn(() => true);
+  studentQuizApi.submit.mockResolvedValue({ success: true });
+  studentQuizApi.deleteAttempt.mockResolvedValue({ success: true });
 });
 
 afterEach(() => {
-  window.confirm = originalConfirm;
   sessionStorage.clear();
 });
 
@@ -109,15 +99,10 @@ describe("StudentQuizPage submit", () => {
     fireEvent.click(screen.getByRole("button", { name: "Submit Quiz" }));
 
     await waitFor(() =>
-      expect(studentQuizService.submitStudentQuiz).toHaveBeenCalledTimes(1),
+      expect(studentQuizApi.submit).toHaveBeenCalledTimes(1),
     );
 
-    const [passedAuthFetch, tokenArg, hostArg, payloadArg] =
-      studentQuizService.submitStudentQuiz.mock.calls[0];
-    expect(passedAuthFetch).toBe(authFetch);
-    expect(tokenArg).toBe(QUIZ_TOKEN);
-    expect(hostArg).toBe(import.meta.env.VITE_BACKEND_HOST);
-    expect(payloadArg).toEqual({
+    expect(studentQuizApi.submit.mock.calls[0][0]).toEqual({
       questions,
       answers: { "question-1": "b" },
       quiz,
@@ -135,21 +120,22 @@ describe("StudentQuizPage submit", () => {
   });
 
   it("does not submit when the unanswered-questions confirm is cancelled", async () => {
-    window.confirm = vi.fn(() => false);
-
     renderStudentQuizPage();
     await screen.findByText("Which option is Beta?");
 
     // no answer selected → 1 unanswered → confirm dialog must appear
     fireEvent.click(screen.getByRole("button", { name: "Submit Quiz" }));
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      "You have 1 unanswered question(s). Submit anyway?",
-    );
-    // still on the quiz page, service untouched
     expect(
-      screen.queryByText("student home"),
-    ).not.toBeInTheDocument();
-    expect(studentQuizService.submitStudentQuiz).not.toHaveBeenCalled();
+      await screen.findByText(
+        "You have 1 unanswered question(s). Submit anyway?",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    // still on the quiz page, service untouched
+    expect(screen.queryByText("student home")).not.toBeInTheDocument();
+    expect(studentQuizApi.submit).not.toHaveBeenCalled();
   });
 });
