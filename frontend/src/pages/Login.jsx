@@ -2,9 +2,8 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../components/AuthProvider";
+import { authApi } from "../features/auth/api/auth.api.js";
 import "./Login.css";
-
-import { backendHost } from "../lib/env.js";
 
 export default function LogInComponent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -27,25 +26,23 @@ export default function LogInComponent() {
 
     // Validation
     if (!email || !password) {
-      alert("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
 
     if (!isLogin && (!firstName || !lastName)) {
-      alert("Please enter your first and last name");
+      toast.error("Please enter your first and last name");
       return;
     }
 
     if (!isLogin && password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? "/auth/login" : "/auth/signup";
-
       const body = isLogin
         ? {
             email: email.toLocaleLowerCase(),
@@ -59,26 +56,9 @@ export default function LogInComponent() {
             role: role,
           };
 
-      const response = await fetch(`${backendHost}${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const result = await response.json();
-
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to submit",
-        );
-      }
-
-      const data = await response.json();
+      const data = isLogin
+        ? await authApi.login(body)
+        : await authApi.signup(body);
 
       if (isLogin && data.user.role === "teacher") {
         setToken(data.accessToken);
@@ -89,7 +69,7 @@ export default function LogInComponent() {
         setUserInfo(data.user);
         navigate("/student");
       } else {
-        alert(data.message || "Something wrong with login");
+        toast.success(data.message || "Account created!");
 
         setIsLogin(true);
         setFirstName("");
@@ -101,7 +81,7 @@ export default function LogInComponent() {
     } catch (error) {
       console.error("Error:", error);
 
-      toast.error("An error occurred. Please try again.");
+      toast.error(error.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

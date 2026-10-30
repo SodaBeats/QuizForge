@@ -2,8 +2,8 @@ import { useContext, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useRequestQuizAccess } from "../../features/student-quiz/api/mutations.js";
 import "./StudentTokenPage.css";
-import { backendHost } from "../../lib/env.js";
 
 // image imports
 import avatarPeeking from "../../assets/avatar_token.png";
@@ -15,34 +15,15 @@ import paperPlaneClean from "../../assets/paper_plane_token.png";
 export default function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const { authFetch, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const requestQuizAccess = useRequestQuizAccess();
 
   const inputRefs = useRef([]);
 
   const handleSubmitToken = async (token) => {
     try {
-      const response = await authFetch(
-        `${backendHost}/api/student/quiz-access`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) {
-        const result = await response.json();
-
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result.message ||
-            "Access Denied",
-        );
-      }
-
-      const quizAndQuestions = await response.json();
+      const quizAndQuestions = await requestQuizAccess.mutateAsync(token);
 
       // stop user if already used up all attempts
       if (quizAndQuestions.totalAttempts >= quizAndQuestions.maxAttempts) {
@@ -58,7 +39,7 @@ export default function StudentTokenPage() {
       navigate(`/student/quiz/${quizAndQuestions.shareToken}`);
     } catch (error) {
       console.error(error);
-      alert(error.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong");
     }
   };
 

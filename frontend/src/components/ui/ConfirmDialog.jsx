@@ -1,9 +1,8 @@
 import Modal from "./Modal";
 import Button from "./Button";
 
-// Shared confirmation dialog (Phase 1.5 / F14 groundwork). Ships as a
-// primitive + tests only — replacing the 6 window.confirm() calls is
-// Phase 2.5's job (that's a vocabulary change, not a groundwork change).
+// Shared confirmation dialog (Phase 1.5 / F14 groundwork, adopted by every
+// destructive flow in Phase 2.5 — no window.confirm() calls remain).
 export default function ConfirmDialog({
   open,
   title = "Are you sure?",

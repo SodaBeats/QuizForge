@@ -1,10 +1,10 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../AuthProvider";
 import toast from "react-hot-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { documentServices } from "../../services/documentServices";
-import { backendHost } from "../../lib/env.js";
+import { useDocuments } from "../../features/documents/api/queries.js";
+import { usePagedQuizzes } from "../../features/quizzes/api/queries.js";
+import { useDeleteQuestion } from "../../features/quizzes/api/mutations.js";
+import ConfirmDialog from "../ui/ConfirmDialog";
 import Modal from "../ui/Modal";
 
 // ------------------------------------------------------------------------------------
@@ -18,13 +18,8 @@ function FileModal({
   isUploading,
   selectedFileId,
   page,
-  authFetch,
 }) {
-  const { data, isFetching, error } = useQuery({
-    queryKey: ["docFetch", page],
-    queryFn: () => documentServices.fetchDocs(authFetch, page),
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data, isFetching, error } = useDocuments(page);
 
   const totalDocuments = data?.totalDocuments || data?.total || 0;
 
@@ -160,17 +155,12 @@ function FileModal({
 // -------------------------------------------------------------------------------------
 function SelectQuizModal({
   page,
-  fetchQuizzes,
   closeSelectQuizModal,
   handleSelectQuiz,
   fetchPreviousQuizzes,
   fetchMoreQuizzes,
 }) {
-  const { data, isFetching, error } = useQuery({
-    queryKey: ["userQuizzes", page],
-    queryFn: () => fetchQuizzes(page),
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data, isFetching, error } = usePagedQuizzes(page);
 
   const totalQuizzes = data?.totalQuizzes || 0;
 
@@ -297,10 +287,10 @@ function SideBar({
   handleFileUpload, // passed in from the parent page (previously only went to TopBar)
   isUploading, // passed in from the parent page (previously only went to TopBar)
 }) {
-  const { authFetch } = useContext(AuthContext);
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const queryClient = useQueryClient();
+  const [questionToDelete, setQuestionToDelete] = useState(null);
+  const deleteQuestion = useDeleteQuestion();
 
   // ---- File modal state/logic (moved here from TopBar) ----
   const [showFileModal, setShowFileModal] = useState(false);
@@ -376,80 +366,34 @@ function SideBar({
     }
   };
 
-  const handleQuestionDelete = async (questionId) => {
-    const confirmMessage = "Are you sure you wish to delete this question?";
-    if (!window.confirm(confirmMessage)) return;
+  const handleQuestionDelete = (questionId) => {
     if (!currentQuiz?.id) return;
+    setQuestionToDelete(questionId);
+  };
+
+  const confirmQuestionDelete = () => {
+    if (!questionToDelete || !currentQuiz?.id) return;
 
     const previousSelectedQuestionId = selectedQuestionId;
-    const queryKey = ["quizQuestions", currentQuiz.id];
-    const previousQueryData = queryClient.getQueryData(queryKey);
 
-    if (previousQueryData?.questionList) {
-      queryClient.setQueryData(queryKey, (oldData) => ({
-        ...oldData,
-        questionList: oldData.questionList.filter((q) => q.id !== questionId),
-      }));
-    }
-
-    if (questionId === selectedQuestionId) {
+    if (questionToDelete === selectedQuestionId) {
       setSelectedQuestionId(null);
     }
 
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/questions/${questionId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to delete question",
-        );
-      }
+    deleteQuestion.mutate(
+      { quizId: currentQuiz.id, questionId: questionToDelete },
+      {
+        onSuccess: (result) =>
+          toast.success(result?.message || "Question deleted"),
+        onError: () => setSelectedQuestionId(previousSelectedQuestionId),
+      },
+    );
 
-      const result = await response.json();
-
-      await queryClient.invalidateQueries({ queryKey: queryKey });
-      toast.success(result.message);
-    } catch (error) {
-      console.error(error);
-      if (previousQueryData) {
-        queryClient.setQueryData(queryKey, previousQueryData);
-      }
-      setSelectedQuestionId(previousSelectedQuestionId);
-      alert("Something went wrong with the question deletion.");
-    }
+    setQuestionToDelete(null);
   };
 
   const closeSelectQuizModal = () => {
     setIsSelectQuizModalOpen(false);
-  };
-
-  const fetchQuizzes = async (page = 0) => {
-    const offset = page * 5;
-    const limit = 5;
-    const response = await authFetch(
-      `${backendHost}/api/quizzes?limit=${limit}&offset=${offset}`,
-      {
-        credentials: "include",
-      },
-    );
-    if (!response || !response.ok) {
-      const result = await response.json();
-      throw new Error(
-        result.errors?.map((e) => e.msg).join(", ") ||
-          result?.message ||
-          "failed to fetch quizzes",
-      );
-    }
-
-    return await response.json();
   };
 
   const handleSelectQuiz = async (quiz) => {
@@ -640,7 +584,6 @@ function SideBar({
           isUploading={isUploading}
           selectedFileId={selectedFileId}
           page={filePage}
-          authFetch={authFetch}
         />
       )}
 
@@ -648,13 +591,21 @@ function SideBar({
       {isSelectQuizModalOpen && (
         <SelectQuizModal
           page={page}
-          fetchQuizzes={fetchQuizzes}
           closeSelectQuizModal={closeSelectQuizModal}
           handleSelectQuiz={handleSelectQuiz}
           fetchPreviousQuizzes={fetchPreviousQuizzes}
           fetchMoreQuizzes={fetchMoreQuizzes}
         />
       )}
+
+      <ConfirmDialog
+        open={questionToDelete !== null}
+        title="Delete question?"
+        message="Are you sure you wish to delete this question?"
+        confirmLabel="Delete question"
+        onConfirm={confirmQuestionDelete}
+        onCancel={() => setQuestionToDelete(null)}
+      />
     </>
   );
 }

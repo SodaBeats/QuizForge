@@ -1,110 +1,82 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AuthContext } from "../../components/AuthProvider";
-import QuizzesSidebar from "../../components/teacher/QuizzesSideBar";
 import TopBar from "../../components/teacher/TopBar";
+import QuizzesSidebar from "../../components/teacher/QuizzesSideBar";
 import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
 import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
-import { classServices } from "../../services/classServices";
-
-import { backendHost } from "../../lib/env.js";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import { useClasses } from "../../features/classes/api/queries.js";
+import {
+  useDeleteQuiz,
+  useUpdateQuestion,
+  useUpdateQuiz,
+} from "../../features/quizzes/api/mutations.js";
+import {
+  useQuizQuestions,
+  useQuizzes,
+} from "../../features/quizzes/api/queries.js";
 
 export default function QuizzesPage() {
-  const { authFetch } = useContext(AuthContext);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [quizToDelete, setQuizToDelete] = useState(null);
   const [mobileTab, setMobileTab] = useState("list"); // mobile-only panel switcher — purely UI state, no data logic
-  const queryClient = useQueryClient();
 
   // ---------------------------------------------------------------------
-  // FUNCTIONS
+  // QUERIES
   // ---------------------------------------------------------------------
 
-  const fetchQuizzes = async () => {
-    const response = await authFetch(`${backendHost}/api/quizzes`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!response.ok) {
-      const result = await response.json();
-      throw new Error(
-        result.errors?.map((e) => e.msg).join(", ") ||
-          result?.message ||
-          "failed to fetch quizzes",
-      );
-    }
-    const result = await response.json();
-    return result.userQuizzes;
-  };
-
-  const fetchQuestions = async (quizId) => {
-    const response = await authFetch(
-      `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
-    );
-    if (!response || !response.ok) {
-      const result = await response.json();
-      throw new Error(
-        result.errors?.map((e) => e.msg).join(", ") ||
-          result?.message ||
-          "failed to fetch questions",
-      );
-    }
-    return await response.json();
-  };
-
-  // FETCH QUIZZES AND STORE IN TANSTACK CACHE
   const {
     data: queryQuizzes,
     isFetching: queryQuizzesFetching,
     error: queryQuizzesError,
-  } = useQuery({
-    queryKey: ["queryQuizzes"],
-    queryFn: fetchQuizzes,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-  });
+  } = useQuizzes();
+
   const selectedQuiz =
     queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
 
-  const handleDeleteQuiz = async (quizId) => {
-    const confirmMessage = "Are you sure you wish to delete this quiz?";
-    if (!window.confirm(confirmMessage)) return;
-    const queryKey = ["queryQuizzes"];
-    const previousSelectedQuizId = selectedQuizId;
-    const previousQuizzesData = queryClient.getQueryData(queryKey);
+  // get all questions related to quiz (same key the quiz maker writes to)
+  const { data: queryQuestions, isFetching: queryQuestionsFetching } =
+    useQuizQuestions(selectedQuizId, {
+      enabled: !!selectedQuizId && selectedQuiz?.questionCount > 0,
+    });
 
-    if (previousQuizzesData) {
-      queryClient.setQueryData(queryKey, (oldData) =>
-        oldData.filter((q) => q.id !== quizId),
-      );
-    }
+  // get all user classes (same key the forge-quiz modal uses)
+  const {
+    data: userClasses,
+    isFetching: isFetchingClasses,
+    error: classFetchError,
+  } = useClasses();
+
+  // ---------------------------------------------------------------------
+  // MUTATIONS
+  // ---------------------------------------------------------------------
+
+  const deleteQuiz = useDeleteQuiz();
+  const updateQuiz = useUpdateQuiz();
+  const updateQuestion = useUpdateQuestion();
+
+  const handleDeleteQuiz = (quizId) => {
+    setQuizToDelete(
+      queryQuizzes?.find((quiz) => quiz.id === quizId) ?? { id: quizId },
+    );
+  };
+
+  const confirmDeleteQuiz = () => {
+    if (!quizToDelete) return;
+
+    const quizId = quizToDelete.id;
+    const previousSelectedQuizId = selectedQuizId;
     if (selectedQuizId === quizId) {
       setSelectedQuizId(null);
     }
-    try {
-      const response = await authFetch(`${backendHost}/api/quizzes/${quizId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to delete quiz",
-        );
-      }
 
-      toast.success("Quiz Deleted!");
-    } catch (error) {
-      console.error(error);
-      if (previousQuizzesData) {
-        queryClient.setQueryData(queryKey, previousQuizzesData);
-      }
-      setSelectedQuizId(previousSelectedQuizId);
-      alert("Something went wrong with the quiz deletion.");
-    }
+    deleteQuiz.mutate(quizId, {
+      onSuccess: () => toast.success("Quiz Deleted!"),
+      onError: () => setSelectedQuizId(previousSelectedQuizId),
+    });
+
+    setQuizToDelete(null);
   };
 
   const getChanges = (original, draft) => {
@@ -117,16 +89,12 @@ export default function QuizzesPage() {
     return changes;
   };
 
-  const handleQuizMetaUpdate = async (quizToChange) => {
-    const queryKey = ["queryQuizzes"];
-
-    //make copy of original quizzes list
-    const originalQuizzes = queryClient.getQueryData(queryKey);
-
-    //make copy of original quiz currently editing
-    const originalQuiz = originalQuizzes.find(
-      (originalQuiz) => originalQuiz.id === quizToChange.id,
+  const handleQuizMetaUpdate = (quizToChange) => {
+    const originalQuiz = queryQuizzes?.find(
+      (quiz) => quiz.id === quizToChange.id,
     );
+
+    if (!originalQuiz) return;
 
     const changes = getChanges(originalQuiz, quizToChange);
 
@@ -135,101 +103,22 @@ export default function QuizzesPage() {
       return;
     }
 
-    queryClient.setQueryData(queryKey, (prev) =>
-      prev.map((q) => (q.id === quizToChange.id ? quizToChange : q)),
-    );
     setSelectedQuizId(quizToChange.id);
 
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/${quizToChange.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-type": "application/json" },
-          body: JSON.stringify(quizToChange),
-          credentials: "include",
-        },
-      );
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to update quiz",
-        );
-      }
-
-      toast.success("Quiz Updated!");
-    } catch (error) {
-      toast.error("Failed to update quiz");
-      console.error(error);
-      queryClient.setQueryData(queryKey, originalQuizzes);
-      setSelectedQuizId(null);
-    }
+    updateQuiz.mutate(quizToChange, {
+      onSuccess: () => toast.success("Quiz Updated!"),
+      onError: () => setSelectedQuizId(null),
+    });
   };
 
-  // get all questions related to quiz
-  const { data: queryQuestions, isFetching: queryQuestionsFetching } = useQuery(
-    {
-      queryKey: ["queryQuestions", selectedQuizId],
-      queryFn: () => {
-        if (!selectedQuizId) {
-          throw new Error(`No quiz selected`);
-        }
-        return fetchQuestions(selectedQuizId);
+  const handleQuestionUpdate = (quizId, editingQuestionToSave) => {
+    updateQuestion.mutate(
+      { quizId, question: editingQuestionToSave },
+      {
+        onSuccess: () => toast.success("Question Updated!"),
+        onError: () => setEditingQuestion(null),
       },
-      staleTime: 1000 * 60 * 5,
-      enabled: !!selectedQuizId && selectedQuiz?.questionCount > 0,
-    },
-  );
-
-  // get all user classes
-  const {
-    data: userClasses,
-    isFetching: isFetchingClasses,
-    error: classFetchError,
-  } = useQuery({
-    queryKey: ["userClasses"],
-    queryFn: () => classServices.fetchClasses(authFetch),
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const handleQuestionUpdate = async (quizId, editingQuestion) => {
-    const queryKey = ["queryQuestions", selectedQuizId];
-    const originalData = queryClient.getQueryData(queryKey);
-
-    queryClient.setQueryData(queryKey, (prev) => ({
-      ...prev,
-      questionList: prev.questionList.map((q) =>
-        q.id === editingQuestion.id ? editingQuestion : q,
-      ),
-    }));
-
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/quizzes/${quizId}/question/${editingQuestion.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingQuestion),
-          credentials: "include",
-        },
-      );
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to update question",
-        );
-      }
-      toast.success("Question Updated!");
-    } catch (error) {
-      queryClient.setQueryData(queryKey, originalData);
-      console.error("Question update error: ", error);
-      toast.error("Something went wrong while updating question");
-      setEditingQuestion(null);
-    }
+    );
   };
 
   return (
@@ -317,6 +206,15 @@ export default function QuizzesPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={Boolean(quizToDelete)}
+        title="Delete quiz?"
+        message="Are you sure you wish to delete this quiz?"
+        confirmLabel="Delete quiz"
+        onConfirm={confirmDeleteQuiz}
+        onCancel={() => setQuizToDelete(null)}
+      />
     </div>
   );
 }

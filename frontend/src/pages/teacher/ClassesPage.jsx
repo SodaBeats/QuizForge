@@ -1,15 +1,20 @@
 // src/pages/ClassesPage.jsx
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AuthContext } from "../../components/AuthProvider";
 import TopBar from "../../components/teacher/TopBar";
 import ClassesSidebar from "../../components/teacher/ClassesSidebar";
 import StudentInfoModal from "../../components/teacher/StudentInfoModal";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { getInitials } from "../../util/getInitials";
+import { useClasses, useStudentLookup } from "../../features/classes/api/queries.js";
+import {
+  useAddStudent,
+  useCreateClass,
+  useDeleteClass,
+  useRemoveStudent,
+} from "../../features/classes/api/mutations.js";
 
-import { backendHost } from "../../lib/env.js";
 import Modal from "../../components/ui/Modal";
 
 // ---------------------------------------------------------------
@@ -45,7 +50,6 @@ function CreateClassModal({
     } catch (error) {
       console.error(`Classes creation error: ${error}`);
       setIsSubmitting(false);
-      toast.error(error.message || "Something went wrong while creating class");
     }
   };
 
@@ -136,73 +140,42 @@ function AddStudentModal({
   isSubmitting,
   setIsSubmitting,
 }) {
-  const { authFetch } = useContext(AuthContext);
   const [form, setForm] = useState({
     email: "",
   });
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailCheckError, setEmailCheckError] = useState("");
-  const [emailValid, setEmailValid] = useState(null);
+  const [debouncedEmail, setDebouncedEmail] = useState("");
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setEmailCheckError("");
-    setEmailValid(null);
   };
 
-  // email verification for adding student to class (debounced)
+  // email verification for adding student to class (debounced query)
   useEffect(() => {
-    if (!form.email) {
-      setEmailCheckError("");
-      setEmailValid(null);
-      setIsCheckingEmail(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsCheckingEmail(true);
-      setEmailCheckError("");
-      setEmailValid(null);
-
-      try {
-        const response = await authFetch(
-          `${backendHost}/api/classes/${selectedClass?.id}/students/find?email=${encodeURIComponent(
-            form.email,
-          )}`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-        );
-
-        if (!response.ok) {
-          const result = await response.json();
-          const errorMessage =
-            result?.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "Email validation failed";
-          setEmailValid(false);
-          setEmailCheckError(errorMessage);
-          return;
-        }
-        setEmailValid(true);
-      } catch (error) {
-        setEmailValid(false);
-        setEmailCheckError(error.message || "Unable to validate email");
-      } finally {
-        setIsCheckingEmail(false);
-      }
+    const timer = setTimeout(() => {
+      setDebouncedEmail(form.email.trim());
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [form.email, authFetch, selectedClass?.id]);
+  }, [form.email]);
+
+  const {
+    data: studentLookup,
+    isFetching: isCheckingEmail,
+    error: emailLookupError,
+  } = useStudentLookup(selectedClass?.id, debouncedEmail);
+
+  const emailIsStale = form.email.trim() !== debouncedEmail;
+  const emailValid = !emailIsStale && Boolean(studentLookup);
+  const emailCheckError =
+    !emailIsStale && emailLookupError ? emailLookupError.message : "";
+  const isEmailCheckPending = isCheckingEmail || (form.email && emailIsStale);
 
   const handleSubmit = async () => {
     if (!form.email) {
       toast.error("Please enter an email");
       return;
     }
-    if (isCheckingEmail) {
+    if (isEmailCheckPending) {
       toast.error("Waiting for email validation");
       return;
     }
@@ -220,7 +193,6 @@ function AddStudentModal({
     } catch (error) {
       console.error(`Student addition error: ${error}`);
       setIsSubmitting(false);
-      toast.error(error.message || "Something went wrong while adding student");
     }
   };
 
@@ -270,13 +242,13 @@ function AddStudentModal({
             className="input-well px-3 py-2 text-inkondark transition-all"
           />
           <div className="min-h-[1.25rem] text-xs">
-            {isCheckingEmail && (
+            {isEmailCheckPending && (
               <span className="text-accent">Checking email...</span>
             )}
-            {!isCheckingEmail && emailCheckError && (
+            {!isEmailCheckPending && emailCheckError && (
               <span className="text-red-400">{emailCheckError}</span>
             )}
-            {!isCheckingEmail && emailValid && (
+            {!isEmailCheckPending && emailValid && (
               <span className="text-green-400">User exists</span>
             )}
           </div>
@@ -296,7 +268,10 @@ function AddStudentModal({
           onClick={handleSubmit}
           className="btn-primary py-2 text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           disabled={
-            isSubmitting || isCheckingEmail || !!emailCheckError || !emailValid
+            isSubmitting ||
+            isEmailCheckPending ||
+            !!emailCheckError ||
+            !emailValid
           }
         >
           Add student
@@ -314,89 +289,38 @@ export default function ClassesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
-  const { authFetch } = useContext(AuthContext);
-  const queryClient = useQueryClient();
   const [removingIds, setRemovingIds] = useState([]);
   const [deletingIds, setDeletingIds] = useState([]);
+  const [studentToRemove, setStudentToRemove] = useState(null);
+  const [classToDelete, setClassToDelete] = useState(null);
   const [mobileTab, setMobileTab] = useState("classes"); // mobile-only panel switcher — purely UI state, no data logic
+
+  const { data: queryClasses, isFetching: queryClassesIsFetching } = useClasses();
+
+  const createClass = useCreateClass();
+  const addStudent = useAddStudent();
+  const removeStudentMutation = useRemoveStudent();
+  const deleteClassMutation = useDeleteClass();
 
   // handler for creating a class
   async function handleCreateClass(form) {
-    const response = await authFetch(`${backendHost}/api/classes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-      credentials: "include",
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData?.errors?.map((e) => e.msg).join(", ") ||
-          errorData?.message ||
-          "Failed to create class",
-      );
-    }
-    await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
-  }
-
-  async function fetchClasses() {
-    const response = await authFetch(`${backendHost}/api/classes`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData?.errors?.map((e) => e.msg).join(", ") ||
-          errorData?.message ||
-          "Failed to fetch class",
-      );
-    }
-    const result = await response.json();
-    return result.classArray;
+    await createClass.mutateAsync(form);
   }
 
   // handler for adding student to class
   async function handleAddStudent(form) {
-    const response = await authFetch(
-      `${backendHost}/api/classes/${selectedClassId}/students`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        credentials: "include",
-      },
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData?.errors?.map((e) => e.msg).join(", ") ||
-          errorData?.message ||
-          "Failed to add student",
-      );
-    }
-
-    await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
+    await addStudent.mutateAsync({ classId: selectedClassId, form });
   }
 
   // handler for removing student from class
-  async function removeStudent(classId, studentId) {
-    if (!window.confirm("Remove this student from the class?")) return;
+  function removeStudent(classId, studentId) {
+    setStudentToRemove({ classId, studentId });
+  }
 
-    const snapshot = queryClient.getQueryData(["queryClasses"]);
+  function confirmRemoveStudent() {
+    if (!studentToRemove) return;
 
-    // optimistic update: remove student locally
-    queryClient.setQueryData(["queryClasses"], (old) => {
-      if (!old) return old;
-      return old.map((c) => {
-        if (c.id !== classId) return c;
-        return {
-          ...c,
-          students: c.students?.filter((s) => s.id !== studentId),
-        };
-      });
-    });
+    const { classId, studentId } = studentToRemove;
 
     // close modal if the deleted student is currently selected
     if (selectedStudent?.id === studentId) {
@@ -405,81 +329,52 @@ export default function ClassesPage() {
 
     setRemovingIds((prev) => [...prev, studentId]);
 
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/classes/${classId}/students/${studentId}`,
-        { method: "DELETE", credentials: "include" },
-      );
+    removeStudentMutation.mutate(
+      { classId, studentId },
+      {
+        onSuccess: () => toast.success("Student removed"),
+        onSettled: () => {
+          setRemovingIds((prev) => prev.filter((id) => id !== studentId));
+        },
+      },
+    );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.message || "Failed to remove student");
-      }
-
-      toast.success("Student removed");
-      await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
-    } catch (err) {
-      // rollback
-      queryClient.setQueryData(["queryClasses"], snapshot);
-      toast.error(err.message || "Unable to remove student");
-    } finally {
-      setRemovingIds((prev) => prev.filter((id) => id !== studentId));
-    }
+    setStudentToRemove(null);
   }
 
   // handler for deleting a class
-  async function handleDeleteClass(classToDelete) {
-    const confirmMessage = `Delete class '${classToDelete.name}'? This cannot be undone.`;
-    if (!window.confirm(confirmMessage)) return;
+  function handleDeleteClass(classItem) {
+    setClassToDelete(classItem);
+  }
 
-    const snapshot = queryClient.getQueryData(["queryClasses"]);
+  function confirmDeleteClass() {
+    if (!classToDelete) return;
 
-    // optimistic update: remove class locally
-    queryClient.setQueryData(["queryClasses"], (old) => {
-      if (!old) return old;
-      return old.filter((c) => c.id !== classToDelete.id);
-    });
+    const classId = classToDelete.id;
+    const previousSelectedClassId = selectedClassId;
 
     // deselect class if it was selected
-    if (selectedClassId === classToDelete.id) {
+    if (selectedClassId === classId) {
       setSelectedClassId(null);
     }
 
-    setDeletingIds((prev) => [...prev, classToDelete.id]);
+    setDeletingIds((prev) => [...prev, classId]);
 
-    try {
-      const response = await authFetch(
-        `${backendHost}/api/classes/${classToDelete.id}`,
-        { method: "DELETE", credentials: "include" },
-      );
+    deleteClassMutation.mutate(classId, {
+      onSuccess: () => toast.success("Class deleted successfully"),
+      onError: () => {
+        // Only restore a selection that this delete actually cleared.
+        if (previousSelectedClassId === classId) {
+          setSelectedClassId(classId);
+        }
+      },
+      onSettled: () => {
+        setDeletingIds((prev) => prev.filter((id) => id !== classId));
+      },
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.message || "Failed to delete class");
-      }
-
-      toast.success("Class deleted successfully");
-      await queryClient.invalidateQueries({ queryKey: ["queryClasses"] });
-    } catch (err) {
-      // rollback
-      queryClient.setQueryData(["queryClasses"], snapshot);
-      if (
-        selectedClassId === null &&
-        snapshot?.some((c) => c.id === classToDelete.id)
-      ) {
-        setSelectedClassId(classToDelete.id);
-      }
-      toast.error(err.message || "Failed to delete class");
-    } finally {
-      setDeletingIds((prev) => prev.filter((id) => id !== classToDelete.id));
-    }
+    setClassToDelete(null);
   }
-
-  const { data: queryClasses, isFetching: queryClassesIsFetching } = useQuery({
-    queryKey: ["queryClasses"],
-    queryFn: fetchClasses,
-    staleTime: 1000 * 60 * 5,
-  });
 
   // derive selected class from query data to keep it in sync
   const selectedClass = queryClasses?.find((c) => c.id === selectedClassId);
@@ -644,6 +539,28 @@ export default function ClassesPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(studentToRemove)}
+        title="Remove student?"
+        message="Remove this student from the class?"
+        confirmLabel="Remove student"
+        onConfirm={confirmRemoveStudent}
+        onCancel={() => setStudentToRemove(null)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(classToDelete)}
+        title="Delete class?"
+        message={
+          classToDelete
+            ? `Delete class '${classToDelete.name}'? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete class"
+        onConfirm={confirmDeleteClass}
+        onCancel={() => setClassToDelete(null)}
+      />
     </div>
   );
 }

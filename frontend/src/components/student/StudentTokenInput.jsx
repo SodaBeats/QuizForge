@@ -12,7 +12,7 @@ export default function QuizTokenModal({ isOpen, onSubmit }) {
     try {
       logout();
     } catch (error) {
-      alert("Error: " + error);
+      toast.error(error.message || "Something went wrong while logging out");
     }
   };
 

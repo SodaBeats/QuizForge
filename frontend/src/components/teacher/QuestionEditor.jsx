@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { AuthContext } from "../AuthProvider";
-
-import { backendHost } from "../../lib/env.js";
+import { useAllDocuments } from "../../features/documents/api/queries.js";
+import {
+  useCreateQuestion,
+  useGenerateQuestions,
+  useUpdateQuestion,
+} from "../../features/quizzes/api/mutations.js";
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =
@@ -15,12 +17,8 @@ export default function QuestionEditor({
   setSelectedQuestionId,
   quizMetadata,
 }) {
-  const { authFetch } = useContext(AuthContext);
-  const queryClient = useQueryClient();
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [docFetchError, setDocFetchError] = useState(false);
   const [showSourcesDropdown, setShowSourcesDropdown] = useState(false);
   const [manualQuestion, setManualQuestion] = useState({
     //question usestate
@@ -74,25 +72,18 @@ export default function QuestionEditor({
     }
   }, [selectedQuestion, quizMetadata?.id]);
 
-  // FETCH USER DOCUMENTS FOR CONTEXT SOURCES --------------------------------
-  const fetchDocuments = async () => {
-    setDocFetchError(false);
-    try {
-      const response = await authFetch(`${backendHost}/api/documents`);
-      if (!response || !response.ok) {
-        throw new Error(
-          `Failed to fetch source documents ${response?.status} ${response?.statusText}`,
-        );
-      }
-      const data = await response.json();
-      console.log(data);
-      setDocuments(Array.isArray(data.documents) ? data.documents : []);
-    } catch (error) {
-      console.error("Failed to fetch documents:", error);
-      setDocuments([]);
-      setDocFetchError(true);
-    }
-  };
+  const createQuestion = useCreateQuestion();
+  const updateQuestion = useUpdateQuestion();
+  const generateQuestions = useGenerateQuestions();
+
+  // USER DOCUMENTS FOR CONTEXT SOURCES (loaded when the generate form opens)
+  const { data: documentsData, error: documentsError } = useAllDocuments({
+    enabled: addMode === "generate",
+  });
+  const documents = Array.isArray(documentsData?.documents)
+    ? documentsData.documents
+    : [];
+  const docFetchError = Boolean(documentsError);
 
   // TOGGLE DOCUMENT SELECTION FOR SOURCES ------------------------------------
   const handleToggleSource = (docId) => {
@@ -113,38 +104,18 @@ export default function QuestionEditor({
 
   // changes question editor depending on which mode you select ----------------
   const handleModeSelect = (mode) => {
-    if (mode === "generate") {
-      fetchDocuments();
-    }
     setAddMode(mode);
   };
 
   // SUBMIT MANUALLY MADE QUESTION --------------------------------------------
   const handleManualQuestionSubmit = async () => {
+    if (!manualQuestion.questionText) {
+      toast.error("Please input a question");
+      return;
+    }
+
     try {
-      const queryKey = ["quizQuestions", quizMetadata?.id];
-
-      if (!manualQuestion.questionText) {
-        toast.error("Please input a question");
-        return;
-      }
-
-      const response = await authFetch(`${backendHost}/api/questions/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(manualQuestion),
-      });
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result?.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to submit question",
-        );
-      }
-      queryClient.invalidateQueries({ queryKey });
+      await createQuestion.mutateAsync(manualQuestion);
       toast.success("Question Added!");
       setSelectedQuestionId(null);
       setAddMode(null);
@@ -161,47 +132,21 @@ export default function QuestionEditor({
       });
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong while submitting question");
     }
   };
 
   // SUBMIT QUESTION UPDATE ------------------------------------------------------
   const handleQuestionUpdateSubmit = async () => {
-    const queryKey = ["quizQuestions", quizMetadata?.id];
-    const originalData = queryClient.getQueryData(queryKey);
-    queryClient.setQueryData(queryKey, (prev) => ({
-      ...prev,
-      questionList: prev.questionList.map((q) =>
-        q.id === manualQuestion.id ? manualQuestion : q,
-      ),
-    }));
     try {
-      const response = await authFetch(
-        `${backendHost}/api/questions/${manualQuestion.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(manualQuestion),
-          credentials: "include",
-        },
-      );
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result?.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to update question",
-        );
-      }
+      await updateQuestion.mutateAsync({
+        quizId: quizMetadata?.id,
+        question: manualQuestion,
+      });
       toast.success("Question Updated!");
     } catch (error) {
-      queryClient.setQueryData(queryKey, originalData);
       console.error(`Question update error: ${error}`);
       setAddMode(null);
       setSelectedQuestionId(null);
-      toast.error("Something went wrong while updating question");
     }
   };
 
@@ -222,52 +167,15 @@ export default function QuestionEditor({
     )
       return toast.error("Maximum of 10 questions per generation");
     setLoading(true);
-    const queryKey = ["quizQuestions", quizMetadata?.id];
     try {
-      const response = await authFetch(
-        `${backendHost}/api/questions/generate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            generateOptions,
-            quizId: quizMetadata.id,
-          }),
-          credentials: "include",
-        },
-      );
-
-      if (!response || !response.ok) {
-        const result = await response.json();
-        throw new Error(
-          result.errors?.map((e) => e.msg).join(", ") ||
-            result?.message ||
-            "failed to generate questions",
-        );
-      }
-
-      const result = await response.json();
-
-      queryClient.setQueryData(queryKey, (prevData) => {
-        const existingQuestions = Array.isArray(prevData?.questionList)
-          ? prevData.questionList
-          : [];
-        const newQuestions = Array.isArray(result.questions)
-          ? result.questions
-          : [];
-
-        return {
-          ...prevData,
-          questionList: [...existingQuestions, ...newQuestions],
-        };
+      await generateQuestions.mutateAsync({
+        quizId: quizMetadata.id,
+        generateOptions,
       });
 
       toast.success("Generated questions added successfully");
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong while generating questions");
     } finally {
       setLoading(false);
     }

@@ -1,14 +1,11 @@
-import React, { useContext } from "react";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AuthContext } from "../../components/AuthProvider";
 import TopBar from "../../components/teacher/TopBar";
 import SideBar from "../../components/teacher/SideBar";
 import FileViewer from "../../components/teacher/FileViewer";
 import QuestionEditor from "../../components/teacher/QuestionEditor";
-
-import { backendHost } from "../../lib/env.js";
+import { useUploadDocument } from "../../features/documents/api/mutations.js";
+import { useQuizQuestions } from "../../features/quizzes/api/queries.js";
 
 export default function QuizMakerSkeleton() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -17,8 +14,7 @@ export default function QuizMakerSkeleton() {
   const [isUploading, setIsUploading] = useState(false);
   const [quizMetadata, setQuizMetadata] = useState(null);
   const [mobileTab, setMobileTab] = useState("sidebar");
-  const { authFetch } = useContext(AuthContext);
-  const queryClient = useQueryClient();
+  const uploadDocument = useUploadDocument();
 
   const handleFileUpload = async (file) => {
     setIsUploading(true);
@@ -41,72 +37,30 @@ export default function QuizMakerSkeleton() {
       return;
     }
 
-    const data = new FormData();
-    data.append("file", file);
-
     try {
-      const response = await authFetch(`${backendHost}/api/upload`, {
-        method: "POST",
-        body: data,
-        credentials: "include",
-      });
+      const result = await uploadDocument.mutateAsync(file);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        const newFile = {
-          id: result.fileId,
-          name: result.fileName,
-          nickname: result.fileName,
-          type: file.type,
-          content: result.content,
-        };
-        setUploadedFiles([...uploadedFiles, newFile]);
-        setSelectedFileId(result.fileId);
-        await queryClient.invalidateQueries({ queryKey: ["docFetch"] });
-      } else {
-        alert("Error: " + result.error);
-      }
+      const newFile = {
+        id: result.fileId,
+        name: result.fileName,
+        nickname: result.fileName,
+        type: file.type,
+        content: result.content,
+      };
+      setUploadedFiles([...uploadedFiles, newFile]);
+      setSelectedFileId(result.fileId);
     } catch (error) {
       console.error("Upload error:", error);
-      alert(error.message || "Failed to upload file. Please try again.");
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const fetchQuestions = async (quizId) => {
-    const response = await authFetch(
-      `${backendHost}/api/quizzes/questions?quizId=${quizId}`,
-      {
-        credentials: "include",
-      },
-    );
-    if (!response || !response.ok) {
-      const result = await response.json();
-      throw new Error(
-        result.errors?.map((e) => e.msg).join(", ") ||
-          result?.message ||
-          "failed to fetch questions",
-      );
-    }
-    const result = await response.json();
-
-    return result;
   };
 
   const {
     data: queryQuestionsData,
     isFetching,
     error: questionsError,
-  } = useQuery({
-    queryKey: ["quizQuestions", quizMetadata?.id],
-    queryFn: () => fetchQuestions(quizMetadata?.id),
-    staleTime: 1000 * 60 * 5,
+  } = useQuizQuestions(quizMetadata?.id, {
     enabled: !!quizMetadata?.id && quizMetadata.questionCount > 0,
   });
 
