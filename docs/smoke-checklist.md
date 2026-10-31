@@ -1,7 +1,9 @@
 # Frontend Smoke Checklist (Phase 0 safety net)
 
+**Phase 3 refactor gate:** the full checklist and Step 10 top-bar matrix have not yet been re-run for `refactor/phase-3-structure` (2026-10-31); the local backend/API was not running. The completed results below are the 2026-10-14 Phase 0 baseline, not a Phase 3 sign-off. Re-run the checklist before merging Phase 3.
+
 Status: **fully executed 2026-10-14, commit `5a40d9f`** — API-level pass via scripted HTTP probes (4 rounds, all API-verifiable rows PASS) **plus a manual UI pass in the browser by the project owner (all UI rows PASS)**. Re-run before/after each refactor PR (see `plan.md` §0.2).
-Scope: all 9 routes in `frontend/src/App.jsx`, happy path + at least one failure path each, plus cross-cutting checks.
+Scope: all 9 routes in `frontend/src/app/router.jsx`, happy path + at least one failure path each, plus cross-cutting checks.
 How to read results: each route's `Result:` line records **API** verdicts (probed end-to-end) and **UI** verdicts (manual browser pass by the project owner, 2026-10-14). Every checkbox was exercised in one of the two passes; "KNOWN" items are pre-existing documented behaviors, not failures.
 Record results as **PASS / FAIL / KNOWN**. "KNOWN" = pre-existing finding from `docs/frontend-refactor-plan`/`frontend-architecture.md` §2 (listed under Known-issue log) — do not file as a new defect. Anything else that fails goes under New defects.
 Feedback vocabulary is recorded **as it exists today**: `alert()` and `window.confirm()` are replaced by toasts/dialogs in Phase 2 — those changes are expected then, not regressions.

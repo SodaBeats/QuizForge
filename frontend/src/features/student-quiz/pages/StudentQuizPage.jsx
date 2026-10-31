@@ -4,9 +4,8 @@ import toast from "react-hot-toast";
 import { LoadingScreen } from "../../../components/layout/LoadingScreen";
 import { AuthContext } from "../../../app/providers/AuthProvider";
 import { StudentTopbar } from "../components/StudentTopbar";
-import { StudentSidebar } from "../components/StudentSidebar";
-import { StudentQuizWindow } from "../components/StudentQuizWindow";
-import { StudentTimeLimit } from "../components/StudentTimeLimit";
+import { StudentQuizWarnings } from "../components/StudentQuizWarnings";
+import { StudentQuizStage } from "../components/StudentQuizStage";
 import {
   useDeleteStudentQuizAttempt,
   useSubmitStudentQuiz,
@@ -49,9 +48,6 @@ export function StudentQuizPage() {
   const attemptCount = quizData?.totalAttempts;
   const maxAttempts = quiz?.maxAttempts;
   const selectedQuestion = questions?.[selectedQuestionIndex] || null;
-
-  const canPrev = false;
-  const canNext = true;
 
   // intercept backward navigation
   useEffect(() => {
@@ -255,96 +251,36 @@ export function StudentQuizPage() {
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
       <StudentTopbar onLogout={handleLogout} />
-      <div className="flex h-screen overflow-hidden bg-canvas">
-        {showExitWarning && (
-          <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-            <div className="bg-specialsurface border border-muted p-6 rounded-lg max-w-sm text-center space-y-4">
-              <h2 className="text-inkondark text-lg font-semibold">
-                Leave Quiz?
-              </h2>
-              <p className="text-inkondark text-sm">
-                Your quiz will be auto-submitted if you navigate away.
-              </p>
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={() => setShowExitWarning(false)}
-                  className="px-4 py-2 rounded bg-surface text-inkondark border border-muted/30 hover:bg-muted/20 transition-colors"
-                >
-                  Stay
-                </button>
-                <button
-                  onClick={() => {
-                    setShowExitWarning(false);
-                    handleQuizSubmit();
-                  }}
-                  className="px-4 py-2 rounded bg-accept text-inkondark hover:bg-green-600 transition-colors"
-                >
-                  Submit & Exit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {showLogoutWarning && (
-          <div className="fixed inset-0 bg-modalback/70 flex items-center justify-center z-50">
-            <div className="bg-specialsurface border border-muted p-6 rounded-lg max-w-sm text-center space-y-4">
-              <h2 className="text-inkondark text-lg font-semibold">
-                Leave Quiz?
-              </h2>
-              <p className="text-inkondark text-sm">
-                Your quiz will be auto-submitted if you navigate away.
-              </p>
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={() => setShowLogoutWarning(false)}
-                  className="px-4 py-2 rounded bg-surface text-inkondark border border-muted/30 hover:bg-muted/20 transition-colors"
-                >
-                  Stay
-                </button>
-                <button
-                  onClick={() => {
-                    setShowLogoutWarning(false);
-                    submitAndLogout();
-                  }}
-                  className="px-4 py-2 rounded bg-accept text-inkondark hover:bg-green-600 transition-colors"
-                >
-                  Submit & Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* The Question List*/}
-        <StudentSidebar
-          questions={questions}
-          onQuestionSelect={handleQuestionSelect}
-          currentQuestionIndex={selectedQuestionIndex}
-          answeredQuestions={answeredQuestions}
-          onQuizSubmit={handleQuizSubmit}
-        />
-
-        {/* The Question Stage (Center) */}
-        <StudentQuizWindow
-          question={selectedQuestion}
-          canPrev={canPrev}
-          onPrev={handlePrev}
-          canNext={canNext}
-          onNext={handleNext}
-          answers={answers}
-          onAnswerChange={handleAnswerChange}
-        />
-
-        {/* The Timer Sidebar (Right) */}
-        <StudentTimeLimit
-          key={selectedQuestionIndex}
-          timeLimit={selectedQuestion?.timeLimit ?? null}
-          onTimeout={handleTimeout}
-          attemptCount={attemptCount}
-          maxAttempts={maxAttempts}
-          attemptId={attemptId}
-          questionId={selectedQuestion?.id}
-        />
-      </div>
+      <StudentQuizWarnings
+        showExitWarning={showExitWarning}
+        setShowExitWarning={setShowExitWarning}
+        onSubmitAndExit={() => {
+          setShowExitWarning(false);
+          handleQuizSubmit();
+        }}
+        showLogoutWarning={showLogoutWarning}
+        setShowLogoutWarning={setShowLogoutWarning}
+        onSubmitAndLogout={() => {
+          setShowLogoutWarning(false);
+          submitAndLogout();
+        }}
+      />
+      <StudentQuizStage
+        questions={questions}
+        onQuestionSelect={handleQuestionSelect}
+        selectedQuestionIndex={selectedQuestionIndex}
+        answeredQuestions={answeredQuestions}
+        onQuizSubmit={handleQuizSubmit}
+        selectedQuestion={selectedQuestion}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        answers={answers}
+        onAnswerChange={handleAnswerChange}
+        onTimeout={handleTimeout}
+        attemptCount={attemptCount}
+        maxAttempts={maxAttempts}
+        attemptId={attemptId}
+      />
     </div>
   );
 }

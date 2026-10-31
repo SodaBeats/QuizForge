@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { TopBar } from "../../../components/layout/TopBar";
+import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
 import { ResultsLeaderboard } from "../components/ResultsLeaderboard";
 import { ResultsMainPanel } from "../components/ResultsMainPanel";
 import { useQuizDashboard } from "../api/queries.js";
@@ -109,7 +109,7 @@ export function QuizResultDashboard() {
 
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">
-      <TopBar />
+      <TeacherTopbar />
 
       {/* Mobile/tablet panel switcher — hidden on desktop, where both panels show at once */}
       <div className="flex lg:hidden border-b border-muted/20 bg-canvas font-body">

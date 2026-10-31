@@ -1,9 +1,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { TopBar } from "../../../components/layout/TopBar";
+import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
 import { SideBar } from "../components/SideBar";
 import { FileViewer } from "../components/FileViewer";
 import { QuestionEditor } from "../components/QuestionEditor";
+import { ForgeQuizAction } from "../components/ForgeQuizAction";
 import { useUploadDocument } from "../../documents/api/mutations.js";
 import { useQuizQuestions } from "../api/queries.js";
 
@@ -122,10 +123,14 @@ export function QuizMakerPage() {
         {/* Top Bar — needs selectedFile (for pre-filling quiz title) and
             setQuizMetadata. The logo lives in the sidebar at lg+, so the
             topbar only shows it below lg. */}
-        <TopBar
-          selectedFile={selectedFile}
-          setQuizMetadata={setQuizMetadata}
+        <TeacherTopbar
           logoClass="lg:hidden"
+          actions={
+            <ForgeQuizAction
+              selectedFile={selectedFile}
+              setQuizMetadata={setQuizMetadata}
+            />
+          }
         />
 
         {/* Mobile/tablet panel switcher */}

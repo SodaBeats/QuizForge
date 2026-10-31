@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { TopBar } from "../../../components/layout/TopBar";
+import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
 import { QuizzesSidebar } from "../components/QuizzesSideBar";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
 import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
@@ -124,7 +124,7 @@ export function QuizzesPage() {
   return (
     <div className="h-screen flex flex-col bg-canvas text-inkondark">
       {/*Top Bar */}
-      <TopBar />
+      <TeacherTopbar />
 
       {/* Mobile/tablet panel switcher — only relevant once a quiz is selected, hidden on desktop */}
       {selectedQuizId && (

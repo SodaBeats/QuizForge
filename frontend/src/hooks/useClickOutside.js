@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 // Shared click-outside detector (Phase 1.5 / F14 groundwork). Extracted
 // verbatim from the 5 hand-rolled copies (StudentTopbar, QuizzesMetadata,
-// StudentInfoModal, TopBar x2): same `mousedown` event, same contains() test.
+// StudentInfoModal, TeacherTopbar x2): same `mousedown` event, same contains() test.
 // The handler runs through a ref so callers may pass inline arrows without
 // re-attaching the listener on every render.
 export function useClickOutside(ref, handler, enabled = true) {

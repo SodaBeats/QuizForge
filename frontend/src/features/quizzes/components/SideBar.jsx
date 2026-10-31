@@ -19,8 +19,8 @@ export function SideBar({
   currentQuiz,
   setCurrentQuiz,
   isFetching,
-  handleFileUpload, // passed in from the parent page (previously only went to TopBar)
-  isUploading, // passed in from the parent page (previously only went to TopBar)
+  handleFileUpload,
+  isUploading,
   isGenerating = false, // new: true while questions are being generated
   generationFailed = false, // new: true if the generation request errored
   generationAmount = 5, // new: how many questions were requested

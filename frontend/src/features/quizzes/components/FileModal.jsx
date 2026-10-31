@@ -3,7 +3,7 @@ import { useDocuments } from "../../documents/api/queries.js";
 import { Modal } from "../../../components/ui/Modal";
 
 // ------------------------------------------------------------------------------------
-// SUB COMPONENT: File picker/upload modal (moved here from TopBar)
+// SUB COMPONENT: File picker/upload modal
 // -------------------------------------------------------------------------------------
 export function FileModal({
   closeFileModal,
