@@ -1,6 +1,6 @@
 // QuizzesSidebar.jsx
 import { useNavigate } from "react-router-dom";
-import "../LoadingScreen.css";
+import "../layout/LoadingScreen.css";
 
 export default function QuizzesSidebar({
   isFetching,

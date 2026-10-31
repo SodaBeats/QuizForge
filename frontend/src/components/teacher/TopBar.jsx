@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthProvider";
+import { AuthContext } from "../../app/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { useClasses } from "../../features/classes/api/queries.js";
 import { useCreateQuiz } from "../../features/quizzes/api/mutations.js";

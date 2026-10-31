@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { AuthContext } from "../components/AuthProvider";
+import { AuthContext } from "../app/providers/AuthProvider";
 import { authApi } from "../features/auth/api/auth.api.js";
 import "./Login.css";
 

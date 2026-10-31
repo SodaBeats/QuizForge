@@ -1,4 +1,4 @@
-import LoadingScreen from "../LoadingScreen";
+import LoadingScreen from "../layout/LoadingScreen";
 import { useDocumentContent } from "../../features/documents/api/queries.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------

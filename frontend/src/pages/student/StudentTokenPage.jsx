@@ -1,6 +1,6 @@
 import { useContext, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { AuthContext } from "../../components/AuthProvider";
+import { AuthContext } from "../../app/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useRequestQuizAccess } from "../../features/student-quiz/api/mutations.js";
 import "./StudentTokenPage.css";

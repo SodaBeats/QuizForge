@@ -1,8 +1,8 @@
 import { useState, useContext, useCallback, useEffect } from "react";
 import { useParams, useNavigate, useBeforeUnload } from "react-router-dom";
 import toast from "react-hot-toast";
-import LoadingScreen from "../../components/LoadingScreen";
-import { AuthContext } from "../../components/AuthProvider";
+import LoadingScreen from "../../components/layout/LoadingScreen";
+import { AuthContext } from "../../app/providers/AuthProvider";
 import StudentTopbar from "../../components/student/StudentTopbar";
 import StudentSidebar from "../../components/student/StudentSidebar";
 import StudentQuizWindow from "../../components/student/StudentQuizWindow";

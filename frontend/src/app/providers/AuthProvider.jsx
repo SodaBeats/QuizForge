@@ -7,9 +7,9 @@ import {
   useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import LoadingScreen from "./LoadingScreen";
-import { configureApiClient } from "../lib/api.js";
-import { authApi } from "../features/auth/api/auth.api.js";
+import LoadingScreen from "../../components/layout/LoadingScreen";
+import { configureApiClient } from "../../lib/api.js";
+import { authApi } from "../../features/auth/api/auth.api.js";
 
 //create the shared box that will hold auth-related data
 const AuthContext = createContext();
