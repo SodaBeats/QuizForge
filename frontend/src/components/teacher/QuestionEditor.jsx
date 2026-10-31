@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import GenerationStatus from "./GenerationStatus";
 import toast from "react-hot-toast";
 import { useAllDocuments } from "../../features/documents/api/queries.js";
 import {
@@ -16,6 +17,8 @@ export default function QuestionEditor({
   selectedQuestion,
   setSelectedQuestionId,
   quizMetadata,
+  onGenerationStart,
+  onGenerationComplete,
 }) {
   const [addMode, setAddMode] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -161,12 +164,15 @@ export default function QuestionEditor({
 
   // GENERATE QUESTIONS BY AI ------------------------------------------------
   const handleGenerate = async () => {
+    if (loading) return;
     if (
       generateOptions.questionAmount > 10 ||
       generateOptions.questionAmount < 1
     )
       return toast.error("Maximum of 10 questions per generation");
     setLoading(true);
+    onGenerationStart(generateOptions.questionAmount);
+    let failed = false;
     try {
       await generateQuestions.mutateAsync({
         quizId: quizMetadata.id,
@@ -175,11 +181,16 @@ export default function QuestionEditor({
 
       toast.success("Generated questions added successfully");
     } catch (error) {
+      failed = true;
       console.error(error);
     } finally {
       setLoading(false);
+      onGenerationComplete(failed);
     }
   };
+
+  // while generating, always show the (locked) generate form
+  const view = loading ? "generate" : addMode;
 
   return (
     <div className="flex-1 min-h-0 m-3 flex flex-col font-body rounded-lg bg-surface overflow-hidden border border-accent">
@@ -195,9 +206,14 @@ export default function QuestionEditor({
           </p>
         </div>
       </div>
+      <GenerationStatus
+        isGenerating={loading}
+        amount={generateOptions.questionAmount}
+        topic={generateOptions.topic}
+      />
       <div className="flex-1 p-4 overflow-y-auto space-y-4 qe-scroll">
         {quizMetadata ? (
-          addMode === "manual" || addMode === "edit" ? (
+          view === "manual" || view === "edit" ? (
             <>
               <div>
                 <label className={labelClass}>Question type</label>
@@ -483,8 +499,12 @@ export default function QuestionEditor({
                 </>
               )}
             </>
-          ) : addMode === "generate" ? (
-            <>
+          ) : view === "generate" ? (
+            <fieldset
+              disabled={loading}
+              aria-busy={loading}
+              className="m-0 min-w-0 space-y-4 border-0 p-0 transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+            >
               <h2 className="text-xl font-display font-semibold text-inkondark">
                 Generate questions
               </h2>
@@ -614,12 +634,13 @@ export default function QuestionEditor({
                 </button>
                 <button
                   onClick={() => setAddMode(null)}
-                  className="btn-danger flex-1 py-2.5"
+                  disabled={loading}
+                  className="btn-danger flex-1 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
               </div>
-            </>
+            </fieldset>
           ) : (
             <div className="space-y-3 text-sm">
               <button

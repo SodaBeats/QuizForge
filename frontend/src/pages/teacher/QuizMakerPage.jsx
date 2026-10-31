@@ -15,6 +15,11 @@ export default function QuizMakerSkeleton() {
   const [quizMetadata, setQuizMetadata] = useState(null);
   const [mobileTab, setMobileTab] = useState("sidebar");
   const uploadDocument = useUploadDocument();
+  const [generationStatus, setGenerationStatus] = useState({
+    isGenerating: false,
+    failed: false,
+    amount: 5,
+  });
 
   const handleFileUpload = async (file) => {
     setIsUploading(true);
@@ -100,6 +105,9 @@ export default function QuizMakerSkeleton() {
           isFetching={isFetching}
           handleFileUpload={handleFileUpload}
           isUploading={isUploading}
+          isGenerating={generationStatus.isGenerating}
+          generationFailed={generationStatus.failed}
+          generationAmount={generationStatus.amount}
         />
       </div>
 
@@ -165,6 +173,20 @@ export default function QuizMakerSkeleton() {
               selectedQuestion={selectedQuestion}
               setSelectedQuestionId={setSelectedQuestionId}
               quizMetadata={quizMetadata}
+              onGenerationStart={(amount) =>
+                setGenerationStatus({
+                  isGenerating: true,
+                  failed: false,
+                  amount,
+                })
+              }
+              onGenerationComplete={(failed) =>
+                setGenerationStatus((status) => ({
+                  ...status,
+                  isGenerating: false,
+                  failed,
+                }))
+              }
             />
           </div>
         </div>

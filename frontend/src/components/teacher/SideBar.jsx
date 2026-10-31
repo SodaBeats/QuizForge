@@ -6,6 +6,7 @@ import { usePagedQuizzes } from "../../features/quizzes/api/queries.js";
 import { useDeleteQuestion } from "../../features/quizzes/api/mutations.js";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import Modal from "../ui/Modal";
+import GenerationDone from "./GenerationDone";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -179,9 +180,7 @@ function SelectQuizModal({
   }
 
   if (error) {
-    {
-      console.error(error);
-    }
+    console.error(error);
     return (
       <Modal
         onClose={closeSelectQuizModal}
@@ -286,6 +285,9 @@ function SideBar({
   isFetching,
   handleFileUpload, // passed in from the parent page (previously only went to TopBar)
   isUploading, // passed in from the parent page (previously only went to TopBar)
+  isGenerating = false, // new: true while questions are being generated
+  generationFailed = false, // new: true if the generation request errored
+  generationAmount = 5, // new: how many questions were requested
 }) {
   const [isSelectQuizModalOpen, setIsSelectQuizModalOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -401,10 +403,6 @@ function SideBar({
     closeSelectQuizModal();
   };
 
-  // ----------------------------------------------------------------------------
-  // ERROR BOUNDARY
-  // ----------------------------------------------------------------------------
-
   // ------------------------------------------------------------------------------------
   // MAIN COMPONENT
   //-------------------------------------------------------------------------------------
@@ -440,6 +438,19 @@ function SideBar({
               +
             </button>
           </div>
+          {isUploading && (
+            <div
+              role="status"
+              aria-live="polite"
+              className="mb-2 flex items-center gap-2 rounded-md border border-accept/50 bg-darkslate px-2 py-1.5 text-xs text-inkondark"
+            >
+              <span
+                aria-hidden="true"
+                className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-accept border-t-transparent motion-reduce:animate-none"
+              />
+              Uploading document...
+            </div>
+          )}
           <div className="space-y-0.5">
             {uploadedFiles.length > 0 ? (
               uploadedFiles.map((file) => (
@@ -506,6 +517,14 @@ function SideBar({
             </button>
           )}
         </div>
+
+        {/* Green flash after questions finish generating */}
+        <GenerationDone
+          isGenerating={isGenerating}
+          failed={generationFailed}
+          amount={generationAmount}
+          className="shrink-0"
+        />
 
         {/* Question List - 70% */}
         <div className="flex-1 rounded-lg p-2 overflow-y-auto border border-muted/20">
