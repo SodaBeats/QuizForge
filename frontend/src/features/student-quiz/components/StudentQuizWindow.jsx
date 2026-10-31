@@ -21,7 +21,7 @@ function ReasoningAnswerInput({ answers, question, onAnswerChange }) {
   );
 }
 
-export default function StudentQuizWindow({
+export function StudentQuizWindow({
   question,
   onNext,
   onPrev,

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import TopBar from "../../../components/layout/TopBar";
-import ResultsLeaderboard from "../components/ResultsLeaderboard";
-import ResultsMainPanel from "../components/ResultsMainPanel";
+import { TopBar } from "../../../components/layout/TopBar";
+import { ResultsLeaderboard } from "../components/ResultsLeaderboard";
+import { ResultsMainPanel } from "../components/ResultsMainPanel";
 import { useQuizDashboard } from "../api/queries.js";
 
 const DEFAULT_METRICS = [
@@ -75,7 +75,7 @@ function getScoreDistribution(data) {
   return buckets.map((b) => b.count);
 }
 
-export default function QuizResultDashboard() {
+export function QuizResultDashboard() {
   const { quizId } = useParams();
   const [mobileTab, setMobileTab] = useState("results"); // mobile-only panel switcher — purely UI state, no data logic
 

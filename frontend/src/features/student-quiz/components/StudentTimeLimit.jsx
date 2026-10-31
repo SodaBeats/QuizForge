@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-export default function StudentTimeLimit({
+export function StudentTimeLimit({
   timeLimit,
   onTimeout,
   attemptCount,

@@ -2,9 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import App from "./app/App.jsx";
+import { App } from "./app/App.jsx";
 import { AppProviders } from "./app/providers/index.jsx";
-import ErrorPage from "./app/ErrorPage.jsx";
+import { ErrorPage } from "./app/ErrorPage.jsx";
 import { isConfigured } from "./lib/env.js";
 
 // One env check at the entry (Phase 1.1 / F3): the whole app only mounts when

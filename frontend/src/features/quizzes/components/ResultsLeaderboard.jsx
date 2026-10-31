@@ -121,7 +121,7 @@ function ClassRow({ cls, rank, maxAverage }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsLeaderboard({ STUDENTS, classes }) {
+export function ResultsLeaderboard({ STUDENTS, classes }) {
   const maxAverage =
     classes?.length > 0 ? Math.max(...classes.map((c) => c.averagescore)) : 0;
 

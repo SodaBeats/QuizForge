@@ -1,19 +1,19 @@
 import { useState, useContext, useCallback, useEffect } from "react";
 import { useParams, useNavigate, useBeforeUnload } from "react-router-dom";
 import toast from "react-hot-toast";
-import LoadingScreen from "../../../components/layout/LoadingScreen";
+import { LoadingScreen } from "../../../components/layout/LoadingScreen";
 import { AuthContext } from "../../../app/providers/AuthProvider";
-import StudentTopbar from "../components/StudentTopbar";
-import StudentSidebar from "../components/StudentSidebar";
-import StudentQuizWindow from "../components/StudentQuizWindow";
-import StudentTimeLimit from "../components/StudentTimeLimit";
+import { StudentTopbar } from "../components/StudentTopbar";
+import { StudentSidebar } from "../components/StudentSidebar";
+import { StudentQuizWindow } from "../components/StudentQuizWindow";
+import { StudentTimeLimit } from "../components/StudentTimeLimit";
 import {
   useDeleteStudentQuizAttempt,
   useSubmitStudentQuiz,
 } from "../api/mutations.js";
 import { useStudentQuiz } from "../api/queries.js";
 
-export default function StudentQuizPage() {
+export function StudentQuizPage() {
   // ----------------------------------------------------------------
   // STATES AND FRIENDS
   // ----------------------------------------------------------------

@@ -5,7 +5,7 @@ const inputClass =
   "w-full bg-darkslate rounded-md p-2.5 sm:p-3 text-sm text-inkondark border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
 const labelClass = "block text-sm font-medium text-inkondark mb-2 font-body";
 
-const QuestionList = ({
+export const QuestionList = ({
   isFetching,
   questions,
   onUpdateQuestion,
@@ -226,4 +226,3 @@ const QuestionList = ({
   );
 };
 
-export default QuestionList;

@@ -1,7 +1,7 @@
 import { getInitials } from "../../../util/getInitials";
-import Modal from "../../../components/ui/Modal";
+import { Modal } from "../../../components/ui/Modal";
 
-export default function StudentInfoModal({ student, studentClasses, onClose }) {
+export function StudentInfoModal({ student, studentClasses, onClose }) {
   return (
     <Modal
       onClose={onClose}

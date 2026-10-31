@@ -1,4 +1,4 @@
-import LoadingScreen from "../../../components/layout/LoadingScreen";
+import { LoadingScreen } from "../../../components/layout/LoadingScreen";
 import { useDocumentContent } from "../../documents/api/queries.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------
@@ -12,7 +12,7 @@ function NoFileIcon() {
 }
 
 // MAIN COMPONENT -------------------------------------------------------------
-export default function FileViewer({ selectedFile }) {
+export function FileViewer({ selectedFile }) {
   const { data, isFetching, error } = useDocumentContent(selectedFile?.id);
 
   if (isFetching) {

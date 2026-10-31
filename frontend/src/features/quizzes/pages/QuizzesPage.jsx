@@ -1,10 +1,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../../components/layout/TopBar";
-import QuizzesSidebar from "../components/QuizzesSideBar";
-import QuizzesMetaData from "../components/QuizzesMetadata";
-import QuizzesQuestionList from "../components/QuizzesQuestionList";
-import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import { TopBar } from "../../../components/layout/TopBar";
+import { QuizzesSidebar } from "../components/QuizzesSideBar";
+import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
+import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
+import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { useClasses } from "../../classes/api/queries.js";
 import {
   useDeleteQuiz,
@@ -16,7 +16,7 @@ import {
   useQuizzes,
 } from "../api/queries.js";
 
-export default function QuizzesPage() {
+export function QuizzesPage() {
   const [selectedQuizId, setSelectedQuizId] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [quizToDelete, setQuizToDelete] = useState(null);

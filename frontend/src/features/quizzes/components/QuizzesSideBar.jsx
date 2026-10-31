@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import "../../../components/layout/LoadingScreen.css";
 
-export default function QuizzesSidebar({
+export function QuizzesSidebar({
   isFetching,
   quizzes,
   setSelectedQuizId,

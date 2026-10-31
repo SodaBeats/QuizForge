@@ -1,21 +1,21 @@
 import { Routes, Route, Outlet } from "react-router-dom";
-import QuizMakerPage from "../features/quizzes/pages/QuizMakerPage";
-import LoginPage from "../features/auth/pages/LoginPage";
-import QuizzesPage from "../features/quizzes/pages/QuizzesPage";
-import StudentTokenPage from "../features/student-quiz/pages/StudentTokenPage";
-import StudentQuizPage from "../features/student-quiz/pages/StudentQuizPage";
-import QuizResultDashboard from "../features/quizzes/pages/QuizResultDashboard";
-import ClassesPage from "../features/classes/pages/ClassesPage";
-import ErrorPage from "./ErrorPage";
-import RouteError from "./RouteError";
-import RootRedirector from "./guards/RootRedirector";
+import { QuizMakerPage } from "../features/quizzes/pages/QuizMakerPage";
+import { LoginPage } from "../features/auth/pages/LoginPage";
+import { QuizzesPage } from "../features/quizzes/pages/QuizzesPage";
+import { StudentTokenPage } from "../features/student-quiz/pages/StudentTokenPage";
+import { StudentQuizPage } from "../features/student-quiz/pages/StudentQuizPage";
+import { QuizResultDashboard } from "../features/quizzes/pages/QuizResultDashboard";
+import { ClassesPage } from "../features/classes/pages/ClassesPage";
+import { ErrorPage } from "./ErrorPage";
+import { RouteError } from "./RouteError";
+import { RootRedirector } from "./guards/RootRedirector";
 import { RequireRole } from "./guards/RequireRole";
 
 // Route table (Phase 3 step 2, behavior pass in step 3): the guards are one
 // RequireRole keyed by role — logged out → /login with state.from, wrong
 // role → that role's home. The parent layout route attaches a single
 // errorElement for the whole tree.
-export default function AppRoutes() {
+export function AppRoutes() {
   return (
     <Routes>
       <Route element={<Outlet />} errorElement={<RouteError />}>

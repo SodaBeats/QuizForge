@@ -4,9 +4,9 @@ import { AuthContext } from "../../app/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { useClasses } from "../../features/classes/api/queries.js";
 import { useCreateQuiz } from "../../features/quizzes/api/mutations.js";
-import ConfirmDialog from "../ui/ConfirmDialog";
-import Dropdown from "../ui/Dropdown";
-import Modal from "../ui/Modal";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { Dropdown } from "../ui/Dropdown";
+import { Modal } from "../ui/Modal";
 const labelClass = "block text-sm font-medium text-inkondark mb-1";
 // -------------------------------------------------------------------------------------
 //  SUB-COMPONENTS
@@ -299,7 +299,7 @@ function QuizForgeModal({
 
 // logoClass: extra classes for the logo link — e.g. "lg:hidden" on pages where the
 // sidebar owns the logo at lg+ (the topbar then only shows it on mobile).
-export default function TopBar({
+export function TopBar({
   selectedFile,
   setQuizMetadata,
   logoClass = "",

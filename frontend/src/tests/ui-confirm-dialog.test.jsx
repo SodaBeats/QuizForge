@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog.jsx";
 
 const renderDialog = (overrides = {}) =>
   render(

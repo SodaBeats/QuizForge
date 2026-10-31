@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../../components/layout/TopBar";
-import ClassesSidebar from "../components/ClassesSidebar";
-import StudentInfoModal from "../components/StudentInfoModal";
-import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import { TopBar } from "../../../components/layout/TopBar";
+import { ClassesSidebar } from "../components/ClassesSidebar";
+import { StudentInfoModal } from "../components/StudentInfoModal";
+import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { getInitials } from "../../../util/getInitials";
 import { useClasses, useStudentLookup } from "../api/queries.js";
 import {
@@ -15,7 +15,7 @@ import {
   useRemoveStudent,
 } from "../api/mutations.js";
 
-import Modal from "../../../components/ui/Modal";
+import { Modal } from "../../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT
@@ -283,7 +283,7 @@ function AddStudentModal({
 // ------------------------------------------------------------------------
 // MAIN COMPONENT
 // ------------------------------------------------------------------------
-export default function ClassesPage() {
+export function ClassesPage() {
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

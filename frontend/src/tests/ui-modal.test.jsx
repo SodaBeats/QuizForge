@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Modal from "../components/ui/Modal.jsx";
+import { Modal } from "../components/ui/Modal.jsx";
 
 afterEach(() => {
   document.body.style.overflow = "";

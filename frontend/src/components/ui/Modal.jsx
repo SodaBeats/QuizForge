@@ -12,7 +12,7 @@ import { createPortal } from "react-dom";
 // but the three form modals (forge quiz, create class, add student) pass
 // false so a stray click can't discard typed input or interrupt a submit;
 // Escape still works there, like a native confirm dialog.
-export default function Modal({
+export function Modal({
   onClose,
   panelClassName,
   backdropClassName = "bg-modalback/70",

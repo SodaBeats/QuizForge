@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import GenerationStatus from "./GenerationStatus";
+import { GenerationStatus } from "./GenerationStatus";
 import toast from "react-hot-toast";
 import { useAllDocuments } from "../../documents/api/queries.js";
 import {
@@ -13,7 +13,7 @@ const inputClass =
   "w-full bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
 const labelClass = "block text-sm font-medium mb-1.5 text-inkondark font-body";
 
-export default function QuestionEditor({
+export function QuestionEditor({
   selectedQuestion,
   setSelectedQuestionId,
   quizMetadata,

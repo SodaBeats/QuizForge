@@ -12,7 +12,7 @@ import checklistClean from "../../../assets/checklist_token.png";
 import booksClean from "../../../assets/books_token.png";
 import paperPlaneClean from "../../../assets/paper_plane_token.png";
 
-export default function StudentTokenPage() {
+export function StudentTokenPage() {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const { logout } = useContext(AuthContext);

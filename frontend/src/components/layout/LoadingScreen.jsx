@@ -1,7 +1,7 @@
 // LoadingScreen.jsx
 import "./LoadingScreen.css";
 
-export default function LoadingScreen({ fullScreen = false }) {
+export function LoadingScreen({ fullScreen = false }) {
   return (
     <div className={`loading-screen ${fullScreen ? "full-screen" : ""}`}>
       <div className="spinner"></div>

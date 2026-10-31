@@ -1,6 +1,6 @@
-import Dropdown from "../../../components/ui/Dropdown";
+import { Dropdown } from "../../../components/ui/Dropdown";
 
-export default function StudentTopbar({ onLogout }) {
+export function StudentTopbar({ onLogout }) {
   return (
     <div className="border-b-2 border-accent/20 p-4 flex items-center justify-between bg-specialsurface">
       {/* LEFT SIDE: Logo */}

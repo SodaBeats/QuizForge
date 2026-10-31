@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const SHOW_MS = 2500;
 
-export default function GenerationDone({
+export function GenerationDone({
   isGenerating,
   failed = false,
   amount = 5,

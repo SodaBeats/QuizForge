@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import useClickOutside from "../../hooks/useClickOutside";
+import { useClickOutside } from "../../hooks/useClickOutside";
 
 // Shared dropdown shell (Phase 1.5 / F14 groundwork). Replaces the 4
 // hand-rolled click-outside menus (StudentTopbar + TopBar profile menus,
@@ -16,7 +16,7 @@ import useClickOutside from "../../hooks/useClickOutside";
 //       </>
 //     )}
 //   </Dropdown>
-export default function Dropdown({ className = "relative", children }) {
+export function Dropdown({ className = "relative", children }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 

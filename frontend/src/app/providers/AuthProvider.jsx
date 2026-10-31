@@ -7,7 +7,7 @@ import {
   useRef,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import LoadingScreen from "../../components/layout/LoadingScreen";
+import { LoadingScreen } from "../../components/layout/LoadingScreen";
 import { configureApiClient } from "../../lib/api.js";
 import { authApi } from "../../features/auth/api/auth.api.js";
 

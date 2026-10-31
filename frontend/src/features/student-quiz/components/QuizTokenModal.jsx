@@ -3,7 +3,7 @@ import { useState, useContext } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../../app/providers/AuthProvider";
 
-export default function QuizTokenModal({ isOpen, onSubmit }) {
+export function QuizTokenModal({ isOpen, onSubmit }) {
   const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { logout } = useContext(AuthContext);

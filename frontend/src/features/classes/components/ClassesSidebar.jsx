@@ -1,6 +1,6 @@
 // src/features/classes/components/ClassesSidebar.jsx
 
-export default function ClassesSidebar({
+export function ClassesSidebar({
   classes = [],
   isFetching,
   selectedClassId,

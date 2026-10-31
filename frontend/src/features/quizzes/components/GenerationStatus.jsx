@@ -76,7 +76,7 @@ function GenerationStatusBody({ amount, topic }) {
   );
 }
 
-export default function GenerationStatus({
+export function GenerationStatus({
   isGenerating,
   amount = 5,
   topic = "",

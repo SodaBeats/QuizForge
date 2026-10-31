@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { toDateTimeLocal } from "../../../util/toDateTimeLocal";
-import Dropdown from "../../../components/ui/Dropdown";
+import { Dropdown } from "../../../components/ui/Dropdown";
 
 function ClassAccessDropdown({
   editingQuiz,
@@ -117,7 +117,7 @@ const inputClass =
   "w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
 const labelClass = "text-sm font-semibold text-inkondark block mb-2 font-body";
 
-export default function QuizzesMetadata({
+export function QuizzesMetadata({
   quiz,
   onUpdateQuizMeta,
   userClasses,

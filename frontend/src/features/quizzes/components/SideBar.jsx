@@ -4,9 +4,9 @@ import toast from "react-hot-toast";
 import { useDocuments } from "../../documents/api/queries.js";
 import { usePagedQuizzes } from "../api/queries.js";
 import { useDeleteQuestion } from "../api/mutations.js";
-import ConfirmDialog from "../../../components/ui/ConfirmDialog";
-import Modal from "../../../components/ui/Modal";
-import GenerationDone from "./GenerationDone";
+import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
+import { Modal } from "../../../components/ui/Modal";
+import { GenerationDone } from "./GenerationDone";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal (moved here from TopBar)
@@ -271,7 +271,7 @@ function SelectQuizModal({
   );
 }
 
-function SideBar({
+export function SideBar({
   uploadedFiles,
   setUploadedFiles,
   selectedFileId,
@@ -628,4 +628,3 @@ function SideBar({
     </>
   );
 }
-export default SideBar;

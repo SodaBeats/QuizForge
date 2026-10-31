@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 // StudentInfoModal, TopBar x2): same `mousedown` event, same contains() test.
 // The handler runs through a ref so callers may pass inline arrows without
 // re-attaching the listener on every render.
-export default function useClickOutside(ref, handler, enabled = true) {
+export function useClickOutside(ref, handler, enabled = true) {
   const handlerRef = useRef(handler);
   useEffect(() => {
     handlerRef.current = handler;

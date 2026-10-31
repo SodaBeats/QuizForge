@@ -1,13 +1,13 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../../components/layout/TopBar";
-import SideBar from "../components/SideBar";
-import FileViewer from "../components/FileViewer";
-import QuestionEditor from "../components/QuestionEditor";
+import { TopBar } from "../../../components/layout/TopBar";
+import { SideBar } from "../components/SideBar";
+import { FileViewer } from "../components/FileViewer";
+import { QuestionEditor } from "../components/QuestionEditor";
 import { useUploadDocument } from "../../documents/api/mutations.js";
 import { useQuizQuestions } from "../api/queries.js";
 
-export default function QuizMakerPage() {
+export function QuizMakerPage() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);

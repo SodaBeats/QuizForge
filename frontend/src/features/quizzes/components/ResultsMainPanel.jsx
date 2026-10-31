@@ -142,7 +142,7 @@ function BarGraph({ data }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function ResultsMainPanel({
+export function ResultsMainPanel({
   METRICS = [],
   DIFFICULTY = [],
   SCORES = [],

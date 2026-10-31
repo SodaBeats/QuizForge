@@ -37,5 +37,3 @@ export const colors = {
   darkteal: "#012C36",
   ccdiblue: "#000B6D",
 };
-
-export default colors;

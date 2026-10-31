@@ -1,8 +1,8 @@
 // StudentQuizSidebar.jsx
 import { useState } from "react";
-import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 
-export default function StudentSidebar({
+export function StudentSidebar({
   questions,
   currentQuestionIndex,
   //onQuestionSelect,
