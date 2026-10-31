@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { toDateTimeLocal } from "../../util/toDateTimeLocal";
-import Dropdown from "../ui/Dropdown";
+import { toDateTimeLocal } from "../../../util/toDateTimeLocal";
+import Dropdown from "../../../components/ui/Dropdown";
 
 function ClassAccessDropdown({
   editingQuiz,

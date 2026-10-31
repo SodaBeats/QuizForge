@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useDocuments } from "../../features/documents/api/queries.js";
-import { usePagedQuizzes } from "../../features/quizzes/api/queries.js";
-import { useDeleteQuestion } from "../../features/quizzes/api/mutations.js";
-import ConfirmDialog from "../ui/ConfirmDialog";
-import Modal from "../ui/Modal";
+import { useDocuments } from "../../documents/api/queries.js";
+import { usePagedQuizzes } from "../api/queries.js";
+import { useDeleteQuestion } from "../api/mutations.js";
+import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import Modal from "../../../components/ui/Modal";
 import GenerationDone from "./GenerationDone";
 
 // ------------------------------------------------------------------------------------

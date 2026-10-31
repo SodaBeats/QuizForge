@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import TopBar from "../../components/teacher/TopBar";
-import ResultsLeaderboard from "../../components/teacher/ResultsLeaderboard";
-import ResultsMainPanel from "../../components/teacher/ResultsMainPanel";
-import { useQuizDashboard } from "../../features/quizzes/api/queries.js";
+import TopBar from "../../../components/layout/TopBar";
+import ResultsLeaderboard from "../components/ResultsLeaderboard";
+import ResultsMainPanel from "../components/ResultsMainPanel";
+import { useQuizDashboard } from "../api/queries.js";
 
 const DEFAULT_METRICS = [
   { label: "Total Takers", value: "No Data Yet", sub: "unique students" },

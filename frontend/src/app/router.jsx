@@ -1,10 +1,10 @@
 import { Routes, Route, Outlet } from "react-router-dom";
-import QuizMakerPage from "../pages/teacher/QuizMakerPage";
+import QuizMakerPage from "../features/quizzes/pages/QuizMakerPage";
 import LoginPage from "../features/auth/pages/LoginPage";
-import QuizzesPage from "../pages/teacher/QuizzesPage";
+import QuizzesPage from "../features/quizzes/pages/QuizzesPage";
 import StudentTokenPage from "../features/student-quiz/pages/StudentTokenPage";
 import StudentQuizPage from "../features/student-quiz/pages/StudentQuizPage";
-import QuizResultDashboard from "../pages/teacher/QuizResultDashboard";
+import QuizResultDashboard from "../features/quizzes/pages/QuizResultDashboard";
 import ClassesPage from "../features/classes/pages/ClassesPage";
 import ErrorPage from "./ErrorPage";
 import RouteError from "./RouteError";

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import GenerationStatus from "./GenerationStatus";
 import toast from "react-hot-toast";
-import { useAllDocuments } from "../../features/documents/api/queries.js";
+import { useAllDocuments } from "../../documents/api/queries.js";
 import {
   useCreateQuestion,
   useGenerateQuestions,
   useUpdateQuestion,
-} from "../../features/quizzes/api/mutations.js";
+} from "../api/mutations.js";
 
 // shared styling tokens — cosmetic only, referenced by className below
 const inputClass =

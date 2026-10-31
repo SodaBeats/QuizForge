@@ -1,5 +1,5 @@
-import LoadingScreen from "../layout/LoadingScreen";
-import { useDocumentContent } from "../../features/documents/api/queries.js";
+import LoadingScreen from "../../../components/layout/LoadingScreen";
+import { useDocumentContent } from "../../documents/api/queries.js";
 
 // EMPTY STATE ICON -------------------------------------------------------------
 function NoFileIcon() {

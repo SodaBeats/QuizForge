@@ -1,20 +1,20 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../components/teacher/TopBar";
-import QuizzesSidebar from "../../components/teacher/QuizzesSideBar";
-import QuizzesMetaData from "../../components/teacher/QuizzesMetadata";
-import QuizzesQuestionList from "../../components/teacher/QuizzesQuestionList";
-import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { useClasses } from "../../features/classes/api/queries.js";
+import TopBar from "../../../components/layout/TopBar";
+import QuizzesSidebar from "../components/QuizzesSideBar";
+import QuizzesMetaData from "../components/QuizzesMetadata";
+import QuizzesQuestionList from "../components/QuizzesQuestionList";
+import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import { useClasses } from "../../classes/api/queries.js";
 import {
   useDeleteQuiz,
   useUpdateQuestion,
   useUpdateQuiz,
-} from "../../features/quizzes/api/mutations.js";
+} from "../api/mutations.js";
 import {
   useQuizQuestions,
   useQuizzes,
-} from "../../features/quizzes/api/queries.js";
+} from "../api/queries.js";
 
 export default function QuizzesPage() {
   const [selectedQuizId, setSelectedQuizId] = useState(null);

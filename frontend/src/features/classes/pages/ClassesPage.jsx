@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../../components/teacher/TopBar";
+import TopBar from "../../../components/layout/TopBar";
 import ClassesSidebar from "../components/ClassesSidebar";
 import StudentInfoModal from "../components/StudentInfoModal";
 import ConfirmDialog from "../../../components/ui/ConfirmDialog";
