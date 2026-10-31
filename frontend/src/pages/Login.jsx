@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../app/providers/AuthProvider";
 import { authApi } from "../features/auth/api/auth.api.js";
@@ -20,6 +20,11 @@ export default function LoginPage() {
 
   const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
+  // RequireRole redirects logged-out visitors to /login with
+  // state.from = the page they wanted; return them there after login
+  // instead of always dumping them on the role home.
+  const location = useLocation();
+  const returnTo = location.state?.from;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,11 +68,11 @@ export default function LoginPage() {
       if (isLogin && data.user.role === "teacher") {
         setToken(data.accessToken);
         setUserInfo(data.user);
-        navigate("/teacher");
+        navigate(returnTo ?? "/teacher", { replace: true });
       } else if (isLogin && data.user.role === "student") {
         setToken(data.accessToken);
         setUserInfo(data.user);
-        navigate("/student");
+        navigate(returnTo ?? "/student", { replace: true });
       } else {
         toast.success(data.message || "Account created!");
 

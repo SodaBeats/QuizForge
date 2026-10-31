@@ -1,27 +1,32 @@
 import { useContext } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 
-// Phase 3 step 2 (mechanical extraction from App.jsx): these are the two
-// route guards, renamed to their RequireRole* names but with byte-for-byte
-// identical redirect behavior (still <Navigate to="/login" />, no state.from
-// yet). Step 3 merges them into one RequireRole and changes the redirect
-// semantics — that change is isolated there on purpose.
+// Where each role belongs (used for the wrong-role redirect).
+const ROLE_HOME = { teacher: "/teacher", student: "/student" };
 
-export function RequireRoleTeacher({ children }) {
+// Single route guard (Phase 3 step 3 / plan bullet 2):
+// - logged out → /login, carrying state.from so Login can return the user
+//   to the page they originally asked for after signing in
+// - authenticated but the wrong role → that role's home (not /login)
+// - right role → children
+export function RequireRole({ role, children }) {
   const { token, userInfo } = useContext(AuthContext);
-  if (token && userInfo?.role === "teacher") {
-    return children;
-  } else {
-    return <Navigate to="/login" />;
-  }
-}
+  const location = useLocation();
 
-export function RequireRoleStudent({ children }) {
-  const { token, userInfo } = useContext(AuthContext);
-  if (token && userInfo?.role === "student") {
-    return children;
-  } else {
-    return <Navigate to="/login" />;
+  const home = userInfo?.role ? ROLE_HOME[userInfo.role] : undefined;
+
+  if (!token || !home) {
+    // No session (or an unknown role we can't route home) → login; keep the
+    // requested location so login can send the user back after signing in.
+    // `replace` so the guarded URL doesn't linger in history (Back would
+    // otherwise bounce straight back into this redirect).
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
+  if (userInfo.role !== role) {
+    return <Navigate to={home} replace />;
+  }
+
+  return children;
 }

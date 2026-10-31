@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import QuizMakerPage from "../pages/teacher/QuizMakerPage";
 import LoginPage from "../pages/Login";
 import QuizzesPage from "../pages/teacher/QuizzesPage";
@@ -7,70 +7,71 @@ import StudentQuizPage from "../pages/student/StudentQuizPage";
 import QuizResultDashboard from "../pages/teacher/QuizResultDashboard";
 import ClassesPage from "../pages/teacher/ClassesPage";
 import ErrorPage from "./ErrorPage";
+import RouteError from "./RouteError";
 import RootRedirector from "./guards/RootRedirector";
-import {
-  RequireRoleTeacher,
-  RequireRoleStudent,
-} from "./guards/RequireRole";
+import { RequireRole } from "./guards/RequireRole";
 
-// Route table (Phase 3 step 2): moved verbatim out of App.jsx; the two inline
-// guards became RequireRoleTeacher / RequireRoleStudent with identical
-// behavior (step 3 changes the redirect semantics, not here).
+// Route table (Phase 3 step 2, behavior pass in step 3): the guards are one
+// RequireRole keyed by role — logged out → /login with state.from, wrong
+// role → that role's home. The parent layout route attaches a single
+// errorElement for the whole tree.
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<RootRedirector />} />
+      <Route element={<Outlet />} errorElement={<RouteError />}>
+        <Route path="/" element={<RootRedirector />} />
 
-      <Route
-        path="/teacher"
-        element={
-          <RequireRoleTeacher>
-            <QuizMakerPage />
-          </RequireRoleTeacher>
-        }
-      />
-      <Route
-        path="/teacher/quizzes"
-        element={
-          <RequireRoleTeacher>
-            <QuizzesPage />
-          </RequireRoleTeacher>
-        }
-      />
-      <Route
-        path="/teacher/quizzes/:quizId"
-        element={
-          <RequireRoleTeacher>
-            <QuizResultDashboard />
-          </RequireRoleTeacher>
-        }
-      />
-      <Route
-        path="/teacher/classes"
-        element={
-          <RequireRoleTeacher>
-            <ClassesPage />
-          </RequireRoleTeacher>
-        }
-      />
-      <Route
-        path="/student"
-        element={
-          <RequireRoleStudent>
-            <StudentTokenPage />
-          </RequireRoleStudent>
-        }
-      />
-      <Route
-        path="/student/quiz/:quizToken"
-        element={
-          <RequireRoleStudent>
-            <StudentQuizPage />
-          </RequireRoleStudent>
-        }
-      />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/error" element={<ErrorPage />} />
+        <Route
+          path="/teacher"
+          element={
+            <RequireRole role="teacher">
+              <QuizMakerPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/teacher/quizzes"
+          element={
+            <RequireRole role="teacher">
+              <QuizzesPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/teacher/quizzes/:quizId"
+          element={
+            <RequireRole role="teacher">
+              <QuizResultDashboard />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/teacher/classes"
+          element={
+            <RequireRole role="teacher">
+              <ClassesPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/student"
+          element={
+            <RequireRole role="student">
+              <StudentTokenPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/student/quiz/:quizToken"
+          element={
+            <RequireRole role="student">
+              <StudentQuizPage />
+            </RequireRole>
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/error" element={<ErrorPage />} />
+      </Route>
     </Routes>
   );
 }

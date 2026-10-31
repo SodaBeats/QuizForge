@@ -6,7 +6,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import LoadingScreen from "../../components/layout/LoadingScreen";
 import { configureApiClient } from "../../lib/api.js";
 import { authApi } from "../../features/auth/api/auth.api.js";
@@ -22,6 +22,14 @@ export function AuthProvider({ children }) {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Read via a ref inside silentRefresh so the callback's identity stays tied
+  // to [navigate] only — adding `location` to its deps would re-fire the
+  // session check on every navigation.
+  const locationRef = useRef(location);
+  useLayoutEffect(() => {
+    locationRef.current = location;
+  }, [location]);
 
   // Logout function to clear token
   const logout = useCallback(async () => {
@@ -47,7 +55,17 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Silent refresh failed", error);
       setToken(null);
-      navigate("/login");
+      // Session check failed: park the user on /login. Carry where they were
+      // (deep-link or mid-session expiry) in state.from so LoginPage can send
+      // them back after signing in — without this, RequireRole's state.from
+      // never fires on a fresh load because the route tree isn't mounted yet.
+      // Skip when already on /login: state.from = /login would send a
+      // freshly-logged-in user straight back to the login page.
+      const from = locationRef.current;
+      navigate("/login", {
+        replace: true,
+        state: from.pathname === "/login" ? undefined : { from },
+      });
     } finally {
       setLoading(false);
     }
