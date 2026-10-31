@@ -59,13 +59,14 @@ export function AuthProvider({ children }) {
       // (deep-link or mid-session expiry) in state.from so LoginPage can send
       // them back after signing in — without this, RequireRole's state.from
       // never fires on a fresh load because the route tree isn't mounted yet.
-      // Skip when already on /login: state.from = /login would send a
-      // freshly-logged-in user straight back to the login page.
+      // If already on /login, don't navigate at all: navigate's identity
+      // changes with the pathname, so this callback re-fires after the
+      // redirect above and a second navigate here would replace the entry and
+      // wipe the state.from that the first call just set.
       const from = locationRef.current;
-      navigate("/login", {
-        replace: true,
-        state: from.pathname === "/login" ? undefined : { from },
-      });
+      if (from.pathname !== "/login") {
+        navigate("/login", { replace: true, state: { from } });
+      }
     } finally {
       setLoading(false);
     }

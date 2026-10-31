@@ -10,7 +10,7 @@
 // route tree mounts, so it must carry state.from too (manual check found
 // this; see the step 3 notes).
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthContext, AuthProvider } from "../app/providers/AuthProvider";
 import { RequireRole } from "../app/guards/RequireRole";
@@ -165,5 +165,32 @@ describe("deep-link while logged out (AuthProvider session check)", () => {
     // state.from = /login would bounce a freshly-logged-in user back here
     expect(await screen.findByText("login page")).toBeInTheDocument();
     expect(screen.getByTestId("from-path")).toHaveTextContent("");
+  });
+
+  // Regression: navigate's identity changes with the pathname, so the mount
+  // effect re-fires silentRefresh after the redirect above — the second failed
+  // check must not replace the /login entry and wipe the state.from the first
+  // one set (that race made login's return-to-deep-link nondeterministic).
+  it("a second failed session check (re-fired after the redirect) keeps state.from", async () => {
+    render(
+      <MemoryRouter initialEntries={["/teacher/quizzes"]}>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginProbe />} />
+            <Route
+              path="/teacher/quizzes"
+              element={<div>teacher quizzes</div>}
+            />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("login page")).toBeInTheDocument();
+    // wait for the re-fired call to land, then state.from must still hold
+    await waitFor(() => expect(authApi.refresh).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId("from-path")).toHaveTextContent(
+      "/teacher/quizzes",
+    );
   });
 });
