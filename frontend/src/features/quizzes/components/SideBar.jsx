@@ -1,275 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useDocuments } from "../../documents/api/queries.js";
-import { usePagedQuizzes } from "../api/queries.js";
 import { useDeleteQuestion } from "../api/mutations.js";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
-import { Modal } from "../../../components/ui/Modal";
 import { GenerationDone } from "./GenerationDone";
-
-// ------------------------------------------------------------------------------------
-// SUB COMPONENT: File picker/upload modal (moved here from TopBar)
-// -------------------------------------------------------------------------------------
-function FileModal({
-  closeFileModal,
-  handleSelectDocument,
-  fetchMoreDocuments,
-  fetchPreviousDocuments,
-  isUploading,
-  selectedFileId,
-  page,
-}) {
-  const { data, isFetching, error } = useDocuments(page);
-
-  const totalDocuments = data?.totalDocuments || data?.total || 0;
-
-  if (isFetching) {
-    return (
-      <Modal
-        onClose={closeFileModal}
-        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-display font-semibold text-inkondark">
-            My Documents
-          </h2>
-          <button
-            onClick={closeFileModal}
-            className="text-red-500 hover:text-red-700 text-2xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-        <div className="space-y-2 mb-6">
-          <p className="text-muted text-center py-4">Fetching...</p>
-        </div>
-      </Modal>
-    );
-  }
-
-  if (error) {
-    return (
-      <Modal
-        onClose={closeFileModal}
-        panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-display font-semibold text-inkondark">
-            My Documents
-          </h2>
-          <button
-            onClick={closeFileModal}
-            className="text-red-500 hover:text-red-700 text-2xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-        <div className="space-y-2 mb-6">
-          <p className="text-red-400 text-center py-4">
-            Something went wrong while fetching documents
-          </p>
-        </div>
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal
-      onClose={closeFileModal}
-      panelClassName="modal-panel border-2 border-muted w-96 max-h-[80vh] overflow-y-auto p-6"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-display font-semibold text-inkondark">
-          My Documents
-        </h2>
-        <button
-          onClick={closeFileModal}
-          className="text-red-500 hover:text-red-700 text-2xl leading-none"
-        >
-          ×
-        </button>
-      </div>
-
-      <div className="space-y-2 mb-6">
-        {data.documents.length > 0 ? (
-          data.documents.map((doc) => (
-            <div
-              key={doc.id}
-              onClick={() => handleSelectDocument(doc)}
-              className={`p-3 rounded-md cursor-pointer transition-all truncate ${
-                selectedFileId === doc.id
-                  ? "bg-accent text-inkondark font-semibold "
-                  : "hover:bg-muted/20 text-inkondark border border-muted/20"
-              }`}
-            >
-              <span className="truncate">
-                {doc.title || `Document ${doc.id}` || "Untitled"}
-              </span>
-            </div>
-          ))
-        ) : (
-          <p className="text-muted text-center py-4">No documents found</p>
-        )}
-      </div>
-
-      {/* Pagination Controls */}
-      {totalDocuments > 5 && (
-        <div className="flex items-center justify-center gap-4 mb-4 pt-4">
-          <button
-            onClick={fetchPreviousDocuments}
-            disabled={page === 0}
-            className="btn-secondary py-2"
-            title="Previous page"
-          >
-            ← Prev
-          </button>
-          <span className="text-muted text-sm">Page {page + 1}</span>
-          <button
-            onClick={fetchMoreDocuments}
-            disabled={
-              page * 5 + (data?.documents?.length || 0) >= totalDocuments
-            }
-            className="btn-secondary py-2"
-            title="Next page"
-          >
-            Next →
-          </button>
-        </div>
-      )}
-
-      <div className="pt-4">
-        <button
-          onClick={() => document.getElementById("file-upload").click()}
-          disabled={isUploading}
-          className="w-full btn-primary py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0.5"
-        >
-          {isUploading ? "Uploading..." : "Upload new document"}
-        </button>
-      </div>
-    </Modal>
-  );
-}
-
-// ------------------------------------------------------------------------------------
-// SUB COMPONENT: Select Quiz Modal
-// -------------------------------------------------------------------------------------
-function SelectQuizModal({
-  page,
-  closeSelectQuizModal,
-  handleSelectQuiz,
-  fetchPreviousQuizzes,
-  fetchMoreQuizzes,
-}) {
-  const { data, isFetching, error } = usePagedQuizzes(page);
-
-  const totalQuizzes = data?.totalQuizzes || 0;
-
-  if (isFetching) {
-    return (
-      <Modal
-        onClose={closeSelectQuizModal}
-        panelClassName="bg-canvas rounded-lg p-6 w-96 border border-muted font-body"
-      >
-        <div className="flex flex-col items-center gap-3 text-inkondark">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-          <span>Loading quizzes...</span>
-        </div>
-      </Modal>
-    );
-  }
-
-  if (error) {
-    console.error(error);
-    return (
-      <Modal
-        onClose={closeSelectQuizModal}
-        backdropClassName="bg-canvas/70"
-        panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-display font-semibold text-inkondark">
-            Error
-          </h2>
-          <button
-            onClick={closeSelectQuizModal}
-            className="text-red-500 hover:text-red-700 text-2xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="space-y-2 text-red-400 text-sm">
-          <p>Something went wrong while fetching quizzes</p>
-        </div>
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal
-      onClose={closeSelectQuizModal}
-      panelClassName="bg-specialsurface rounded-lg p-6 w-96 max-h-[70vh] overflow-y-auto border border-muted font-body"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-display font-semibold text-inkondark">
-          Select a quiz
-        </h2>
-        <button
-          onClick={closeSelectQuizModal}
-          className="text-red-500 hover:text-red-700 text-2xl leading-none"
-        >
-          ×
-        </button>
-      </div>
-
-      <div className="space-y-2">
-        {data?.userQuizzes?.length > 0 ? (
-          data.userQuizzes.map((quiz) => (
-            <button
-              key={quiz.id}
-              onClick={() => handleSelectQuiz(quiz)}
-              className="w-full text-left p-3 rounded-lg transition-all text-sm hover:bg-mutedteal text-inkondark border border-muted/20"
-            >
-              <div className="font-medium truncate">{quiz.quizTitle}</div>
-              <div className="text-xs text-muted mt-1">
-                Token: {quiz.shareToken}
-              </div>
-            </button>
-          ))
-        ) : (
-          <div className="text-center text-muted py-6 text-sm">
-            No quizzes available
-          </div>
-        )}
-      </div>
-      {/* pagination controls */}
-      {totalQuizzes > 5 && (
-        <div className="flex items-center justify-center gap-4 mb-4 mt-2 pt-4">
-          <button
-            onClick={fetchPreviousQuizzes}
-            disabled={page === 0}
-            className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
-            title="Previous page"
-          >
-            ← Prev
-          </button>
-          <span className="text-muted text-sm">Page {page + 1}</span>
-          <button
-            onClick={fetchMoreQuizzes}
-            disabled={
-              page * 5 + (data?.userQuizzes?.length || 0) >= totalQuizzes
-            }
-            className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
-            title="Next page"
-          >
-            Next →
-          </button>
-        </div>
-      )}
-    </Modal>
-  );
-}
+import { FileSection } from "./FileSection";
+import { SelectQuizModal } from "./SelectQuizModal";
 
 export function SideBar({
   uploadedFiles,
@@ -294,59 +30,6 @@ export function SideBar({
   const [questionToDelete, setQuestionToDelete] = useState(null);
   const deleteQuestion = useDeleteQuestion();
 
-  // ---- File modal state/logic (moved here from TopBar) ----
-  const [showFileModal, setShowFileModal] = useState(false);
-  const [filePage, setFilePage] = useState(0);
-
-  const openFileModal = async () => {
-    setShowFileModal(true);
-  };
-
-  const closeFileModal = () => {
-    setShowFileModal(false);
-    setFilePage(0);
-  };
-
-  const fetchMoreDocuments = () => {
-    setFilePage(filePage + 1);
-  };
-
-  const fetchPreviousDocuments = () => {
-    if (filePage > 0) {
-      setFilePage(filePage - 1);
-    }
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      handleFileUpload(file);
-      setShowFileModal(false);
-    }
-  };
-
-  const handleSelectDocument = async (doc) => {
-    // close modal and select immediately
-    setShowFileModal(false);
-    setSelectedFileId(doc.id);
-
-    // ensure parent has an entry for this doc (without copying any large content)
-    setUploadedFiles((prev) =>
-      prev.some((f) => f.id === doc.id)
-        ? prev
-        : [
-            ...prev,
-            {
-              id: doc.id,
-              name: doc.title || String(doc.id),
-              nickname: doc.title || String(doc.id),
-              content: null,
-            },
-          ],
-    );
-  };
-  // ---- end file modal logic ----
-
   const openSelectQuizModal = async () => {
     setIsSelectQuizModalOpen(true);
   };
@@ -358,13 +41,6 @@ export function SideBar({
   const fetchPreviousQuizzes = () => {
     if (page > 0) {
       setPage(page - 1);
-    }
-  };
-
-  const handleFileDelete = async (fileId) => {
-    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
-    if (selectedFileId === fileId) {
-      setSelectedFileId(null);
     }
   };
 
@@ -424,70 +100,14 @@ export function SideBar({
           </span>
         </Link>
 
-        {/* File List - 30% */}
-        <div className="h-[30%] rounded-lg p-2 overflow-y-auto border border-muted/20">
-          <div className="flex flex-row items-center justify-between mb-3 pb-2 border-b border-muted/20">
-            <div className="text-xs font-semibold text-inkondark uppercase tracking-wide">
-              Files
-            </div>
-            <button
-              onClick={openFileModal}
-              title="Add file"
-              className="w-6 h-6 flex items-center justify-center rounded-lg text-inkondark bg-accent font-bold leading-none transition-all hover:-translate-y-0.5 active:translate-y-0.5"
-            >
-              +
-            </button>
-          </div>
-          {isUploading && (
-            <div
-              role="status"
-              aria-live="polite"
-              className="mb-2 flex items-center gap-2 rounded-md border border-accept/50 bg-darkslate px-2 py-1.5 text-xs text-inkondark"
-            >
-              <span
-                aria-hidden="true"
-                className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-accept border-t-transparent motion-reduce:animate-none"
-              />
-              Uploading document...
-            </div>
-          )}
-          <div className="space-y-0.5">
-            {uploadedFiles.length > 0 ? (
-              uploadedFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className={`py-0.5 px-2 rounded-md text-xs flex items-center justify-between group transition-all ${
-                    selectedFileId === file.id
-                      ? "bg-accent text-inkondark font-medium"
-                      : "hover:bg-muted/20 text-inkondark border border-muted/20"
-                  }`}
-                >
-                  <div
-                    className="cursor-pointer truncate flex-1"
-                    onClick={() => setSelectedFileId(file.id)}
-                  >
-                    {file.name}
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFileDelete(file.id);
-                    }}
-                    className={`ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${
-                      selectedFileId === file.id
-                        ? "text-inkondark hover:text-red-500"
-                        : "text-red-400 hover:text-red-500"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className="text-muted text-sm">No file uploaded</div>
-            )}
-          </div>
-        </div>
+        <FileSection
+          uploadedFiles={uploadedFiles}
+          setUploadedFiles={setUploadedFiles}
+          selectedFileId={selectedFileId}
+          setSelectedFileId={setSelectedFileId}
+          handleFileUpload={handleFileUpload}
+          isUploading={isUploading}
+        />
 
         {/* Current Quiz - Small Section */}
         <div className="rounded-lg p-2 border border-muted/20">
@@ -583,28 +203,6 @@ export function SideBar({
           </div>
         </div>
       </div>
-
-      {/* hidden file input for uploads, triggered from FileModal */}
-      <input
-        type="file"
-        id="file-upload"
-        className="hidden"
-        accept=".pdf,.docx"
-        onChange={handleFileChange}
-      />
-
-      {/* File Picker Modal (moved from TopBar) */}
-      {showFileModal && (
-        <FileModal
-          closeFileModal={closeFileModal}
-          handleSelectDocument={handleSelectDocument}
-          fetchMoreDocuments={fetchMoreDocuments}
-          fetchPreviousDocuments={fetchPreviousDocuments}
-          isUploading={isUploading}
-          selectedFileId={selectedFileId}
-          page={filePage}
-        />
-      )}
 
       {/* Select Quiz Modal */}
       {isSelectQuizModalOpen && (
