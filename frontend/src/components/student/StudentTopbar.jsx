@@ -1,6 +1,6 @@
 import Dropdown from "../ui/Dropdown";
 
-export default function SudentTopbar({ onLogout }) {
+export default function StudentTopbar({ onLogout }) {
   return (
     <div className="border-b-2 border-accent/20 p-4 flex items-center justify-between bg-specialsurface">
       {/* LEFT SIDE: Logo */}

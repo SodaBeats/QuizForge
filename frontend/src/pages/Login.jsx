@@ -5,7 +5,7 @@ import { AuthContext } from "../components/AuthProvider";
 import { authApi } from "../features/auth/api/auth.api.js";
 import "./Login.css";
 
-export default function LogInComponent() {
+export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   const [firstName, setFirstName] = useState("");

@@ -7,7 +7,7 @@ import QuestionEditor from "../../components/teacher/QuestionEditor";
 import { useUploadDocument } from "../../features/documents/api/mutations.js";
 import { useQuizQuestions } from "../../features/quizzes/api/queries.js";
 
-export default function QuizMakerSkeleton() {
+export default function QuizMakerPage() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);

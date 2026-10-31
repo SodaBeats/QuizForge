@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { toDatetimeLocal } from "../../util/toDateTimeLocal";
+import { toDateTimeLocal } from "../../util/toDateTimeLocal";
 import Dropdown from "../ui/Dropdown";
 
 function ClassAccessDropdown({
@@ -219,7 +219,7 @@ export default function QuizzesMetadata({
               <input
                 type="datetime-local"
                 name="dueDate"
-                value={toDatetimeLocal(editingQuiz.dueDate).slice(0, 16)}
+                value={toDateTimeLocal(editingQuiz.dueDate).slice(0, 16)}
                 onChange={(e) =>
                   setEditingQuiz((prev) => ({
                     ...prev,

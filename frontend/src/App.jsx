@@ -3,8 +3,8 @@ import { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthContext } from "./components/AuthProvider";
-import QuizMakerSkeleton from "./pages/teacher/QuizMakerPage";
-import LogInComponent from "./pages/Login";
+import QuizMakerPage from "./pages/teacher/QuizMakerPage";
+import LoginPage from "./pages/Login";
 import QuizzesPage from "./pages/teacher/QuizzesPage";
 import StudentTokenPage from "./pages/student/StudentTokenPage";
 import StudentQuizPage from "./pages/student/StudentQuizPage";
@@ -41,7 +41,7 @@ export default function App() {
           path="/teacher"
           element={
             <ProtectedRoute>
-              <QuizMakerSkeleton />
+              <QuizMakerPage />
             </ProtectedRoute>
           }
         />
@@ -85,7 +85,7 @@ export default function App() {
             </StudentRoute>
           }
         />
-        <Route path="/login" element={<LogInComponent />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/error" element={<ErrorPage />} />
       </Routes>
     </>
