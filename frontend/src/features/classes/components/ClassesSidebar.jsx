@@ -1,4 +1,4 @@
-// src/components/ClassesSidebar.jsx
+// src/features/classes/components/ClassesSidebar.jsx
 
 export default function ClassesSidebar({
   classes = [],

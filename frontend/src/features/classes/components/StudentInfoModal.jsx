@@ -1,5 +1,5 @@
-import { getInitials } from "../../util/getInitials";
-import Modal from "../ui/Modal";
+import { getInitials } from "../../../util/getInitials";
+import Modal from "../../../components/ui/Modal";
 
 export default function StudentInfoModal({ student, studentClasses, onClose }) {
   return (

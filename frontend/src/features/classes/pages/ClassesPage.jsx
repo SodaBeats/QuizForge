@@ -1,21 +1,21 @@
-// src/pages/ClassesPage.jsx
+// src/features/classes/pages/ClassesPage.jsx
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import TopBar from "../../components/teacher/TopBar";
-import ClassesSidebar from "../../components/teacher/ClassesSidebar";
-import StudentInfoModal from "../../components/teacher/StudentInfoModal";
-import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { getInitials } from "../../util/getInitials";
-import { useClasses, useStudentLookup } from "../../features/classes/api/queries.js";
+import TopBar from "../../../components/teacher/TopBar";
+import ClassesSidebar from "../components/ClassesSidebar";
+import StudentInfoModal from "../components/StudentInfoModal";
+import ConfirmDialog from "../../../components/ui/ConfirmDialog";
+import { getInitials } from "../../../util/getInitials";
+import { useClasses, useStudentLookup } from "../api/queries.js";
 import {
   useAddStudent,
   useCreateClass,
   useDeleteClass,
   useRemoveStudent,
-} from "../../features/classes/api/mutations.js";
+} from "../api/mutations.js";
 
-import Modal from "../../components/ui/Modal";
+import Modal from "../../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // SUB COMPONENT

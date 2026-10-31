@@ -5,7 +5,7 @@ import QuizzesPage from "../pages/teacher/QuizzesPage";
 import StudentTokenPage from "../pages/student/StudentTokenPage";
 import StudentQuizPage from "../pages/student/StudentQuizPage";
 import QuizResultDashboard from "../pages/teacher/QuizResultDashboard";
-import ClassesPage from "../pages/teacher/ClassesPage";
+import ClassesPage from "../features/classes/pages/ClassesPage";
 import ErrorPage from "./ErrorPage";
 import RouteError from "./RouteError";
 import RootRedirector from "./guards/RootRedirector";
