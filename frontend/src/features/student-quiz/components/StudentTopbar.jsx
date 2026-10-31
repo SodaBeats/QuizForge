@@ -1,4 +1,4 @@
-import Dropdown from "../ui/Dropdown";
+import Dropdown from "../../../components/ui/Dropdown";
 
 export default function StudentTopbar({ onLogout }) {
   return (
