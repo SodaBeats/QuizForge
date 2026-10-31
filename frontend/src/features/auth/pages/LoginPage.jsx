@@ -1,9 +1,9 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { AuthContext } from "../app/providers/AuthProvider";
-import { authApi } from "../features/auth/api/auth.api.js";
-import "./Login.css";
+import { AuthContext } from "../../../app/providers/AuthProvider";
+import { authApi } from "../api/auth.api.js";
+import "./LoginPage.css";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);

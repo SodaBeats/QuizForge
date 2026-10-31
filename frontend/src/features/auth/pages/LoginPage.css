@@ -287,7 +287,7 @@ body {
 
   aspect-ratio: 1024 / 576;
 
-  background: url("../assets/leaning_stage_bg_clean.png") no-repeat center
+  background: url("../../../assets/leaning_stage_bg_clean.png") no-repeat center
     center / contain;
 
   container-type: inline-size;
