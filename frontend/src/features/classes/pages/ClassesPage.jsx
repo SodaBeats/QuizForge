@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
+import { AppShell } from "../../../components/layout/AppShell";
 import { ClassesSidebar } from "../components/ClassesSidebar";
 import { ClassStudentsPanel } from "../components/ClassStudentsPanel";
 import { CreateClassModal } from "../components/CreateClassModal";
@@ -115,76 +115,58 @@ export function ClassesPage() {
   const selectedClass = queryClasses?.find((c) => c.id === selectedClassId);
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      <TeacherTopbar />
-
-      {/* Mobile/tablet panel switcher — only relevant once a class is selected, hidden on desktop */}
-      {selectedClass && (
-        <div className="flex lg:hidden mx-3 mt-3 rounded-lg bg-surface border border-muted/20 font-body overflow-hidden">
-          {[
-            { key: "classes", label: "Classes" },
-            { key: "students", label: "Students" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setMobileTab(tab.key)}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                mobileTab === tab.key
-                  ? "text-accent"
-                  : "text-muted hover:text-inkondark"
-              }`}
-            >
-              {tab.label}
-              {mobileTab === tab.key && (
-                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Sidebar */}
-        <div
-          className={`${
-            !selectedClass || mobileTab === "classes" ? "flex" : "hidden"
-          } lg:contents`}
-        >
-          <ClassesSidebar
-            classes={queryClasses}
-            isFetching={queryClassesIsFetching}
-            selectedClassId={selectedClassId}
-            onSelectClass={setSelectedClassId}
-            setShowCreateModal={setShowCreateModal}
-            onDeleteClass={handleDeleteClass}
-            deletingIds={deletingIds}
-          />
-        </div>
-
-        <ClassStudentsPanel
-          selectedClass={selectedClass}
-          queryClasses={queryClasses}
-          selectedStudent={selectedStudent}
-          setSelectedStudent={setSelectedStudent}
-          showAddStudentModal={showAddStudentModal}
-          setShowAddStudentModal={setShowAddStudentModal}
+    <AppShell
+      tabs={
+        selectedClass
+          ? [
+              { key: "classes", label: "Classes" },
+              { key: "students", label: "Students" },
+            ]
+          : [] // no selection → no switcher (matches the old conditional strip)
+      }
+      activeTab={mobileTab}
+      onChange={setMobileTab}
+      panels={[
+        {
+          key: "classes",
+          visible: !selectedClass || mobileTab === "classes",
+          children: (
+            <ClassesSidebar
+              classes={queryClasses}
+              isFetching={queryClassesIsFetching}
+              selectedClassId={selectedClassId}
+              onSelectClass={setSelectedClassId}
+              setShowCreateModal={setShowCreateModal}
+              onDeleteClass={handleDeleteClass}
+              deletingIds={deletingIds}
+            />
+          ),
+        },
+      ]}
+    >
+      {/* Self-managed visibility (hidden lg:flex) — stays a direct container child */}
+      <ClassStudentsPanel
+        selectedClass={selectedClass}
+        queryClasses={queryClasses}
+        selectedStudent={selectedStudent}
+        setSelectedStudent={setSelectedStudent}
+        showAddStudentModal={showAddStudentModal}
+        setShowAddStudentModal={setShowAddStudentModal}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+        onAddStudent={handleAddStudent}
+        removingIds={removingIds}
+        onRemoveStudent={removeStudent}
+        mobileTab={mobileTab}
+      />
+      {showCreateModal && (
+        <CreateClassModal
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateClass}
           isSubmitting={isSubmitting}
           setIsSubmitting={setIsSubmitting}
-          onAddStudent={handleAddStudent}
-          removingIds={removingIds}
-          onRemoveStudent={removeStudent}
-          mobileTab={mobileTab}
         />
-        {showCreateModal && (
-          <CreateClassModal
-            onClose={() => setShowCreateModal(false)}
-            onSubmit={handleCreateClass}
-            isSubmitting={isSubmitting}
-            setIsSubmitting={setIsSubmitting}
-          />
-        )}
-      </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(studentToRemove)}
@@ -207,6 +189,6 @@ export function ClassesPage() {
         onConfirm={confirmDeleteClass}
         onCancel={() => setClassToDelete(null)}
       />
-    </div>
+    </AppShell>
   );
 }

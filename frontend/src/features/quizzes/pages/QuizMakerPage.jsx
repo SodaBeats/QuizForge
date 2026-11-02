@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
+import { PanelTabs } from "../../../components/ui/PanelTabs";
 import { SideBar } from "../components/SideBar";
 import { FileViewer } from "../components/FileViewer";
 import { QuestionEditor } from "../components/QuestionEditor";
@@ -133,29 +134,19 @@ export function QuizMakerPage() {
           }
         />
 
-        {/* Mobile/tablet panel switcher */}
-        <div className="flex lg:hidden border-b border-muted/20 bg-canvas font-body">
-          {[
+        {/* Mobile/tablet panel switcher — this page keeps its own frame
+            (nested topbar, sidebar as a root sibling), so it mounts
+            PanelTabs directly instead of going through AppShell. */}
+        <PanelTabs
+          tabs={[
             { key: "sidebar", label: "Files" },
             { key: "viewer", label: "Viewer" },
             { key: "editor", label: "Editor" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setMobileTab(tab.key)}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                mobileTab === tab.key
-                  ? "text-accent"
-                  : "text-muted hover:text-inkondark"
-              }`}
-            >
-              {tab.label}
-              {mobileTab === tab.key && (
-                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
-              )}
-            </button>
-          ))}
-        </div>
+          ]}
+          activeTab={mobileTab}
+          onChange={setMobileTab}
+          className="border-b border-muted/20 bg-canvas"
+        />
 
         {/* Panels: source file viewer + question editor */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
