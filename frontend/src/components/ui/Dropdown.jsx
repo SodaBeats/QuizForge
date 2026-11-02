@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
-import useClickOutside from "../../hooks/useClickOutside";
+import { useClickOutside } from "../../hooks/useClickOutside";
 
 // Shared dropdown shell (Phase 1.5 / F14 groundwork). Replaces the 4
-// hand-rolled click-outside menus (StudentTopbar + TopBar profile menus,
-// TopBar + QuizzesMetadata class-access dropdowns): it owns the open state
+// hand-rolled click-outside menus (StudentTopbar + TeacherTopbar profile menus,
+// TeacherTopbar + QuizzesMetadata class-access dropdowns): it owns the open state
 // and the click-outside close, and renders its wrapper div around whatever
 // trigger + panel markup the call site passes (via a render prop), so every
 // site keeps its exact classes.
@@ -16,7 +16,7 @@ import useClickOutside from "../../hooks/useClickOutside";
 //       </>
 //     )}
 //   </Dropdown>
-export default function Dropdown({ className = "relative", children }) {
+export function Dropdown({ className = "relative", children }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 

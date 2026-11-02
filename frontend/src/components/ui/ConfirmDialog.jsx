@@ -1,9 +1,9 @@
-import Modal from "./Modal";
-import Button from "./Button";
+import { Modal } from "./Modal";
+import { Button } from "./Button";
 
 // Shared confirmation dialog (Phase 1.5 / F14 groundwork, adopted by every
 // destructive flow in Phase 2.5 — no window.confirm() calls remain).
-export default function ConfirmDialog({
+export function ConfirmDialog({
   open,
   title = "Are you sure?",
   message,

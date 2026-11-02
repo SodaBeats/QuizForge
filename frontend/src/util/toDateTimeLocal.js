@@ -1,5 +1,5 @@
 
-export function toDatetimeLocal(dateString) {
+export function toDateTimeLocal(dateString) {
   const date = new Date(dateString);
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60000);

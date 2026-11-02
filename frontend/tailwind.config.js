@@ -1,4 +1,4 @@
-import colors from "./src/theme/colors.js";
+import { colors } from "./src/theme/colors.js";
 
 /**
  * Emits the flat palette from src/theme/colors.js as :root CSS variables so

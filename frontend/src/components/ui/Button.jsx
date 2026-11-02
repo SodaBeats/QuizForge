@@ -15,7 +15,7 @@ const BUTTON_VARIANTS = {
   ghost: "rounded-md px-4 transition-all text-inkondark hover:bg-muted/20",
 };
 
-export default function Button({
+export function Button({
   variant = "primary",
   className = "",
   children,

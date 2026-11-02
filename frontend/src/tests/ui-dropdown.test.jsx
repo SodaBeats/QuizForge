@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Dropdown from "../components/ui/Dropdown.jsx";
+import { Dropdown } from "../components/ui/Dropdown.jsx";
 
 const menu = (onPick = vi.fn()) => (
   <Dropdown>

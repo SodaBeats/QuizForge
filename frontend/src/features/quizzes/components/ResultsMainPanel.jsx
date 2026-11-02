@@ -1,0 +1,237 @@
+// ResultsMainPanel.jsx
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { colors } from "../../../theme/colors";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function difficultyBarClass(pct) {
+  if (pct >= 70) return "bg-green-500";
+  if (pct >= 50) return "bg-amber-500";
+  return "bg-red-500";
+}
+
+function difficultyTextClass(pct) {
+  if (pct >= 70) return "text-green-400";
+  if (pct >= 50) return "text-amber-400";
+  return "text-red-400";
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────
+
+function MetricCard({ label, value, sub }) {
+  return (
+    <div
+      className={`flex-1 min-w-[45%] sm:min-w-0 bg-surface rounded-lg p-3 sm:p-4 flex flex-col justify-between font-body border border-accent`}
+    >
+      <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">
+        {label}
+      </p>
+      <div>
+        <p className="text-2xl sm:text-3xl font-display font-bold text-inkondark leading-none mb-1">
+          {value}
+        </p>
+        <p className="text-xs text-muted truncate">{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function DifficultyRow({ label, pct }) {
+  return (
+    <div className="flex items-center gap-3 font-body">
+      <span className="text-xs text-muted w-24 sm:w-40 flex-shrink-0 truncate">
+        {label}
+      </span>
+
+      <div className="flex-1 h-2 bg-darkslate rounded-full overflow-hidden ">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${difficultyBarClass(pct)}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      <span
+        className={`text-xs font-semibold w-8 text-right flex-shrink-0 ${difficultyTextClass(pct)}`}
+      >
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
+function ReviewRow({ rank, label, pct }) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-md bg-darkslate border border-muted/20 font-body">
+      <span className="w-6 h-6 rounded-full bg-red-900/50 text-red-300 text-xs font-bold flex items-center justify-center flex-shrink-0">
+        {rank}
+      </span>
+
+      <span className="flex-1 text-sm text-inkondark truncate">{label}</span>
+
+      <span className="text-xs font-semibold text-red-400 flex-shrink-0">
+        {pct}% correct
+      </span>
+    </div>
+  );
+}
+
+function BarGraph({ data }) {
+  const barData = {
+    labels: ["0-20", "21-40", "41-60", "61-80", "81-100"],
+    datasets: [
+      {
+        label: "Students Per Score Range",
+        data: data.length > 0 ? data : [0, 0, 0, 0, 0],
+        backgroundColor: colors.accent,
+        borderWidth: 1,
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+          color: colors.muted,
+        },
+        beginAtZero: true,
+        grid: {
+          color: "rgba(0,0,0,0.3)",
+        },
+      },
+      x: {
+        ticks: {
+          color: colors.muted,
+        },
+        grid: {
+          color: "rgba(0,0,0,0.3)",
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: colors.muted,
+        },
+      },
+    },
+  };
+  return <Bar options={options} data={barData} />;
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+
+export function ResultsMainPanel({
+  METRICS = [],
+  DIFFICULTY = [],
+  SCORES = [],
+}) {
+  const MOCK_NEEDS_REVIEW = [...DIFFICULTY]
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3);
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 p-3 sm:p-4 gap-4 bg-surface font-body">
+      {/* ── Row 1: Metric cards — wraps to 2x2 on mobile instead of squishing 4-across ── */}
+      <div className="flex flex-wrap sm:flex-nowrap gap-3 h-auto sm:h-[30%]">
+        {!METRICS || !Array.isArray(METRICS) || METRICS.length === 0 ? (
+          <p className="text-xs text-muted mt-0.5">No data yet</p>
+        ) : (
+          METRICS.map((m) => <MetricCard key={m.label} {...m} />)
+        )}
+      </div>
+
+      {/* ── Row 2: Bottom panels — stacks on mobile/tablet, side-by-side on lg+ ── */}
+      <div className="flex flex-col lg:flex-row gap-4 min-h-0 h-auto lg:h-[70%]">
+        {/* Score distribution */}
+        <div className="w-full h-[300px] lg:h-auto lg:flex-1 min-w-0 bg-surface rounded-lg border border-accent flex flex-col">
+          <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
+            <h2 className="text-sm font-display font-semibold text-inkondark">
+              Score distribution
+            </h2>
+            <p className="text-xs text-muted mt-0.5">
+              Number of students per score range
+            </p>
+          </div>
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="relative w-full h-full bg-darkslate rounded-md">
+              <BarGraph data={SCORES} />
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: difficulty + needs review stacked */}
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
+              <h2 className="text-sm font-display font-semibold text-inkondark">
+                Question difficulty
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                % of students who answered correctly
+              </p>
+            </div>
+            {!DIFFICULTY ||
+            !Array.isArray(DIFFICULTY) ||
+            DIFFICULTY.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-muted text-sm italic">
+                No data yet
+              </div>
+            ) : (
+              <div className="themed-scroll flex-1 overflow-y-auto p-4 flex flex-col justify-between gap-2">
+                {DIFFICULTY.map((q) => (
+                  <DifficultyRow key={q.id} label={q.label} pct={q.pct} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-h-[220px] lg:min-h-0 bg-surface rounded-lg border border-accent flex flex-col">
+            <div className="px-4 py-3 bg-ink flex-shrink-0 rounded-t-lg border-b border-muted/20">
+              <h2 className="text-sm font-display font-semibold text-inkondark">
+                Questions needing review
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                Lowest success rate — consider revisiting in class
+              </p>
+            </div>
+            <div className="themed-scroll flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+              {!MOCK_NEEDS_REVIEW ||
+              !Array.isArray(MOCK_NEEDS_REVIEW) ||
+              MOCK_NEEDS_REVIEW.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-muted text-sm italic">
+                  No data yet
+                </div>
+              ) : (
+                MOCK_NEEDS_REVIEW.map((q, i) => (
+                  <ReviewRow key={i} rank={i + 1} label={q.label} pct={q.pct} />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -10,7 +10,7 @@
 //     onChange={setMobileTab}
 //     className="border-b border-muted/20 bg-canvas"
 //   />
-export default function PanelTabs({
+export function PanelTabs({
   tabs,
   activeTab,
   onChange,

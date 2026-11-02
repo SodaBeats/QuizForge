@@ -2,7 +2,7 @@
 // `text-red-400 text-center py-4` error messages (SideBar "Something went
 // wrong while fetching documents", …). Primitive + tests only — call-site
 // adoption is Phase 4.
-export default function ErrorState({ message, className = "" }) {
+export function ErrorState({ message, className = "" }) {
   return (
     <p className={`text-red-400 text-center py-4 ${className}`}>{message}</p>
   );
