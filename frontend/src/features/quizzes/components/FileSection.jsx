@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FileModal } from "./FileModal";
+import { Spinner } from "../../../components/ui/Spinner";
 
 export function FileSection({
   uploadedFiles,
@@ -85,9 +86,10 @@ export function FileSection({
             aria-live="polite"
             className="mb-2 flex items-center gap-2 rounded-md border border-accept/50 bg-darkslate px-2 py-1.5 text-xs text-inkondark"
           >
-            <span
-              aria-hidden="true"
-              className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-accept border-t-transparent motion-reduce:animate-none"
+            <Spinner
+              size="xs"
+              tone="accept"
+              className="shrink-0 motion-reduce:animate-none"
             />
             Uploading document...
           </div>

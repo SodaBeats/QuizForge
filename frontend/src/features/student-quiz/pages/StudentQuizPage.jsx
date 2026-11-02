@@ -11,30 +11,29 @@ import {
   useSubmitStudentQuiz,
 } from "../api/mutations.js";
 import { useStudentQuiz } from "../api/queries.js";
+import {
+  loadProgress,
+  saveProgress,
+  clearAttempt,
+} from "../lib/attemptStorage.js";
 
 export function StudentQuizPage() {
   // ----------------------------------------------------------------
   // STATES AND FRIENDS
   // ----------------------------------------------------------------
   const { quizToken } = useParams();
-  const storageKey = `quiz_progress_${quizToken}`;
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [answers, setAnswers] = useState(() => {
-    const saved = sessionStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved).answers : {};
-  });
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(() => {
-    const saved = sessionStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved).selectedQuestionIndex : 0;
-  });
-  const [answeredQuestions, setAnsweredQuestions] = useState(() => {
-    const saved = sessionStorage.getItem(storageKey);
-    // sessionStorage can't store a Set
-    // save it as an array and convert back
-    return saved ? new Set(JSON.parse(saved).answeredQuestions) : new Set();
-  });
+  // one read/parse of this attempt's saved progress seeds all three states
+  const [initialProgress] = useState(() => loadProgress(quizToken));
+  const [answers, setAnswers] = useState(initialProgress.answers);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(
+    initialProgress.selectedQuestionIndex,
+  );
+  const [answeredQuestions, setAnsweredQuestions] = useState(
+    initialProgress.answeredQuestions,
+  );
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [showLogoutWarning, setShowLogoutWarning] = useState(false);
 
@@ -68,38 +67,6 @@ export function StudentQuizPage() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // save user progress to session
-  const saveProgress = (
-    updatedAnswers,
-    updatedIndex,
-    updatedAnsweredQuestions,
-  ) => {
-    sessionStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        answers: updatedAnswers,
-        selectedQuestionIndex: updatedIndex,
-        // Convert Set to array for serialization
-        answeredQuestions: [...updatedAnsweredQuestions],
-      }),
-    );
-  };
-
-  // function to clear timers on session storage
-  const clearTimerStorage = useCallback(() => {
-    if (!attemptId) return;
-
-    const timerPrefix = `quiz_timer_${attemptId}_`;
-
-    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
-      const storageKey = sessionStorage.key(index);
-
-      if (storageKey?.startsWith(timerPrefix)) {
-        sessionStorage.removeItem(storageKey);
-      }
-    }
-  }, [attemptId]);
-
   // ----------------------------------------------------------
   // MUTATION FUNCTIONS
   // ----------------------------------------------------------
@@ -109,7 +76,11 @@ export function StudentQuizPage() {
 
   const handleQuestionSelect = (index) => {
     setSelectedQuestionIndex(index);
-    saveProgress(answers, index, answeredQuestions);
+    saveProgress(quizToken, {
+      answers,
+      selectedQuestionIndex: index,
+      answeredQuestions,
+    });
   };
 
   const handlePrev = () => {
@@ -130,11 +101,11 @@ export function StudentQuizPage() {
 
     setAnswers(updatedAnswers);
     setAnsweredQuestions(updatedAnsweredQuestions);
-    saveProgress(
-      updatedAnswers,
+    saveProgress(quizToken, {
+      answers: updatedAnswers,
       selectedQuestionIndex,
-      updatedAnsweredQuestions,
-    );
+      answeredQuestions: updatedAnsweredQuestions,
+    });
   };
 
   // auto advance to next question when time runs out
@@ -164,9 +135,11 @@ export function StudentQuizPage() {
       },
       {
         onSuccess: () => {
-          // Remove session storage
-          sessionStorage.removeItem(storageKey);
-          clearTimerStorage();
+          clearAttempt({
+            quizToken,
+            attemptId,
+            questionIds: questions.map((question) => question.id),
+          });
           toast.success("Attempt received!");
           navigate("/student", { replace: true });
         },
@@ -176,10 +149,7 @@ export function StudentQuizPage() {
   };
 
   const hasActiveQuizProgress = () => {
-    const savedProgress = sessionStorage.getItem(storageKey);
-    const savedAnswers = savedProgress
-      ? JSON.parse(savedProgress)?.answers || {}
-      : {};
+    const { answers: savedAnswers } = loadProgress(quizToken);
 
     return Boolean(
       attemptId ||
@@ -191,9 +161,11 @@ export function StudentQuizPage() {
   const deleteAttempt = () => {
     deleteAttemptMutation.mutate(quizToken, {
       onSuccess: () => {
-        // Remove session storage
-        sessionStorage.removeItem(storageKey);
-        clearTimerStorage();
+        clearAttempt({
+          quizToken,
+          attemptId,
+          questionIds: questions.map((question) => question.id),
+        });
         navigate("/student");
       },
       onError: (deleteError) =>

@@ -1,6 +1,7 @@
 // QuizzesSidebar.jsx
 import { useNavigate } from "react-router-dom";
-import "../../../components/layout/LoadingScreen.css";
+import { Spinner } from "../../../components/ui/Spinner";
+import { EmptyState } from "../../../components/ui/EmptyState";
 
 export function QuizzesSidebar({
   isFetching,
@@ -16,7 +17,7 @@ export function QuizzesSidebar({
     return (
       <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 p-3">
         <div className="flex-1 rounded-lg flex items-center justify-center border border-muted/20">
-          <div className="spinner"></div>
+          <Spinner />
         </div>
       </div>
     );
@@ -99,9 +100,7 @@ export function QuizzesSidebar({
                 </div>
               ))
             ) : (
-              <div className="text-muted text-sm text-center py-8">
-                No quizzes yet
-              </div>
+              <EmptyState message="No quizzes yet" className="text-sm py-8" />
             )}
           </div>
         </div>

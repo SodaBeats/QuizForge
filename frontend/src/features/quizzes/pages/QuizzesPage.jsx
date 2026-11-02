@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
+import { AppShell } from "../../../components/layout/AppShell";
 import { QuizzesSidebar } from "../components/QuizzesSideBar";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
 import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
@@ -122,90 +122,70 @@ export function QuizzesPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
-      {/*Top Bar */}
-      <TeacherTopbar />
-
-      {/* Mobile/tablet panel switcher — only relevant once a quiz is selected, hidden on desktop */}
-      {selectedQuizId && (
-        <div className="flex lg:hidden mx-3 mt-3 rounded-lg bg-surface border border-muted/20 font-body overflow-hidden">
-          {[
-            { key: "list", label: "Quizzes" },
-            { key: "details", label: "Details" },
-            { key: "questions", label: "Questions" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setMobileTab(tab.key)}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                mobileTab === tab.key
-                  ? "text-accent"
-                  : "text-muted hover:text-inkondark"
-              }`}
-            >
-              {tab.label}
-              {mobileTab === tab.key && (
-                <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
-              )}
-            </button>
-          ))}
+    <AppShell
+      tabs={
+        selectedQuizId
+          ? [
+              { key: "list", label: "Quizzes" },
+              { key: "details", label: "Details" },
+              { key: "questions", label: "Questions" },
+            ]
+          : [] // no selection → no switcher (matches the old conditional strip)
+      }
+      activeTab={mobileTab}
+      onChange={setMobileTab}
+      panels={[
+        {
+          key: "list",
+          visible: !selectedQuizId || mobileTab === "list",
+          children: (
+            <QuizzesSidebar
+              isFetching={queryQuizzesFetching}
+              isError={queryQuizzesError}
+              quizzes={queryQuizzes}
+              selectedQuizId={selectedQuizId}
+              setSelectedQuizId={setSelectedQuizId}
+              onDeleteQuiz={handleDeleteQuiz}
+            />
+          ),
+        },
+        ...(selectedQuizId
+          ? [
+              {
+                key: "details",
+                children: (
+                  <QuizzesMetaData
+                    key={selectedQuiz.id}
+                    quiz={selectedQuiz}
+                    onUpdateQuizMeta={handleQuizMetaUpdate}
+                    userClasses={userClasses}
+                    isFetchingClasses={isFetchingClasses}
+                    classFetchError={classFetchError}
+                  />
+                ),
+              },
+              {
+                key: "questions",
+                children: (
+                  <QuizzesQuestionList
+                    isFetching={queryQuestionsFetching}
+                    questions={queryQuestions?.questionList}
+                    selectedQuiz={selectedQuiz}
+                    onUpdateQuestion={handleQuestionUpdate}
+                    editingQuestion={editingQuestion}
+                    setEditingQuestion={setEditingQuestion}
+                  />
+                ),
+              },
+            ]
+          : []),
+      ]}
+    >
+      {!selectedQuizId && (
+        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
+          Select a quiz to view details
         </div>
       )}
-
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Sidebar */}
-        <div
-          className={`${
-            !selectedQuizId || mobileTab === "list" ? "flex" : "hidden"
-          } lg:contents`}
-        >
-          <QuizzesSidebar
-            isFetching={queryQuizzesFetching}
-            isError={queryQuizzesError}
-            quizzes={queryQuizzes}
-            selectedQuizId={selectedQuizId}
-            setSelectedQuizId={setSelectedQuizId}
-            onDeleteQuiz={handleDeleteQuiz}
-          />
-        </div>
-
-        {selectedQuizId ? (
-          <>
-            <div
-              className={`${
-                mobileTab === "details" ? "flex" : "hidden"
-              } lg:contents`}
-            >
-              <QuizzesMetaData
-                key={selectedQuiz.id}
-                quiz={selectedQuiz}
-                onUpdateQuizMeta={handleQuizMetaUpdate}
-                userClasses={userClasses}
-                isFetchingClasses={isFetchingClasses}
-                classFetchError={classFetchError}
-              />
-            </div>
-            <div
-              className={`${
-                mobileTab === "questions" ? "flex" : "hidden"
-              } lg:contents`}
-            >
-              <QuizzesQuestionList
-                isFetching={queryQuestionsFetching}
-                questions={queryQuestions?.questionList}
-                selectedQuiz={selectedQuiz}
-                onUpdateQuestion={handleQuestionUpdate}
-                editingQuestion={editingQuestion}
-                setEditingQuestion={setEditingQuestion}
-              />
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
-            Select a quiz to view details
-          </div>
-        )}
-      </div>
 
       <ConfirmDialog
         open={Boolean(quizToDelete)}
@@ -215,6 +195,6 @@ export function QuizzesPage() {
         onConfirm={confirmDeleteQuiz}
         onCancel={() => setQuizToDelete(null)}
       />
-    </div>
+    </AppShell>
   );
 }

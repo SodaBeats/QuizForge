@@ -1,8 +1,10 @@
-// Shared mobile panel switcher (Phase 1.5). The tab strip was copy-pasted
-// 4x (QuizMakerPage, QuizResultDashboard, ClassesPage, QuizzesPage) with an
-// identical button style and per-page container classes — the container
-// deltas stay with the call site via className. Phase 4 replaces the strips
-// (known F4); this ships as a primitive + tests only.
+// Shared mobile panel switcher (Phase 1.5 primitive, adopted in Phase 4).
+// The tab strip was copy-pasted 4x (QuizMakerPage, QuizResultDashboard,
+// ClassesPage, QuizzesPage) with an identical button style and per-page
+// container classes — the container deltas stay with the call site via
+// className. Phase 4 now routes every strip through here: AppShell mounts it
+// for Quizzes/Classes/Results; QuizMakerPage (custom frame) mounts it
+// directly.
 //
 //   <PanelTabs
 //     tabs={[{ key: "files", label: "Files" }, …]}

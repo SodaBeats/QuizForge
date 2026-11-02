@@ -1,6 +1,8 @@
 // src/features/quizzes/components/FileModal.jsx
 import { useDocuments } from "../../documents/api/queries.js";
 import { Modal } from "../../../components/ui/Modal";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { ErrorState } from "../../../components/ui/ErrorState";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: File picker/upload modal
@@ -60,9 +62,7 @@ export function FileModal({
           </button>
         </div>
         <div className="space-y-2 mb-6">
-          <p className="text-red-400 text-center py-4">
-            Something went wrong while fetching documents
-          </p>
+          <ErrorState message="Something went wrong while fetching documents" />
         </div>
       </Modal>
     );
@@ -103,7 +103,7 @@ export function FileModal({
             </div>
           ))
         ) : (
-          <p className="text-muted text-center py-4">No documents found</p>
+          <EmptyState message="No documents found" />
         )}
       </div>
 

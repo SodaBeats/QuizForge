@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
+import { AppShell } from "../../../components/layout/AppShell";
 import { ResultsLeaderboard } from "../components/ResultsLeaderboard";
 import { ResultsMainPanel } from "../components/ResultsMainPanel";
 import { useQuizDashboard } from "../api/queries.js";
@@ -108,53 +108,32 @@ export function QuizResultDashboard() {
   const classesRanking = results.classesAverage;
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt">
-      <TeacherTopbar />
-
-      {/* Mobile/tablet panel switcher — hidden on desktop, where both panels show at once */}
-      <div className="flex lg:hidden border-b border-muted/20 bg-canvas font-body">
-        {[
-          { key: "results", label: "Results" },
-          { key: "leaderboard", label: "Leaderboard" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setMobileTab(tab.key)}
-            className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-              mobileTab === tab.key
-                ? "text-accent"
-                : "text-muted hover:text-inkondark"
-            }`}
-          >
-            {tab.label}
-            {mobileTab === tab.key && (
-              <span className="absolute left-0 bottom-0 w-full h-[2px] bg-accent" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
-        {/* Main content area */}
-        <div
-          className={`${
-            mobileTab === "results" ? "flex" : "hidden"
-          } lg:contents`}
-        >
-          <ResultsMainPanel
-            METRICS={metrics}
-            DIFFICULTY={questions}
-            SCORES={scoreDistribution}
-          />
-        </div>
-        <div
-          className={`${
-            mobileTab === "leaderboard" ? "flex h-full" : "hidden"
-          } lg:contents`}
-        >
-          <ResultsLeaderboard STUDENTS={students} classes={classesRanking} />
-        </div>
-      </div>
-    </div>
+    <AppShell
+      rootClassName="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt"
+      containerClassName="flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden"
+      tabs={[
+        { key: "results", label: "Results" },
+        { key: "leaderboard", label: "Leaderboard" },
+      ]}
+      activeTab={mobileTab}
+      onChange={setMobileTab}
+      panels={[
+        {
+          key: "results",
+          children: (
+            <ResultsMainPanel
+              METRICS={metrics}
+              DIFFICULTY={questions}
+              SCORES={scoreDistribution}
+            />
+          ),
+        },
+        {
+          key: "leaderboard",
+          activeClass: "flex h-full",
+          children: <ResultsLeaderboard STUDENTS={students} classes={classesRanking} />,
+        },
+      ]}
+    />
   );
 }

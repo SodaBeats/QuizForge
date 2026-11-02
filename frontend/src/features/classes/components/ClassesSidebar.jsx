@@ -1,5 +1,7 @@
 // src/features/classes/components/ClassesSidebar.jsx
 
+import { Spinner } from "../../../components/ui/Spinner";
+
 export function ClassesSidebar({
   classes = [],
   isFetching,
@@ -29,7 +31,7 @@ export function ClassesSidebar({
         <div className="themed-scroll flex-1 overflow-y-auto relative p-2">
           {isFetching ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-specialsurface text-center px-4">
-              <div className="w-10 h-10 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <Spinner />
               <div className="text-sm text-muted">Loading classes...</div>
             </div>
           ) : classes?.length > 0 ? (
@@ -86,7 +88,7 @@ export function ClassesSidebar({
                   aria-label="Delete class"
                 >
                   {deletingIds.includes(cls.id) ? (
-                    <div className="w-4 h-4 border-2 border-t-transparent border-red-400 rounded-full animate-spin" />
+                    <Spinner size="sm" tone="red" />
                   ) : (
                     "×"
                   )}

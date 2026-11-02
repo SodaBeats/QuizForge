@@ -69,3 +69,18 @@ Move frontend server state and request handling into a shared React Query data l
 
 **Notes**
 - Phase 2 exit criteria are met. Lint and build pass; all 37 tests pass (the build reports the existing chunk-size warning).
+
+## PR 6 — UX consistency pass (Phase 4)
+
+**Summary**
+Standardize responsive page shells, loading/empty/error feedback, and student-attempt browser storage.
+
+**Changes**
+- Add a shared `AppShell` for the Classes, Quizzes, and Quiz Results pages; route all four teacher pages through the shared `PanelTabs` primitive while preserving the Quiz Maker's custom layout.
+- Replace page- and modal-specific loading, empty, and error treatments with the shared UI components. Extend `Spinner` with size and tone variants to preserve existing appearances.
+- Centralize student-attempt `sessionStorage` access in `attemptStorage.js`, with namespaced progress and timer keys, validated timer recovery, and targeted cleanup that leaves unrelated storage untouched.
+- Add coverage for the shell, shared UI states, attempt persistence, timer validation, cleanup, and submission payload.
+
+**Notes**
+- Phase 4 exit criteria are met: the mobile panel switcher is shared, and application code accesses `sessionStorage` only through `attemptStorage.js`.
+- `npm run lint`, `npm run build`, and `npm test` pass (80 tests; the build reports the existing chunk-size warning).

@@ -1,5 +1,7 @@
 // QuizQuestionsList.jsx
 import React, { useEffect } from "react";
+import { Spinner } from "../../../components/ui/Spinner";
+import { EmptyState } from "../../../components/ui/EmptyState";
 
 const inputClass =
   "w-full bg-darkslate rounded-md p-2.5 sm:p-3 text-sm text-inkondark border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition-all font-body";
@@ -27,7 +29,7 @@ export const QuestionList = ({
       <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body p-3">
         <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           <div className="flex flex-col items-center gap-3 text-inkondark">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+            <Spinner />
             <span className="text-sm">Loading questions...</span>
           </div>
         </div>
@@ -216,8 +218,8 @@ export const QuestionList = ({
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-muted text-sm">
-              No questions yet
+            <div className="flex items-center justify-center h-full">
+              <EmptyState message="No questions yet" className="text-sm" />
             </div>
           )}
         </div>

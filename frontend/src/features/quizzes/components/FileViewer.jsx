@@ -1,4 +1,4 @@
-import { LoadingScreen } from "../../../components/layout/LoadingScreen";
+import { Spinner } from "../../../components/ui/Spinner";
 import { useDocumentContent } from "../../documents/api/queries.js";
 import { NoFileIcon } from "./NoFileIcon";
 
@@ -15,8 +15,8 @@ export function FileViewer({ selectedFile }) {
           </h2>
           <p className="text-xs text-muted mt-0.5">PDF or text viewer</p>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 file-viewer-scroll">
-          <LoadingScreen />
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 file-viewer-scroll flex items-center justify-center">
+          <Spinner />
         </div>
       </div>
     );
