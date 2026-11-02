@@ -2,6 +2,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Modal } from "../../../components/ui/Modal";
+import { Spinner } from "../../../components/ui/Spinner";
 
 export function CreateClassModal({
   onClose,
@@ -46,7 +47,7 @@ export function CreateClassModal({
         isSubmitting && (
           <div className="absolute inset-0 z-60 flex items-center justify-center bg-modalback/70 rounded-lg">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 border-4 border-t-transparent border-accent rounded-full animate-spin" />
+              <Spinner size="lg" />
               <div className="text-sm text-muted">Creating...</div>
             </div>
           </div>

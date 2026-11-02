@@ -1,6 +1,8 @@
 // src/features/quizzes/components/SelectQuizModal.jsx
 import { usePagedQuizzes } from "../api/queries.js";
 import { Modal } from "../../../components/ui/Modal";
+import { Spinner } from "../../../components/ui/Spinner";
+import { EmptyState } from "../../../components/ui/EmptyState";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: Select Quiz Modal
@@ -23,7 +25,7 @@ export function SelectQuizModal({
         panelClassName="bg-canvas rounded-lg p-6 w-96 border border-muted font-body"
       >
         <div className="flex flex-col items-center gap-3 text-inkondark">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+          <Spinner />
           <span>Loading quizzes...</span>
         </div>
       </Modal>
@@ -89,9 +91,7 @@ export function SelectQuizModal({
             </button>
           ))
         ) : (
-          <div className="text-center text-muted py-6 text-sm">
-            No quizzes available
-          </div>
+          <EmptyState message="No quizzes available" className="text-sm py-6" />
         )}
       </div>
       {/* pagination controls */}
