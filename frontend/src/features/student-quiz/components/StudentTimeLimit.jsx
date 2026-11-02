@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { getTimerStart } from "../lib/attemptStorage.js";
 
 export function StudentTimeLimit({
   timeLimit,
@@ -8,44 +9,10 @@ export function StudentTimeLimit({
   attemptId,
   questionId,
 }) {
-  const timerStorageKey =
-    attemptId && questionId ? `quiz_timer_${attemptId}_${questionId}` : null;
-
-  // get stored start time in session storage
-  // create new one if none
-  const getStoredStartTime = () => {
-    if (!timerStorageKey) return Date.now();
-
-    try {
-      const savedValue = sessionStorage.getItem(timerStorageKey);
-      const parsedValue = Number(savedValue);
-      const now = Date.now();
-      const maxReasonableAge = timeLimit * 2 * 1000;
-
-      if (
-        !savedValue ||
-        Number.isNaN(parsedValue) ||
-        parsedValue <= 0 ||
-        parsedValue > now ||
-        now - parsedValue > maxReasonableAge
-      ) {
-        const now = Date.now();
-        sessionStorage.setItem(timerStorageKey, String(now));
-        return now;
-      }
-
-      return parsedValue;
-    } catch (err) {
-      console.error(
-        "Session Storage access failed, using current time instead: ",
-        err,
-      );
-      return Date.now();
-    }
-  };
-
-  // 1. Initialize state
-  const [startTime] = useState(() => getStoredStartTime());
+  // 1. Initialize state — validated get-or-create lives in attemptStorage
+  const [startTime] = useState(() =>
+    getTimerStart({ attemptId, questionId, timeLimit }),
+  );
   const [now, setNow] = useState(() => Date.now());
   const hasTimedOut = useRef(false);
 

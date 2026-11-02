@@ -11,6 +11,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StudentQuizPage } from "../features/student-quiz/pages/StudentQuizPage";
 import { AuthContext } from "../app/providers/AuthProvider";
 import { studentQuizApi } from "../features/student-quiz/api/studentQuiz.api";
+import {
+  progressKey,
+  timerKey,
+  loadProgress,
+} from "../features/student-quiz/lib/attemptStorage";
 
 vi.mock("../features/student-quiz/api/studentQuiz.api", () => ({
   studentQuizApi: {
@@ -21,7 +26,6 @@ vi.mock("../features/student-quiz/api/studentQuiz.api", () => ({
 }));
 
 const QUIZ_TOKEN = "TOKEN1";
-const progressKey = `quiz_progress_${QUIZ_TOKEN}`;
 
 const quiz = { id: "quiz-1", title: "Fixture Quiz", maxAttempts: 3 };
 const questions = [
@@ -94,7 +98,7 @@ describe("StudentQuizPage submit", () => {
     fireEvent.click(screen.getByRole("button", { name: /Beta/ }));
 
     // progress was persisted to sessionStorage when the answer was selected
-    expect(sessionStorage.getItem(progressKey)).not.toBeNull();
+    expect(loadProgress(QUIZ_TOKEN).answers).toEqual({ "question-1": "b" });
 
     fireEvent.click(screen.getByRole("button", { name: "Submit Quiz" }));
 
@@ -111,12 +115,10 @@ describe("StudentQuizPage submit", () => {
 
     // success side effects: navigation + storage cleanup
     await screen.findByText("student home");
-    expect(sessionStorage.getItem(progressKey)).toBeNull();
+    expect(sessionStorage.getItem(progressKey(QUIZ_TOKEN))).toBeNull();
     expect(
-      Object.keys(sessionStorage).filter((k) =>
-        k.startsWith(`quiz_timer_${attemptId}_`),
-      ),
-    ).toHaveLength(0);
+      sessionStorage.getItem(timerKey(attemptId, "question-1")),
+    ).toBeNull();
   });
 
   it("does not submit when the unanswered-questions confirm is cancelled", async () => {
