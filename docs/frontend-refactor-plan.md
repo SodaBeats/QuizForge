@@ -108,9 +108,9 @@ Exit criteria: no file over ~300 lines (except intentional); `components/ui` imp
 
 Goal: one responsive shell and uniform state feedback.
 
-- [ ] **Responsive shell (fixes F15).** Replace the 4 duplicated `mobileTab` switchers (`QuizzesPage`, `ClassesPage`, `QuizMakerPage`, `QuizResultDashboard`) with `<AppShell panels={[…]}>` / `PanelTabs`.
-- [ ] **Uniform loading/empty/error states.** Every modal and page uses `Spinner`, `EmptyState`, `ErrorState` instead of inventing its own overlay.
-- [ ] **Attempt storage helpers (fixes F20).** Move the bespoke `sessionStorage` read/write/clear from `StudentQuizPage` + `StudentTimeLimit` into `features/student-quiz/lib/attemptStorage.js` with typed helpers (`loadAnswers`, `saveProgress`, `clearAttempt`) and one namespaced key scheme — no more ad-hoc keys or cleanup loop scanning every key.
+- [x] **Responsive shell (fixes F15).** Replace the 4 duplicated `mobileTab` switchers (`QuizzesPage`, `ClassesPage`, `QuizMakerPage`, `QuizResultDashboard`) with `<AppShell panels={[…]}>` / `PanelTabs`.
+- [x] **Uniform loading/empty/error states.** Every modal and page uses `Spinner`, `EmptyState`, `ErrorState` instead of inventing its own overlay.
+- [x] **Attempt storage helpers (fixes F20).** Move the bespoke `sessionStorage` read/write/clear from `StudentQuizPage` + `StudentTimeLimit` into `features/student-quiz/lib/attemptStorage.js` with typed helpers (`loadAnswers`, `saveProgress`, `clearAttempt`) and one namespaced key scheme — no more ad-hoc keys or cleanup loop scanning every key.
 
 Exit criteria: one implementation of the mobile panel switcher; no direct `sessionStorage` access outside `attemptStorage.js`.
 
