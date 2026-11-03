@@ -1,15 +1,25 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
 import { QuizMakerPage } from "../features/quizzes/pages/QuizMakerPage";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { QuizzesPage } from "../features/quizzes/pages/QuizzesPage";
 import { StudentTokenPage } from "../features/student-quiz/pages/StudentTokenPage";
 import { StudentQuizPage } from "../features/student-quiz/pages/StudentQuizPage";
-import { QuizResultDashboard } from "../features/quizzes/pages/QuizResultDashboard";
 import { ClassesPage } from "../features/classes/pages/ClassesPage";
+import { Spinner } from "../components/ui/Spinner";
 import { ErrorPage } from "./ErrorPage";
 import { RouteError } from "./RouteError";
 import { RootRedirector } from "./guards/RootRedirector";
 import { RequireRole } from "./guards/RequireRole";
+
+// Phase 5.2: the results dashboard is the only chart.js consumer — lazy-load
+// it so chart.js stays out of the initial bundle. The page has a named export,
+// so map it to `default` for React.lazy.
+const QuizResultDashboard = lazy(() =>
+  import("../features/quizzes/pages/QuizResultDashboard").then((m) => ({
+    default: m.QuizResultDashboard,
+  })),
+);
 
 // Route table (Phase 3 step 2, behavior pass in step 3): the guards are one
 // RequireRole keyed by role — logged out → /login with state.from, wrong
@@ -41,7 +51,16 @@ export function AppRoutes() {
           path="/teacher/quizzes/:quizId"
           element={
             <RequireRole role="teacher">
-              <QuizResultDashboard />
+              {/* Matches the dashboard's own h-screen bg-canvas root */}
+              <Suspense
+                fallback={
+                  <div className="flex h-screen items-center justify-center bg-canvas">
+                    <Spinner />
+                  </div>
+                }
+              >
+                <QuizResultDashboard />
+              </Suspense>
             </RequireRole>
           }
         />
