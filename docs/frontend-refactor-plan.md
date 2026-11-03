@@ -120,7 +120,7 @@ Exit criteria: one implementation of the mobile panel switcher; no direct `sessi
 
 Goal: pay down size/duplication debt that wasn't blocking earlier phases.
 
-- [ ] Split `Login.css` (1,639 lines) and `StudentTokenPage.css` (748 lines) into colocated, component-scoped sheets; move shared card/input recipes into `components.css` first so leftovers are genuinely page-specific (fixes F17).
+- [skipped ] Split `Login.css` (1,639 lines) and `StudentTokenPage.css` (748 lines) into colocated, component-scoped sheets; move shared card/input recipes into `components.css` first so leftovers are genuinely page-specific (fixes F17).
 - [ ] Prune unused assets (duplicate `*_clean` / `*_crop` / `*_perfect` variants of the same image).
 - [ ] Consider `React.lazy` for heavier routes (chart.js only needed on the results dashboard).
 - [ ] Consider boundary lint rules (architecture doc §3.3): `no-restricted-imports` banning raw `fetch(` outside `lib/api.js` + `features/*/api/*.js`, and banning `authFetch` imports from `components/ui` (fixes F11).
