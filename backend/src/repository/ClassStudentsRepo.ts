@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, inArray, sql, and } from 'drizzle-orm';
+import { eq, inArray, sql, and, countDistinct } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { classes_db, students_classes_db, users } from '../db/schema.js';
 
@@ -70,5 +70,19 @@ export const ClassStudentsRepository = {
       .where(eq(students_classes_db.student_id, studentId));
 
     return result.length > 0 ? result.map((row) => row.classId) : null;
+  },
+
+  async studentTotalCount(teacherId: number) {
+    const [result] = await db
+      .select({
+        totalStudent: countDistinct(students_classes_db.student_id),
+      })
+      .from(students_classes_db)
+      .innerJoin(
+        classes_db,
+        eq(students_classes_db.class_id, classes_db.id),
+      )
+      .where(eq(classes_db.teacher_id, teacherId));
+    return result?.totalStudent ?? 0;
   },
 };

@@ -1,5 +1,16 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, count, and, desc, countDistinct, sql } from 'drizzle-orm';
+import {
+  eq,
+  count,
+  and,
+  desc,
+  countDistinct,
+  sql,
+  gt,
+  asc,
+  lt,
+  avg,
+} from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import {
   quizzes_db,
@@ -148,5 +159,52 @@ export const UserQuizzesRepository = {
       .returning();
 
     return result ? { quizId: result.id } : null;
+  },
+
+  async countActiveExams(userId: number) {
+    const [result] = await db
+      .select({ activeExams: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(
+        and(
+          eq(quizzes_db.user_id, userId),
+          eq(quizzes_db.status, 'published'),
+          gt(quizzes_db.due_date, new Date()),
+        ),
+      );
+    return result ? result.activeExams : 0;
+  },
+
+  async getClosingSoonExams(
+    userId: number,
+    limit: number = 5,
+    offset: number = 0,
+    hours: number = 72,
+  ) {
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + hours * 60 * 60 * 1000);
+    return db
+      .select({
+        id: quizzes_db.id,
+        quizTitle: quizzes_db.quiz_title,
+        dueDate: quizzes_db.due_date,
+        average: sql<
+          number | null
+        >`round(avg(${quiz_attempts_db.score}), 1)::float`,
+      })
+      .from(quizzes_db)
+      .leftJoin(quiz_attempts_db, eq(quiz_attempts_db.quiz_id, quizzes_db.id))
+      .where(
+        and(
+          eq(quizzes_db.user_id, userId),
+          eq(quizzes_db.status, 'published'),
+          gt(quizzes_db.due_date, now),
+          lt(quizzes_db.due_date, cutoff),
+        ),
+      )
+      .groupBy(quizzes_db.id)
+      .orderBy(asc(quizzes_db.due_date), asc(quizzes_db.id))
+      .limit(limit)
+      .offset(offset);
   },
 };
