@@ -2,6 +2,7 @@ import { TeacherTopbar } from "../../../components/layout/TeacherTopbar";
 import { DashboardSidebar } from "../components/DashboardSidebar";
 import { StatCards } from "../components/StatCards";
 import { ActiveExamsList } from "../components/ActiveExamsList";
+import { ExpiringSoonList } from "../components/ExpiringSoonList";
 
 export function DashboardPage() {
   return (
@@ -12,10 +13,13 @@ export function DashboardPage() {
         <DashboardSidebar />
 
         <main className="flex-1 min-h-0 overflow-y-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
-          {/* Phase 3: stat cards; Phase 4: active exams; Phase 5 adds the
-              expiring-soon list beside it. */}
+          {/* Stat cards, then the two exam lists side by side from xl
+              up (stacked below). */}
           <StatCards />
-          <ActiveExamsList />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+            <ActiveExamsList />
+            <ExpiringSoonList />
+          </div>
         </main>
       </div>
     </div>
