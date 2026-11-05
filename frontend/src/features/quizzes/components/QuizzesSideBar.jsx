@@ -33,7 +33,9 @@ export function QuizzesSidebar({
         <div className="rounded-lg p-4 border border-muted/20">
           <button
             onClick={() =>
-              navigate("/teacher", { state: { openForgeQuizModal: true } })
+              navigate("/teacher/exam-workstation", {
+                state: { openForgeQuizModal: true },
+              })
             }
             className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           >
@@ -109,7 +111,9 @@ export function QuizzesSidebar({
         <div className="p-4">
           <button
             onClick={() =>
-              navigate("/teacher", { state: { openForgeQuizModal: true } })
+              navigate("/teacher/exam-workstation", {
+                state: { openForgeQuizModal: true },
+              })
             }
             className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           >

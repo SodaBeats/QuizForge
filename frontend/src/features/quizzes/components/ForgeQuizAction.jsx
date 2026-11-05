@@ -5,6 +5,8 @@ import { useClasses } from "../../classes/api/queries.js";
 import { useCreateQuiz } from "../api/mutations.js";
 import { QuizForgeModal } from "./QuizForgeModal";
 
+const EXAM_WORKSTATION_PATH = "/teacher/exam-workstation";
+
 export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
   const [isForgeQuizModalOpen, setIsForgeQuizModalOpen] = useState(false);
   const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
@@ -22,7 +24,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
   const location = useLocation();
   const navigate = useNavigate();
   const createQuiz = useCreateQuiz();
-  const showFileButton = location.pathname === "/teacher";
+  const showFileButton = location.pathname === EXAM_WORKSTATION_PATH;
 
   const openForgeQuizModal = () => {
     const quizToken = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -41,7 +43,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
   };
 
   useEffect(() => {
-    if (location.pathname !== "/teacher") {
+    if (location.pathname !== EXAM_WORKSTATION_PATH) {
       return;
     }
 
