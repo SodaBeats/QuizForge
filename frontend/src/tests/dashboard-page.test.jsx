@@ -39,9 +39,13 @@ describe("DashboardPage", () => {
     ]);
   });
 
-  it("renders the stat-card row in the main content", async () => {
+  it("renders the stat-card row and the active exams panel", async () => {
     renderPage();
-    expect(await screen.findByText("Active exams")).toBeInTheDocument();
-    expect(await screen.findByText("Average score")).toBeInTheDocument();
+    // Stats resolved (average score across the mock exams) …
+    expect(await screen.findByText("78.2%")).toBeInTheDocument();
+    // … and the Phase 4 list panel sits below them.
+    expect(
+      screen.getByRole("heading", { name: "Active exams" }),
+    ).toBeInTheDocument();
   });
 });
