@@ -42,3 +42,14 @@ export const attemptKeys = {
   all: ["attempts"],
   quiz: (token) => [...attemptKeys.all, "quiz", token],
 };
+
+// Teacher dashboard (currently mock data — features/dashboard/api/dashboard.api.js).
+// stats + both paginated lists share `all`, so one invalidation refreshes
+// the whole dashboard.
+export const dashboardKeys = {
+  all: ["dashboard"],
+  stats: ["dashboard", "stats"],
+  // list({ page }) = paginated exam list
+  activeExams: (params = null) => [...dashboardKeys.all, "active-exams", params],
+  expiring: (params = null) => [...dashboardKeys.all, "expiring", params],
+};

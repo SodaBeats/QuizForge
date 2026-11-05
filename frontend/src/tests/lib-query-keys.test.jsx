@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   attemptKeys,
   classKeys,
+  dashboardKeys,
   docKeys,
   quizKeys,
 } from "../lib/queryKeys.js";
@@ -27,5 +28,22 @@ describe("lib/queryKeys — invalidation prefixes", () => {
     expect(startsWith(docKeys.content(3), docKeys.all)).toBe(true);
     expect(startsWith(docKeys.list(1), docKeys.all)).toBe(true);
     expect(startsWith(attemptKeys.quiz("TOKEN"), attemptKeys.all)).toBe(true);
+  });
+
+  it("keeps dashboard stats and both paginated lists under dashboardKeys.all", () => {
+    expect(startsWith(dashboardKeys.stats, dashboardKeys.all)).toBe(true);
+    expect(
+      startsWith(dashboardKeys.activeExams({ page: 2 }), dashboardKeys.all),
+    ).toBe(true);
+    expect(startsWith(dashboardKeys.expiring({ page: 1 }), dashboardKeys.all)).toBe(
+      true,
+    );
+    // Distinct caches per page and per list, shared invalidation prefix.
+    expect(dashboardKeys.activeExams({ page: 1 })).not.toEqual(
+      dashboardKeys.activeExams({ page: 2 }),
+    );
+    expect(dashboardKeys.activeExams({ page: 1 })).not.toEqual(
+      dashboardKeys.expiring({ page: 1 }),
+    );
   });
 });
