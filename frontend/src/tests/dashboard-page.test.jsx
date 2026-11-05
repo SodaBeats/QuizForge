@@ -1,17 +1,25 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthContext } from "../app/providers/AuthProvider";
 import { DashboardPage } from "../features/dashboard/pages/DashboardPage";
 
-// DashboardPage renders TeacherTopbar (needs router + auth context).
+// DashboardPage renders TeacherTopbar (needs router + auth context) and the
+// stats query (needs a QueryClient).
 const renderPage = (path = "/teacher") =>
   render(
-    <AuthContext.Provider value={{ logout: vi.fn() }}>
-      <MemoryRouter initialEntries={[path]}>
-        <DashboardPage />
-      </MemoryRouter>
-    </AuthContext.Provider>,
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      <AuthContext.Provider value={{ logout: vi.fn() }}>
+        <MemoryRouter initialEntries={[path]}>
+          <DashboardPage />
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </QueryClientProvider>,
   );
 
 describe("DashboardPage", () => {
@@ -31,10 +39,9 @@ describe("DashboardPage", () => {
     ]);
   });
 
-  it("shows the placeholder main content until later phases land", () => {
+  it("renders the stat-card row in the main content", async () => {
     renderPage();
-    expect(
-      screen.getByText(/Stat cards and exam lists/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Active exams")).toBeInTheDocument();
+    expect(await screen.findByText("Average score")).toBeInTheDocument();
   });
 });
