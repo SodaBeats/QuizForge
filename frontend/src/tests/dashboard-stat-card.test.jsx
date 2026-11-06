@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatCards } from "../features/dashboard/components/StatCards";
@@ -14,6 +14,15 @@ const renderCards = () =>
       <StatCards />
     </QueryClientProvider>,
   );
+
+beforeEach(() => {
+  vi.spyOn(dashboardApi, "getStats").mockResolvedValue({
+    activeExams: 12,
+    totalStudents: 87,
+    averageScore: 78.2,
+    drafts: 4,
+  });
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -38,9 +47,7 @@ describe("StatCards", () => {
   });
 
   it("shows an error state when the stats query fails", async () => {
-    vi.spyOn(dashboardApi, "getStats").mockRejectedValueOnce(
-      new Error("stats down"),
-    );
+    dashboardApi.getStats.mockRejectedValueOnce(new Error("stats down"));
     renderCards();
 
     expect(

@@ -1,6 +1,6 @@
-/* Teacher-dashboard reads (mock data — no network). Hooks own the cache
-   keys so no component does; call sites inherit the global query defaults
-   (no per-call staleTime / refetchOnWindowFocus overrides). */
+/* Teacher-dashboard reads. Hooks own the cache keys so no component does;
+   call sites inherit the global query defaults (no per-call staleTime /
+   refetchOnWindowFocus overrides). */
 
 import { useQuery } from "@tanstack/react-query";
 import { dashboardKeys } from "../../../lib/queryKeys.js";

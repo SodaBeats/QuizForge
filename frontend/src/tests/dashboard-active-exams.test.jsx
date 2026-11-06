@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ActiveExamsList } from "../features/dashboard/components/ActiveExamsList";
@@ -14,6 +14,42 @@ const renderList = () =>
       <ActiveExamsList />
     </QueryClientProvider>,
   );
+
+const activeExams = [
+  "Calculus II Midterm",
+  "Physics: Kinematics Quiz",
+  "Chemistry: Stoichiometry",
+  "Biology: Cell Division",
+  "World History Unit 4",
+  "Linear Algebra Final Review",
+  "Data Structures: Trees",
+  "Algorithms: Sorting",
+  "Discrete Math: Proofs",
+  "Software Engineering Capstone",
+  "Statistics Exam",
+  "Literature Final",
+].map((quizTitle, index) => ({
+  id: index + 1,
+  quizTitle,
+  dueDate: new Date(Date.now() + (index + 1) * 60 * 60 * 1000).toISOString(),
+  assignedCount: index === 0 ? 30 : 20,
+  submittedCount: index === 0 ? 28 : 10,
+}));
+
+beforeEach(() => {
+  vi.spyOn(dashboardApi, "getActiveExams").mockImplementation(
+    ({ page = 1 } = {}) => {
+      const pageSize = 5;
+      return Promise.resolve({
+        items: activeExams.slice((page - 1) * pageSize, page * pageSize),
+        total: activeExams.length,
+        page,
+        pageSize,
+        totalPages: 3,
+      });
+    },
+  );
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -31,7 +67,7 @@ describe("ActiveExamsList", () => {
     expect(screen.getAllByText(/^Due /)).toHaveLength(5);
     // 28 of 30 submitted → 93% on the first row.
     expect(screen.getByText("93%")).toBeInTheDocument();
-    // 12 exams at 5/page → 3 pages; page 2's exam is not rendered yet.
+    // 12 backend results at 5/page -> 3 pages.
     expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
     expect(screen.queryByText("Linear Algebra Final Review")).toBeNull();
   });
@@ -55,7 +91,7 @@ describe("ActiveExamsList", () => {
   });
 
   it("shows the empty state and no pager when there are no exams", async () => {
-    vi.spyOn(dashboardApi, "getActiveExams").mockResolvedValue({
+    dashboardApi.getActiveExams.mockResolvedValue({
       items: [],
       total: 0,
       page: 1,

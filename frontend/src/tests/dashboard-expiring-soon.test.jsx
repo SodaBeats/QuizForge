@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ExpiringSoonList } from "../features/dashboard/components/ExpiringSoonList";
@@ -14,6 +14,35 @@ const renderList = () =>
       <ExpiringSoonList />
     </QueryClientProvider>,
   );
+
+const expiringExams = [
+  "Calculus II Midterm",
+  "Physics: Kinematics Quiz",
+  "Chemistry: Stoichiometry",
+  "Biology: Cell Division",
+  "World History Unit 4",
+  "English Literature Essay Test",
+  "Programming Fundamentals",
+].map((quizTitle, index) => ({
+  id: index + 1,
+  quizTitle,
+  dueDate: new Date(Date.now() + (index + 2) * 60 * 60 * 1000).toISOString(),
+}));
+
+beforeEach(() => {
+  vi.spyOn(dashboardApi, "getExpiringExams").mockImplementation(
+    ({ page = 1 } = {}) => {
+      const pageSize = 5;
+      return Promise.resolve({
+        items: expiringExams.slice((page - 1) * pageSize, page * pageSize),
+        total: expiringExams.length,
+        page,
+        pageSize,
+        totalPages: 2,
+      });
+    },
+  );
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -53,7 +82,7 @@ describe("ExpiringSoonList", () => {
   });
 
   it("shows the empty state when nothing is closing in 72h", async () => {
-    vi.spyOn(dashboardApi, "getExpiringExams").mockResolvedValue({
+    dashboardApi.getExpiringExams.mockResolvedValue({
       items: [],
       total: 0,
       page: 1,
