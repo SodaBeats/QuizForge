@@ -32,6 +32,7 @@ const activeExams = [
   id: index + 1,
   quizTitle,
   dueDate: new Date(Date.now() + (index + 1) * 60 * 60 * 1000).toISOString(),
+  accessibility: index === 0 ? "restricted" : "anyone",
   assignedCount: index === 0 ? 30 : 20,
   submittedCount: index === 0 ? 28 : 10,
 }));
@@ -56,7 +57,7 @@ afterEach(() => {
 });
 
 describe("ActiveExamsList", () => {
-  it("renders rows with title, due date, and submission rate", async () => {
+  it("renders rows with title, due date, and flat submission counts", async () => {
     renderList();
 
     expect(
@@ -65,8 +66,9 @@ describe("ActiveExamsList", () => {
     expect(await screen.findByText("Calculus II Midterm")).toBeInTheDocument();
     // One due-date line per row — 5 rows at pageSize 5.
     expect(screen.getAllByText(/^Due /)).toHaveLength(5);
-    // 28 of 30 submitted → 93% on the first row.
-    expect(screen.getByText("93%")).toBeInTheDocument();
+    expect(screen.getByText("28 / 30")).toBeInTheDocument();
+    expect(screen.getAllByText("10")).toHaveLength(4);
+    expect(screen.queryByRole("progressbar")).toBeNull();
     // 12 backend results at 5/page -> 3 pages.
     expect(screen.getByText("Page 1 of 3")).toBeInTheDocument();
     expect(screen.queryByText("Linear Algebra Final Review")).toBeNull();

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useExpiringExams } from "../api/queries.js";
+import { formatSubmissionCount } from "../api/dashboard.api.js";
 import { formatDueDate, formatTimeLeft } from "../lib/format.js";
 import { ExamListPanel } from "./ExamListPanel";
 
@@ -32,9 +33,17 @@ function ExpiringExamRow({ exam }) {
         </p>
       </div>
 
-      <span className="shrink-0 text-xs font-medium text-red-400">
-        {formatTimeLeft(exam.dueDate)}
-      </span>
+      <div className="shrink-0 flex flex-col items-end gap-1">
+        <p className="text-xs text-muted whitespace-nowrap">
+          Submissions:{" "}
+          <span className="font-medium text-inkondark">
+            {formatSubmissionCount(exam)}
+          </span>
+        </p>
+        <span className="text-xs font-medium text-red-400 whitespace-nowrap">
+          {formatTimeLeft(exam.dueDate)}
+        </span>
+      </div>
     </div>
   );
 }

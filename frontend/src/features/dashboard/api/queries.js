@@ -15,7 +15,7 @@ export function useDashboardStats({ enabled = true } = {}) {
   });
 }
 
-/** Paginated active-exams list (title / due date / submission rate). */
+/** Paginated active-exams list (title / due date / submission count). */
 export function useActiveExams(page = 1, { enabled = true } = {}) {
   return useQuery({
     queryKey: dashboardKeys.activeExams({ page }),

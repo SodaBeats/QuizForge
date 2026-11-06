@@ -1,9 +1,10 @@
 import { apiRequest } from "../../../lib/api.js";
 
-/** 0–100 percent (integer) of submissions vs assignments; 0 when unassigned. */
-export function submissionRate(exam) {
-  if (!exam.assignedCount) return 0;
-  return Math.round((exam.submittedCount / exam.assignedCount) * 100);
+export function formatSubmissionCount(exam) {
+  if (exam.accessibility === "restricted") {
+    return `${exam.submittedCount} / ${exam.assignedCount}`;
+  }
+  return String(exam.submittedCount);
 }
 
 export const dashboardApi = {

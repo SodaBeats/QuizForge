@@ -25,6 +25,64 @@ import {
 type QuizInputData = InferInsertModel<typeof quizzes_db>;
 type QuizUpdateData = Partial<QuizInputData>;
 
+function getDashboardSubmissionCounts(userId: number) {
+  const restrictedCounts = db
+    .select({
+      quizId: quiz_access_db.quiz_id,
+      assignedCount: countDistinct(students_classes_db.student_id).as(
+        'assignedCount',
+      ),
+      submittedCount:
+        sql<number>`count(distinct case when ${quiz_attempts_db.id} is not null then ${students_classes_db.student_id} end)::int`.as(
+          'restricted_submitted_count',
+        ),
+    })
+    .from(quiz_access_db)
+    .innerJoin(
+      classes_db,
+      and(
+        eq(quiz_access_db.class_id, classes_db.id),
+        eq(classes_db.teacher_id, userId),
+      ),
+    )
+    .innerJoin(
+      students_classes_db,
+      eq(students_classes_db.class_id, classes_db.id),
+    )
+    .leftJoin(
+      quiz_attempts_db,
+      and(
+        eq(quiz_attempts_db.quiz_id, quiz_access_db.quiz_id),
+        eq(quiz_attempts_db.user_id, students_classes_db.student_id),
+        eq(quiz_attempts_db.status, 'completed'),
+      ),
+    )
+    .groupBy(quiz_access_db.quiz_id)
+    .as('restricted_quiz_counts');
+
+  const unrestrictedCounts = db
+    .select({
+      quizId: quiz_attempts_db.quiz_id,
+      submittedCount: countDistinct(quiz_attempts_db.user_id).as(
+        'unrestricted_submitted_count',
+      ),
+    })
+    .from(quiz_attempts_db)
+    .innerJoin(
+      quizzes_db,
+      and(
+        eq(quiz_attempts_db.quiz_id, quizzes_db.id),
+        eq(quizzes_db.user_id, userId),
+        eq(quizzes_db.accessibility, 'anyone'),
+      ),
+    )
+    .where(eq(quiz_attempts_db.status, 'completed'))
+    .groupBy(quiz_attempts_db.quiz_id)
+    .as('unrestricted_quiz_counts');
+
+  return { restrictedCounts, unrestrictedCounts };
+}
+
 export const UserQuizzesRepository = {
   //insert quiz to table
   async insertNewQuiz(data: QuizInputData, tx: QueryClient = db) {
@@ -192,7 +250,7 @@ export const UserQuizzesRepository = {
       .select({
         quizId: quiz_attempts_db.quiz_id,
         studentId: quiz_attempts_db.user_id,
-        bestScore: max(quiz_attempts_db.score).mapWith(Number),
+        bestScore: max(quiz_attempts_db.score).mapWith(Number).as('bestScore'),
       })
       .from(quiz_attempts_db)
       .innerJoin(quizzes_db, eq(quiz_attempts_db.quiz_id, quizzes_db.id))
@@ -206,7 +264,7 @@ export const UserQuizzesRepository = {
       .as('best_attempts');
 
     const quizAverages = db
-      .select({ average: avg(bestAttempts.bestScore) })
+      .select({ average: avg(bestAttempts.bestScore).as('average') })
       .from(bestAttempts)
       .groupBy(bestAttempts.quizId)
       .as('quiz_averages');
@@ -223,11 +281,7 @@ export const UserQuizzesRepository = {
     return result?.averageScore ?? 0;
   },
 
-  async getActiveExams(
-    userId: number,
-    page: number = 1,
-    pageSize: number = 5,
-  ) {
+  async getActiveExams(userId: number, page: number = 1, pageSize: number = 5) {
     const now = new Date();
     const activeFilter = and(
       eq(quizzes_db.user_id, userId),
@@ -241,51 +295,30 @@ export const UserQuizzesRepository = {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const currentPage = Math.min(Math.max(page, 1), totalPages);
 
-    const classCounts = db
-      .select({
-        quizId: quiz_access_db.quiz_id,
-        assignedCount: countDistinct(students_classes_db.student_id),
-        submittedCount: sql<number>`count(distinct case when ${quiz_attempts_db.id} is not null then ${students_classes_db.student_id} end)::int`.as(
-          'submitted_count',
-        ),
-      })
-      .from(quiz_access_db)
-      .innerJoin(
-        classes_db,
-        and(
-          eq(quiz_access_db.class_id, classes_db.id),
-          eq(classes_db.teacher_id, userId),
-        ),
-      )
-      .innerJoin(
-        students_classes_db,
-        eq(students_classes_db.class_id, classes_db.id),
-      )
-      .leftJoin(
-        quiz_attempts_db,
-        and(
-          eq(quiz_attempts_db.quiz_id, quiz_access_db.quiz_id),
-          eq(quiz_attempts_db.user_id, students_classes_db.student_id),
-          eq(quiz_attempts_db.status, 'completed'),
-        ),
-      )
-      .groupBy(quiz_access_db.quiz_id)
-      .as('quiz_class_counts');
+    const { restrictedCounts, unrestrictedCounts } =
+      getDashboardSubmissionCounts(userId);
 
     const items = await db
       .select({
         id: quizzes_db.id,
         quizTitle: quizzes_db.quiz_title,
         dueDate: quizzes_db.due_date,
-        assignedCount: sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${classCounts.assignedCount}, 0) else 0 end`.mapWith(
-          Number,
-        ),
-        submittedCount: sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${classCounts.submittedCount}, 0) else 0 end`.mapWith(
-          Number,
-        ),
+        accessibility: quizzes_db.accessibility,
+        assignedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.assignedCount}, 0) else 0 end`.mapWith(
+            Number,
+          ),
+        submittedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.submittedCount}, 0) else coalesce(${unrestrictedCounts.submittedCount}, 0) end`.mapWith(
+            Number,
+          ),
       })
       .from(quizzes_db)
-      .leftJoin(classCounts, eq(classCounts.quizId, quizzes_db.id))
+      .leftJoin(restrictedCounts, eq(restrictedCounts.quizId, quizzes_db.id))
+      .leftJoin(
+        unrestrictedCounts,
+        eq(unrestrictedCounts.quizId, quizzes_db.id),
+      )
       .where(activeFilter)
       .orderBy(asc(quizzes_db.due_date), asc(quizzes_db.id))
       .limit(pageSize)
@@ -320,13 +353,29 @@ export const UserQuizzesRepository = {
       .where(expiringFilter);
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const currentPage = Math.min(Math.max(page, 1), totalPages);
+    const { restrictedCounts, unrestrictedCounts } =
+      getDashboardSubmissionCounts(userId);
     const items = await db
       .select({
         id: quizzes_db.id,
         quizTitle: quizzes_db.quiz_title,
         dueDate: quizzes_db.due_date,
+        accessibility: quizzes_db.accessibility,
+        assignedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.assignedCount}, 0) else 0 end`.mapWith(
+            Number,
+          ),
+        submittedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.submittedCount}, 0) else coalesce(${unrestrictedCounts.submittedCount}, 0) end`.mapWith(
+            Number,
+          ),
       })
       .from(quizzes_db)
+      .leftJoin(restrictedCounts, eq(restrictedCounts.quizId, quizzes_db.id))
+      .leftJoin(
+        unrestrictedCounts,
+        eq(unrestrictedCounts.quizId, quizzes_db.id),
+      )
       .where(expiringFilter)
       .orderBy(asc(quizzes_db.due_date), asc(quizzes_db.id))
       .limit(pageSize)

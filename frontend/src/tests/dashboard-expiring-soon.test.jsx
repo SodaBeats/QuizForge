@@ -27,6 +27,9 @@ const expiringExams = [
   id: index + 1,
   quizTitle,
   dueDate: new Date(Date.now() + (index + 2) * 60 * 60 * 1000).toISOString(),
+  accessibility: index === 0 ? "restricted" : "anyone",
+  assignedCount: index === 0 ? 24 : 0,
+  submittedCount: index === 0 ? 15 : index + 3,
 }));
 
 beforeEach(() => {
@@ -60,6 +63,8 @@ describe("ExpiringSoonList", () => {
     // title / due date / time-left columns, 5 rows at pageSize 5
     expect(screen.getAllByText(/^Due /)).toHaveLength(5);
     expect(screen.getAllByText(/left$/)).toHaveLength(5);
+    expect(screen.getByText("15 / 24")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
     expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
 
     // Outside the window (due in 4 days) and drafts never appear here.

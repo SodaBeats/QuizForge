@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { configureApiClient } from "../lib/api.js";
-import { dashboardApi, submissionRate } from "../features/dashboard/api/dashboard.api.js";
+import {
+  dashboardApi,
+  formatSubmissionCount,
+} from "../features/dashboard/api/dashboard.api.js";
 
 const jsonResponse = (status, body) =>
   new Response(JSON.stringify(body), { status });
@@ -46,6 +49,7 @@ describe("dashboard.api", () => {
           id: 8,
           quizTitle: "Active exam",
           dueDate: "2026-11-07T10:00:00.000Z",
+          accessibility: "restricted",
           assignedCount: 30,
           submittedCount: 19,
         },
@@ -93,9 +97,23 @@ describe("dashboard.api", () => {
     });
   });
 
-  it("computes submission rate as a percent, 0 when unassigned", () => {
-    expect(submissionRate({ assignedCount: 30, submittedCount: 28 })).toBe(93);
-    expect(submissionRate({ assignedCount: 30, submittedCount: 0 })).toBe(0);
-    expect(submissionRate({ assignedCount: 0, submittedCount: 0 })).toBe(0);
+  it("formats restricted submissions over assigned students", () => {
+    expect(
+      formatSubmissionCount({
+        accessibility: "restricted",
+        assignedCount: 30,
+        submittedCount: 19,
+      }),
+    ).toBe("19 / 30");
+  });
+
+  it("formats unrestricted submissions as a flat count", () => {
+    expect(
+      formatSubmissionCount({
+        accessibility: "anyone",
+        assignedCount: 0,
+        submittedCount: 19,
+      }),
+    ).toBe("19");
   });
 });

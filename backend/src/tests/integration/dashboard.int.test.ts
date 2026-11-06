@@ -208,6 +208,18 @@ beforeAll(async () => {
       score: 71,
       status: 'completed',
     },
+    {
+      quiz_id: boundaryQuiz.id,
+      user_id: student1Id,
+      score: 55,
+      status: 'completed',
+    },
+    {
+      quiz_id: boundaryQuiz.id,
+      user_id: student1Id,
+      score: 85,
+      status: 'completed',
+    },
   ]);
 
   const [otherTeacher] = await db
@@ -299,7 +311,7 @@ describe('teacher dashboard endpoints', () => {
     expect(response.body).toEqual({
       activeExams: 6,
       totalStudents: 2,
-      averageScore: 75.3,
+      averageScore: 78.5,
       drafts: 1,
     });
   });
@@ -339,8 +351,9 @@ describe('teacher dashboard endpoints', () => {
     });
     expect(firstPage.body.items[1]).toMatchObject({
       quizTitle: 'Dashboard Boundary Active',
+      accessibility: 'anyone',
       assignedCount: 0,
-      submittedCount: 0,
+      submittedCount: 1,
     });
   });
 
@@ -375,5 +388,15 @@ describe('teacher dashboard endpoints', () => {
     expect(
       response.body.items.map((quiz: { quizTitle: string }) => quiz.quizTitle),
     ).toEqual(['Dashboard Restricted Active', 'Dashboard Boundary Active']);
+    expect(response.body.items[0]).toMatchObject({
+      accessibility: 'restricted',
+      assignedCount: 2,
+      submittedCount: 1,
+    });
+    expect(response.body.items[1]).toMatchObject({
+      accessibility: 'anyone',
+      assignedCount: 0,
+      submittedCount: 1,
+    });
   });
 });
