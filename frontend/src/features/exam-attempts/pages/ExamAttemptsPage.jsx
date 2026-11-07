@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
 import { ExamDetailsPanel } from "../components/ExamDetailsPanel";
 import { AttemptsPanel } from "../components/AttemptsPanel";
+import { AttemptDetailModal } from "../components/AttemptDetailModal";
 import {
   filterByClass,
   filterBySearch,
@@ -25,6 +26,7 @@ export function ExamAttemptsPage() {
   const [mobileTab, setMobileTab] = useState("details"); // mobile-only panel switcher — purely UI state
   const [query, setQuery] = useState("");
   const [selectedClassId, setSelectedClassId] = useState(null);
+  const [selectedAttempt, setSelectedAttempt] = useState(null); // { student, attempt } → detail modal
 
   const exam = getExam(quizId);
 
@@ -55,32 +57,44 @@ export function ExamAttemptsPage() {
   );
 
   return (
-    <AppShell
-      tabs={TABS}
-      activeTab={mobileTab}
-      onChange={setMobileTab}
-      panels={[
-        {
-          key: "details",
-          visible: mobileTab === "details",
-          children: <ExamDetailsPanel exam={exam} />,
-        },
-        {
-          key: "attempts",
-          visible: mobileTab === "attempts",
-          children: (
-            <AttemptsPanel
-              found={Boolean(exam)}
-              groups={filteredGroups}
-              query={query}
-              onQueryChange={setQuery}
-              classes={classes}
-              activeClassId={activeClassId}
-              onClassChange={setSelectedClassId}
-            />
-          ),
-        },
-      ]}
-    />
+    <>
+      <AppShell
+        tabs={TABS}
+        activeTab={mobileTab}
+        onChange={setMobileTab}
+        panels={[
+          {
+            key: "details",
+            visible: mobileTab === "details",
+            children: <ExamDetailsPanel exam={exam} />,
+          },
+          {
+            key: "attempts",
+            visible: mobileTab === "attempts",
+            children: (
+              <AttemptsPanel
+                found={Boolean(exam)}
+                groups={filteredGroups}
+                query={query}
+                onQueryChange={setQuery}
+                classes={classes}
+                activeClassId={activeClassId}
+                onClassChange={setSelectedClassId}
+                onSelectAttempt={setSelectedAttempt}
+              />
+            ),
+          },
+        ]}
+      />
+
+      {selectedAttempt && exam && (
+        <AttemptDetailModal
+          attempt={selectedAttempt.attempt}
+          student={selectedAttempt.student}
+          exam={exam}
+          onClose={() => setSelectedAttempt(null)}
+        />
+      )}
+    </>
   );
 }

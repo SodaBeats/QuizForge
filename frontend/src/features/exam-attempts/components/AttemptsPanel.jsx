@@ -19,6 +19,7 @@ export function AttemptsPanel({
   classes,
   activeClassId,
   onClassChange,
+  onSelectAttempt,
 }) {
   const attemptCount = groups.reduce(
     (total, group) => total + group.attempts.length,
@@ -80,12 +81,14 @@ export function AttemptsPanel({
                   key={student.id}
                   student={student}
                   attempt={attempts[0]}
+                  onSelect={onSelectAttempt}
                 />
               ) : (
                 <StudentAttemptsBox
                   key={student.id}
                   student={student}
                   attempts={attempts}
+                  onSelect={onSelectAttempt}
                 />
               ),
             )

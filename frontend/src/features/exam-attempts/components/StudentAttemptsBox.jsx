@@ -1,10 +1,11 @@
 /* Box for a student with multiple attempts: student name as the header,
    then one compact row per attempt (newest first), score + date columns
-   aligned with StudentAttemptRow. */
+   aligned with StudentAttemptRow. Each attempt row is a button that opens
+   that attempt's detail modal; the name header is not clickable. */
 
 import { formatSubmittedAt } from "../lib/format.js";
 
-export function StudentAttemptsBox({ student, attempts }) {
+export function StudentAttemptsBox({ student, attempts, onSelect }) {
   return (
     <div className="rounded-lg bg-darkslate border border-muted/20 overflow-hidden font-body">
       <div className="flex items-center gap-3 px-3 py-1.5 bg-specialsurface border-b border-muted/20">
@@ -17,9 +18,11 @@ export function StudentAttemptsBox({ student, attempts }) {
       </div>
 
       {attempts.map((attempt) => (
-        <div
+        <button
           key={attempt.id}
-          className="flex items-center gap-3 px-3 py-1.5 border-b border-muted/10 last:border-b-0"
+          type="button"
+          onClick={() => onSelect({ student, attempt })}
+          className="w-full text-left flex items-center gap-3 px-3 py-1.5 border-b border-muted/10 last:border-b-0 cursor-pointer hover:bg-muted/10 transition-colors"
         >
           <span className="flex-1 min-w-0" />
           <span className="w-16 shrink-0 text-right text-sm text-inkondark tabular-nums">
@@ -28,7 +31,7 @@ export function StudentAttemptsBox({ student, attempts }) {
           <span className="w-36 sm:w-44 shrink-0 text-right text-xs text-muted whitespace-nowrap">
             {formatSubmittedAt(attempt.submittedAt)}
           </span>
-        </div>
+        </button>
       ))}
     </div>
   );
