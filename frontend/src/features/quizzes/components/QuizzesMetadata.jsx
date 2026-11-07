@@ -191,6 +191,12 @@ export function QuizzesMetadata({
           >
             View results
           </button>
+          <button
+            className="btn-secondary w-full py-2.5 font-display font-bold text-sm"
+            onClick={() => navigate(`/teacher/quizzes/${quiz.id}/attempts`)}
+          >
+            View attempts
+          </button>
         </div>
       </div>
     </div>

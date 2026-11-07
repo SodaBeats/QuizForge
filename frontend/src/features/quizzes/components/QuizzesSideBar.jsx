@@ -27,7 +27,7 @@ export function QuizzesSidebar({
     return (
       <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
         <div className="flex-1 rounded-lg flex items-center justify-center text-red-400 text-sm border border-muted/20">
-          Failed to fetch quizzes
+          Failed to fetch examinations
         </div>
         {/* Create New Quiz Button */}
         <div className="rounded-lg p-4 border border-muted/20">
@@ -39,7 +39,7 @@ export function QuizzesSidebar({
             }
             className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5"
           >
-            + Create new quiz
+            + Create new examination
           </button>
         </div>
       </div>
@@ -52,7 +52,7 @@ export function QuizzesSidebar({
         {/* Header */}
         <div className="p-4 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
-            Quizzes
+            Examinations
           </h2>
         </div>
 
