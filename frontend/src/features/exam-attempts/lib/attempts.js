@@ -61,3 +61,10 @@ export function filterBySearch(groups, query) {
     group.student.name.toLowerCase().includes(needle),
   );
 }
+
+/** Groups whose student belongs to the given class. A student in several
+    classes with access appears under every matching tab (each tab filters
+    independently). */
+export function filterByClass(groups, classId) {
+  return groups.filter((group) => group.student.classIds.includes(classId));
+}

@@ -8,6 +8,7 @@ import { AppShell } from "../../../components/layout/AppShell";
 import { ExamDetailsPanel } from "../components/ExamDetailsPanel";
 import { AttemptsPanel } from "../components/AttemptsPanel";
 import {
+  filterByClass,
   filterBySearch,
   getAttempts,
   getExam,
@@ -23,19 +24,34 @@ export function ExamAttemptsPage() {
   const { quizId } = useParams();
   const [mobileTab, setMobileTab] = useState("details"); // mobile-only panel switcher — purely UI state
   const [query, setQuery] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState(null);
 
   const exam = getExam(quizId);
 
-  // Group once per quizId, then layer the name search on top so counts
-  // and list always agree.
+  // Restricted exams only get class tabs; the active tab falls back to the
+  // first class whenever the selection doesn't belong to this exam — that
+  // derived fallback resets the tab on quizId change without an effect.
+  const classes =
+    exam?.accessibility === "restricted" ? exam.allowedClasses : [];
+  const activeClassId =
+    classes.find((cls) => cls.id === selectedClassId)?.id ??
+    classes[0]?.id ??
+    null;
+
+  // Group once per quizId, then layer the class tab and the name search on
+  // top so counts and list always agree.
   const groups = useMemo(
     () =>
       exam ? groupAttemptsByStudent(getAttempts(quizId)) : [],
     [exam, quizId],
   );
+  const classGroups = useMemo(
+    () => (activeClassId == null ? groups : filterByClass(groups, activeClassId)),
+    [groups, activeClassId],
+  );
   const filteredGroups = useMemo(
-    () => filterBySearch(groups, query),
-    [groups, query],
+    () => filterBySearch(classGroups, query),
+    [classGroups, query],
   );
 
   return (
@@ -58,6 +74,9 @@ export function ExamAttemptsPage() {
               groups={filteredGroups}
               query={query}
               onQueryChange={setQuery}
+              classes={classes}
+              activeClassId={activeClassId}
+              onClassChange={setSelectedClassId}
             />
           ),
         },

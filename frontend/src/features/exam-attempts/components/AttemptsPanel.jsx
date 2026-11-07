@@ -4,6 +4,7 @@
    Tab filtering layers on top in Phase 3. */
 
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { ClassTabs } from "./ClassTabs";
 import { StudentAttemptRow } from "./StudentAttemptRow";
 import { StudentAttemptsBox } from "./StudentAttemptsBox";
 
@@ -15,6 +16,9 @@ export function AttemptsPanel({
   groups,
   query,
   onQueryChange,
+  classes,
+  activeClassId,
+  onClassChange,
 }) {
   const attemptCount = groups.reduce(
     (total, group) => total + group.attempts.length,
@@ -53,6 +57,12 @@ export function AttemptsPanel({
             />
           </div>
         </PanelHeader>
+
+        <ClassTabs
+          classes={classes}
+          activeClassId={activeClassId}
+          onChange={onClassChange}
+        />
 
         <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5">
           {groups.length === 0 ? (
