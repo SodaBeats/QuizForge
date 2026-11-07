@@ -66,5 +66,5 @@ Prettier config sits at the repo root (`.prettierrc`: semi, tabWidth 2); no form
 ## Baseline at HEAD (backend re-verified 2026-11-05; frontend teacher-dashboard scaffold re-verified 2026-11-05; frontend exam-attempts re-verified 2026-11-07)
 
 - Backend: `npx tsc --noEmit` ✓ and `npm test` ✓ (3 suites / 10 tests).
-- Frontend: `npm run lint` ✓, `npm run build` ✓, `npm test` ✓ (Vitest, 26 suites / 135 tests; largest chunk ~417 kB — the old 500 kB size warning no longer fires). Teacher dashboard full smoke passed 2026-11-05 (owner-run). Phase 3's full manual smoke re-run remains pending.
+- Frontend: `npm run lint` ✓, `npm run build` ✓, `npm test` ✓ (Vitest, 27 suites / 146 tests; largest chunk ~423 kB — the old 500 kB size warning no longer fires). Teacher dashboard full smoke passed 2026-11-05 (owner-run). Phase 3's full manual smoke re-run remains pending.
 - If any of these fail before you change something, that's new information — update this section.
