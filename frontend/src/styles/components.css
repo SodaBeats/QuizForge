@@ -4,9 +4,8 @@
 
    IMPORTANT: a recipe only carries what every former copy had in common. Each
    call site appends its own spacing / transition / hover / disabled deltas, so
-   the final class list on each element is identical to before — this extracts,
-   it does not restyle. Colors come only from src/theme/colors.js tokens
-   (red-500/red-700 are the allowed Tailwind status-color exception). */
+   the    final class list on each element is identical to before — this extracts,
+   it does not restyle. Colors come only from src/theme/colors.js tokens. */
 
 @layer components {
   /* Green brand action button (was: primaryBtnClass) */
@@ -21,7 +20,7 @@
 
   /* Red destructive button (was: the red-flavored secondaryBtnClass copies) */
   .btn-danger {
-    @apply rounded-md px-4 transition-all text-red-500 border border-red-500 hover:bg-red-700 hover:text-inkondark;
+    @apply rounded-md px-4 transition-all text-bad border border-accent hover:bg-accent hover:text-inkondark;
   }
 
   /* Dark input "well" (was: wellInputClass) */
