@@ -1,5 +1,17 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, count, and, desc, countDistinct, sql } from 'drizzle-orm';
+import {
+  eq,
+  count,
+  and,
+  desc,
+  countDistinct,
+  sql,
+  gt,
+  asc,
+  lte,
+  avg,
+  max,
+} from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import {
   quizzes_db,
@@ -7,10 +19,69 @@ import {
   questions_db,
   classes_db,
   quiz_access_db,
+  students_classes_db,
 } from '../db/schema.js';
 
 type QuizInputData = InferInsertModel<typeof quizzes_db>;
 type QuizUpdateData = Partial<QuizInputData>;
+
+function getDashboardSubmissionCounts(userId: number) {
+  const restrictedCounts = db
+    .select({
+      quizId: quiz_access_db.quiz_id,
+      assignedCount: countDistinct(students_classes_db.student_id).as(
+        'assignedCount',
+      ),
+      submittedCount:
+        sql<number>`count(distinct case when ${quiz_attempts_db.id} is not null then ${students_classes_db.student_id} end)::int`.as(
+          'restricted_submitted_count',
+        ),
+    })
+    .from(quiz_access_db)
+    .innerJoin(
+      classes_db,
+      and(
+        eq(quiz_access_db.class_id, classes_db.id),
+        eq(classes_db.teacher_id, userId),
+      ),
+    )
+    .innerJoin(
+      students_classes_db,
+      eq(students_classes_db.class_id, classes_db.id),
+    )
+    .leftJoin(
+      quiz_attempts_db,
+      and(
+        eq(quiz_attempts_db.quiz_id, quiz_access_db.quiz_id),
+        eq(quiz_attempts_db.user_id, students_classes_db.student_id),
+        eq(quiz_attempts_db.status, 'completed'),
+      ),
+    )
+    .groupBy(quiz_access_db.quiz_id)
+    .as('restricted_quiz_counts');
+
+  const unrestrictedCounts = db
+    .select({
+      quizId: quiz_attempts_db.quiz_id,
+      submittedCount: countDistinct(quiz_attempts_db.user_id).as(
+        'unrestricted_submitted_count',
+      ),
+    })
+    .from(quiz_attempts_db)
+    .innerJoin(
+      quizzes_db,
+      and(
+        eq(quiz_attempts_db.quiz_id, quizzes_db.id),
+        eq(quizzes_db.user_id, userId),
+        eq(quizzes_db.accessibility, 'anyone'),
+      ),
+    )
+    .where(eq(quiz_attempts_db.status, 'completed'))
+    .groupBy(quiz_attempts_db.quiz_id)
+    .as('unrestricted_quiz_counts');
+
+  return { restrictedCounts, unrestrictedCounts };
+}
 
 export const UserQuizzesRepository = {
   //insert quiz to table
@@ -148,5 +219,174 @@ export const UserQuizzesRepository = {
       .returning();
 
     return result ? { quizId: result.id } : null;
+  },
+
+  async countActiveExams(userId: number) {
+    const [result] = await db
+      .select({ activeExams: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(
+        and(
+          eq(quizzes_db.user_id, userId),
+          eq(quizzes_db.status, 'published'),
+          gt(quizzes_db.due_date, new Date()),
+        ),
+      );
+    return result ? result.activeExams : 0;
+  },
+
+  async countDraftQuizzes(userId: number) {
+    const [result] = await db
+      .select({ drafts: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(
+        and(eq(quizzes_db.user_id, userId), eq(quizzes_db.status, 'draft')),
+      );
+    return result?.drafts ?? 0;
+  },
+
+  async getAverageScoreUsingBestAttempts(userId: number) {
+    const bestAttempts = db
+      .select({
+        quizId: quiz_attempts_db.quiz_id,
+        studentId: quiz_attempts_db.user_id,
+        bestScore: max(quiz_attempts_db.score).mapWith(Number).as('bestScore'),
+      })
+      .from(quiz_attempts_db)
+      .innerJoin(quizzes_db, eq(quiz_attempts_db.quiz_id, quizzes_db.id))
+      .where(
+        and(
+          eq(quizzes_db.user_id, userId),
+          eq(quiz_attempts_db.status, 'completed'),
+        ),
+      )
+      .groupBy(quiz_attempts_db.quiz_id, quiz_attempts_db.user_id)
+      .as('best_attempts');
+
+    const quizAverages = db
+      .select({ average: avg(bestAttempts.bestScore).as('average') })
+      .from(bestAttempts)
+      .groupBy(bestAttempts.quizId)
+      .as('quiz_averages');
+
+    const [result] = await db
+      .select({
+        averageScore:
+          sql<number>`COALESCE(ROUND(AVG(${quizAverages.average}), 1), 0)::float`.mapWith(
+            Number,
+          ),
+      })
+      .from(quizAverages);
+
+    return result?.averageScore ?? 0;
+  },
+
+  async getActiveExams(userId: number, page: number = 1, pageSize: number = 5) {
+    const now = new Date();
+    const activeFilter = and(
+      eq(quizzes_db.user_id, userId),
+      eq(quizzes_db.status, 'published'),
+      gt(quizzes_db.due_date, now),
+    );
+    const [{ total } = { total: 0 }] = await db
+      .select({ total: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(activeFilter);
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
+
+    const { restrictedCounts, unrestrictedCounts } =
+      getDashboardSubmissionCounts(userId);
+
+    const items = await db
+      .select({
+        id: quizzes_db.id,
+        quizTitle: quizzes_db.quiz_title,
+        dueDate: quizzes_db.due_date,
+        accessibility: quizzes_db.accessibility,
+        assignedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.assignedCount}, 0) else 0 end`.mapWith(
+            Number,
+          ),
+        submittedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.submittedCount}, 0) else coalesce(${unrestrictedCounts.submittedCount}, 0) end`.mapWith(
+            Number,
+          ),
+      })
+      .from(quizzes_db)
+      .leftJoin(restrictedCounts, eq(restrictedCounts.quizId, quizzes_db.id))
+      .leftJoin(
+        unrestrictedCounts,
+        eq(unrestrictedCounts.quizId, quizzes_db.id),
+      )
+      .where(activeFilter)
+      .orderBy(asc(quizzes_db.due_date), asc(quizzes_db.id))
+      .limit(pageSize)
+      .offset((currentPage - 1) * pageSize);
+
+    return {
+      items,
+      total,
+      page: currentPage,
+      pageSize,
+      totalPages,
+    };
+  },
+
+  async getExpiringExams(
+    userId: number,
+    page: number = 1,
+    pageSize: number = 5,
+    hours: number = 72,
+  ) {
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + hours * 60 * 60 * 1000);
+    const expiringFilter = and(
+      eq(quizzes_db.user_id, userId),
+      eq(quizzes_db.status, 'published'),
+      gt(quizzes_db.due_date, now),
+      lte(quizzes_db.due_date, cutoff),
+    );
+    const [{ total } = { total: 0 }] = await db
+      .select({ total: count(quizzes_db.id) })
+      .from(quizzes_db)
+      .where(expiringFilter);
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
+    const { restrictedCounts, unrestrictedCounts } =
+      getDashboardSubmissionCounts(userId);
+    const items = await db
+      .select({
+        id: quizzes_db.id,
+        quizTitle: quizzes_db.quiz_title,
+        dueDate: quizzes_db.due_date,
+        accessibility: quizzes_db.accessibility,
+        assignedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.assignedCount}, 0) else 0 end`.mapWith(
+            Number,
+          ),
+        submittedCount:
+          sql<number>`case when ${quizzes_db.accessibility} = 'restricted' then coalesce(${restrictedCounts.submittedCount}, 0) else coalesce(${unrestrictedCounts.submittedCount}, 0) end`.mapWith(
+            Number,
+          ),
+      })
+      .from(quizzes_db)
+      .leftJoin(restrictedCounts, eq(restrictedCounts.quizId, quizzes_db.id))
+      .leftJoin(
+        unrestrictedCounts,
+        eq(unrestrictedCounts.quizId, quizzes_db.id),
+      )
+      .where(expiringFilter)
+      .orderBy(asc(quizzes_db.due_date), asc(quizzes_db.id))
+      .limit(pageSize)
+      .offset((currentPage - 1) * pageSize);
+
+    return {
+      items,
+      total,
+      page: currentPage,
+      pageSize,
+      totalPages,
+    };
   },
 };

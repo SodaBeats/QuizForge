@@ -16,6 +16,7 @@ import quizzesRoute from './routes/user-quiz.route.js';
 import quizAccessRoute from './routes/quizAccess.route.js';
 import quizSubmitRoute from './routes/quizSubmit.route.js';
 import classesRoute from './routes/classes.route.js';
+import dashboardRoute from './routes/dashboards.route.js';
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use('/api/questions', questionRoute); // teacher route: manually made questi
 app.use('/api/documents', documentRoute); // teacher route: getting/deleting documents
 app.use('/api/quizzes', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/classes', classesRoute); // teacher route: for making/updating/getting/deleting classes
+app.use('/api/dashboard', dashboardRoute); // teacher route: for fetching home dashboard data
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
 app.use('/api/student/quiz-submit', quizSubmitRoute); //student route: fetch quiz data and submitting quiz attempt
 
