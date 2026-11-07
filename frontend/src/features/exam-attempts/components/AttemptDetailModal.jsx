@@ -26,63 +26,86 @@ function CloseIcon() {
   );
 }
 
+const TYPE_LABELS = {
+  "multiple-choice": "Multiple choice",
+  "true-false": "True/False",
+  "short-answer": "Short answer",
+};
+
 function QuestionCard({ question }) {
-  const correct = question.options[question.correctIndex];
-  const answered =
-    question.chosenIndex == null
+  const isShort = question.type === "short-answer";
+  const isSkipped = isShort
+    ? question.chosenText == null
+    : question.chosenIndex == null;
+  const correct = isShort
+    ? question.correctText
+    : question.options[question.correctIndex];
+  const answered = isShort
+    ? (question.chosenText ?? "Skipped")
+    : isSkipped
       ? "Skipped"
       : question.options[question.chosenIndex];
+  const answeredTone = isSkipped
+    ? "text-amber-300"
+    : question.score === 1
+      ? "text-green-300"
+      : "text-red-300";
 
   return (
     <article className="rounded-md bg-darkslate border border-muted/20 p-3">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm text-inkondark">{question.text}</p>
-        <span
-          className={`shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded-md tabular-nums ${
-            question.score === 1
-              ? "bg-green-900/50 text-green-300"
-              : "bg-red-900/50 text-red-300"
-          }`}
-        >
-          {question.score}/1
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-muted/15 border border-muted/20 text-muted">
+            {TYPE_LABELS[question.type]}
+          </span>
+          <span
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded-md tabular-nums ${
+              question.score === 1
+                ? "bg-green-900/50 text-green-300"
+                : "bg-red-900/50 text-red-300"
+            }`}
+          >
+            {question.score}/1
+          </span>
+        </div>
       </div>
 
-      <ul className="mt-2 space-y-1">
-        {question.options.map((option, i) => {
-          const isCorrect = i === question.correctIndex;
-          const isChosen = i === question.chosenIndex;
-          const tone = isCorrect
-            ? "text-green-300"
-            : isChosen
-              ? "text-red-300"
-              : "text-muted";
-          return (
-            <li key={option} className={`flex items-center gap-2 text-xs ${tone}`}>
-              <span className="w-4 shrink-0 font-medium">
-                {"ABCD"[i]}.
-              </span>
-              <span>{option}</span>
-              {isCorrect && <span aria-label="correct answer">✓</span>}
-              {isChosen && !isCorrect && (
-                <span aria-label="student answer">✗</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {!isShort && (
+        <ul className="mt-2 space-y-1">
+          {question.options.map((option, i) => {
+            const isCorrect = i === question.correctIndex;
+            const isChosen = i === question.chosenIndex;
+            const tone = isCorrect
+              ? "text-green-300"
+              : isChosen
+                ? "text-red-300"
+                : "text-muted";
+            return (
+              <li
+                key={option}
+                className={`flex items-center gap-2 text-xs ${tone}`}
+              >
+                {question.type === "multiple-choice" && (
+                  <span className="w-4 shrink-0 font-medium">
+                    {"ABCD"[i]}.
+                  </span>
+                )}
+                <span>{option}</span>
+                {isCorrect && <span aria-label="correct answer">✓</span>}
+                {isChosen && !isCorrect && (
+                  <span aria-label="student answer">✗</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <p className="mt-2 text-xs text-muted">
         Correct: <span className="text-green-300">{correct}</span>
         <span className="mx-2">•</span>
-        Answered:{" "}
-        <span
-          className={
-            question.chosenIndex == null ? "text-amber-300" : "text-red-300"
-          }
-        >
-          {answered}
-        </span>
+        Answered: <span className={answeredTone}>{answered}</span>
       </p>
 
       {question.remarks && (
