@@ -31,7 +31,7 @@
 
   --color-input-bg: var(--logininput);
   --color-input-border: var(--logininputborder);
-  --color-input-focus: var(--logininputoutline);
+  --color-input-focus: var(--warmorange);
   --color-input-text: var(--ink);
   --color-badge-bg: var(--specialsurface);
 
@@ -464,7 +464,7 @@ body {
 }
 
 .input-wrapper:focus-within {
-  background: var(--darkslate);
+  background: var(--color-input-bg);
   border-color: var(--color-input-focus);
 }
 

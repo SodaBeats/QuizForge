@@ -48,7 +48,7 @@ export function QuizzesSidebar({
 
   return (
     <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
-      <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg border border-muted/20 lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -57,7 +57,7 @@ export function QuizzesSidebar({
         </div>
 
         {/* Quiz List */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-4 lg:overflow-y-auto">
           <div className="space-y-2">
             {quizzes?.length > 0 ? (
               quizzes.map((quiz) => (

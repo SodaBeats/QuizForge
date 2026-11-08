@@ -8,6 +8,7 @@ export function StudentTimeLimit({
   maxAttempts,
   attemptId,
   questionId,
+  className = "",
 }) {
   // 1. Initialize state — validated get-or-create lives in attemptStorage
   const [startTime] = useState(() =>
@@ -24,7 +25,8 @@ export function StudentTimeLimit({
   //formatting time before display
   const minutes = Math.floor(remainingSeconds / 60);
   const seconds = remainingSeconds % 60;
-  const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const formattedTime =
+    timeLimit > 0 ? `${minutes}:${seconds.toString().padStart(2, "0")}` : "No limit";
 
   // changes "now" state pero second to recalculate remaining time
   useEffect(() => {
@@ -48,7 +50,26 @@ export function StudentTimeLimit({
   }, [timeLimit, onTimeout, remainingSeconds]);
 
   return (
-    <div className="w-72 border-l-2 border-accent/50 bg-specialsurface p-6 hidden lg:flex flex-col gap-8">
+    <>
+      <div className={`flex items-center justify-between gap-3 border-b border-muted/20 bg-specialsurface px-4 py-2 lg:hidden ${className}`}>
+        <span className="text-xs font-semibold text-muted">
+          Attempt {attemptCount} of {maxAttempts}
+        </span>
+        <div className="flex items-center gap-2 rounded-md border border-muted/20 bg-darkslate px-3 py-1">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+            Time
+          </span>
+          <span
+            className={`font-mono text-sm font-bold ${remainingSeconds < 10 && timeLimit > 0 ? "text-red-500 animate-pulse" : "text-inkondark"}`}
+            aria-live="polite"
+          >
+            {formattedTime}
+          </span>
+        </div>
+      </div>
+      <div
+        className={`hidden w-72 flex-col gap-8 border-l-2 border-accent/50 bg-specialsurface p-6 lg:flex ${className}`}
+      >
       {/* Timer Section */}
       <>
         <h2 className="text-inkondark font-bold mb-2">{`Attempt: ${attemptCount} of ${maxAttempts}`}</h2>
@@ -58,7 +79,7 @@ export function StudentTimeLimit({
           Time Remaining
         </p>
         <div
-          className={`text-4xl font-mono font-bold ${remainingSeconds < 10 ? "text-red-500 animate-pulse" : "text-inkondark"}`}
+          className={`text-4xl font-mono font-bold ${remainingSeconds < 10 && timeLimit > 0 ? "text-red-500 animate-pulse" : "text-inkondark"}`}
         >
           {formattedTime}
         </div>
@@ -74,6 +95,7 @@ export function StudentTimeLimit({
           </ul>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 /**
  * QuizForge color tokens — single source of truth.
- * School theme: blue and red. Flat hex colors only: no gradients, no rgb().
+ * School theme: blue and red, with warm orange for the student token page.
+ * Flat hex colors only: no gradients, no rgb().
  *
  * Design rule:
  *   BLUE  = structure (surfaces, borders, depth)
@@ -31,6 +32,10 @@
  *
  * Brand / status:
  *   accent   — school red
+ *   warmorange — warm orange for the student token page
+ *   studentpage / studentcard / studentinput — token-page surfaces
+ *   studentinputborder — token input borders
+ *   spinnergreen — green for shared loading indicators
  *   accept   — green: high scores
  *   warn     — amber: middle scores
  *   bad      — light red for text on dark backgrounds
@@ -48,7 +53,7 @@ export const colors = {
   specialsurface: "#0B1740",
   surface: "#0C1946",
   darkteal: "#12265F",
-  darkslate: "#F4A340",
+  darkslate: "#1B3478",
   mutedteal: "#2A4AA0",
   line: "#2D4688",
   shadow: "#02061A",
@@ -62,6 +67,12 @@ export const colors = {
   logininputoutline: "#1B3478",
   white: "#FFFFFF",
   accent: "#C8102E",
+  warmorange: "#FF6A00",
+  studentpage: "#111014",
+  studentcard: "#17161B",
+  studentinput: "#242328",
+  studentinputborder: "#39363E",
+  spinnergreen: "#22C55E",
   accept: "#22C55E",
   warn: "#F59E0B",
   bad: "#FF6B81",

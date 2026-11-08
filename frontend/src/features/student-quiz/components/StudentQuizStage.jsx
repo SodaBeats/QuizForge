@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { StudentSidebar } from "./StudentSidebar";
 import { StudentQuizWindow } from "./StudentQuizWindow";
 import { StudentTimeLimit } from "./StudentTimeLimit";
@@ -18,14 +20,34 @@ export function StudentQuizStage({
   maxAttempts,
   attemptId,
 }) {
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const unansweredCount =
+    (questions?.length ?? 0) - (answeredQuestions?.size ?? 0);
+
+  const handleRequestSubmit = () => {
+    setShowSubmitConfirm(true);
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
+    <div className="flex flex-1 flex-col overflow-visible bg-specialsurface lg:min-h-0 lg:flex-row lg:overflow-hidden">
+      <StudentTimeLimit
+        className="lg:order-3"
+        key={selectedQuestionIndex}
+        timeLimit={selectedQuestion?.timeLimit ?? null}
+        onTimeout={onTimeout}
+        attemptCount={attemptCount}
+        maxAttempts={maxAttempts}
+        attemptId={attemptId}
+        questionId={selectedQuestion?.id}
+      />
+
       <StudentSidebar
         questions={questions}
         onQuestionSelect={onQuestionSelect}
         currentQuestionIndex={selectedQuestionIndex}
         answeredQuestions={answeredQuestions}
-        onQuizSubmit={onQuizSubmit}
+        onRequestSubmit={handleRequestSubmit}
+        className="lg:order-1"
       />
 
       <StudentQuizWindow
@@ -36,16 +58,19 @@ export function StudentQuizStage({
         onNext={onNext}
         answers={answers}
         onAnswerChange={onAnswerChange}
+        onSubmitQuiz={handleRequestSubmit}
+        className="lg:order-2"
       />
-
-      <StudentTimeLimit
-        key={selectedQuestionIndex}
-        timeLimit={selectedQuestion?.timeLimit ?? null}
-        onTimeout={onTimeout}
-        attemptCount={attemptCount}
-        maxAttempts={maxAttempts}
-        attemptId={attemptId}
-        questionId={selectedQuestion?.id}
+      <ConfirmDialog
+        open={showSubmitConfirm}
+        title="Submit quiz?"
+        message={`You have ${unansweredCount} unanswered question(s). Submit anyway?`}
+        confirmLabel="Submit anyway"
+        onConfirm={() => {
+          setShowSubmitConfirm(false);
+          onQuizSubmit();
+        }}
+        onCancel={() => setShowSubmitConfirm(false)}
       />
     </div>
   );

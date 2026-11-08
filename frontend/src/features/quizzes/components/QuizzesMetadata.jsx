@@ -31,7 +31,7 @@ export function QuizzesMetadata({
 
   return (
     <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
-      <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
+      <div className="flex-1 flex flex-col rounded-lg bg-surface border border-accent lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <input
@@ -56,7 +56,7 @@ export function QuizzesMetadata({
         </div>
 
         {/* Metadata Content */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 space-y-4 lg:overflow-y-auto">
           {/* Description */}
           <div>
             <label className={labelClass}>Description</label>
