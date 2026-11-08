@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
 import { QuizMakerPage } from "../features/quizzes/pages/QuizMakerPage";
+import { DashboardPage } from "../features/dashboard/pages/DashboardPage";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { QuizzesPage } from "../features/quizzes/pages/QuizzesPage";
 import { StudentTokenPage } from "../features/student-quiz/pages/StudentTokenPage";
@@ -31,8 +32,20 @@ export function AppRoutes() {
       <Route element={<Outlet />} errorElement={<RouteError />}>
         <Route path="/" element={<RootRedirector />} />
 
+        {/* Teacher home is the dashboard. The exam workstation (the former
+            /teacher) moved to /teacher/exam-workstation — ForgeQuizAction's
+            pathname checks and QuizzesSideBar's forge-modal navigations key
+            off that path. */}
         <Route
           path="/teacher"
+          element={
+            <RequireRole role="teacher">
+              <DashboardPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/teacher/exam-workstation"
           element={
             <RequireRole role="teacher">
               <QuizMakerPage />
