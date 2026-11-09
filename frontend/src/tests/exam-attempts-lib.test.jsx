@@ -1,12 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
-  getExam,
-  getAttempts,
   groupAttemptsByStudent,
   sortAttemptsNewestFirst,
   filterByClass,
   filterBySearch,
 } from "../features/exam-attempts/lib/attempts.js";
+import {
+  MOCK_ATTEMPTS,
+  MOCK_STUDENTS,
+} from "../features/exam-attempts/lib/mockData.js";
 
 // Small synthetic fixtures for ordering edge cases; the static mock fixtures
 // cover the realistic paths (both exams' volumes and class membership).
@@ -21,37 +23,6 @@ const ATTEMPTS = [
   { id: 12, studentId: 1, rawScore: 7, maxPossibleScore: 10, submittedAt: "2026-11-03T10:00:00.000Z", status: "completed" },
   { id: 13, studentId: 999, rawScore: 5, maxPossibleScore: 10, submittedAt: "2026-11-04T10:00:00.000Z", status: "completed" },
 ];
-
-describe("getExam", () => {
-  it("returns the restricted mock exam for quizId 1", () => {
-    const exam = getExam("1");
-    expect(exam.title).toBe("Midterm: Algebra II");
-    expect(exam.accessibility).toBe("restricted");
-  });
-
-  it("returns the open mock exam for quizId 2", () => {
-    const exam = getExam("2");
-    expect(exam.accessibility).toBe("anyone");
-    expect(exam.allowedClasses).toEqual([]);
-  });
-
-  it("returns undefined for unknown or missing ids (→ not-found state)", () => {
-    expect(getExam("999")).toBeUndefined();
-    expect(getExam(undefined)).toBeUndefined();
-  });
-});
-
-describe("getAttempts", () => {
-  it("returns every completed attempt for a known exam", () => {
-    expect(getAttempts("1")).toHaveLength(8);
-    expect(getAttempts("2")).toHaveLength(14);
-    expect(getAttempts("1").every((a) => a.status === "completed")).toBe(true);
-  });
-
-  it("returns an empty list for unknown ids", () => {
-    expect(getAttempts("999")).toEqual([]);
-  });
-});
 
 describe("sortAttemptsNewestFirst", () => {
   it("orders by submittedAt descending without mutating the input", () => {
@@ -76,7 +47,7 @@ describe("groupAttemptsByStudent", () => {
   });
 
   it("splits the mock fixtures into single- and multi-attempt students", () => {
-    const groups = groupAttemptsByStudent(getAttempts("2"));
+    const groups = groupAttemptsByStudent(MOCK_ATTEMPTS["2"], MOCK_STUDENTS);
     expect(groups).toHaveLength(10);
     expect(groups.filter((g) => g.attempts.length === 1)).toHaveLength(6);
     expect(groups.filter((g) => g.attempts.length > 1)).toHaveLength(4);
@@ -84,7 +55,7 @@ describe("groupAttemptsByStudent", () => {
 });
 
 describe("filterByClass", () => {
-  const groups = groupAttemptsByStudent(getAttempts("1"));
+  const groups = groupAttemptsByStudent(MOCK_ATTEMPTS["1"], MOCK_STUDENTS);
 
   it("keeps only the students of the requested class, in A→Z order", () => {
     const names = filterByClass(groups, 1).map((g) => g.student.name);
@@ -110,7 +81,7 @@ describe("filterByClass", () => {
 });
 
 describe("filterBySearch", () => {
-  const groups = groupAttemptsByStudent(getAttempts("2"));
+  const groups = groupAttemptsByStudent(MOCK_ATTEMPTS["2"], MOCK_STUDENTS);
 
   it("matches student names case-insensitively", () => {
     expect(filterBySearch(groups, "OLIVIA").map((g) => g.student.name)).toEqual([

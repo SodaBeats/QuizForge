@@ -1,11 +1,27 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthContext } from "../app/providers/AuthProvider";
 import { ExamAttemptsPage } from "../features/exam-attempts/pages/ExamAttemptsPage";
-import { getExam, getAttempts } from "../features/exam-attempts/lib/attempts.js";
+import { examAttemptsApi } from "../features/exam-attempts/api/examAttempts.api.js";
+import { ApiError } from "../lib/api.js";
+import {
+  MOCK_ATTEMPTS,
+  MOCK_EXAMS,
+  MOCK_STUDENTS,
+} from "../features/exam-attempts/lib/mockData.js";
 import { buildAttemptDetail } from "../features/exam-attempts/lib/questionDetail.js";
 import { formatSubmittedAt } from "../features/exam-attempts/lib/format.js";
+
+// The page's list/detail queries go through the API module — mock it so the
+// modal tests drive the real list UI against the static fixtures.
+vi.mock("../features/exam-attempts/api/examAttempts.api.js", () => ({
+  examAttemptsApi: {
+    examDetails: vi.fn(),
+    attemptList: vi.fn(),
+  },
+}));
 
 /* ------------------------------------------------------------------ *
    buildAttemptDetail — the generator is pure and deterministic, so    *
@@ -21,9 +37,9 @@ const EXPECTED_TYPE_COUNTS = {
 };
 
 const CASES = ["1", "2"].flatMap((examId) =>
-  getAttempts(examId).map((attempt) => ({
+  MOCK_ATTEMPTS[examId].map((attempt) => ({
     examId,
-    exam: getExam(examId),
+    exam: MOCK_EXAMS[examId],
     attempt,
   })),
 );
@@ -51,8 +67,8 @@ describe("buildAttemptDetail", () => {
 
   it("uses the fixed type pattern per exam, identical across every attempt", () => {
     for (const examId of ["1", "2"]) {
-      const exam = getExam(examId);
-      const typeLists = getAttempts(examId).map((attempt) =>
+      const exam = MOCK_EXAMS[examId];
+      const typeLists = MOCK_ATTEMPTS[examId].map((attempt) =>
         buildAttemptDetail(attempt, exam).map((q) => q.type),
       );
       // Same question index → same type in every attempt of the exam.
@@ -162,30 +178,57 @@ describe("buildAttemptDetail", () => {
    inside a multi-attempt box carry only score + date.                  *
  * ------------------------------------------------------------------ */
 
-const BRIAN_ATTEMPT = getAttempts("1").find((a) => a.id === 1003);
-const ALICE_ATTEMPT = getAttempts("1").find((a) => a.id === 1002); // 22/25, in her box
+const BRIAN_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1003);
+const ALICE_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1002); // 22/25, in her box
 
-// The page reads quizId from route params, so render it under a real Route.
+beforeEach(() => {
+  examAttemptsApi.examDetails.mockImplementation(async (quizId) => {
+    const exam = MOCK_EXAMS[String(quizId)];
+    if (!exam) throw new ApiError("Quiz not found", { status: 404 });
+    return exam;
+  });
+  examAttemptsApi.attemptList.mockImplementation(async (quizId) => {
+    const exam = MOCK_EXAMS[String(quizId)];
+    if (!exam) throw new ApiError("Quiz not found", { status: 404 });
+    const attempts = MOCK_ATTEMPTS[String(quizId)] ?? [];
+    const withAttempts = new Set(attempts.map((attempt) => attempt.studentId));
+    return {
+      attempts,
+      students: MOCK_STUDENTS.filter((student) => withAttempts.has(student.id)),
+    };
+  });
+});
+
+// The page reads quizId from route params, so render it under a real Route
+// plus a QueryClient (queries must not retry in tests).
 const renderAt = (quizId) =>
   render(
-    <AuthContext.Provider
-      value={{ token: "token", userInfo: { role: "teacher" }, logout: vi.fn() }}
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
     >
-      <MemoryRouter initialEntries={[`/teacher/quizzes/${quizId}/attempts`]}>
-        <Routes>
-          <Route
-            path="/teacher/quizzes/:quizId/attempts"
-            element={<ExamAttemptsPage />}
-          />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>,
+      <AuthContext.Provider
+        value={{ token: "token", userInfo: { role: "teacher" }, logout: vi.fn() }}
+      >
+        <MemoryRouter initialEntries={[`/teacher/quizzes/${quizId}/attempts`]}>
+          <Routes>
+            <Route
+              path="/teacher/quizzes/:quizId/attempts"
+              element={<ExamAttemptsPage />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </QueryClientProvider>,
   );
 
 describe("AttemptDetailModal", () => {
-  it("opens from a single-attempt row with the header and full breakdown", () => {
+  it("opens from a single-attempt row with the header and full breakdown", async () => {
     renderAt("1");
-    fireEvent.click(screen.getByRole("button", { name: /Brian Okafor/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
 
     const dialog = screen.getByRole("dialog");
     expect(
@@ -204,9 +247,11 @@ describe("AttemptDetailModal", () => {
     expect(within(dialog).getAllByText("0/1")).toHaveLength(10);
   });
 
-  it("labels every question type and lists options only where they exist", () => {
+  it("labels every question type and lists options only where they exist", async () => {
     renderAt("1");
-    fireEvent.click(screen.getByRole("button", { name: /Brian Okafor/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
     const dialog = screen.getByRole("dialog");
 
     expect(within(dialog).getAllByText("Multiple choice")).toHaveLength(15);
@@ -226,12 +271,14 @@ describe("AttemptDetailModal", () => {
     ).toBeGreaterThanOrEqual(5);
   });
 
-  it("shows a remarks line only for questions that have remarks", () => {
+  it("shows a remarks line only for questions that have remarks", async () => {
     renderAt("1");
-    fireEvent.click(screen.getByRole("button", { name: /Brian Okafor/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
     const dialog = screen.getByRole("dialog");
 
-    const remarked = buildAttemptDetail(BRIAN_ATTEMPT, getExam("1")).filter(
+    const remarked = buildAttemptDetail(BRIAN_ATTEMPT, MOCK_EXAMS["1"]).filter(
       (q) => q.remarks,
     );
     expect(remarked.length).toBeGreaterThan(0); // fixture check: attempt 1003 has 7
@@ -243,11 +290,11 @@ describe("AttemptDetailModal", () => {
     }
   });
 
-  it("opens the specific attempt from a row inside a multi-attempt box", () => {
+  it("opens the specific attempt from a row inside a multi-attempt box", async () => {
     renderAt("1");
     // Box rows carry score + date only; the student name header is inert.
     fireEvent.click(
-      screen.getByRole("button", {
+      await screen.findByRole("button", {
         name: new RegExp(`${ALICE_ATTEMPT.rawScore}/${ALICE_ATTEMPT.maxPossibleScore}`),
       }),
     );
@@ -263,9 +310,9 @@ describe("AttemptDetailModal", () => {
     expect(within(dialog).queryByText(/18\/25/)).toBeNull();
   });
 
-  it("dismisses from the close button and from Escape, keeping the list intact", () => {
+  it("dismisses from the close button and from Escape, keeping the list intact", async () => {
     renderAt("1");
-    const row = screen.getByRole("button", { name: /Brian Okafor/ });
+    const row = await screen.findByRole("button", { name: /Brian Okafor/ });
 
     fireEvent.click(row);
     expect(screen.getByRole("dialog")).toBeInTheDocument();

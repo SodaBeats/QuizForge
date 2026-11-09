@@ -78,8 +78,10 @@ export function AppRoutes() {
             </RequireRole>
           }
         />
-        {/* Exam attempts for one quiz (mock data). Ranked above the bare
-            :quizId route by specificity regardless of order. */}
+        {/* Exam attempts for one quiz — exam + list come from the API (the
+            detail modal still runs off the mock generator until its phase).
+            Ranked above the bare :quizId route by specificity regardless of
+            order. */}
         <Route
           path="/teacher/quizzes/:quizId/attempts"
           element={

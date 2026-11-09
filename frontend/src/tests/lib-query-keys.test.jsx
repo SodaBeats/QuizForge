@@ -28,6 +28,11 @@ describe("lib/queryKeys — invalidation prefixes", () => {
     expect(startsWith(docKeys.content(3), docKeys.all)).toBe(true);
     expect(startsWith(docKeys.list(1), docKeys.all)).toBe(true);
     expect(startsWith(attemptKeys.quiz("TOKEN"), attemptKeys.all)).toBe(true);
+    // Exam-attempts page: detail + list are distinct caches sharing one
+    // invalidation prefix (list nests under detail).
+    expect(startsWith(attemptKeys.examDetail(7), attemptKeys.all)).toBe(true);
+    expect(startsWith(attemptKeys.examList(7), attemptKeys.all)).toBe(true);
+    expect(attemptKeys.examList(7)).not.toEqual(attemptKeys.examDetail(7));
   });
 
   it("keeps dashboard stats and both paginated lists under dashboardKeys.all", () => {

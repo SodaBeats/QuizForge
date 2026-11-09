@@ -1,9 +1,12 @@
 /* Panel 2 — student attempts: header (counts + name search) over a
    scrollable list of grouped rows. Single-attempt students render one
    compact row; multi-attempt students render a boxed group (newest first).
-   Tab filtering layers on top in Phase 3. */
+   `loading`/`error` (non-404) come from the page's query state; a 404
+   renders the not-found body via `found = false`. */
 
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { Spinner } from "../../../components/ui/Spinner";
+import { ErrorState } from "../../../components/ui/ErrorState";
 import { ClassTabs } from "./ClassTabs";
 import { StudentAttemptRow } from "./StudentAttemptRow";
 import { StudentAttemptsBox } from "./StudentAttemptsBox";
@@ -13,6 +16,8 @@ const searchInputClass =
 
 export function AttemptsPanel({
   found,
+  loading = false,
+  error = null,
   groups,
   query,
   onQueryChange,
@@ -25,6 +30,32 @@ export function AttemptsPanel({
     (total, group) => total + group.attempts.length,
     0,
   );
+
+  if (loading) {
+    return (
+      <div className="flex-1 min-w-0 flex flex-col font-body p-3">
+        <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+          <PanelHeader />
+          <div className="flex-1 flex items-center justify-center p-6">
+            <Spinner />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 min-w-0 flex flex-col font-body p-3">
+        <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+          <PanelHeader />
+          <div className="flex-1 flex items-center justify-center p-6 text-center">
+            <ErrorState message={error} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!found) {
     return (

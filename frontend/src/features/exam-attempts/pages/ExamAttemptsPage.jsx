@@ -1,6 +1,9 @@
-/* Exam Attempts page — /teacher/quizzes/:quizId/attempts (mock data only).
+/* Exam Attempts page — /teacher/quizzes/:quizId/attempts.
    Two panels: read-only exam details (left) and the student attempts list
-   (right). Mobile switches between them via the AppShell panel tabs. */
+   (right), both fetched on load. Page-level query state (loading / error /
+   not-found) is passed down to both panels; the detail modal still runs off
+   the mock generator until its phase. Mobile switches between the panels via
+   the AppShell panel tabs. */
 
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -8,11 +11,10 @@ import { AppShell } from "../../../components/layout/AppShell";
 import { ExamDetailsPanel } from "../components/ExamDetailsPanel";
 import { AttemptsPanel } from "../components/AttemptsPanel";
 import { AttemptDetailModal } from "../components/AttemptDetailModal";
+import { useExamAttempts, useExamDetails } from "../api/queries.js";
 import {
   filterByClass,
   filterBySearch,
-  getAttempts,
-  getExam,
   groupAttemptsByStudent,
 } from "../lib/attempts.js";
 
@@ -28,7 +30,27 @@ export function ExamAttemptsPage() {
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [selectedAttempt, setSelectedAttempt] = useState(null); // { student, attempt } → detail modal
 
-  const exam = getExam(quizId);
+  const examQuery = useExamDetails(quizId);
+  const listQuery = useExamAttempts(quizId);
+
+  // Both routes run the same ownership check, so a 404 from either query
+  // means the quiz doesn't exist (or isn't this teacher's) → not-found.
+  // Precedence: not-found > loading > error (all three settle together).
+  const notFound =
+    examQuery.error?.status === 404 || listQuery.error?.status === 404;
+  const loading =
+    !notFound && (examQuery.isPending || listQuery.isPending);
+  // ApiError.message is already normalized by apiRequest (getApiErrorMessage
+  // at throw time), so it's passed straight to ErrorState.
+  const failure = [examQuery, listQuery].find(
+    (q) => q.isError && q.error?.status !== 404,
+  );
+  const error =
+    !notFound && !loading && failure
+      ? failure.error?.message || "Something went wrong. Please try again."
+      : null;
+
+  const exam = notFound ? undefined : examQuery.data;
 
   // Restricted exams only get class tabs; the active tab falls back to the
   // first class whenever the selection doesn't belong to this exam — that
@@ -40,12 +62,17 @@ export function ExamAttemptsPage() {
     classes[0]?.id ??
     null;
 
-  // Group once per quizId, then layer the class tab and the name search on
-  // top so counts and list always agree.
+  // Group once per list payload, then layer the class tab and the name
+  // search on top so counts and list always agree.
   const groups = useMemo(
     () =>
-      exam ? groupAttemptsByStudent(getAttempts(quizId)) : [],
-    [exam, quizId],
+      listQuery.data
+        ? groupAttemptsByStudent(
+            listQuery.data.attempts,
+            listQuery.data.students,
+          )
+        : [],
+    [listQuery.data],
   );
   const classGroups = useMemo(
     () => (activeClassId == null ? groups : filterByClass(groups, activeClassId)),
@@ -66,14 +93,18 @@ export function ExamAttemptsPage() {
           {
             key: "details",
             visible: mobileTab === "details",
-            children: <ExamDetailsPanel exam={exam} />,
+            children: (
+              <ExamDetailsPanel exam={exam} loading={loading} error={error} />
+            ),
           },
           {
             key: "attempts",
             visible: mobileTab === "attempts",
             children: (
               <AttemptsPanel
-                found={Boolean(exam)}
+                found={!notFound}
+                loading={loading}
+                error={error}
                 groups={filteredGroups}
                 query={query}
                 onQueryChange={setQuery}

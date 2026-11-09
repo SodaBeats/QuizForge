@@ -1,5 +1,10 @@
 /* Panel 1 — read-only exam metadata for the Exam Attempts page.
-   Fields mirror QuizzesMetadata but with no inputs or actions. */
+   Fields mirror QuizzesMetadata but with no inputs or actions.
+   `loading`/`error` (non-404) come from the page's query state; a 404
+   renders the not-found body below via `exam === undefined`. */
+
+import { Spinner } from "../../../components/ui/Spinner";
+import { ErrorState } from "../../../components/ui/ErrorState";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
   month: "short",
@@ -40,7 +45,27 @@ function StatusBadge({ status }) {
   );
 }
 
-export function ExamDetailsPanel({ exam }) {
+export function ExamDetailsPanel({ exam, loading = false, error = null }) {
+  if (loading) {
+    return (
+      <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+        <div className="flex-1 rounded-lg bg-surface border border-muted/20 flex items-center justify-center p-6">
+          <Spinner />
+        </div>
+      </aside>
+    );
+  }
+
+  if (error) {
+    return (
+      <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+        <div className="flex-1 rounded-lg bg-surface border border-muted/20 flex items-center justify-center p-6 text-center">
+          <ErrorState message={error} />
+        </div>
+      </aside>
+    );
+  }
+
   if (!exam) {
     return (
       <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">

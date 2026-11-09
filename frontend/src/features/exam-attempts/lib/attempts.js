@@ -1,17 +1,7 @@
 /* Pure helpers for the Exam Attempts page — the high-risk logic lives here
    so it stays testable without rendering (Phase 4). */
 
-import { MOCK_ATTEMPTS, MOCK_EXAMS, MOCK_STUDENTS } from "./mockData.js";
-
-/** Mock exam for a URL quizId, or undefined for unknown ids (→ not-found). */
-export function getExam(quizId) {
-  return MOCK_EXAMS[String(quizId)];
-}
-
-/** Completed attempts for a URL quizId; unknown ids get an empty list. */
-export function getAttempts(quizId) {
-  return MOCK_ATTEMPTS[String(quizId)] ?? [];
-}
+import { MOCK_STUDENTS } from "./mockData.js";
 
 /** Attempts for one student, newest submission first. */
 export function sortAttemptsNewestFirst(attempts) {
