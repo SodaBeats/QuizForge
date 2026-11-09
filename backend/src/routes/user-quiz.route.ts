@@ -144,6 +144,42 @@ router.get(
   },
 );
 
+// ROUTER FOR EXAM DETAILS (attempts page, left panel) ------------------------------------
+router.get(
+  '/:quizId',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    if (Number.isNaN(quizId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const exam = await UserQuizzesRepository.getQuizDetails(quizId);
+      if (!exam) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      return res.status(200).json({ success: true, exam });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 // ROUTER TO CHECK IF QUIZ HAS ATTEMPTS ----------------------------------------------
 router.get(
   '/:quizId/attempts',
@@ -175,6 +211,41 @@ router.get(
       return res.status(200).json({ success: true });
     } catch (error) {
       next(error);
+    }
+  },
+);
+
+// ROUTER FOR THE ATTEMPTS LIST (attempts page, right panel) ------------------------------
+// Empty arrays are a valid 200 ("no submissions yet"), unlike the existence
+// check above. Registered before GET /:quizId/attempts/:attemptId so "list"
+// never matches the :attemptId param.
+router.get(
+  '/:quizId/attempts/list',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    if (Number.isNaN(quizId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const { attempts, students } =
+        await QuizAttemptsRepo.getCompletedAttemptsWithStudents(quizId);
+
+      return res.status(200).json({ success: true, attempts, students });
+    } catch (error) {
+      return next(error);
     }
   },
 );

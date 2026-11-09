@@ -204,6 +204,43 @@ export const UserQuizzesRepository = {
     return result ?? null;
   },
 
+  //get one quiz with question count and allowed class names (exam attempts page)
+  async getQuizDetails(quizId: number) {
+    if (!quizId || Number.isNaN(quizId)) return null;
+
+    const [result] = await db
+      .select({
+        id: quizzes_db.id,
+        title: quizzes_db.quiz_title,
+        description: quizzes_db.quiz_description,
+        shareToken: quizzes_db.share_token,
+        maxAttempts: quizzes_db.max_attempts,
+        dueDate: quizzes_db.due_date,
+        createdAt: quizzes_db.created_at,
+        status: quizzes_db.status,
+        accessibility: quizzes_db.accessibility,
+        questionCount: countDistinct(questions_db.id),
+        // Aggregate allowed classes into [{ id, name }] (empty array when open)
+        allowedClasses: sql<{ id: number; name: string }[]>`
+        COALESCE(
+          json_agg(DISTINCT jsonb_build_object(
+            'id', ${classes_db.id}, 'name', ${classes_db.class_name}
+          ))
+          FILTER (WHERE ${quiz_access_db.class_id} IS NOT NULL),
+          '[]'::json
+        )
+      `.as('allowed_classes'),
+      })
+      .from(quizzes_db)
+      .leftJoin(questions_db, eq(quizzes_db.id, questions_db.quiz_id))
+      .leftJoin(quiz_access_db, eq(quizzes_db.id, quiz_access_db.quiz_id))
+      .leftJoin(classes_db, eq(quiz_access_db.class_id, classes_db.id))
+      .where(eq(quizzes_db.id, quizId))
+      .groupBy(quizzes_db.id);
+
+    return result ?? null;
+  },
+
   async countTotalQuizzes(userId: number) {
     const [result] = await db
       .select({ totalQuizzes: count(quizzes_db.id) })
