@@ -250,6 +250,68 @@ router.get(
   },
 );
 
+// ROUTER FOR ONE ATTEMPT'S DETAIL (attempts page modal) --------------------------------
+// Returns the per-question answer rows only — the modal header (score/date/
+// student) reads those off the already-fetched list row. Registered after
+// /attempts/list so "list" is never swallowed by :attemptId.
+router.get(
+  '/:quizId/attempts/:attemptId',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const attemptId = Number(req.params.attemptId);
+    if (Number.isNaN(quizId) || Number.isNaN(attemptId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz or Attempt ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const attempt = await QuizAttemptsRepo.getAttemptForQuiz(
+        attemptId,
+        quizId,
+      );
+      if (!attempt) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Attempt not found' });
+      }
+
+      const answerRows =
+        await AttemptAnswersRepo.getAttemptAnswersWithQuestions(attemptId);
+
+      const questions = answerRows.map((row) => ({
+        questionId: row.questionId,
+        questionText: row.questionText,
+        questionType: row.questionType,
+        options: [row.optionA, row.optionB, row.optionC, row.optionD].filter(
+          (option): option is string => option != null,
+        ),
+        chosenAnswer: row.chosenAnswer,
+        correctAnswer: row.correctAnswer,
+        isCorrect: row.isCorrect,
+        points: row.points ?? 0,
+        // short-answer is graded 0–10 by quizSubmit; everything else is 1 pt
+        maxPoints: row.questionType === 'short-answer' ? 10 : 1,
+        remarks: row.remarks,
+      }));
+
+      return res.status(200).json({ success: true, questions });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 // ROUTER TO GET METRICS FOR DASHBOARD ----------------------------------------------
 router.get(
   '/:quizId/metrics',

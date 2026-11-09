@@ -76,6 +76,26 @@ export const QuizAttemptsRepo = {
     return attempt ?? null;
   },
 
+  //get one attempt scoped to its quiz (attempts page detail)
+  async getAttemptForQuiz(attemptId: number, quizId: number) {
+    const [attempt] = await db
+      .select({
+        id: quiz_attempts_db.id,
+        quizId: quiz_attempts_db.quiz_id,
+        status: quiz_attempts_db.status,
+      })
+      .from(quiz_attempts_db)
+      .where(
+        and(
+          eq(quiz_attempts_db.id, attemptId),
+          eq(quiz_attempts_db.quiz_id, quizId),
+        ),
+      )
+      .limit(1);
+
+    return attempt ?? null;
+  },
+
   //get first finished attempt
   async getFirstFinishedAttempt(quizId: number) {
     const [result] = await db
