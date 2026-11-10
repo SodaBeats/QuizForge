@@ -21,6 +21,9 @@
   --color-board-dark: var(--specialsurface);
   --color-board-darker: var(--ink);
 
+  --color-board-brown: var(--clipboard);
+  --color-board-brown-edge: var(--clipboardedge);
+
   --color-clip-metallic: var(--mutedonlight);
   --color-backdrop-circle: var(--surface);
 
@@ -225,7 +228,8 @@ body {
 
    The stage ALWAYS keeps the image ratio (1852:849) and covers the screen,
    so the percentages used by .clipboard-card always land on the clipboard.
-   Below 860px wide, section 24 swaps to a plain card (no background art).
+   Below 860px wide, section 24 swaps to a CSS-drawn clipboard (no
+   background art).
    ========================================================================== */
 
 .page-container.leaning-mode .floating-decor,
@@ -807,7 +811,7 @@ body {
 /* ==========================================================================
    20. LEANING MODE SCALING
    (Applies while the illustrated background is active — see section 24
-   for the breakpoint where this hands off to a plain card instead.)
+   for the breakpoint where this hands off to the mobile clipboard instead.)
    ========================================================================== */
 
 .page-container.leaning-mode .card-header {
@@ -1130,13 +1134,14 @@ body {
 }
 
 /* ==========================================================================
-   24. LEANING MODE — MOBILE / TABLET FALLBACK
+   24. LEANING MODE — MOBILE / TABLET (CSS CLIPBOARD)
    --------------------------------------------------------------------------
    Below ~860px wide there isn't enough room to fit the form inside the
-   illustrated clipboard, so we drop the background art and render a plain,
-   normally-flowing card. Every rule here has the same specificity as its
-   section 7 / section 20 counterpart, so being declared later is what makes
-   it win — keep this as the last section in the file.
+   illustrated clipboard image, so we drop the background art and draw a
+   clipboard in pure CSS: dark board, metal clip, paper sheet with the form.
+   Every rule here has the same specificity as its section 7 / section 20
+   counterpart, so being declared later is what makes it win — keep this as
+   the last section in the file.
    ========================================================================== */
 
 @media (max-width: 860px) {
@@ -1161,26 +1166,71 @@ body {
     container-type: normal;
   }
 
+  /* ---------- CLIPBOARD (mobile) ---------- */
+
   .page-container.leaning-mode .clipboard-card {
     position: static;
     width: 100%;
     height: auto;
     left: auto;
     top: auto;
+    padding-top: 18px; /* room for the clip sticking out on top */
+    filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.25));
   }
 
   .page-container.leaning-mode .clipboard-board {
-    background: var(--color-paper-bg);
-    border-radius: var(--radius-card-inner);
-    padding: 6px;
+    position: relative;
+    background: var(--color-board-brown);
+    border: 3px solid var(--color-board-brown-edge);
+    border-radius: 16px;
+    padding: 26px 12px 14px;
     width: 100%;
     height: auto;
   }
 
+  /* the metal clip (overrides the display:none !important from section 7) */
+  .page-container.leaning-mode .clipboard-clip {
+    display: block !important;
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 32px;
+    background: var(--color-clip-metallic);
+    border: 3px solid var(--color-board-brown-edge);
+    border-radius: 8px;
+    z-index: 3;
+  }
+
+  /* little hole in the clip */
+  .page-container.leaning-mode .clipboard-clip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+    background: var(--color-board-brown-edge);
+    border-radius: 50%;
+  }
+
+  /* the paper */
   .page-container.leaning-mode .paper-sheet {
+    background: var(--color-paper-bg);
+    border: none;
+    border-radius: 6px;
     width: 100%;
     height: auto;
-    padding: 30px 22px;
+    padding: 36px 22px 28px;
+    box-shadow: inset 0 0 0 1px var(--color-input-border);
+  }
+
+  /* beat the login/signup padding-top rules from section 7 */
+  .page-container.leaning-mode.login-mode .paper-sheet,
+  .page-container.leaning-mode.signup-mode .paper-sheet {
+    padding-top: 36px;
   }
 
   /* Undo the container-query micro-scaling from section 20 and go back
@@ -1312,8 +1362,14 @@ body {
     max-width: 100%;
   }
 
-  .page-container.leaning-mode .paper-sheet {
-    padding: 24px 16px;
+  .page-container.leaning-mode .clipboard-board {
+    padding: 24px 8px 10px;
+  }
+
+  .page-container.leaning-mode .paper-sheet,
+  .page-container.leaning-mode.login-mode .paper-sheet,
+  .page-container.leaning-mode.signup-mode .paper-sheet {
+    padding: 34px 16px 22px;
   }
 
   .page-container.leaning-mode .signup-name-row {

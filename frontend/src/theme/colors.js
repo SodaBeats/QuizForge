@@ -80,6 +80,8 @@ export const colors = {
   modalback: "#0B1740",
   scrolltrack: "#0B1740",
   scrollthumb: "#C8102E",
+  clipboard: "#8b5a2b",
+  clipboardedge: " #5c3a1a",
   scrollthumbhover: "#E11D48",
 };
 

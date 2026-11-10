@@ -64,8 +64,12 @@ export function StudentQuizStage({
       <ConfirmDialog
         open={showSubmitConfirm}
         title="Submit quiz?"
-        message={`You have ${unansweredCount} unanswered question(s). Submit anyway?`}
-        confirmLabel="Submit anyway"
+        message={
+          unansweredCount === 0
+            ? "Submit attempt?"
+            : `You have ${unansweredCount} unanswered question(s). Submit anyway?`
+        }
+        confirmLabel={unansweredCount === 0 ? "Submit quiz" : "Submit anyway"}
         onConfirm={() => {
           setShowSubmitConfirm(false);
           onQuizSubmit();
