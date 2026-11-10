@@ -14,9 +14,9 @@ import {
 import { mapAnswerRows } from "../features/exam-attempts/lib/attemptQuestions.js";
 import { formatSubmittedAt } from "../features/exam-attempts/lib/format.js";
 
-// The page's exam/list queries and the modal's detail query all go through
-// the API module — mock it so the modal tests drive the real list UI and
-// the real fetch-on-open flow against inline API-shaped fixture rows.
+// The page's exam/list queries and the detail view's query all go through
+// the API module — mock it so the detail-view tests drive the real list UI
+// and the real fetch-on-select flow against inline API-shaped fixture rows.
 vi.mock("../features/exam-attempts/api/examAttempts.api.js", () => ({
   examAttemptsApi: {
     examDetails: vi.fn(),
@@ -27,7 +27,7 @@ vi.mock("../features/exam-attempts/api/examAttempts.api.js", () => ({
 
 /* ------------------------------------------------------------------ *
    mapAnswerRows — pure, so every mapping invariant that could        *
-   silently corrupt the modal is asserted here directly.              *
+   silently corrupt the detail view is asserted here directly.          *
  * ------------------------------------------------------------------ */
 
 const MCQ_ROW = {
@@ -105,7 +105,7 @@ describe("mapAnswerRows", () => {
   it("maps true-false answers to 0/1 with nulls kept skipped", () => {
     const [trueRow] = mapAnswerRows([TF_ROW]);
     expect(trueRow).toMatchObject({
-      options: null, // the modal synthesizes ["True", "False"]
+      options: null, // the view synthesizes ["True", "False"]
       correctIndex: 0,
       chosenIndex: 0,
       correctText: null,
@@ -152,9 +152,11 @@ describe("mapAnswerRows", () => {
 });
 
 /* ------------------------------------------------------------------ *
-   AttemptDetailModal — open/close/targeting through the real page.    *
-   Rows are buttons: single-attempt rows carry the student name, rows  *
-   inside a multi-attempt box carry only score + date.                  *
+   AttemptDetailView — inline in the attempts panel: a list-row click *
+   swaps the panel to the detail (fetch-on-select) and the header     *
+   arrow returns to the list. Rows are buttons: single-attempt rows   *
+   carry the student name, rows inside a multi-attempt box carry only *
+   score + date.                                                       *
  * ------------------------------------------------------------------ */
 
 // Inline API-shaped fixture rows for the detail endpoint (6 questions:
@@ -281,7 +283,12 @@ const renderAt = (quizId) =>
     </QueryClientProvider>,
   );
 
-describe("AttemptDetailModal", () => {
+describe("AttemptDetailView", () => {
+  // No dialog anymore: the detail lives in the attempts panel as a
+  // labelled region wrapping the header arrow + question cards.
+  const detailRegion = () =>
+    screen.getByRole("region", { name: "Attempt details" });
+
   it("does not fetch detail until a row is clicked, then fetches that attempt", async () => {
     renderAt("1");
     expect(await screen.findByText("4 students • 6 attempts")).toBeInTheDocument();
@@ -301,13 +308,16 @@ describe("AttemptDetailModal", () => {
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
 
-    const dialog = screen.getByRole("dialog");
+    const panel = detailRegion();
+    // The panel swaps to the detail — the list row (and any dialog) is gone.
+    expect(screen.queryByRole("button", { name: /Brian Okafor/ })).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(
-      within(dialog).getByRole("heading", { level: 2, name: "Brian Okafor" }),
+      within(panel).getByRole("heading", { level: 2, name: "Brian Okafor" }),
     ).toBeInTheDocument();
-    // Fixed header: raw/max score + submission date (same Intl format as rows).
+    // Header: raw/max score + submission date (same Intl format as rows).
     expect(
-      within(dialog).getByText(
+      within(panel).getByText(
         `${BRIAN_ATTEMPT.rawScore}/${BRIAN_ATTEMPT.maxPossibleScore} • ${formatSubmittedAt(BRIAN_ATTEMPT.submittedAt)}`,
       ),
     ).toBeInTheDocument();
@@ -315,13 +325,13 @@ describe("AttemptDetailModal", () => {
     // All 6 fixture questions, badges from points/maxPoints:
     // 2× "1/1" (MCQ correct + T/F correct), 2× "0/1" (wrong + skipped),
     // "7/10" (partial short-answer), "0/10" (skipped short-answer).
-    expect(await within(dialog).findAllByRole("article")).toHaveLength(6);
-    expect(within(dialog).getAllByText("1/1")).toHaveLength(2);
-    expect(within(dialog).getAllByText("0/1")).toHaveLength(2);
-    expect(within(dialog).getAllByText("7/10")).toHaveLength(1);
-    expect(within(dialog).getAllByText("0/10")).toHaveLength(1);
+    expect(await within(panel).findAllByRole("article")).toHaveLength(6);
+    expect(within(panel).getAllByText("1/1")).toHaveLength(2);
+    expect(within(panel).getAllByText("0/1")).toHaveLength(2);
+    expect(within(panel).getAllByText("7/10")).toHaveLength(1);
+    expect(within(panel).getAllByText("0/10")).toHaveLength(1);
     // Skipped answers keep the amber "Skipped" line.
-    expect(within(dialog).getAllByText("Skipped")).toHaveLength(2);
+    expect(within(panel).getAllByText("Skipped")).toHaveLength(2);
   });
 
   it("labels every question type and lists options only where they exist", async () => {
@@ -329,22 +339,22 @@ describe("AttemptDetailModal", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
-    const dialog = screen.getByRole("dialog");
-    await within(dialog).findAllByRole("article");
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
 
-    expect(within(dialog).getAllByText("Multiple choice")).toHaveLength(3);
-    expect(within(dialog).getAllByText("True/False")).toHaveLength(1);
-    expect(within(dialog).getAllByText("Short answer")).toHaveLength(2);
+    expect(within(panel).getAllByText("Multiple choice")).toHaveLength(3);
+    expect(within(panel).getAllByText("True/False")).toHaveLength(1);
+    expect(within(panel).getAllByText("Short answer")).toHaveLength(2);
 
     // 4 option lists (3 MCQ × 4 items + 1 T/F × 2 items); short-answer
     // cards show the expected answer text instead of options.
-    const lists = within(dialog).getAllByRole("list");
+    const lists = within(panel).getAllByRole("list");
     expect(lists).toHaveLength(4);
     const sizes = lists.map((list) => within(list).getAllByRole("listitem").length);
     expect(sizes.filter((n) => n === 4)).toHaveLength(3);
     expect(sizes.filter((n) => n === 2)).toHaveLength(1);
     expect(
-      within(dialog).getByText("Plants convert light into chemical energy"),
+      within(panel).getByText("Plants convert light into chemical energy"),
     ).toBeInTheDocument();
   });
 
@@ -353,13 +363,13 @@ describe("AttemptDetailModal", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
-    const dialog = screen.getByRole("dialog");
-    await within(dialog).findAllByRole("article");
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
 
-    expect(within(dialog).getAllByText(/^Remarks:/)).toHaveLength(2);
-    expect(within(dialog).getByText("Clean answer.")).toBeInTheDocument();
+    expect(within(panel).getAllByText(/^Remarks:/)).toHaveLength(2);
+    expect(within(panel).getByText("Clean answer.")).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Include only the city name."),
+      within(panel).getByText("Include only the city name."),
     ).toBeInTheDocument();
   });
 
@@ -372,38 +382,57 @@ describe("AttemptDetailModal", () => {
       }),
     );
 
-    const dialog = screen.getByRole("dialog");
+    const panel = detailRegion();
     expect(
-      within(dialog).getByRole("heading", { level: 2, name: "Alice Nguyen" }),
+      within(panel).getByRole("heading", { level: 2, name: "Alice Nguyen" }),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText(
+      within(panel).getByText(
         `${ALICE_ATTEMPT.rawScore}/${ALICE_ATTEMPT.maxPossibleScore} • ${formatSubmittedAt(ALICE_ATTEMPT.submittedAt)}`,
       ),
     ).toBeInTheDocument();
-    // Her older 18/25 attempt stays out of this modal.
-    expect(within(dialog).queryByText(/18\/25/)).toBeNull();
-    expect(await within(dialog).findAllByRole("article")).toHaveLength(6);
+    // Her older 18/25 attempt stays out of this view.
+    expect(within(panel).queryByText(/18\/25/)).toBeNull();
+    expect(await within(panel).findAllByRole("article")).toHaveLength(6);
   });
 
-  it("dismisses from the close button and from Escape, keeping the list intact", async () => {
+  it("returns to the list from the arrow, then opens another attempt", async () => {
     renderAt("1");
-    const row = await screen.findByRole("button", { name: /Brian Okafor/ });
-
-    fireEvent.click(row);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.click(
-      screen.getByRole("button", { name: "Close attempt details" }),
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
-    expect(screen.queryByRole("dialog")).toBeNull();
+    const panel = detailRegion();
+    // Focus lands on the arrow so the view is reachable without a mouse.
+    expect(
+      document.activeElement,
+    ).toBe(within(panel).getByRole("button", { name: "Back to attempts list" }));
 
-    fireEvent.click(row);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "Back to attempts list" }),
+    );
 
-    // The attempts list survives the open/close cycle untouched.
+    expect(screen.queryByRole("region", { name: "Attempt details" })).toBeNull();
+    // Focus returns to the list container, not <body>.
+    expect(document.activeElement).toHaveAttribute("tabindex", "-1");
+    // The attempts list survives the round trip untouched.
     expect(screen.getByText("4 students • 6 attempts")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Brian Okafor/ }),
+    ).toBeInTheDocument();
+
+    // A different attempt opens from the restored list.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: new RegExp(`${ALICE_ATTEMPT.rawScore}/${ALICE_ATTEMPT.maxPossibleScore}`),
+      }),
+    );
+    expect(
+      within(detailRegion()).getByRole("heading", {
+        level: 2,
+        name: "Alice Nguyen",
+      }),
+    ).toBeInTheDocument();
+    expect(await within(detailRegion()).findAllByRole("article")).toHaveLength(6);
   });
 
   it("shows a spinner in the body while the detail is loading", async () => {
@@ -414,16 +443,16 @@ describe("AttemptDetailModal", () => {
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
 
-    const dialog = screen.getByRole("dialog");
+    const panel = detailRegion();
     // Header renders immediately from the clicked list row; body waits.
     expect(
-      within(dialog).getByRole("heading", { level: 2, name: "Brian Okafor" }),
+      within(panel).getByRole("heading", { level: 2, name: "Brian Okafor" }),
     ).toBeInTheDocument();
-    expect(dialog.querySelector(".animate-spin")).not.toBeNull();
-    expect(within(dialog).queryAllByRole("article")).toHaveLength(0);
-    // Close stays available during loading.
+    expect(panel.querySelector(".animate-spin")).not.toBeNull();
+    expect(within(panel).queryAllByRole("article")).toHaveLength(0);
+    // The arrow stays available during loading.
     expect(
-      within(dialog).getByRole("button", { name: "Close attempt details" }),
+      within(panel).getByRole("button", { name: "Back to attempts list" }),
     ).toBeInTheDocument();
   });
 
@@ -437,17 +466,17 @@ describe("AttemptDetailModal", () => {
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
 
-    const dialog = screen.getByRole("dialog");
+    const panel = detailRegion();
     expect(
-      await within(dialog).findByText("Attempt not found"),
+      await within(panel).findByText("Attempt not found"),
     ).toBeInTheDocument();
-    expect(within(dialog).queryAllByRole("article")).toHaveLength(0);
+    expect(within(panel).queryAllByRole("article")).toHaveLength(0);
 
-    // Close still works from the error state.
+    // Back still works from the error state.
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Close attempt details" }),
+      within(panel).getByRole("button", { name: "Back to attempts list" }),
     );
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Attempt details" })).toBeNull();
   });
 
   it("shows an empty state when the attempt has no answer rows", async () => {

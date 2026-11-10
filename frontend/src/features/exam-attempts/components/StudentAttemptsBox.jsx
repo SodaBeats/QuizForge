@@ -1,7 +1,8 @@
 /* Box for a student with multiple attempts: student name as the header,
    then one compact row per attempt (newest first), score + date columns
    aligned with StudentAttemptRow. Each attempt row is a button that opens
-   that attempt's detail modal; the name header is not clickable. */
+   that attempt's detail view inside the panel; the name header is not
+   clickable. */
 
 import { formatSubmittedAt } from "../lib/format.js";
 

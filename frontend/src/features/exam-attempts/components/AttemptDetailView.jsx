@@ -1,11 +1,13 @@
-/* Attempt detail modal — full question-by-question breakdown of one
-   attempt, fetched on open (useAttemptDetail) and mapped to the view
-   shape by mapAnswerRows. Uses the shared Modal primitive (portal,
-   Escape, focus trap): the panel is a fixed header over a scrollable
-   body, so long attempts scroll under the header and close button —
-   close works during loading and error alike. */
+/* Attempt detail — full question-by-question breakdown of one attempt,
+   rendered inline in place of the attempts list (it replaced the old
+   detail modal). The body fetches the attempt's answers on mount
+   (useAttemptDetail) and maps them to the view shape with mapAnswerRows;
+   the header carries the student/score from the clicked list row plus the
+   arrow button that returns to the list. Loading / error / empty bodies
+   render in the panel's scrollable area, so the arrow stays reachable
+   while the detail is in flight or fails. */
 
-import { Modal } from "../../../components/ui/Modal";
+import { useEffect, useRef } from "react";
 import { Spinner } from "../../../components/ui/Spinner";
 import { ErrorState } from "../../../components/ui/ErrorState";
 import { EmptyState } from "../../../components/ui/EmptyState";
@@ -13,7 +15,7 @@ import { formatSubmittedAt } from "../lib/format.js";
 import { mapAnswerRows } from "../lib/attemptQuestions.js";
 import { useAttemptDetail } from "../api/queries.js";
 
-function CloseIcon() {
+function BackIcon() {
   return (
     <svg
       className="w-4 h-4"
@@ -26,7 +28,7 @@ function CloseIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M6 18L18 6M6 6l12 12"
+        d="M19 12H5m0 0l6-6m-6 6l6 6"
       />
     </svg>
   );
@@ -116,7 +118,9 @@ function QuestionCard({ question }) {
 
       <p className="mt-2 text-xs text-muted">
         Correct: <span className="text-green-300">{correct}</span>
-        <span className="mx-2">•</span>
+      </p>
+
+      <p className="mt-1 text-xs text-muted">
         Answered: <span className={answeredTone}>{answered}</span>
       </p>
 
@@ -129,14 +133,20 @@ function QuestionCard({ question }) {
   );
 }
 
-export function AttemptDetailModal({
+export function AttemptDetailView({
   attempt,
   student,
   quizId,
   attemptId,
-  onClose,
+  onBack,
 }) {
+  const backRef = useRef(null);
   const detailQuery = useAttemptDetail(quizId, attemptId);
+
+  // Land keyboard focus on the arrow so the view can be left without a mouse.
+  useEffect(() => {
+    backRef.current?.focus();
+  }, []);
 
   let body;
   if (detailQuery.isPending) {
@@ -171,12 +181,22 @@ export function AttemptDetailModal({
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      panelClassName="bg-specialsurface rounded-lg border border-muted w-[640px] max-w-[calc(100vw-2rem)] max-h-[85vh] flex flex-col overflow-hidden font-body"
+    <div
+      role="region"
+      aria-label="Attempt details"
+      className="flex-1 flex flex-col min-h-0"
     >
-      {/* Fixed header — score/date/student come from the clicked list row. */}
-      <header className="shrink-0 flex items-start justify-between gap-4 px-5 py-4 border-b border-muted/20">
+      {/* Header — score/date/student come from the clicked list row. */}
+      <header className="shrink-0 flex items-start gap-3 p-3 sm:p-4 bg-specialsurface border-b border-muted/20">
+        <button
+          ref={backRef}
+          type="button"
+          onClick={onBack}
+          aria-label="Back to attempts list"
+          className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-muted hover:text-inkondark hover:bg-muted/10 transition-colors"
+        >
+          <BackIcon />
+        </button>
         <div className="min-w-0">
           <h2 className="font-display font-bold text-inkondark truncate">
             {student.name}
@@ -186,18 +206,10 @@ export function AttemptDetailModal({
             {formatSubmittedAt(attempt.submittedAt)}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close attempt details"
-          className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-muted hover:text-inkondark hover:bg-muted/10 transition-colors"
-        >
-          <CloseIcon />
-        </button>
       </header>
 
       {/* Scrollable body */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">{body}</div>
-    </Modal>
+      <div className="flex-1 min-h-0 overflow-y-auto p-3">{body}</div>
+    </div>
   );
 }

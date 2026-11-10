@@ -1,6 +1,7 @@
 /* One compact row for a student with a single attempt:
    name | raw/max score | submission date. Renders as a real button so the
-   row is keyboard-focusable; clicking opens the attempt detail modal. */
+   row is keyboard-focusable; clicking opens the attempt's detail view
+   inside the panel. */
 
 import { formatSubmittedAt } from "../lib/format.js";
 

@@ -1,16 +1,16 @@
 /* Exam Attempts page — /teacher/quizzes/:quizId/attempts.
    Two panels: read-only exam details (left) and the student attempts list
    (right), both fetched on load. Page-level query state (loading / error /
-   not-found) is passed down to both panels; clicking a list row opens the
-   detail modal, which fetches that attempt's answers itself. Mobile switches
-   between the panels via the AppShell panel tabs. */
+   not-found) is passed down to both panels; clicking a list row swaps the
+   attempts panel to that attempt's detail view, which fetches the answers
+   itself, and its arrow returns to the list. Mobile switches between the
+   panels via the AppShell panel tabs. */
 
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
 import { ExamDetailsPanel } from "../components/ExamDetailsPanel";
 import { AttemptsPanel } from "../components/AttemptsPanel";
-import { AttemptDetailModal } from "../components/AttemptDetailModal";
 import { useExamAttempts, useExamDetails } from "../api/queries.js";
 import {
   filterByClass,
@@ -28,7 +28,7 @@ export function ExamAttemptsPage() {
   const [mobileTab, setMobileTab] = useState("details"); // mobile-only panel switcher — purely UI state
   const [query, setQuery] = useState("");
   const [selectedClassId, setSelectedClassId] = useState(null);
-  const [selectedAttempt, setSelectedAttempt] = useState(null); // { student, attempt } → detail modal
+  const [selectedAttempt, setSelectedAttempt] = useState(null); // { student, attempt } → detail view in the attempts panel
 
   const examQuery = useExamDetails(quizId);
   const listQuery = useExamAttempts(quizId);
@@ -84,49 +84,40 @@ export function ExamAttemptsPage() {
   );
 
   return (
-    <>
-      <AppShell
-        tabs={TABS}
-        activeTab={mobileTab}
-        onChange={setMobileTab}
-        panels={[
-          {
-            key: "details",
-            visible: mobileTab === "details",
-            children: (
-              <ExamDetailsPanel exam={exam} loading={loading} error={error} />
-            ),
-          },
-          {
-            key: "attempts",
-            visible: mobileTab === "attempts",
-            children: (
-              <AttemptsPanel
-                found={!notFound}
-                loading={loading}
-                error={error}
-                groups={filteredGroups}
-                query={query}
-                onQueryChange={setQuery}
-                classes={classes}
-                activeClassId={activeClassId}
-                onClassChange={setSelectedClassId}
-                onSelectAttempt={setSelectedAttempt}
-              />
-            ),
-          },
-        ]}
-      />
-
-      {selectedAttempt && (
-        <AttemptDetailModal
-          attempt={selectedAttempt.attempt}
-          student={selectedAttempt.student}
-          quizId={quizId}
-          attemptId={selectedAttempt.attempt.id}
-          onClose={() => setSelectedAttempt(null)}
-        />
-      )}
-    </>
+    <AppShell
+      tabs={TABS}
+      activeTab={mobileTab}
+      onChange={setMobileTab}
+      panels={[
+        {
+          key: "details",
+          visible: mobileTab === "details",
+          children: (
+            <ExamDetailsPanel exam={exam} loading={loading} error={error} />
+          ),
+        },
+        {
+          key: "attempts",
+          visible: mobileTab === "attempts",
+          children: (
+            <AttemptsPanel
+              found={!notFound}
+              loading={loading}
+              error={error}
+              groups={filteredGroups}
+              query={query}
+              onQueryChange={setQuery}
+              classes={classes}
+              activeClassId={activeClassId}
+              onClassChange={setSelectedClassId}
+              onSelectAttempt={setSelectedAttempt}
+              quizId={quizId}
+              selectedAttempt={selectedAttempt}
+              onBack={() => setSelectedAttempt(null)}
+            />
+          ),
+        },
+      ]}
+    />
   );
 }

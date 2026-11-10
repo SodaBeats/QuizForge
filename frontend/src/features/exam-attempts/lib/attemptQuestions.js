@@ -1,4 +1,4 @@
-/* Pure mapper: API answer rows → the modal's per-question view shape.
+/* Pure mapper: API answer rows → the detail view's per-question view shape.
    This is where letter→index mapping lives (Vitest-covered).
 
    Storage contract (server-side, lowercase):
@@ -6,7 +6,7 @@
      submit-time snapshot from attempt_answers_db)
    - true-false: 'true' / 'false' strings
    - short-answer: free text (chosen null = skipped)
-   The modal displays letters capitalized ("A."/"True") — frontend only. */
+   The view displays letters capitalized ("A."/"True") — frontend only. */
 
 const MCQ_LETTERS = "abcd";
 
@@ -25,13 +25,13 @@ function boolIndex(answer) {
 
 /**
  * Convert normalized answer rows (GET /:quizId/attempts/:attemptId) into
- * the shape AttemptDetailModal's QuestionCard renders.
+ * the shape AttemptDetailView's QuestionCard renders.
  *
  * @param {Array<object>} rows API rows: questionId, questionText,
  *   questionType, options[], chosenAnswer, correctAnswer, isCorrect,
  *   points, maxPoints, remarks
  * @returns {Array<object>} view rows: id, type, text, options (MCQ array,
- *   null otherwise — the modal synthesizes T/F's ["True","False"]),
+ *   null otherwise — the view synthesizes T/F's ["True","False"]),
  *   correctIndex/chosenIndex (MCQ/T-F, null when skipped or unexpected),
  *   correctText/chosenText (short-answer only), points, maxPoints,
  *   isCorrect, remarks
