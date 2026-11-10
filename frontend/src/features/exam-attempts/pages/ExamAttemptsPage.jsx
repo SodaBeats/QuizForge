@@ -1,9 +1,9 @@
 /* Exam Attempts page — /teacher/quizzes/:quizId/attempts.
    Two panels: read-only exam details (left) and the student attempts list
    (right), both fetched on load. Page-level query state (loading / error /
-   not-found) is passed down to both panels; the detail modal still runs off
-   the mock generator until its phase. Mobile switches between the panels via
-   the AppShell panel tabs. */
+   not-found) is passed down to both panels; clicking a list row opens the
+   detail modal, which fetches that attempt's answers itself. Mobile switches
+   between the panels via the AppShell panel tabs. */
 
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -118,11 +118,12 @@ export function ExamAttemptsPage() {
         ]}
       />
 
-      {selectedAttempt && exam && (
+      {selectedAttempt && (
         <AttemptDetailModal
           attempt={selectedAttempt.attempt}
           student={selectedAttempt.student}
-          exam={exam}
+          quizId={quizId}
+          attemptId={selectedAttempt.attempt.id}
           onClose={() => setSelectedAttempt(null)}
         />
       )}

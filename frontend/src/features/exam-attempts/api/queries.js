@@ -21,3 +21,12 @@ export function useExamAttempts(quizId) {
     enabled: Boolean(quizId),
   });
 }
+
+/** One attempt's per-question answer rows — fetched when a row is clicked. */
+export function useAttemptDetail(quizId, attemptId, { enabled = true } = {}) {
+  return useQuery({
+    queryKey: attemptKeys.detail(quizId, attemptId),
+    queryFn: () => examAttemptsApi.attemptDetail(quizId, attemptId),
+    enabled: Boolean(quizId && attemptId) && enabled,
+  });
+}

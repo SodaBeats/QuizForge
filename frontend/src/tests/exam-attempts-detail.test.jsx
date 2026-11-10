@@ -11,164 +11,143 @@ import {
   MOCK_EXAMS,
   MOCK_STUDENTS,
 } from "../features/exam-attempts/lib/mockData.js";
-import { buildAttemptDetail } from "../features/exam-attempts/lib/questionDetail.js";
+import { mapAnswerRows } from "../features/exam-attempts/lib/attemptQuestions.js";
 import { formatSubmittedAt } from "../features/exam-attempts/lib/format.js";
 
-// The page's list/detail queries go through the API module — mock it so the
-// modal tests drive the real list UI against the static fixtures.
+// The page's exam/list queries and the modal's detail query all go through
+// the API module — mock it so the modal tests drive the real list UI and
+// the real fetch-on-open flow against inline API-shaped fixture rows.
 vi.mock("../features/exam-attempts/api/examAttempts.api.js", () => ({
   examAttemptsApi: {
     examDetails: vi.fn(),
     attemptList: vi.fn(),
+    attemptDetail: vi.fn(),
   },
 }));
 
 /* ------------------------------------------------------------------ *
-   buildAttemptDetail — the generator is pure and deterministic, so    *
-   every invariant that could silently corrupt the modal is asserted   *
-   here over ALL mock attempts of both exams.                          *
+   mapAnswerRows — pure, so every mapping invariant that could        *
+   silently corrupt the modal is asserted here directly.              *
  * ------------------------------------------------------------------ */
 
-// TYPE_PATTERN cycles multiple-choice ×3 → true-false → short-answer,
-// keyed by question index only, so every attempt of an exam agrees.
-const EXPECTED_TYPE_COUNTS = {
-  "1": { "multiple-choice": 15, "true-false": 5, "short-answer": 5 },
-  "2": { "multiple-choice": 6, "true-false": 2, "short-answer": 2 },
+const MCQ_ROW = {
+  questionId: 7,
+  questionText: "What is 2 + 2?",
+  questionType: "multiple-choice",
+  options: ["3", "4", "5", "6"],
+  chosenAnswer: "c",
+  correctAnswer: "b",
+  isCorrect: false,
+  points: 0,
+  maxPoints: 1,
+  remarks: null,
 };
 
-const CASES = ["1", "2"].flatMap((examId) =>
-  MOCK_ATTEMPTS[examId].map((attempt) => ({
-    examId,
-    exam: MOCK_EXAMS[examId],
-    attempt,
-  })),
-);
+const TF_ROW = {
+  questionId: 8,
+  questionText: "The sky is green.",
+  questionType: "true-false",
+  options: [],
+  chosenAnswer: "true",
+  correctAnswer: "true",
+  isCorrect: true,
+  points: 1,
+  maxPoints: 1,
+  remarks: null,
+};
 
-describe("buildAttemptDetail", () => {
-  it("returns one question per exam question and scores sum to the raw score", () => {
-    for (const { examId, exam, attempt } of CASES) {
-      const ctx = `exam ${examId} attempt ${attempt.id}`;
-      const detail = buildAttemptDetail(attempt, exam);
-      expect(detail, ctx).toHaveLength(exam.questionCount);
-      expect(
-        detail.reduce((n, q) => n + q.score, 0),
-        ctx,
-      ).toBe(attempt.rawScore);
-    }
+const SHORT_ROW = {
+  questionId: 9,
+  questionText: "Name the capital of France.",
+  questionType: "short-answer",
+  options: [],
+  chosenAnswer: "an answer",
+  correctAnswer: "the expected answer",
+  isCorrect: true,
+  points: 7,
+  maxPoints: 10,
+  remarks: "Include only the city name.",
+};
+
+describe("mapAnswerRows", () => {
+  it("maps MCQ letters to option indexes and passes row fields through", () => {
+    const [q] = mapAnswerRows([MCQ_ROW]);
+    expect(q).toEqual({
+      id: 7,
+      type: "multiple-choice",
+      text: "What is 2 + 2?",
+      options: ["3", "4", "5", "6"],
+      correctIndex: 1, // 'b'
+      chosenIndex: 2, // 'c'
+      correctText: null,
+      chosenText: null,
+      points: 0,
+      maxPoints: 1,
+      isCorrect: false,
+      remarks: null,
+    });
   });
 
-  it("is deterministic — rebuilding the same attempt is deep-equal", () => {
-    for (const { examId, exam, attempt } of CASES) {
-      const ctx = `exam ${examId} attempt ${attempt.id}`;
-      const first = buildAttemptDetail(attempt, exam);
-      expect(buildAttemptDetail(attempt, exam), ctx).toEqual(first);
-    }
+  it("maps a null MCQ chosen answer to a skipped index", () => {
+    const [q] = mapAnswerRows([{ ...MCQ_ROW, chosenAnswer: null }]);
+    expect(q.chosenIndex).toBeNull();
+    expect(q.correctIndex).toBe(1); // correct answer still resolves
   });
 
-  it("uses the fixed type pattern per exam, identical across every attempt", () => {
-    for (const examId of ["1", "2"]) {
-      const exam = MOCK_EXAMS[examId];
-      const typeLists = MOCK_ATTEMPTS[examId].map((attempt) =>
-        buildAttemptDetail(attempt, exam).map((q) => q.type),
-      );
-      // Same question index → same type in every attempt of the exam.
-      for (const types of typeLists) {
-        expect(types, `exam ${examId}`).toEqual(typeLists[0]);
-      }
-      const counts = {
-        "multiple-choice": 0,
-        "true-false": 0,
-        "short-answer": 0,
-      };
-      for (const type of typeLists[0]) counts[type] += 1;
-      expect(counts, `exam ${examId}`).toEqual(EXPECTED_TYPE_COUNTS[examId]);
-    }
+  it("treats unexpected MCQ values (indexOf -1) as null", () => {
+    const [q] = mapAnswerRows([
+      { ...MCQ_ROW, correctAnswer: "e", chosenAnswer: "x" },
+    ]);
+    expect(q.correctIndex).toBeNull();
+    expect(q.chosenIndex).toBeNull();
   });
 
-  it("shapes each type: MCQ four options, T/F True|False, short-answer text", () => {
-    for (const { examId, exam, attempt } of CASES) {
-      const ctx = `exam ${examId} attempt ${attempt.id}`;
-      for (const q of buildAttemptDetail(attempt, exam)) {
-        if (q.type === "multiple-choice") {
-          expect(q.options, ctx).toEqual([
-            "Option A",
-            "Option B",
-            "Option C",
-            "Option D",
-          ]);
-          expect(q.correctIndex, ctx).toBeGreaterThanOrEqual(0);
-          expect(q.correctIndex, ctx).toBeLessThan(4);
-          expect(
-            q.chosenIndex === null || (q.chosenIndex >= 0 && q.chosenIndex < 4),
-            ctx,
-          ).toBe(true);
-        } else if (q.type === "true-false") {
-          expect(q.options, ctx).toEqual(["True", "False"]);
-          expect([0, 1], ctx).toContain(q.correctIndex);
-          expect(
-            q.chosenIndex === null || [0, 1].includes(q.chosenIndex),
-            ctx,
-          ).toBe(true);
-        } else if (q.type === "short-answer") {
-          expect(
-            "options" in q || "correctIndex" in q || "chosenIndex" in q,
-            ctx,
-          ).toBe(false);
-          expect(typeof q.correctText, ctx).toBe("string");
-          expect(q.correctText.length, ctx).toBeGreaterThan(0);
-          expect(
-            q.chosenText === null || typeof q.chosenText === "string",
-            ctx,
-          ).toBe(true);
-        } else {
-          throw new Error(`${ctx}: unexpected question type "${q.type}"`);
-        }
-      }
-    }
+  it("maps true-false answers to 0/1 with nulls kept skipped", () => {
+    const [trueRow] = mapAnswerRows([TF_ROW]);
+    expect(trueRow).toMatchObject({
+      options: null, // the modal synthesizes ["True", "False"]
+      correctIndex: 0,
+      chosenIndex: 0,
+      correctText: null,
+      chosenText: null,
+      maxPoints: 1,
+    });
+
+    const [falseRow] = mapAnswerRows([
+      { ...TF_ROW, correctAnswer: "false", chosenAnswer: "false" },
+    ]);
+    expect(falseRow.correctIndex).toBe(1);
+    expect(falseRow.chosenIndex).toBe(1);
+
+    const [skipped] = mapAnswerRows([{ ...TF_ROW, chosenAnswer: null }]);
+    expect(skipped.chosenIndex).toBeNull();
   });
 
-  it("matches answers to the score; skipped answers always score 0", () => {
-    let skipped = 0;
-    for (const { examId, exam, attempt } of CASES) {
-      for (const q of buildAttemptDetail(attempt, exam)) {
-        const ctx = `exam ${examId} attempt ${attempt.id} q${q.id}`;
-        const isSkipped =
-          q.type === "short-answer"
-            ? q.chosenText === null
-            : q.chosenIndex === null;
+  it("passes short-answer text through, including the skipped null", () => {
+    const [q] = mapAnswerRows([SHORT_ROW]);
+    expect(q).toEqual({
+      id: 9,
+      type: "short-answer",
+      text: "Name the capital of France.",
+      options: null,
+      correctIndex: null,
+      chosenIndex: null,
+      correctText: "the expected answer",
+      chosenText: "an answer",
+      points: 7,
+      maxPoints: 10,
+      isCorrect: true,
+      remarks: "Include only the city name.",
+    });
 
-        if (q.score === 1) {
-          expect(isSkipped, ctx).toBe(false);
-          if (q.type === "short-answer") {
-            expect(q.chosenText, ctx).toBe(q.correctText);
-          } else {
-            expect(q.chosenIndex, ctx).toBe(q.correctIndex);
-          }
-        } else if (isSkipped) {
-          skipped += 1;
-        } else {
-          expect(q.chosenText ?? q.chosenIndex, ctx).not.toBe(
-            q.correctText ?? q.correctIndex,
-          );
-        }
-      }
-    }
-    // The fixtures exercise the skipped path (Skipped shown as the answer).
-    expect(skipped).toBeGreaterThan(0);
+    const [skipped] = mapAnswerRows([{ ...SHORT_ROW, chosenAnswer: null }]);
+    expect(skipped.chosenText).toBeNull();
+    expect(skipped.correctText).toBe("the expected answer");
   });
 
-  it("gives remarks only as null or non-empty strings, with some in the fixtures", () => {
-    let remarked = 0;
-    for (const { examId, exam, attempt } of CASES) {
-      const ctx = `exam ${examId} attempt ${attempt.id}`;
-      for (const q of buildAttemptDetail(attempt, exam)) {
-        if (q.remarks === null) continue;
-        expect(typeof q.remarks, `${ctx} q${q.id}`).toBe("string");
-        expect(q.remarks.trim().length, `${ctx} q${q.id}`).toBeGreaterThan(0);
-        remarked += 1;
-      }
-    }
-    expect(remarked).toBeGreaterThan(0);
+  it("maps every row in order", () => {
+    const mapped = mapAnswerRows([MCQ_ROW, TF_ROW, SHORT_ROW]);
+    expect(mapped.map((q) => q.id)).toEqual([7, 8, 9]);
   });
 });
 
@@ -177,6 +156,84 @@ describe("buildAttemptDetail", () => {
    Rows are buttons: single-attempt rows carry the student name, rows  *
    inside a multi-attempt box carry only score + date.                  *
  * ------------------------------------------------------------------ */
+
+// Inline API-shaped fixture rows for the detail endpoint (6 questions:
+// 3 MCQ — correct/wrong/skipped, 1 T/F correct, 2 short-answer — partial
+// with remarks and skipped). Every row click resolves these.
+const DETAIL_ROWS = [
+  {
+    questionId: 1,
+    questionText: "What is 2 + 2?",
+    questionType: "multiple-choice",
+    options: ["3", "4", "5", "6"],
+    chosenAnswer: "b",
+    correctAnswer: "b",
+    isCorrect: true,
+    points: 1,
+    maxPoints: 1,
+    remarks: "Clean answer.",
+  },
+  {
+    questionId: 2,
+    questionText: "Which planet is the largest?",
+    questionType: "multiple-choice",
+    options: ["Mars", "Earth", "Jupiter", "Venus"],
+    chosenAnswer: "a",
+    correctAnswer: "c",
+    isCorrect: false,
+    points: 0,
+    maxPoints: 1,
+    remarks: null,
+  },
+  {
+    questionId: 3,
+    questionText: "What does H2O stand for?",
+    questionType: "multiple-choice",
+    options: ["Water", "Salt", "Acid", "Base"],
+    chosenAnswer: null,
+    correctAnswer: "a",
+    isCorrect: false,
+    points: 0,
+    maxPoints: 1,
+    remarks: null,
+  },
+  {
+    questionId: 4,
+    questionText: "The sky is green.",
+    questionType: "true-false",
+    options: [],
+    chosenAnswer: "false",
+    correctAnswer: "false",
+    isCorrect: true,
+    points: 1,
+    maxPoints: 1,
+    remarks: null,
+  },
+  {
+    questionId: 5,
+    questionText: "Name the capital of France.",
+    questionType: "short-answer",
+    options: [],
+    chosenAnswer: "Paris, France",
+    correctAnswer: "Paris",
+    isCorrect: true,
+    points: 7,
+    maxPoints: 10,
+    remarks: "Include only the city name.",
+  },
+  {
+    questionId: 6,
+    questionText: "Explain photosynthesis briefly.",
+    questionType: "short-answer",
+    options: [],
+    chosenAnswer: null,
+    correctAnswer: "Plants convert light into chemical energy",
+    isCorrect: false,
+    points: 0,
+    maxPoints: 10,
+    remarks: null,
+  },
+];
 
 const BRIAN_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1003);
 const ALICE_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1002); // 22/25, in her box
@@ -197,6 +254,7 @@ beforeEach(() => {
       students: MOCK_STUDENTS.filter((student) => withAttempts.has(student.id)),
     };
   });
+  examAttemptsApi.attemptDetail.mockResolvedValue(DETAIL_ROWS);
 });
 
 // The page reads quizId from route params, so render it under a real Route
@@ -224,6 +282,19 @@ const renderAt = (quizId) =>
   );
 
 describe("AttemptDetailModal", () => {
+  it("does not fetch detail until a row is clicked, then fetches that attempt", async () => {
+    renderAt("1");
+    expect(await screen.findByText("4 students • 6 attempts")).toBeInTheDocument();
+    expect(examAttemptsApi.attemptDetail).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+
+    expect(examAttemptsApi.attemptDetail).toHaveBeenCalledTimes(1);
+    expect(examAttemptsApi.attemptDetail).toHaveBeenCalledWith("1", 1003);
+  });
+
   it("opens from a single-attempt row with the header and full breakdown", async () => {
     renderAt("1");
     fireEvent.click(
@@ -241,10 +312,16 @@ describe("AttemptDetailModal", () => {
       ),
     ).toBeInTheDocument();
 
-    // All 25 questions, each with an x/1 badge — 15 correct = his raw score.
-    expect(within(dialog).getAllByRole("article")).toHaveLength(25);
-    expect(within(dialog).getAllByText("1/1")).toHaveLength(15);
-    expect(within(dialog).getAllByText("0/1")).toHaveLength(10);
+    // All 6 fixture questions, badges from points/maxPoints:
+    // 2× "1/1" (MCQ correct + T/F correct), 2× "0/1" (wrong + skipped),
+    // "7/10" (partial short-answer), "0/10" (skipped short-answer).
+    expect(await within(dialog).findAllByRole("article")).toHaveLength(6);
+    expect(within(dialog).getAllByText("1/1")).toHaveLength(2);
+    expect(within(dialog).getAllByText("0/1")).toHaveLength(2);
+    expect(within(dialog).getAllByText("7/10")).toHaveLength(1);
+    expect(within(dialog).getAllByText("0/10")).toHaveLength(1);
+    // Skipped answers keep the amber "Skipped" line.
+    expect(within(dialog).getAllByText("Skipped")).toHaveLength(2);
   });
 
   it("labels every question type and lists options only where they exist", async () => {
@@ -253,22 +330,22 @@ describe("AttemptDetailModal", () => {
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
     const dialog = screen.getByRole("dialog");
+    await within(dialog).findAllByRole("article");
 
-    expect(within(dialog).getAllByText("Multiple choice")).toHaveLength(15);
-    expect(within(dialog).getAllByText("True/False")).toHaveLength(5);
-    expect(within(dialog).getAllByText("Short answer")).toHaveLength(5);
+    expect(within(dialog).getAllByText("Multiple choice")).toHaveLength(3);
+    expect(within(dialog).getAllByText("True/False")).toHaveLength(1);
+    expect(within(dialog).getAllByText("Short answer")).toHaveLength(2);
 
-    // 20 option lists (25 questions − 5 short-answer): 15×4 and 5×2 items.
+    // 4 option lists (3 MCQ × 4 items + 1 T/F × 2 items); short-answer
+    // cards show the expected answer text instead of options.
     const lists = within(dialog).getAllByRole("list");
-    expect(lists).toHaveLength(20);
+    expect(lists).toHaveLength(4);
     const sizes = lists.map((list) => within(list).getAllByRole("listitem").length);
-    expect(sizes.filter((n) => n === 4)).toHaveLength(15);
-    expect(sizes.filter((n) => n === 2)).toHaveLength(5);
-
-    // Short-answer cards show generated answer text instead of options.
+    expect(sizes.filter((n) => n === 4)).toHaveLength(3);
+    expect(sizes.filter((n) => n === 2)).toHaveLength(1);
     expect(
-      within(dialog).getAllByText(/Expected answer for question/).length,
-    ).toBeGreaterThanOrEqual(5);
+      within(dialog).getByText("Plants convert light into chemical energy"),
+    ).toBeInTheDocument();
   });
 
   it("shows a remarks line only for questions that have remarks", async () => {
@@ -277,17 +354,13 @@ describe("AttemptDetailModal", () => {
       await screen.findByRole("button", { name: /Brian Okafor/ }),
     );
     const dialog = screen.getByRole("dialog");
+    await within(dialog).findAllByRole("article");
 
-    const remarked = buildAttemptDetail(BRIAN_ATTEMPT, MOCK_EXAMS["1"]).filter(
-      (q) => q.remarks,
-    );
-    expect(remarked.length).toBeGreaterThan(0); // fixture check: attempt 1003 has 7
-    expect(within(dialog).getAllByText(/^Remarks:/)).toHaveLength(
-      remarked.length,
-    );
-    for (const text of new Set(remarked.map((q) => q.remarks))) {
-      expect(within(dialog).getAllByText(text).length).toBeGreaterThan(0);
-    }
+    expect(within(dialog).getAllByText(/^Remarks:/)).toHaveLength(2);
+    expect(within(dialog).getByText("Clean answer.")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Include only the city name."),
+    ).toBeInTheDocument();
   });
 
   it("opens the specific attempt from a row inside a multi-attempt box", async () => {
@@ -303,11 +376,14 @@ describe("AttemptDetailModal", () => {
     expect(
       within(dialog).getByRole("heading", { level: 2, name: "Alice Nguyen" }),
     ).toBeInTheDocument();
-    expect(within(dialog).getAllByText("1/1")).toHaveLength(
-      ALICE_ATTEMPT.rawScore,
-    );
+    expect(
+      within(dialog).getByText(
+        `${ALICE_ATTEMPT.rawScore}/${ALICE_ATTEMPT.maxPossibleScore} • ${formatSubmittedAt(ALICE_ATTEMPT.submittedAt)}`,
+      ),
+    ).toBeInTheDocument();
     // Her older 18/25 attempt stays out of this modal.
     expect(within(dialog).queryByText(/18\/25/)).toBeNull();
+    expect(await within(dialog).findAllByRole("article")).toHaveLength(6);
   });
 
   it("dismisses from the close button and from Escape, keeping the list intact", async () => {
@@ -328,5 +404,63 @@ describe("AttemptDetailModal", () => {
 
     // The attempts list survives the open/close cycle untouched.
     expect(screen.getByText("4 students • 6 attempts")).toBeInTheDocument();
+  });
+
+  it("shows a spinner in the body while the detail is loading", async () => {
+    examAttemptsApi.attemptDetail.mockReturnValue(new Promise(() => {}));
+
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+
+    const dialog = screen.getByRole("dialog");
+    // Header renders immediately from the clicked list row; body waits.
+    expect(
+      within(dialog).getByRole("heading", { level: 2, name: "Brian Okafor" }),
+    ).toBeInTheDocument();
+    expect(dialog.querySelector(".animate-spin")).not.toBeNull();
+    expect(within(dialog).queryAllByRole("article")).toHaveLength(0);
+    // Close stays available during loading.
+    expect(
+      within(dialog).getByRole("button", { name: "Close attempt details" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the server error message when the detail fetch fails", async () => {
+    examAttemptsApi.attemptDetail.mockRejectedValue(
+      new ApiError("Attempt not found", { status: 404 }),
+    );
+
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+
+    const dialog = screen.getByRole("dialog");
+    expect(
+      await within(dialog).findByText("Attempt not found"),
+    ).toBeInTheDocument();
+    expect(within(dialog).queryAllByRole("article")).toHaveLength(0);
+
+    // Close still works from the error state.
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Close attempt details" }),
+    );
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("shows an empty state when the attempt has no answer rows", async () => {
+    examAttemptsApi.attemptDetail.mockResolvedValue([]);
+
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+
+    expect(
+      await screen.findByText("No answers recorded for this attempt"),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
   });
 });

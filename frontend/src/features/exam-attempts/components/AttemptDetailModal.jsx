@@ -1,11 +1,17 @@
 /* Attempt detail modal — full question-by-question breakdown of one
-   attempt. Uses the shared Modal primitive (portal, Escape, focus trap):
-   the panel is a fixed header over a scrollable body, so long attempts
-   (25 questions) scroll under the header and close button. */
+   attempt, fetched on open (useAttemptDetail) and mapped to the view
+   shape by mapAnswerRows. Uses the shared Modal primitive (portal,
+   Escape, focus trap): the panel is a fixed header over a scrollable
+   body, so long attempts scroll under the header and close button —
+   close works during loading and error alike. */
 
 import { Modal } from "../../../components/ui/Modal";
+import { Spinner } from "../../../components/ui/Spinner";
+import { ErrorState } from "../../../components/ui/ErrorState";
+import { EmptyState } from "../../../components/ui/EmptyState";
 import { formatSubmittedAt } from "../lib/format.js";
-import { buildAttemptDetail } from "../lib/questionDetail.js";
+import { mapAnswerRows } from "../lib/attemptQuestions.js";
+import { useAttemptDetail } from "../api/queries.js";
 
 function CloseIcon() {
   return (
@@ -32,22 +38,28 @@ const TYPE_LABELS = {
   "short-answer": "Short answer",
 };
 
+// T/F rows carry no options from the API — synthesized here (MCQ options
+// come from the row; short-answer renders none).
+const TF_OPTIONS = ["True", "False"];
+
 function QuestionCard({ question }) {
   const isShort = question.type === "short-answer";
+  const options =
+    question.type === "true-false" ? TF_OPTIONS : question.options;
   const isSkipped = isShort
     ? question.chosenText == null
     : question.chosenIndex == null;
   const correct = isShort
     ? question.correctText
-    : question.options[question.correctIndex];
+    : options[question.correctIndex];
   const answered = isShort
     ? (question.chosenText ?? "Skipped")
     : isSkipped
       ? "Skipped"
-      : question.options[question.chosenIndex];
+      : options[question.chosenIndex];
   const answeredTone = isSkipped
     ? "text-amber-300"
-    : question.score === 1
+    : question.isCorrect
       ? "text-green-300"
       : "text-red-300";
 
@@ -61,19 +73,19 @@ function QuestionCard({ question }) {
           </span>
           <span
             className={`text-xs font-semibold px-1.5 py-0.5 rounded-md tabular-nums ${
-              question.score === 1
+              question.isCorrect
                 ? "bg-green-900/50 text-green-300"
                 : "bg-red-900/50 text-red-300"
             }`}
           >
-            {question.score}/1
+            {question.points}/{question.maxPoints}
           </span>
         </div>
       </div>
 
       {!isShort && (
         <ul className="mt-2 space-y-1">
-          {question.options.map((option, i) => {
+          {options.map((option, i) => {
             const isCorrect = i === question.correctIndex;
             const isChosen = i === question.chosenIndex;
             const tone = isCorrect
@@ -117,15 +129,53 @@ function QuestionCard({ question }) {
   );
 }
 
-export function AttemptDetailModal({ attempt, student, exam, onClose }) {
-  const questions = buildAttemptDetail(attempt, exam);
+export function AttemptDetailModal({
+  attempt,
+  student,
+  quizId,
+  attemptId,
+  onClose,
+}) {
+  const detailQuery = useAttemptDetail(quizId, attemptId);
+
+  let body;
+  if (detailQuery.isPending) {
+    body = (
+      <div className="flex items-center justify-center py-10">
+        <Spinner />
+      </div>
+    );
+  } else if (detailQuery.isError) {
+    body = (
+      <div className="flex items-center justify-center py-10">
+        <ErrorState
+          message={
+            detailQuery.error?.message ||
+            "Something went wrong. Please try again."
+          }
+        />
+      </div>
+    );
+  } else {
+    const questions = mapAnswerRows(detailQuery.data);
+    body =
+      questions.length === 0 ? (
+        <EmptyState message="No answers recorded for this attempt" />
+      ) : (
+        <div className="space-y-3">
+          {questions.map((question) => (
+            <QuestionCard key={question.id} question={question} />
+          ))}
+        </div>
+      );
+  }
 
   return (
     <Modal
       onClose={onClose}
       panelClassName="bg-specialsurface rounded-lg border border-muted w-[640px] max-w-[calc(100vw-2rem)] max-h-[85vh] flex flex-col overflow-hidden font-body"
     >
-      {/* Fixed header */}
+      {/* Fixed header — score/date/student come from the clicked list row. */}
       <header className="shrink-0 flex items-start justify-between gap-4 px-5 py-4 border-b border-muted/20">
         <div className="min-w-0">
           <h2 className="font-display font-bold text-inkondark truncate">
@@ -147,11 +197,7 @@ export function AttemptDetailModal({ attempt, student, exam, onClose }) {
       </header>
 
       {/* Scrollable body */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3">
-        {questions.map((question) => (
-          <QuestionCard key={question.id} question={question} />
-        ))}
-      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">{body}</div>
     </Modal>
   );
 }

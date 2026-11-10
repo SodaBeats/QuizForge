@@ -33,6 +33,10 @@ describe("lib/queryKeys — invalidation prefixes", () => {
     expect(startsWith(attemptKeys.examDetail(7), attemptKeys.all)).toBe(true);
     expect(startsWith(attemptKeys.examList(7), attemptKeys.all)).toBe(true);
     expect(attemptKeys.examList(7)).not.toEqual(attemptKeys.examDetail(7));
+    // Per-attempt detail nests under the exam prefix too (shared invalidation)
+    // but stays a distinct cache per attempt.
+    expect(startsWith(attemptKeys.detail(7, 99), attemptKeys.all)).toBe(true);
+    expect(attemptKeys.detail(7, 99)).not.toEqual(attemptKeys.detail(7, 100));
   });
 
   it("keeps dashboard stats and both paginated lists under dashboardKeys.all", () => {

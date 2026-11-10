@@ -30,4 +30,17 @@ export const examAttemptsApi = {
     const payload = assertSuccess(result, "Failed to fetch attempts");
     return { attempts: payload.attempts ?? [], students: payload.students ?? [] };
   },
+
+  /** GET /api/quizzes/:quizId/attempts/:attemptId → normalized answer
+      rows (the modal header reads the list row instead). Empty is a
+      normal state — e.g. questions added after the submission. */
+  async attemptDetail(quizId, attemptId) {
+    const result = await apiRequest(
+      `/api/quizzes/${quizId}/attempts/${attemptId}`,
+      {},
+      { fallbackMessage: "Failed to fetch attempt details" },
+    );
+    const payload = assertSuccess(result, "Failed to fetch attempt details");
+    return payload.questions ?? [];
+  },
 };

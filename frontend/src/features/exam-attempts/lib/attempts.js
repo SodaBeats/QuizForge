@@ -1,7 +1,5 @@
 /* Pure helpers for the Exam Attempts page — the high-risk logic lives here
-   so it stays testable without rendering (Phase 4). */
-
-import { MOCK_STUDENTS } from "./mockData.js";
+   so it stays testable without rendering. */
 
 /** Attempts for one student, newest submission first. */
 export function sortAttemptsNewestFirst(attempts) {
@@ -20,10 +18,7 @@ export function sortStudents(groups) {
 /** [{ student, attempts }] for every student with ≥1 attempt, students
     A→Z, each student's attempts newest first. Attempts referencing an
     unknown student are dropped. */
-export function groupAttemptsByStudent(
-  attempts,
-  students = MOCK_STUDENTS,
-) {
+export function groupAttemptsByStudent(attempts, students) {
   const byId = new Map(students.map((student) => [student.id, student]));
   const groups = new Map();
 
