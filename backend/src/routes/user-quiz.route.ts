@@ -144,6 +144,42 @@ router.get(
   },
 );
 
+// ROUTER FOR EXAM DETAILS (attempts page, left panel) ------------------------------------
+router.get(
+  '/:quizId',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    if (Number.isNaN(quizId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const exam = await UserQuizzesRepository.getQuizDetails(quizId);
+      if (!exam) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      return res.status(200).json({ success: true, exam });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
 // ROUTER TO CHECK IF QUIZ HAS ATTEMPTS ----------------------------------------------
 router.get(
   '/:quizId/attempts',
@@ -175,6 +211,108 @@ router.get(
       return res.status(200).json({ success: true });
     } catch (error) {
       next(error);
+    }
+  },
+);
+
+// ROUTER FOR THE ATTEMPTS LIST (attempts page, right panel) ------------------------------
+// Empty arrays are a valid 200 ("no submissions yet"), unlike the existence
+// check above. Registered before GET /:quizId/attempts/:attemptId so "list"
+// never matches the :attemptId param.
+router.get(
+  '/:quizId/attempts/list',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    if (Number.isNaN(quizId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const { attempts, students } =
+        await QuizAttemptsRepo.getCompletedAttemptsWithStudents(quizId);
+
+      return res.status(200).json({ success: true, attempts, students });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+// ROUTER FOR ONE ATTEMPT'S DETAIL (attempts page detail view) --------------------------
+// Returns the per-question answer rows plus the attempt's summary remarks
+// (attempt_remarks) — the header (score/date/student) reads those off the
+// already-fetched list row. Registered after /attempts/list so "list" is
+// never swallowed by :attemptId.
+router.get(
+  '/:quizId/attempts/:attemptId',
+  verifyToken,
+  verifyTeacher,
+  userBasedRateLimiter(5, 10),
+  async (req, res, next) => {
+    const quizId = Number(req.params.quizId);
+    const attemptId = Number(req.params.attemptId);
+    if (Number.isNaN(quizId) || Number.isNaN(attemptId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Quiz or Attempt ID' });
+    }
+
+    try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(quizId);
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+
+      const attempt = await QuizAttemptsRepo.getAttemptForQuiz(
+        attemptId,
+        quizId,
+      );
+      if (!attempt) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Attempt not found' });
+      }
+
+      const answerRows =
+        await AttemptAnswersRepo.getAttemptAnswersWithQuestions(attemptId);
+
+      const questions = answerRows.map((row) => ({
+        questionId: row.questionId,
+        questionText: row.questionText,
+        questionType: row.questionType,
+        options: [row.optionA, row.optionB, row.optionC, row.optionD].filter(
+          (option): option is string => option != null,
+        ),
+        chosenAnswer: row.chosenAnswer,
+        correctAnswer: row.correctAnswer,
+        isCorrect: row.isCorrect,
+        points: row.points ?? 0,
+        // short-answer is graded 0–10 by quizSubmit; everything else is 1 pt
+        maxPoints: row.questionType === 'short-answer' ? 10 : 1,
+        remarks: row.remarks,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        questions,
+        attemptRemarks: attempt.attemptRemarks ?? null,
+      });
+    } catch (error) {
+      return next(error);
     }
   },
 );
