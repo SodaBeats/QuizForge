@@ -240,6 +240,11 @@ const DETAIL_ROWS = [
 const BRIAN_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1003);
 const ALICE_ATTEMPT = MOCK_ATTEMPTS["1"].find((a) => a.id === 1002); // 22/25, in her box
 
+// Plain-text teacher-facing summary, as produced by the current prompt
+// (labeled sections, no markdown).
+const SUMMARY =
+  "Strengths: Multiplication facts.\nGaps: Fraction equivalence.\nSuggested next steps: Review fraction comparison exercises.";
+
 beforeEach(() => {
   examAttemptsApi.examDetails.mockImplementation(async (quizId) => {
     const exam = MOCK_EXAMS[String(quizId)];
@@ -256,7 +261,10 @@ beforeEach(() => {
       students: MOCK_STUDENTS.filter((student) => withAttempts.has(student.id)),
     };
   });
-  examAttemptsApi.attemptDetail.mockResolvedValue(DETAIL_ROWS);
+  examAttemptsApi.attemptDetail.mockResolvedValue({
+    questions: DETAIL_ROWS,
+    attemptRemarks: SUMMARY,
+  });
 });
 
 // The page reads quizId from route params, so render it under a real Route
@@ -480,7 +488,10 @@ describe("AttemptDetailView", () => {
   });
 
   it("shows an empty state when the attempt has no answer rows", async () => {
-    examAttemptsApi.attemptDetail.mockResolvedValue([]);
+    examAttemptsApi.attemptDetail.mockResolvedValue({
+      questions: [],
+      attemptRemarks: SUMMARY,
+    });
 
     renderAt("1");
     fireEvent.click(
@@ -491,5 +502,136 @@ describe("AttemptDetailView", () => {
       await screen.findByText("No answers recorded for this attempt"),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole("article")).toHaveLength(0);
+  });
+
+  /* ---- tab logic: default, swap, empty-summary detection, reset ---- */
+
+  it("shows both tabs and opens on the detail tab", async () => {
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
+
+    expect(
+      within(panel).getByRole("button", { name: "Detailed attempt view" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(panel).getByRole("button", { name: "Attempt summary" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    // The summary stays out of sight until its tab is picked.
+    expect(within(panel).queryByText(/Strengths:/)).toBeNull();
+  });
+
+  it("swaps to the summary tab and back, showing the summary verbatim", async () => {
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
+
+    const detailTab = within(panel).getByRole("button", {
+      name: "Detailed attempt view",
+    });
+    const summaryTab = within(panel).getByRole("button", {
+      name: "Attempt summary",
+    });
+    fireEvent.click(summaryTab);
+
+    expect(summaryTab).toHaveAttribute("aria-pressed", "true");
+    expect(detailTab).toHaveAttribute("aria-pressed", "false");
+    // Tabs are exclusive: the card list never coexists with the summary.
+    expect(within(panel).queryAllByRole("article")).toHaveLength(0);
+    // Verbatim passthrough — labels and line breaks intact, no processing.
+    const summary = within(panel).getByText(/Strengths:/);
+    expect(summary.textContent).toBe(SUMMARY);
+
+    // …and back to the cards.
+    fireEvent.click(detailTab);
+    expect(await within(panel).findAllByRole("article")).toHaveLength(6);
+  });
+
+  it.each([
+    ["null (older rows)", null],
+    ["an empty string", ""],
+    ["the 'none' column default", "none"],
+    ["the submit fallback", "Summary Unavailable"],
+    ["mixed case with padding", "  None  "],
+  ])(
+    "shows the empty state when the summary is %s",
+    async (_desc, attemptRemarks) => {
+      examAttemptsApi.attemptDetail.mockResolvedValue({
+        questions: DETAIL_ROWS,
+        attemptRemarks,
+      });
+
+      renderAt("1");
+      fireEvent.click(
+        await screen.findByRole("button", { name: /Brian Okafor/ }),
+      );
+      const panel = detailRegion();
+      await within(panel).findAllByRole("article");
+      fireEvent.click(
+        within(panel).getByRole("button", { name: "Attempt summary" }),
+      );
+
+      expect(
+        within(panel).getByText("No summary available for this attempt"),
+      ).toBeInTheDocument();
+      expect(within(panel).queryByText(/Strengths:/)).toBeNull();
+    },
+  );
+
+  it("resets to the detail tab when the same attempt is reopened", async () => {
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    let panel = detailRegion();
+    await within(panel).findAllByRole("article");
+
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "Attempt summary" }),
+    );
+    expect(within(panel).getByText(/Strengths:/)).toBeInTheDocument();
+
+    // Leave and reopen: tab state must not survive the round trip.
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "Back to attempts list" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    panel = detailRegion();
+
+    expect(
+      within(panel).getByRole("button", { name: "Detailed attempt view" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(within(panel).queryByText(/Strengths:/)).toBeNull();
+    expect(await within(panel).findAllByRole("article")).toHaveLength(6);
+  });
+
+  it("renders a legacy markdown summary verbatim (no parser, by design)", async () => {
+    const legacy =
+      "### What You Did Great\n- Strong recall of multiplication facts";
+    examAttemptsApi.attemptDetail.mockResolvedValue({
+      questions: DETAIL_ROWS,
+      attemptRemarks: legacy,
+    });
+
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "Attempt summary" }),
+    );
+
+    const summary = within(panel).getByText(/What You Did Great/);
+    expect(summary.textContent).toBe(legacy);
   });
 });

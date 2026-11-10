@@ -76,22 +76,27 @@ describe("examAttempts.api", () => {
         remarks: null,
       },
     ];
+    const attemptRemarks = "Strengths: Multiplication facts. Gaps: Fractions.";
     fetchMock.mockResolvedValue(
-      jsonResponse(200, { success: true, questions }),
+      jsonResponse(200, { success: true, questions, attemptRemarks }),
     );
 
-    await expect(examAttemptsApi.attemptDetail(7, 1003)).resolves.toEqual(
+    await expect(examAttemptsApi.attemptDetail(7, 1003)).resolves.toEqual({
       questions,
-    );
+      attemptRemarks,
+    });
     expect(fetchMock.mock.calls[0][0]).toBe(
       "http://localhost:3000/api/quizzes/7/attempts/1003",
     );
   });
 
-  it("normalizes a missing questions payload to an empty array", async () => {
+  it("normalizes a missing payload to empty questions and null remarks", async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, { success: true }));
 
-    await expect(examAttemptsApi.attemptDetail(7, 1003)).resolves.toEqual([]);
+    await expect(examAttemptsApi.attemptDetail(7, 1003)).resolves.toEqual({
+      questions: [],
+      attemptRemarks: null,
+    });
   });
 
   it("surfaces API errors through the shared client (status preserved)", async () => {

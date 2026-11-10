@@ -83,6 +83,7 @@ export const QuizAttemptsRepo = {
         id: quiz_attempts_db.id,
         quizId: quiz_attempts_db.quiz_id,
         status: quiz_attempts_db.status,
+        attemptRemarks: quiz_attempts_db.attempt_remarks,
       })
       .from(quiz_attempts_db)
       .where(

@@ -61,7 +61,10 @@ export function AttemptsPanel({
     return (
       <div className="flex-1 min-w-0 flex flex-col font-body p-3">
         <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
+          {/* key remounts per attempt so the tab selection can never
+              leak from one attempt into the next. */}
           <AttemptDetailView
+            key={selectedAttempt.attempt.id}
             attempt={selectedAttempt.attempt}
             student={selectedAttempt.student}
             quizId={quizId}

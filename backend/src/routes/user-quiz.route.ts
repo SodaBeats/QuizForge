@@ -250,10 +250,11 @@ router.get(
   },
 );
 
-// ROUTER FOR ONE ATTEMPT'S DETAIL (attempts page modal) --------------------------------
-// Returns the per-question answer rows only — the modal header (score/date/
-// student) reads those off the already-fetched list row. Registered after
-// /attempts/list so "list" is never swallowed by :attemptId.
+// ROUTER FOR ONE ATTEMPT'S DETAIL (attempts page detail view) --------------------------
+// Returns the per-question answer rows plus the attempt's summary remarks
+// (attempt_remarks) — the header (score/date/student) reads those off the
+// already-fetched list row. Registered after /attempts/list so "list" is
+// never swallowed by :attemptId.
 router.get(
   '/:quizId/attempts/:attemptId',
   verifyToken,
@@ -305,7 +306,11 @@ router.get(
         remarks: row.remarks,
       }));
 
-      return res.status(200).json({ success: true, questions });
+      return res.status(200).json({
+        success: true,
+        questions,
+        attemptRemarks: attempt.attemptRemarks ?? null,
+      });
     } catch (error) {
       return next(error);
     }

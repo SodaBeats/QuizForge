@@ -3,17 +3,20 @@
    detail modal). The body fetches the attempt's answers on mount
    (useAttemptDetail) and maps them to the view shape with mapAnswerRows;
    the header carries the student/score from the clicked list row plus the
-   arrow button that returns to the list. Loading / error / empty bodies
-   render in the panel's scrollable area, so the arrow stays reachable
-   while the detail is in flight or fails. */
+   arrow button that returns to the list. Two tabs sit under the header:
+   the per-question cards (default) and the attempt summary (attempt_remarks
+   as plain text). Loading / error / empty bodies render in the panel's
+   scrollable area, so the arrow stays reachable while the detail is in
+   flight or fails. */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Spinner } from "../../../components/ui/Spinner";
 import { ErrorState } from "../../../components/ui/ErrorState";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { formatSubmittedAt } from "../lib/format.js";
 import { mapAnswerRows } from "../lib/attemptQuestions.js";
 import { useAttemptDetail } from "../api/queries.js";
+import { AttemptDetailTabs } from "./AttemptDetailTabs";
 
 function BackIcon() {
   return (
@@ -43,6 +46,18 @@ const TYPE_LABELS = {
 // T/F rows carry no options from the API — synthesized here (MCQ options
 // come from the row; short-answer renders none).
 const TF_OPTIONS = ["True", "False"];
+
+// No usable summary: null (older rows), the 'none' column default, the
+// 'Summary Unavailable' submit fallback, or blank — trimmed + lowercase.
+function isMissingSummary(remarks) {
+  if (remarks == null) return true;
+  const normalized = remarks.trim().toLowerCase();
+  return (
+    normalized === "" ||
+    normalized === "none" ||
+    normalized === "summary unavailable"
+  );
+}
 
 function QuestionCard({ question }) {
   const isShort = question.type === "short-answer";
@@ -141,6 +156,7 @@ export function AttemptDetailView({
   onBack,
 }) {
   const backRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("detail");
   const detailQuery = useAttemptDetail(quizId, attemptId);
 
   // Land keyboard focus on the arrow so the view can be left without a mouse.
@@ -166,8 +182,17 @@ export function AttemptDetailView({
         />
       </div>
     );
+  } else if (activeTab === "summary") {
+    const summary = detailQuery.data.attemptRemarks;
+    body = isMissingSummary(summary) ? (
+      <EmptyState message="No summary available for this attempt" />
+    ) : (
+      <p className="text-sm leading-relaxed text-inkondark whitespace-pre-line">
+        {summary}
+      </p>
+    );
   } else {
-    const questions = mapAnswerRows(detailQuery.data);
+    const questions = mapAnswerRows(detailQuery.data.questions);
     body =
       questions.length === 0 ? (
         <EmptyState message="No answers recorded for this attempt" />
@@ -207,6 +232,8 @@ export function AttemptDetailView({
           </p>
         </div>
       </header>
+
+      <AttemptDetailTabs activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Scrollable body */}
       <div className="flex-1 min-h-0 overflow-y-auto p-3">{body}</div>

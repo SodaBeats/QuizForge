@@ -31,9 +31,10 @@ export const examAttemptsApi = {
     return { attempts: payload.attempts ?? [], students: payload.students ?? [] };
   },
 
-  /** GET /api/quizzes/:quizId/attempts/:attemptId → normalized answer
-      rows (the modal header reads the list row instead). Empty is a
-      normal state — e.g. questions added after the submission. */
+  /** GET /api/quizzes/:quizId/attempts/:attemptId → { questions, attemptRemarks }.
+      The header (score/date/student) reads the list row instead. A stale
+      backend that omits attemptRemarks normalizes to null. Empty questions
+      is a normal state — e.g. questions added after the submission. */
   async attemptDetail(quizId, attemptId) {
     const result = await apiRequest(
       `/api/quizzes/${quizId}/attempts/${attemptId}`,
@@ -41,6 +42,9 @@ export const examAttemptsApi = {
       { fallbackMessage: "Failed to fetch attempt details" },
     );
     const payload = assertSuccess(result, "Failed to fetch attempt details");
-    return payload.questions ?? [];
+    return {
+      questions: payload.questions ?? [],
+      attemptRemarks: payload.attemptRemarks ?? null,
+    };
   },
 };

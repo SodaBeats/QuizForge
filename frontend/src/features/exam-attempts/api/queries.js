@@ -22,7 +22,8 @@ export function useExamAttempts(quizId) {
   });
 }
 
-/** One attempt's per-question answer rows — fetched when a row is clicked. */
+/** One attempt's detail — { questions, attemptRemarks } — fetched when a
+ * row is clicked. */
 export function useAttemptDetail(quizId, attemptId, { enabled = true } = {}) {
   return useQuery({
     queryKey: attemptKeys.detail(quizId, attemptId),
