@@ -71,11 +71,13 @@ describe('GET /api/documents', () => {
       .set(authHeader(teacherToken));
 
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
+    // The list endpoint wraps rows: { documents, totalDocuments }
+    expect(Array.isArray(res.body.documents)).toBe(true);
+    expect(res.body.documents.length).toBeGreaterThan(0);
+    expect(res.body.totalDocuments).toBeGreaterThan(0);
 
     // Each item should have at minimum an id and a filename/title
-    const doc = res.body[0];
+    const doc = res.body.documents[0];
     expect(doc).toHaveProperty('id');
   });
 
