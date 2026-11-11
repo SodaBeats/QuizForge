@@ -1,5 +1,6 @@
 //STILL NEED TO WORK ON CASES WHERE CORRECT ANSWER IS NULL
 // Types -----------------------------------------------------------------------
+import { type QuestionType } from '../types/questionType.js';
 export interface Question {
   id: number;
   documentId: number;
@@ -12,11 +13,6 @@ export interface Question {
   optionD: string | null;
 }
 
-export enum QuestionType {
-  MultipleChoice = 'multiple-choice',
-  TrueFalse = 'true-false',
-  ShortAnswer = 'short-answer',
-}
 type ScoreableQuestion = Pick<
   Question,
   'id' | 'correctAnswer' | 'questionType' | 'questionText'

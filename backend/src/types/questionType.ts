@@ -11,8 +11,10 @@ export type Question = {
   optionD?: string | null;
 };
 
-export enum QuestionType {
-  MultipleChoice = 'multiple-choice',
-  TrueFalse = 'true-false',
-  ShortAnswer = 'short-answer',
-}
+export type QuestionType =
+  | 'multiple-choice'
+  | 'true-false'
+  | 'short-answer'
+  | 'general-open-ended-objective'
+  | 'code-explain-open-ended-objective'
+  | 'code-output-predict-open-ended-objective';
