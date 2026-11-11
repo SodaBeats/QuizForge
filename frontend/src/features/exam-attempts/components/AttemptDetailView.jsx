@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { Spinner } from "../../../components/ui/Spinner";
 import { ErrorState } from "../../../components/ui/ErrorState";
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { isReasoningQuestionType } from "../../../lib/questionTypes.js";
 import { formatSubmittedAt } from "../lib/format.js";
 import { mapAnswerRows } from "../lib/attemptQuestions.js";
 import { useAttemptDetail } from "../api/queries.js";
@@ -41,10 +42,13 @@ const TYPE_LABELS = {
   "multiple-choice": "Multiple choice",
   "true-false": "True/False",
   "short-answer": "Short answer",
+  "general-open-ended-objective": "General open-ended",
+  "code-explain-open-ended-objective": "Code: explain",
+  "code-output-predict-open-ended-objective": "Code: predict output",
 };
 
 // T/F rows carry no options from the API — synthesized here (MCQ options
-// come from the row; short-answer renders none).
+// come from the row; free-text reasoning rows render none).
 const TF_OPTIONS = ["True", "False"];
 
 // No usable summary: null (older rows), the 'none' column default, the
@@ -60,16 +64,16 @@ function isMissingSummary(remarks) {
 }
 
 function QuestionCard({ question }) {
-  const isShort = question.type === "short-answer";
+  const isFreeText = isReasoningQuestionType(question.type);
   const options =
     question.type === "true-false" ? TF_OPTIONS : question.options;
-  const isSkipped = isShort
+  const isSkipped = isFreeText
     ? question.chosenText == null
     : question.chosenIndex == null;
-  const correct = isShort
+  const correct = isFreeText
     ? question.correctText
     : options[question.correctIndex];
-  const answered = isShort
+  const answered = isFreeText
     ? (question.chosenText ?? "Skipped")
     : isSkipped
       ? "Skipped"
@@ -100,7 +104,7 @@ function QuestionCard({ question }) {
         </div>
       </div>
 
-      {!isShort && (
+      {!isFreeText && (
         <ul className="mt-2 space-y-1">
           {options.map((option, i) => {
             const isCorrect = i === question.correctIndex;
