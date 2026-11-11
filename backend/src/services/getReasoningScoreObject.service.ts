@@ -9,7 +9,7 @@ export type ScoreableQuestion = Pick<
   Question,
   'id' | 'correctAnswer' | 'questionType' | 'questionText'
 >;
-export type ShortAnswerGradingResult = {
+export type ReasoningGradingResult = {
   scores: Record<string, number>;
   remarks: Record<string, string>;
 };
@@ -30,23 +30,23 @@ export const getGroqClient = (): Groq => {
   return groq;
 };
 
-const shortAnswerScoreSchema = z.array(
+const reasoningScoreSchema = z.array(
   z.object({
     questionId: z.union([z.string(), z.number().int()]),
     score: z.number().int().min(0).max(10),
     remarks: z.string().trim(),
   }),
 );
-const shortAnswerBatchSize = 10;
+const reasoningBatchSize = 10;
 
 // ---------------------------------------------------------------------------------------------
 // Functions
 // ---------------------------------------------------------------------------------------------
-export const parseShortAnswerScores = (
+export const parseReasoningScores = (
   rawParsed: unknown,
   questions: ScoreableQuestion[],
-): ShortAnswerGradingResult => {
-  const parsedScore = shortAnswerScoreSchema.safeParse(rawParsed);
+): ReasoningGradingResult => {
+  const parsedScore = reasoningScoreSchema.safeParse(rawParsed);
 
   if (!parsedScore.success) {
     throw new Error('LLM returned an unexpected format');
@@ -108,7 +108,7 @@ const buildGradingPayload = (
 const gradeBatch = async (
   questions: ScoreableQuestion[],
   answers: Record<string, string>,
-): Promise<ShortAnswerGradingResult> => {
+): Promise<ReasoningGradingResult> => {
   const formatForLlm = buildGradingPayload(questions, answers);
   const stringifiedFormat = JSON.stringify(formatForLlm, null, 2);
 
@@ -173,19 +173,19 @@ const gradeBatch = async (
     throw new Error(`Failed to parse LLM response: ${err.message}`);
   }
 
-  return parseShortAnswerScores(rawParsed, questions);
+  return parseReasoningScores(rawParsed, questions);
 };
 
 const gradeBatchWithRetry = async (
   questions: ScoreableQuestion[],
   answers: Record<string, string>,
   batchNumber: number,
-): Promise<ShortAnswerGradingResult> => {
+): Promise<ReasoningGradingResult> => {
   try {
     return await gradeBatch(questions, answers);
   } catch (error: any) {
     console.warn(
-      `[getShortAnsScoreObject.service] Batch ${batchNumber} failed on first attempt, retrying...`,
+      `[getReasoningScoreObject.service] Batch ${batchNumber} failed on first attempt, retrying...`,
       error.message,
     );
 
@@ -193,7 +193,7 @@ const gradeBatchWithRetry = async (
       return await gradeBatch(questions, answers);
     } catch (retryError: any) {
       console.error(
-        `[getShortAnsScoreObject.service] Batch ${batchNumber} failed after retry. Aborting grading.`,
+        `[getReasoningScoreObject.service] Batch ${batchNumber} failed after retry. Aborting grading.`,
         retryError.message,
       );
 
@@ -207,15 +207,15 @@ const gradeBatchWithRetry = async (
 // ---------------------------------------------------------------------------------------------
 // Main Function
 // ---------------------------------------------------------------------------------------------
-export const getShortAnsScoreObject = async (
+export const getReasoningScoreObject = async (
   questions: ScoreableQuestion[],
   answers: Record<string, string> | null,
-): Promise<ShortAnswerGradingResult> => {
+): Promise<ReasoningGradingResult> => {
   if (!answers || Object.keys(answers).length === 0 || questions.length === 0) {
     return { scores: {}, remarks: {} };
   }
 
-  const questionBatches = chunkQuestions(questions, shortAnswerBatchSize);
+  const questionBatches = chunkQuestions(questions, reasoningBatchSize);
   const mergedScores: Record<string, number> = {};
   const mergedRemarks: Record<string, string> = {};
 

@@ -1,4 +1,4 @@
-import { getGroqClient } from './getShortAnsScoreObject.service.js';
+import { getGroqClient } from './getReasoningScoreObject.service.js';
 import type { Question } from '../types/questionType.js';
 
 type formattedAttemptAnswer = {
@@ -12,7 +12,7 @@ type formattedAttemptAnswer = {
   points: number;
 };
 
-type formattedShortAnsAttemptAnswer = {
+type formattedReasoningAttemptAnswer = {
   quiz_id: number;
   attempt_id: number;
   user_id: number;
@@ -26,14 +26,14 @@ type formattedShortAnsAttemptAnswer = {
 
 export const getSummaryRemarks = async ({
   formattedAttemptAnswers,
-  formattedShortAnsAttemptAnswers,
+  formattedReasoningAttemptAnswers,
   normalQuestions,
-  shortAnsQuestions,
+  reasoningQuestions,
 }: {
   formattedAttemptAnswers: formattedAttemptAnswer[];
-  formattedShortAnsAttemptAnswers: formattedShortAnsAttemptAnswer[];
+  formattedReasoningAttemptAnswers: formattedReasoningAttemptAnswer[];
   normalQuestions: Question[];
-  shortAnsQuestions: Question[];
+  reasoningQuestions: Question[];
 }) => {
   const normSummary = normalQuestions.map((q: Question) => {
     const matchingAnswer = formattedAttemptAnswers.find(
@@ -55,8 +55,8 @@ export const getSummaryRemarks = async ({
       instructorRemarks: null,
     };
   });
-  const shortAnsSummary = shortAnsQuestions.map((q: Question) => {
-    const matchingAnswer = formattedShortAnsAttemptAnswers.find(
+  const reasoningSummary = reasoningQuestions.map((q: Question) => {
+    const matchingAnswer = formattedReasoningAttemptAnswers.find(
       (ans) => ans.question_id === q.id,
     );
     return {
@@ -68,7 +68,7 @@ export const getSummaryRemarks = async ({
       instructorRemarks: matchingAnswer?.remarks?.trim() || 'None',
     };
   });
-  const attemptSummary = [...normSummary, ...shortAnsSummary];
+  const attemptSummary = [...normSummary, ...reasoningSummary];
 
   const systemMessage = `
     # PERSONA
@@ -81,8 +81,8 @@ export const getSummaryRemarks = async ({
       question, the student's answer, the correct answer, the result, and any
       instructor remark.
     2. Group related questions into broad topics or skill areas based on the text.
-    3. Identify strengths: topics answered correctly or with strong short-answer
-      performance.
+    3. Identify strengths: topics answered correctly or with strong reasoning
+      (short-answer / open-ended) performance.
     4. Identify gaps: topics answered incorrectly or carrying a negative
       instructor remark.
     5. Recommend 2-3 specific follow-ups the teacher can assign or reteach.
