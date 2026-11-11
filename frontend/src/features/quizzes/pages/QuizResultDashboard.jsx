@@ -109,8 +109,8 @@ export function QuizResultDashboard() {
 
   return (
     <AppShell
-      rootClassName="h-screen flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt"
-      containerClassName="flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden"
+      rootClassName="h-dvh min-h-0 flex flex-col bg-canvas text-inkondark alt-display-root font-displayAlt"
+      containerClassName="flex flex-1 min-h-0 min-w-0 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden"
       tabs={[
         { key: "results", label: "Results" },
         { key: "leaderboard", label: "Leaderboard" },

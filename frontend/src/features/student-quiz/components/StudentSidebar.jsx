@@ -1,41 +1,28 @@
-// StudentQuizSidebar.jsx
-import { useState } from "react";
-import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
-
 export function StudentSidebar({
   questions,
+  onQuestionSelect,
   currentQuestionIndex,
-  //onQuestionSelect,
   answeredQuestions,
-  onQuizSubmit,
+  onRequestSubmit,
+  className = "",
 }) {
-  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const totalQuestions = questions?.length ?? 0;
   const answeredCount = answeredQuestions?.size || 0;
-  const unansweredCount = totalQuestions - answeredCount;
   const progressPercentage =
     totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
-  const handleSubmitClick = () => {
-    if (unansweredCount > 0) {
-      setShowSubmitConfirm(true);
-      return;
-    }
-    onQuizSubmit();
-  };
-
   return (
-    <div className="w-80 border-r-2 border-accent/50 bg-specialsurface flex flex-col h-full">
+    <div className={`w-full shrink-0 border-b-2 border-accent/50 bg-specialsurface flex flex-col lg:h-full lg:w-56 lg:border-b-0 lg:border-r-2 lg:w-80 ${className}`}>
       {/* Header */}
-      <div className="border-b border-muted/20 p-4">
-        <h2 className="text-lg font-semibold text-inkondark">Questions</h2>
-        <p className="text-xs text-muted mt-1">
+      <div className="border-b border-muted/20 px-3 py-2 md:p-4">
+        <h2 className="text-sm font-semibold text-inkondark lg:text-lg">Questions</h2>
+        <p className="mt-1 text-[10px] text-muted lg:text-xs">
           {answeredCount} of {totalQuestions} answered
         </p>
       </div>
 
       {/* Progress Bar */}
-      <div className="px-4 py-3 border-b border-muted/20">
+      <div className="border-b border-muted/20 px-3 py-2 lg:px-4 lg:py-3">
         <div className="w-full bg-muted/20 rounded-full h-2">
           <div
             className="bg-accent h-2 rounded-full transition-all duration-300"
@@ -45,8 +32,8 @@ export function StudentSidebar({
       </div>
 
       {/* Questions List - Now a vertical list */}
-      <div className="flex-1 p-2 overflow-y-auto">
-        <div className="flex flex-col gap-1">
+      <div className="max-h-20 overflow-x-auto overflow-y-hidden p-2 lg:min-h-0 lg:max-h-none lg:flex-1 lg:overflow-x-hidden lg:overflow-y-auto">
+        <div className="flex w-max flex-row gap-1 lg:w-auto lg:flex-col">
           {questions?.map((question, index) => {
             const isSelected = index === currentQuestionIndex;
             const isAnswered = answeredQuestions?.has(question.id);
@@ -54,9 +41,10 @@ export function StudentSidebar({
             return (
               <button
                 key={question.id}
-                //onClick={() => onQuestionSelect(index)}
+                onClick={() => onQuestionSelect(index)}
                 className={`
-                  flex items-center gap-3 p-3 rounded-lg text-sm transition-all text-left
+                  flex min-w-28 items-center gap-2 rounded-lg p-2 text-left text-xs transition-all
+                  lg:min-w-0 lg:gap-3 lg:p-3 lg:text-sm
                   ${
                     isSelected
                       ? "bg-accent/20 text-accent border border-accent/50"
@@ -85,26 +73,14 @@ export function StudentSidebar({
       </div>
 
       {/* Submit Quiz Button */}
-      <div className="border-t border-muted/20 p-4">
+      <div className="hidden border-t border-muted/20 p-4 lg:block">
         <button
-          className="w-full px-4 py-3 bg-accept text-inkondark hover:bg-green-600 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={handleSubmitClick}
+          className="w-full rounded-lg bg-accept px-4 py-3 font-semibold text-inkondark transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={onRequestSubmit}
         >
           Submit Quiz
         </button>
       </div>
-
-      <ConfirmDialog
-        open={showSubmitConfirm}
-        title="Submit quiz?"
-        message={`You have ${unansweredCount} unanswered question(s). Submit anyway?`}
-        confirmLabel="Submit anyway"
-        onConfirm={() => {
-          setShowSubmitConfirm(false);
-          onQuizSubmit();
-        }}
-        onCancel={() => setShowSubmitConfirm(false)}
-      />
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function StudentTokenEntry({
           <div className="brand-mark">Q</div>
           <div className="brand-text">
             <div className="name">
-              Quiz<span className="accent">Forge</span>
+              Ilmari<span className="accent">Gen</span>
             </div>
             <div className="tagline">Learn • Practice • Achieve</div>
           </div>
@@ -55,7 +55,7 @@ export function StudentTokenEntry({
       </div>
 
       <div className="stage">
-        <img className="mascot" src={avatarPeeking} alt="QuizForge mascot" />
+        <img className="mascot" src={avatarPeeking} alt="IlmariGen mascot" />
 
         {isModalOpen ? (
           <div className="card">
@@ -181,7 +181,7 @@ export function StudentTokenEntry({
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
           <path d="m9 12 2 2 4-4" />
         </svg>
-        QuizForge <span className="dot">•</span> Built for the Classroom
+        IlmariGen <span className="dot">•</span> Built for the Classroom
       </footer>
     </div>
   );

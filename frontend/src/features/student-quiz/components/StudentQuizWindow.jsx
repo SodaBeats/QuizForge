@@ -8,7 +8,7 @@ function ReasoningAnswerInput({ answers, question, onAnswerChange }) {
   };
 
   return (
-    <div className="h-48 flex flex-col">
+    <div className="h-36 flex flex-col sm:h-48">
       {/* Fixed height for textarea to prevent takeover */}
       <textarea
         className="w-full flex-1 bg-darkslate border border-muted/30 rounded-md p-4 focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none text-inkondark text-sm placeholder:text-muted resize-none"
@@ -29,6 +29,8 @@ export function StudentQuizWindow({
   canPrev,
   answers,
   onAnswerChange,
+  onSubmitQuiz,
+  className = "",
 }) {
   if (!question)
     return (
@@ -36,18 +38,18 @@ export function StudentQuizWindow({
     );
 
   return (
-    <div className="flex-1 flex flex-col bg-specialsurface text-inkondark">
+    <div className={`flex min-w-0 flex-1 flex-col bg-specialsurface text-inkondark lg:min-h-0 ${className}`}>
       {/* Question Content */}
-      <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full px-8">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 pb-8 sm:px-8 lg:min-h-0 lg:pb-0">
         {/* Question Part */}
-        <div className="flex-1 flex flex-col justify-center py-6 border-b border-muted/20 overflow-y-auto pr-2">
+        <div className="flex min-h-32 flex-col justify-center border-b border-muted/20 py-4 pr-2 sm:py-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           <h1 className="text-xl md:text-2xl font-medium leading-relaxed select-none text-inkondark text-center">
             {question.questionText}
           </h1>
         </div>
 
         {/* Input Part */}
-        <div className="flex-1 flex flex-col justify-center py-6">
+        <div className="flex flex-none flex-col justify-center py-4 sm:py-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           <div className="w-full max-w-2xl mx-auto">
             {/* max-w-2xl keeps buttons from getting too wide on desktop */}
             {question.questionType === "multiple-choice" ? (
@@ -120,22 +122,28 @@ export function StudentQuizWindow({
               />
             )}
           </div>
+          <button
+            onClick={onSubmitQuiz}
+            className="mx-auto mt-8 w-full max-w-2xl rounded-lg border border-accept/50 bg-accept/10 px-4 py-3 text-sm font-semibold text-inkondark transition-colors hover:bg-accept/20 lg:hidden"
+          >
+            Finish and submit quiz
+          </button>
         </div>
       </div>
 
       {/* Navigation Footer */}
-      <div className="border-t border-muted/20 p-6 flex justify-between items-center bg-specialsurface">
+      <div className="sticky bottom-0 z-20 flex items-center justify-between gap-2 border-t border-muted/20 bg-specialsurface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:gap-3 sm:p-6 lg:static">
         <button
           onClick={onPrev}
           disabled={!canPrev}
-          className="bg-accent flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all disabled:opacity-20 hover:bg-muted/10"
+          className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-accent px-2 py-2 text-xs font-semibold transition-all hover:bg-muted/10 disabled:opacity-20 sm:flex-none sm:gap-2 sm:px-6 sm:text-base"
         >
           ← Previous
         </button>
         <button
           onClick={onNext}
           disabled={!canNext}
-          className="flex items-center gap-2 px-8 py-2 bg-accent text-inkondark rounded-lg font-semibold transition-all disabled:opacity-20"
+          className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-accent px-2 py-2 text-xs font-semibold text-inkondark transition-all disabled:opacity-20 sm:flex-none sm:gap-2 sm:px-8 sm:text-base"
         >
           Next →
         </button>

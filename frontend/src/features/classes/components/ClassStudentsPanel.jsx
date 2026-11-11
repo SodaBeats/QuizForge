@@ -20,11 +20,11 @@ export function ClassStudentsPanel({
     <div
       className={`${
         selectedClass && mobileTab !== "students" ? "hidden lg:flex" : "flex"
-      } flex-1 flex-col overflow-hidden font-body p-3`}
+      } flex-1 flex-col overflow-visible font-body p-3 lg:overflow-hidden`}
     >
       {selectedClass ? (
         <>
-          <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
+          <div className="flex-1 flex flex-col rounded-lg bg-surface border border-accent lg:overflow-hidden">
             <div className="px-4 sm:px-6 py-4 bg-specialsurface flex items-center justify-between gap-3 border-b border-muted/20">
               <div className="min-w-0">
                 <h2 className="text-base font-display font-semibold text-inkondark truncate">
@@ -44,7 +44,7 @@ export function ClassStudentsPanel({
               </span>
             </div>
 
-            <div className="themed-scroll flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 content-start">
+            <div className="themed-scroll flex-1 p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 content-start lg:overflow-y-auto">
               {selectedClass.students?.map((student) => (
                 <div
                   key={student?.id}

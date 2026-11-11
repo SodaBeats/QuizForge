@@ -29,9 +29,10 @@ import { PanelTabs } from "../ui/PanelTabs";
 // wrapped exactly like the old hand-rolled markup:
 // `${visible ? activeClass : "hidden"} lg:contents`.
 
-const DEFAULT_ROOT_CLASS = "h-screen flex flex-col bg-canvas text-inkondark";
+const DEFAULT_ROOT_CLASS =
+  "min-h-dvh flex flex-col bg-canvas text-inkondark lg:h-dvh lg:min-h-0";
 const DEFAULT_CONTAINER_CLASS =
-  "flex-1 flex flex-col lg:flex-row overflow-hidden";
+  "flex-1 min-w-0 flex flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden";
 
 export function AppShell({
   tabs = [],

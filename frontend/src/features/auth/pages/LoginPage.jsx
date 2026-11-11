@@ -93,10 +93,15 @@ export function LoginPage() {
   };
 
   return (
-    <main className="page-container leaning-mode" id="pageContainer">
+    <main
+      className={`page-container leaning-mode ${
+        isLogin ? "login-mode" : "signup-mode"
+      }`}
+      id="pageContainer"
+    >
       {/* =====================================================
           DECORATIVE ELEMENTS
-          These are hidden automatically in leaning mode.
+          Hidden automatically in leaning mode.
          ===================================================== */}
 
       <div className="floating-decor decor-lightbulb" aria-hidden="true">
@@ -152,8 +157,7 @@ export function LoginPage() {
 
         {/* =================================================
             CLIPBOARD CARD
-            In leaning mode the clipboard itself comes from
-            leaning_stage_bg_clean.png.
+            In leaning mode the full scene comes from login-design.png.
            ================================================= */}
 
         <div className="clipboard-card" id="clipboardCard">
@@ -245,35 +249,45 @@ export function LoginPage() {
 
                     <div className="signup-name-row">
                       <div className="form-group">
-                        <label className="input-label">First name</label>
+                        <label className="input-label" htmlFor="firstNameInput">
+                          First name
+                        </label>
 
                         <div className="input-wrapper">
                           <span className="input-icon">👤</span>
 
                           <input
                             type="text"
+                            id="firstNameInput"
+                            name="firstName"
                             className="custom-input"
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
                             placeholder="Juan"
                             required
+                            autoComplete="given-name"
                           />
                         </div>
                       </div>
 
                       <div className="form-group">
-                        <label className="input-label">Last name</label>
+                        <label className="input-label" htmlFor="lastNameInput">
+                          Last name
+                        </label>
 
                         <div className="input-wrapper">
                           <span className="input-icon">👤</span>
 
                           <input
                             type="text"
+                            id="lastNameInput"
+                            name="lastName"
                             className="custom-input"
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                             placeholder="Dela Cruz"
                             required
+                            autoComplete="family-name"
                           />
                         </div>
                       </div>
@@ -353,7 +367,9 @@ export function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Password"
                         required
-                        autoComplete="current-password"
+                        autoComplete={
+                          isLogin ? "current-password" : "new-password"
+                        }
                       />
                     </div>
                   </div>
@@ -363,6 +379,8 @@ export function LoginPage() {
 
                 {/* =======================================
                     CONFIRM PASSWORD
+                    (same structure as Email/Password so
+                    all fields have the same height)
                    ======================================= */}
 
                 {!isLogin && (
@@ -371,13 +389,6 @@ export function LoginPage() {
                       <span className="input-icon">🔒</span>
 
                       <div className="input-content">
-                        <label
-                          htmlFor="confirmPasswordInput"
-                          className="input-label"
-                        >
-                          Confirm password
-                        </label>
-
                         <input
                           type="password"
                           id="confirmPasswordInput"
@@ -385,8 +396,9 @@ export function LoginPage() {
                           className="custom-input"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="••••••••"
+                          placeholder="Confirm password"
                           required
+                          autoComplete="new-password"
                         />
                       </div>
                     </div>
@@ -445,10 +457,6 @@ export function LoginPage() {
                   )}
                 </button>
               </form>
-
-              {/* =========================================
-                  DIVIDER
-                 ========================================= */}
 
               {/* =========================================
                   FOOTER

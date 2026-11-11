@@ -13,7 +13,7 @@ export function ClassesSidebar({
 }) {
   return (
     <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-specialsurface font-body p-3">
-      <div className="flex-1 flex flex-col rounded-lg overflow-hidden border border-muted/20">
+      <div className="flex-1 flex flex-col rounded-lg border border-muted/20 lg:overflow-hidden">
         <div className="p-4 flex items-center justify-between gap-2 border-b border-muted/20">
           <p className="text-xs font-display font-semibold text-muted uppercase tracking-widest">
             Classes
@@ -28,7 +28,7 @@ export function ClassesSidebar({
           </button>
         </div>
 
-        <div className="themed-scroll flex-1 overflow-y-auto relative p-2">
+        <div className="themed-scroll relative flex-1 p-2 lg:overflow-y-auto">
           {isFetching ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-specialsurface text-center px-4">
               <Spinner />

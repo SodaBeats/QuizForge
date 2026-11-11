@@ -17,9 +17,14 @@ const TONES = {
   accent: "border-accent",
   red: "border-red-400",
   accept: "border-accept",
+  spinnergreen: "border-spinnergreen",
 };
 
-export function Spinner({ size = "md", tone = "accent", className = "" }) {
+export function Spinner({
+  size = "md",
+  tone = "spinnergreen",
+  className = "",
+}) {
   return (
     <div
       className={`animate-spin rounded-full ${SIZES[size]} ${TONES[tone]} border-t-transparent ${className}`}

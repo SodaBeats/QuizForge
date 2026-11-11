@@ -202,9 +202,13 @@ export function StudentQuizPage() {
     return <LoadingScreen fullScreen />;
   }
 
+  if (submitQuizMutation.isPending) {
+    return <LoadingScreen fullScreen message="Submitting your exam..." />;
+  }
+
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-canvas text-inkondark">
+      <div className="h-dvh flex items-center justify-center bg-canvas text-inkondark">
         <div className="text-center">
           <p className="text-red-400">{error?.message}</p>
           <button
@@ -221,7 +225,7 @@ export function StudentQuizPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-canvas text-inkondark">
+    <div className="min-h-dvh flex flex-col bg-canvas text-inkondark lg:h-dvh lg:min-h-0 lg:overflow-hidden">
       <StudentTopbar onLogout={handleLogout} />
       <StudentQuizWarnings
         showExitWarning={showExitWarning}
