@@ -16,6 +16,8 @@ export const rulesetProvider = (type: string) => {
         ## short-answer
           - Required: [question_text, correct_answer]
           - question_text: a direct question with one objectively correct answer of 1-5 words (a term, name, value, or short phrase).
+          - Do NOT ask for opinions, essays, or comparisons with many valid answers.
+          - Do NOT ask for "an example of" something, or "give a/an X". These have many valid answers. Instead, constrain the question so only one answer fits.
           - correct_answer: only that answer, with no explanation or full sentence.
           - Do not ask for opinions, lists, or anything where several different answers would be equally correct.
         `;
@@ -23,10 +25,12 @@ export const rulesetProvider = (type: string) => {
     case 'general-open-ended-objective':
       questionsRuleset = `
         ## general-open-ended-objective
-          - Required: [question_text, correct_answer]
-          - question_text: ask about the topic with one objectively correct answer (a term, value, definition, or one-sentence statement), then ask the student to briefly explain why it is correct.
-          - Do NOT ask for opinions, essays, comparisons with many valid answers, or anything where several different answers would be equally correct.
-          - correct_answer: the correct answer plus its key reasoning, in 1-3 sentences. Include the key terms or ideas that a correct explanation must contain so a grader can compare a student's answer against it.
+        - Required: [question_text, correct_answer]
+        - question_text: ask about the topic with a clear, objectively checkable answer (a term, value, definition, or one-sentence statement), then ask the student to briefly explain why it is correct.
+        - Do NOT ask for opinions, essays, or anything subjective.
+        - Questions may have one correct answer or several, but whether an answer is valid must always be decidable by a clear rule. Do NOT ask for "any example" with no constraint.
+        - correct_answer: the correct answer plus its key reasoning, in 1-3 sentences. Include the key terms or ideas that a correct explanation must contain so a grader can compare a student's answer against it.
+        - If more than one answer is valid, begin correct_answer with "Any valid answer:" followed by the rule that makes an answer valid, then one example with its reasoning.
         `;
       break;
     case 'code-explain-open-ended-objective':

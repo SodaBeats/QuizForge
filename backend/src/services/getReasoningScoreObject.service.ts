@@ -119,6 +119,7 @@ const gradeBatch = async (
         # GRADING RULES
         - Judge semantic alignment with 'correctAnswer', not wording. Equivalent phrasing is fine, and minor typos and grammar errors are ignored.
         - Be strict: every key idea in 'correctAnswer' must be present and correct for a high score.
+        - If 'correctAnswer' begins with "Any valid answer:", accept any answer that satisfies the stated rule, even if it differs from the example. Score it on the correctness of its reasoning, not on matching the example.
         - Content that contradicts 'correctAnswer' lowers the score.
         - A blank answer or an answer like "I don't know" scores 0.
 
