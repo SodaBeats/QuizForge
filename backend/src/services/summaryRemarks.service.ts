@@ -1,4 +1,4 @@
-import { getGroqClient } from './getReasoningScoreObject.service.js';
+import { groq } from '../lib/groq.js';
 import type { Question } from '../types/questionType.js';
 
 type formattedAttemptAnswer = {
@@ -126,7 +126,7 @@ export const getSummaryRemarks = async ({
   `;
   const userMessage = `<attempt>${JSON.stringify(attemptSummary)}</attempt>`;
 
-  const response = await getGroqClient().chat.completions.create({
+  const response = await groq.chat.completions.create({
     model: 'openai/gpt-oss-120b',
     messages: [
       {

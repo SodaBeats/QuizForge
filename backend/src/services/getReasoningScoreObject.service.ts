@@ -1,6 +1,6 @@
-import Groq from 'groq-sdk';
 import { z } from 'zod';
 import type { Question } from '../types/questionType.js';
+import { groq } from '../lib/groq.js';
 
 // ---------------------------------------------------------------------------------------------
 // Types
@@ -17,18 +17,6 @@ export type ReasoningGradingResult = {
 // ---------------------------------------------------------------------------------------------
 //  Variables
 // ---------------------------------------------------------------------------------------------
-let groq: Groq | null = null;
-
-export const getGroqClient = (): Groq => {
-  if (!groq) {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      throw new Error('GROQ_API_KEY is missing or empty');
-    }
-    groq = new Groq({ apiKey });
-  }
-  return groq;
-};
 
 const reasoningScoreSchema = z.array(
   z.object({
@@ -114,7 +102,7 @@ const gradeBatch = async (
 
   console.log(`[FORMAT FOR LLM]: `, stringifiedFormat);
 
-  const response = await getGroqClient().chat.completions.create({
+  const response = await groq.chat.completions.create({
     model: 'openai/gpt-oss-120b',
     response_format: { type: 'json_object' },
     messages: [
@@ -148,7 +136,7 @@ const gradeBatch = async (
                       {
                         "questionId": "13",
                         "score": 7,
-                        "remarks": "Your response captures the main idea, but it would be clearer with a fuller explanation."
+                        "remarks": "You noted a new array is created but omitted that the given 'map' example multiplies each element and that the original 'numbers' array remains unchanged."
                       }
                     ]
                 `,
