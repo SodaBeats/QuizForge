@@ -1,6 +1,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { type Quiz, Accessibility } from '../types/quizType.js';
+import { isReasoningQuestionType } from '../types/questionType.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { verifyTeacher } from '../middlewares/teacherAuthz.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
@@ -301,8 +302,8 @@ router.get(
         correctAnswer: row.correctAnswer,
         isCorrect: row.isCorrect,
         points: row.points ?? 0,
-        // short-answer is graded 0–10 by quizSubmit; everything else is 1 pt
-        maxPoints: row.questionType === 'short-answer' ? 10 : 1,
+        // reasoning types are graded 0–10 by quizSubmit; everything else is 1 pt
+        maxPoints: isReasoningQuestionType(row.questionType) ? 10 : 1,
         remarks: row.remarks,
       }));
 

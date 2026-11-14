@@ -635,3 +635,161 @@ describe("AttemptDetailView", () => {
     expect(summary.textContent).toBe(legacy);
   });
 });
+
+/* ------------------------------------------------------------------ *
+   Reasoning question types — the 3 new open-ended types render as    *
+   free text (own fixtures; DETAIL_ROWS and its counts stay untouched). *
+ * ------------------------------------------------------------------ */
+
+// Inline API-shaped rows for the detail endpoint, one per new type,
+// maxPoints 10 like short-answer. Row 3 is unanswered with the server's
+// "" chosen_answer (not null) to pin the mapper's skipped normalization.
+const REASONING_ROWS = [
+  {
+    questionId: 11,
+    questionText: "Explain why the sky is blue in one sentence.",
+    questionType: "general-open-ended-objective",
+    options: [],
+    chosenAnswer: "Rayleigh scattering of sunlight by air molecules.",
+    correctAnswer: "Light scatters off air molecules (Rayleigh scattering).",
+    isCorrect: true, // 8 ≥ 7 → correct, like short-answer
+    points: 8,
+    maxPoints: 10,
+    remarks: "One clear sentence is enough.",
+  },
+  {
+    questionId: 12,
+    questionText: "Explain what this loop does: for (let i = 0; i < 3; i++).",
+    questionType: "code-explain-open-ended-objective",
+    options: [],
+    chosenAnswer: "It prints numbers from 0 up to 2.",
+    correctAnswer: "It iterates i = 0,1,2 and logs each value.",
+    isCorrect: false, // 5 < 7 → below the correct threshold
+    points: 5,
+    maxPoints: 10,
+    remarks: null,
+  },
+  {
+    questionId: 13,
+    questionText: "What does [1, 2, 3].map(x => x * 2) evaluate to?",
+    questionType: "code-output-predict-open-ended-objective",
+    options: [],
+    chosenAnswer: "",
+    correctAnswer: "[2, 4, 6]",
+    isCorrect: false,
+    points: 0,
+    maxPoints: 10,
+    remarks: null,
+  },
+];
+
+describe("reasoning question types (attempt detail)", () => {
+  // Own detail payload so DETAIL_ROWS and every existing count stay as-is.
+  beforeEach(() => {
+    examAttemptsApi.attemptDetail.mockResolvedValue({
+      questions: REASONING_ROWS,
+      attemptRemarks: SUMMARY,
+    });
+  });
+
+  const detailRegion = () =>
+    screen.getByRole("region", { name: "Attempt details" });
+
+  // Render the page, open Brian's single-attempt row, wait for the cards.
+  async function openReasoningDetail() {
+    renderAt("1");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Brian Okafor/ }),
+    );
+    const panel = detailRegion();
+    await within(panel).findAllByRole("article");
+    return panel;
+  }
+
+  /* ---- pure mapper ---- */
+
+  it("maps all three new types to the free-text shape", () => {
+    const mapped = mapAnswerRows(REASONING_ROWS);
+
+    expect(mapped).toHaveLength(3);
+    for (const q of mapped) {
+      expect(q.options).toBeNull(); // no option list ever renders
+      expect(q.correctIndex).toBeNull();
+      expect(q.chosenIndex).toBeNull();
+    }
+    expect(mapped.map((q) => q.type)).toEqual([
+      "general-open-ended-objective",
+      "code-explain-open-ended-objective",
+      "code-output-predict-open-ended-objective",
+    ]);
+    expect(mapped[0]).toMatchObject({
+      correctText: REASONING_ROWS[0].correctAnswer,
+      chosenText: REASONING_ROWS[0].chosenAnswer,
+      points: 8,
+      maxPoints: 10,
+      isCorrect: true,
+    });
+    expect(mapped[1]).toMatchObject({
+      correctText: REASONING_ROWS[1].correctAnswer,
+      chosenText: REASONING_ROWS[1].chosenAnswer,
+      isCorrect: false,
+    });
+  });
+
+  it('normalizes an "" chosen answer to null (unanswered free-text)', () => {
+    const [q] = mapAnswerRows([REASONING_ROWS[2]]);
+
+    expect(q.chosenText).toBeNull();
+    expect(q.correctText).toBe("[2, 4, 6]"); // correct answer still shows
+    expect(q.chosenIndex).toBeNull();
+  });
+
+  /* ---- rendering ---- */
+
+  it("labels each new type and renders text answers with x/10 badges", async () => {
+    const panel = await openReasoningDetail();
+
+    expect(within(panel).getAllByText("General open-ended")).toHaveLength(1);
+    expect(within(panel).getAllByText("Code: explain")).toHaveLength(1);
+    expect(within(panel).getAllByText("Code: predict output")).toHaveLength(1);
+
+    // Free-text rows never render an option list.
+    expect(within(panel).queryAllByRole("list")).toHaveLength(0);
+
+    // Correct + answered text lines carry the actual strings.
+    expect(
+      within(panel).getByText("Light scatters off air molecules (Rayleigh scattering)."),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).getByText("Rayleigh scattering of sunlight by air molecules."),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).getByText("It prints numbers from 0 up to 2."),
+    ).toBeInTheDocument();
+
+    expect(within(panel).getAllByText("8/10")).toHaveLength(1);
+    expect(within(panel).getAllByText("5/10")).toHaveLength(1);
+    expect(within(panel).getAllByText("0/10")).toHaveLength(1);
+  });
+
+  it('shows the ""-answered row as amber Skipped, the others as answered', async () => {
+    const panel = await openReasoningDetail();
+
+    const skipped = within(panel).getByText("Skipped");
+    expect(skipped.className).toContain("text-amber-300");
+    expect(within(panel).getAllByText("Skipped")).toHaveLength(1);
+    // The answered rows show their text, not the skipped marker.
+    expect(
+      within(panel).getByText("Rayleigh scattering of sunlight by air molecules."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a remarks line only for the row that has remarks", async () => {
+    const panel = await openReasoningDetail();
+
+    expect(within(panel).getAllByText(/^Remarks:/)).toHaveLength(1);
+    expect(
+      within(panel).getByText("One clear sentence is enough."),
+    ).toBeInTheDocument();
+  });
+});

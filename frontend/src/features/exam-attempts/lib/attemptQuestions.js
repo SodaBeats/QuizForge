@@ -5,8 +5,12 @@
    - multiple-choice: single letters 'a'..'d' (chosen + correct are the
      submit-time snapshot from attempt_answers_db)
    - true-false: 'true' / 'false' strings
-   - short-answer: free text (chosen null = skipped)
+   - reasoning types (short-answer + the 3 open-ended): free text
+     (chosen null or "" = skipped — the server stores "" for unanswered
+     free-text)
    The view displays letters capitalized ("A."/"True") — frontend only. */
+
+import { isReasoningQuestionType } from "../../../lib/questionTypes.js";
 
 const MCQ_LETTERS = "abcd";
 
@@ -33,7 +37,7 @@ function boolIndex(answer) {
  * @returns {Array<object>} view rows: id, type, text, options (MCQ array,
  *   null otherwise — the view synthesizes T/F's ["True","False"]),
  *   correctIndex/chosenIndex (MCQ/T-F, null when skipped or unexpected),
- *   correctText/chosenText (short-answer only), points, maxPoints,
+ *   correctText/chosenText (reasoning types only), points, maxPoints,
  *   isCorrect, remarks
  */
 export function mapAnswerRows(rows) {
@@ -48,14 +52,16 @@ export function mapAnswerRows(rows) {
       remarks: row.remarks,
     };
 
-    if (row.questionType === "short-answer") {
+    if (isReasoningQuestionType(row.questionType)) {
       return {
         ...base,
         options: null,
         correctIndex: null,
         chosenIndex: null,
         correctText: row.correctAnswer,
-        chosenText: row.chosenAnswer,
+        // Server stores "" for unanswered free-text; normalize to null so
+        // the view renders it as skipped (amber) like MC/TF nulls.
+        chosenText: row.chosenAnswer || null,
       };
     }
 
