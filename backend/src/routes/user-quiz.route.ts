@@ -552,7 +552,7 @@ router.patch(
 
 //ROUTER FOR QUIZ METADATA UPDATES -------------------------------------------------
 router.patch(
-  '/:id',
+  '/:quizId',
   verifyToken,
   verifyTeacher,
   userBasedRateLimiter(5, 5),
