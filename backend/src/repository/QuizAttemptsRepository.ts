@@ -13,6 +13,7 @@ import {
 import { db, type QueryClient } from '../db/db.js';
 import {
   quiz_attempts_db,
+  quizzes_db,
   students_classes_db,
   users,
 } from '../db/schema.js';
@@ -336,5 +337,15 @@ export const QuizAttemptsRepo = {
     }
 
     return { attempts, students: [...studentsById.values()] };
+  },
+
+  async hasAnyAttempt(quizId: number): Promise<Boolean> {
+    const [result] = await db
+      .select({ id: quiz_attempts_db.id })
+      .from(quiz_attempts_db)
+      .where(eq(quiz_attempts_db.quiz_id, quizId))
+      .limit(1);
+
+    return result ? true : false;
   },
 };

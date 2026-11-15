@@ -13,6 +13,7 @@ import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 import { db } from '../db/db.js';
 import { QuizAccessRepo } from '../repository/QuizAccessRepo.js';
+import { rejectIfQuizLocked } from '../utils/quizLock.util.js';
 
 const router = express.Router();
 
@@ -522,6 +523,7 @@ router.patch(
           .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
+      if (await rejectIfQuizLocked(res, Number(quizId))) return;
 
       const dataForDrizzle = {
         question_text: req.body.questionText,
@@ -557,7 +559,7 @@ router.patch(
   quizInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { role } = req.user;
-    const { id } = req.params;
+    const { quizId } = req.params;
 
     if (Object.keys(req.body).length < 1) {
       return res
@@ -566,12 +568,13 @@ router.patch(
     }
 
     try {
-      const quizInfo = await UserQuizzesRepository.getQuizById(Number(id));
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
       if (!quizInfo || quizInfo.user_id !== req.user.id) {
         return res
           .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
+      if (await rejectIfQuizLocked(res, Number(quizId))) return;
 
       const dataForDrizzle = {
         quiz_title: req.body.quizTitle,
@@ -586,7 +589,7 @@ router.patch(
       await db.transaction(async (tx) => {
         const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
           dataForDrizzle,
-          Number(id),
+          Number(quizId),
           tx,
         );
         if (!updatedQuiz) {
@@ -594,11 +597,11 @@ router.patch(
         }
         if (Array.isArray(req.body.classIds)) {
           const accessUpdated = await QuizAccessRepo.updateAccess(
-            Number(id),
+            Number(quizId),
             req.body.classIds,
             tx,
           );
-          if (!accessUpdated) throw new Error('Failed to handle accessibility');
+          if (!accessUpdated) throw new Error('Failed to handle quiz access');
         }
       });
 
@@ -616,16 +619,23 @@ router.delete(
   verifyTeacher,
   userBasedRateLimiter(5, 5),
   async (req, res, next) => {
-    const quizIdNum = Number(req.params.id);
-    if (Number.isNaN(quizIdNum)) {
+    const quizId = Number(req.params.id);
+    if (Number.isNaN(quizId)) {
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Quiz ID' });
     }
     try {
+      const quizInfo = await UserQuizzesRepository.getQuizById(Number(quizId));
+      if (!quizInfo || quizInfo.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz not found' });
+      }
+      if (await rejectIfQuizLocked(res, Number(quizId))) return;
       const deletedQuiz = await UserQuizzesRepository.deleteQuiz(
         req.user.id,
-        quizIdNum,
+        quizId,
       );
       if (!deletedQuiz) {
         return res

@@ -10,6 +10,7 @@ import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { rulesetProvider } from '../utils/rulesetProvider.util.js';
+import { rejectIfQuizLocked } from '../utils/quizLock.util.js';
 import { groq } from '../lib/groq.js';
 
 //establish router
@@ -37,6 +38,8 @@ router.post(
           .status(404)
           .json({ success: false, message: 'Quiz does not exist' });
       }
+
+      if (await rejectIfQuizLocked(res, quizIdNum)) return;
 
       //format data for database insertion
       const formattedData = {
@@ -77,7 +80,7 @@ router.post(
   async (req, res, next) => {
     const { questionType, timeLimit, questionAmount, sources, topic } =
       req.body.generateOptions;
-    const { quizId } = req.body;
+    const quizId = Number(req.body.quizId);
     let rawParsed;
     let parsedQuestions;
     let contextString;
@@ -92,6 +95,15 @@ router.post(
     const questionsRuleset = rulesetProvider(questionType);
 
     try {
+      //checks if quiz exists and is owned by owner.
+      const owner = await UserQuizzesRepository.getQuizById(quizId);
+      if (!owner || owner.user_id !== req.user.id) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Quiz does not exist' });
+      }
+      if (await rejectIfQuizLocked(res, quizId)) return;
+
       console.log('generating...');
 
       const multipleChoiceSchema = z
@@ -266,7 +278,7 @@ router.post(
           ...q,
           question_type: questionType,
           time_limit: timeLimit,
-          quiz_id: Number(quizId),
+          quiz_id: quizId,
         };
       });
       const insertedQuestions = await QuestionsRepository.insertQuestionsToDb(
@@ -363,6 +375,8 @@ router.patch(
           .json({ success: false, message: 'Quiz does not exist' });
       }
 
+      if (await rejectIfQuizLocked(res, quizId)) return;
+
       const formattedData = {
         quiz_id: quizId,
         question_text: questionText,
@@ -420,6 +434,8 @@ router.delete(
           .status(404)
           .json({ success: false, message: 'Quiz does not exist' });
       }
+
+      if (await rejectIfQuizLocked(res, quizId)) return;
 
       const deletedQuestion =
         await QuestionsRepository.deleteQuestionById(questionIdNum);
