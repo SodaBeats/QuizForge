@@ -7,6 +7,7 @@ import { QuizzesPage } from "../features/quizzes/pages/QuizzesPage";
 import { StudentTokenPage } from "../features/student-quiz/pages/StudentTokenPage";
 import { StudentQuizPage } from "../features/student-quiz/pages/StudentQuizPage";
 import { ClassesPage } from "../features/classes/pages/ClassesPage";
+import { ExamAttemptsPage } from "../features/exam-attempts/pages/ExamAttemptsPage";
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorPage } from "./ErrorPage";
 import { RouteError } from "./RouteError";
@@ -74,6 +75,18 @@ export function AppRoutes() {
               >
                 <QuizResultDashboard />
               </Suspense>
+            </RequireRole>
+          }
+        />
+        {/* Exam attempts for one quiz — exam + list come from the API (the
+            detail modal still runs off the mock generator until its phase).
+            Ranked above the bare :quizId route by specificity regardless of
+            order. */}
+        <Route
+          path="/teacher/quizzes/:quizId/attempts"
+          element={
+            <RequireRole role="teacher">
+              <ExamAttemptsPage />
             </RequireRole>
           }
         />

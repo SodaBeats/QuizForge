@@ -90,6 +90,17 @@ export const QuestionList = ({
                 <option value="multiple-choice">Multiple choice</option>
                 <option value="true-false">True / False</option>
                 <option value="short-answer">Short answer</option>
+                {/* Labels verbatim from QuestionForm so both editor
+                    selects read identically. */}
+                <option value="general-open-ended-objective">
+                  Open ended (Objective)
+                </option>
+                <option value="code-explain-open-ended-objective">
+                  Code Explanation - Open Ended (Objective)
+                </option>
+                <option value="code-output-predict-open-ended-objective">
+                  Code Output Prediction - Open Ended (Objective)
+                </option>
               </select>
             </div>
 

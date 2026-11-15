@@ -41,6 +41,17 @@ export const docKeys = {
 export const attemptKeys = {
   all: ["attempts"],
   quiz: (token) => [...attemptKeys.all, "quiz", token],
+  // Exam attempts page: exam metadata + full attempt list share the "exam"
+  // prefix so one invalidation refreshes both.
+  examDetail: (quizId) => [...attemptKeys.all, "exam", quizId],
+  examList: (quizId) => [...attemptKeys.all, "exam", quizId, "list"],
+  detail: (quizId, attemptId) => [
+    ...attemptKeys.all,
+    "exam",
+    quizId,
+    "attempt",
+    attemptId,
+  ],
 };
 
 // Teacher dashboard: stats + both paginated lists share `all`, so one

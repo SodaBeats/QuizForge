@@ -1,6 +1,5 @@
 import express from 'express';
 import ollama from 'ollama';
-import Groq from 'groq-sdk';
 import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
@@ -10,10 +9,11 @@ import { QuestionsRepository } from '../repository/QuestionsRepository.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
+import { rulesetProvider } from '../utils/rulesetProvider.util.js';
+import { groq } from '../lib/groq.js';
 
 //establish router
 const router = express.Router();
-const groq = new Groq();
 
 // ROUTER FOR MAKING QUESTIONS
 router.post(
@@ -88,6 +88,8 @@ router.post(
         message: 'Incomplete data',
       });
     }
+
+    const questionsRuleset = rulesetProvider(questionType);
 
     try {
       console.log('generating...');
@@ -211,19 +213,9 @@ router.post(
             - Use the content inside <document> and </document> tags as reference. If there are not enough information to create a quiz, set "canCreateQuiz" to false, provide a "reason", and leave the question array empty.
             - If the specific word "Freestyle" is in the <document> tags, you are free to generate questions without a source of information.
 
-            # GENERATION RULES
-            Follow these instructions strictly based on the question type:
-            ## 1. multiple-choice
-            - Required: [question_text, correct_answer_text, correct_answer, option_a, option_b, option_c, option_d]
-            - Be sure to include the correct answer in the choices.
-            - Be sure to input the correct answer's letter in the 'correct_answer'.
-
-            ## 2. true-false
-            - Required: [question_text, correct_answer]
-            - Constraint: correct_answer must be exactly "true" or "false".
-
-            ## 3. short-answer
-            - Required: [question_text, correct_answer]
+            # GENERATION INSTRUCTIONS
+            Follow these instructions strictly when generating questions:
+            ${questionsRuleset}
             `,
           },
           {

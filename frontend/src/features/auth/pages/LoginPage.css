@@ -893,7 +893,6 @@ body {
   .page-container.leaning-mode.signup-mode .paper-sheet {
     justify-content: flex-start;
   }
-
   .page-container.leaning-mode.signup-mode .card-header {
     margin-bottom: clamp(3px, 0.8cqw, 10px);
   }
@@ -940,7 +939,6 @@ body {
   .clipboard-card {
     margin-left: 180px;
   }
-
 }
 
 @media (max-width: 868px) {

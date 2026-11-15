@@ -1,7 +1,21 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import { eq, and, countDistinct, avg, asc, desc, max, sql } from 'drizzle-orm';
+import {
+  eq,
+  and,
+  countDistinct,
+  avg,
+  asc,
+  desc,
+  max,
+  sql,
+  inArray,
+} from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
-import { quiz_attempts_db, students_classes_db, users } from '../db/schema.js';
+import {
+  quiz_attempts_db,
+  students_classes_db,
+  users,
+} from '../db/schema.js';
 
 type AttemptInsertData = InferInsertModel<typeof quiz_attempts_db>;
 type AttemptUpdateData = Partial<AttemptInsertData>;
@@ -55,6 +69,27 @@ export const QuizAttemptsRepo = {
           eq(quiz_attempts_db.quiz_id, quizId),
           eq(quiz_attempts_db.user_id, userId),
           eq(quiz_attempts_db.status, 'in-progress'),
+        ),
+      )
+      .limit(1);
+
+    return attempt ?? null;
+  },
+
+  //get one attempt scoped to its quiz (attempts page detail)
+  async getAttemptForQuiz(attemptId: number, quizId: number) {
+    const [attempt] = await db
+      .select({
+        id: quiz_attempts_db.id,
+        quizId: quiz_attempts_db.quiz_id,
+        status: quiz_attempts_db.status,
+        attemptRemarks: quiz_attempts_db.attempt_remarks,
+      })
+      .from(quiz_attempts_db)
+      .where(
+        and(
+          eq(quiz_attempts_db.id, attemptId),
+          eq(quiz_attempts_db.quiz_id, quizId),
         ),
       )
       .limit(1);
@@ -242,5 +277,64 @@ export const QuizAttemptsRepo = {
 
     const result = await db.execute(query);
     return result.rows;
+  },
+
+  //GET ALL COMPLETED ATTEMPTS FOR A QUIZ + THE STUDENTS WHO MADE THEM
+  // (exam attempts page list). Two result sets so the client keeps doing its
+  // own grouping; students carry classIds for the restricted-exam class tabs.
+  async getCompletedAttemptsWithStudents(quizId: number) {
+    const attempts = await db
+      .select({
+        id: quiz_attempts_db.id,
+        studentId: quiz_attempts_db.user_id,
+        rawScore: quiz_attempts_db.raw_score,
+        maxPossibleScore: quiz_attempts_db.max_possible_score,
+        // NOTE: stand-in for submittedAt until a submitted_at column exists
+        // (created_at is when the attempt started, not when it was graded).
+        submittedAt: quiz_attempts_db.created_at,
+      })
+      .from(quiz_attempts_db)
+      .where(
+        and(
+          eq(quiz_attempts_db.quiz_id, quizId),
+          eq(quiz_attempts_db.status, 'completed'),
+        ),
+      )
+      .orderBy(desc(quiz_attempts_db.created_at));
+
+    if (attempts.length === 0) return { attempts: [], students: [] };
+
+    const studentIds = [...new Set(attempts.map((a) => a.studentId))];
+
+    const studentRows = await db
+      .select({
+        id: users.id,
+        name: sql<string>`${users.first_name} || ' ' || ${users.last_name}`.as(
+          'name',
+        ),
+        classId: students_classes_db.class_id,
+      })
+      .from(users)
+      .leftJoin(
+        students_classes_db,
+        eq(students_classes_db.student_id, users.id),
+      )
+      .where(inArray(users.id, studentIds));
+
+    const studentsById = new Map<
+      number,
+      { id: number; name: string; classIds: number[] }
+    >();
+    for (const row of studentRows) {
+      const student = studentsById.get(row.id) ?? {
+        id: row.id,
+        name: row.name,
+        classIds: [],
+      };
+      if (row.classId != null) student.classIds.push(row.classId);
+      studentsById.set(row.id, student);
+    }
+
+    return { attempts, students: [...studentsById.values()] };
   },
 };

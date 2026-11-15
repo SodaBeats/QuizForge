@@ -1,19 +1,17 @@
-import { parseShortAnswerScores } from '../../services/getShortAnsScoreObject.service.js';
-import type { ScoreableQuestion } from '../../services/getShortAnsScoreObject.service.js';
-import { QuestionType } from '../../types/questionType.js';
-
-describe('parseShortAnswerScores', () => {
+import { parseReasoningScores } from '../../services/getReasoningScoreObject.service.js';
+import type { ScoreableQuestion } from '../../services/getReasoningScoreObject.service.js';
+describe('parseReasoningScores', () => {
   const questions: ScoreableQuestion[] = [
     {
       id: 11,
       correctAnswer: 'foo',
-      questionType: QuestionType.ShortAnswer,
+      questionType: 'short-answer',
       questionText: 'Q1',
     },
     {
       id: 12,
       correctAnswer: 'bar',
-      questionType: QuestionType.ShortAnswer,
+      questionType: 'short-answer',
       questionText: 'Q2',
     },
   ];
@@ -32,7 +30,7 @@ describe('parseShortAnswerScores', () => {
       },
     ];
 
-    expect(parseShortAnswerScores(rawParsed, questions)).toEqual({
+    expect(parseReasoningScores(rawParsed, questions)).toEqual({
       scores: { '11': 8, '12': 6 },
       remarks: {
         '11': 'Good structure but add one more detail.',
@@ -43,7 +41,7 @@ describe('parseShortAnswerScores', () => {
 
   it('rejects missing question IDs', () => {
     const rawParsed = [{ questionId: '11', score: 8, remarks: 'Good answer.' }];
-    expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
+    expect(() => parseReasoningScores(rawParsed, questions)).toThrow(
       /invalid (or duplicate )?question IDs/i,
     );
   });
@@ -54,7 +52,7 @@ describe('parseShortAnswerScores', () => {
       { questionId: '12', score: 6, remarks: 'Needs more detail.' },
       { questionId: '13', score: 7, remarks: 'Unexpected question.' },
     ];
-    expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
+    expect(() => parseReasoningScores(rawParsed, questions)).toThrow(
       /invalid (or duplicate )?question IDs/i,
     );
   });
@@ -64,7 +62,7 @@ describe('parseShortAnswerScores', () => {
       { questionId: '11', score: 9.5, remarks: 'Almost there.' },
       { questionId: '12', score: 7, remarks: 'Needs improvement.' },
     ];
-    expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
+    expect(() => parseReasoningScores(rawParsed, questions)).toThrow(
       /unexpected format/i,
     );
   });
@@ -74,7 +72,7 @@ describe('parseShortAnswerScores', () => {
       { questionId: '11', score: 8 },
       { questionId: '12', score: 6, remarks: 'Needs improvement.' },
     ];
-    expect(() => parseShortAnswerScores(rawParsed, questions)).toThrow(
+    expect(() => parseReasoningScores(rawParsed, questions)).toThrow(
       /unexpected format/i,
     );
   });

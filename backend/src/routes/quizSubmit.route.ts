@@ -4,12 +4,13 @@ import { verifyToken } from '../middlewares/auth.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { getScore } from '../services/getScore.service.js';
 import {
-  getShortAnsScoreObject,
-  type ShortAnswerGradingResult,
-} from '../services/getShortAnsScoreObject.service.js';
+  getReasoningScoreObject,
+  type ReasoningGradingResult,
+} from '../services/getReasoningScoreObject.service.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
 import type { Question } from '../types/questionType.js';
+import { isReasoningQuestionType } from '../types/questionType.js';
 import { getSummaryRemarks } from '../services/summaryRemarks.service.js';
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.patch(
   async (req, res, next) => {
     const { questions, answers, quiz, attemptId } = req.body;
     const userId = req.user.id;
-    let shortQuestionsAnswers: Record<string, string> = {};
+    let reasoningQuestionsAnswers: Record<string, string> = {};
     let attemptRemarks = 'Summary Unavailable';
 
     if (!questions || !answers || !quiz?.id || !attemptId) {
@@ -32,53 +33,53 @@ router.patch(
         .json({ success: false, message: 'Missing required fields' });
     }
 
-    // separate short-answer questions to a new array
-    const shortAnsQuestions = questions.filter((q: Question) => {
-      return q.questionType === 'short-answer';
+    // separate reasoning questions (LLM-graded 0-10) to a new array
+    const reasoningQuestions = questions.filter((q: Question) => {
+      return isReasoningQuestionType(q.questionType);
     });
 
-    // separate 'short-answer' answers and delete from 'answers'
-    for (const q of shortAnsQuestions) {
-      shortQuestionsAnswers[q.id.toString()] = answers[q.id] ?? '';
+    // separate 'reasoning' answers and delete from 'answers'
+    for (const q of reasoningQuestions) {
+      reasoningQuestionsAnswers[q.id.toString()] = answers[q.id] ?? '';
       delete answers[q.id];
     }
 
-    // separate normal questions to a new array
+    // separate normal (exact-match, 1 pt) questions to a new array
     const normalQuestions = questions.filter((q: Question) => {
-      return q.questionType !== 'short-answer';
+      return !isReasoningQuestionType(q.questionType);
     });
 
     // get total score for 'multiple-choice' and 'true-false' questions
     const normalQuestionsScore = getScore(normalQuestions, answers);
 
-    // get score array for 'short-answer' questions
-    let shortAnsQuestionsScoreObject: ShortAnswerGradingResult = {
+    // get score array for 'reasoning' questions
+    let reasoningQuestionsScoreObject: ReasoningGradingResult = {
       scores: {},
       remarks: {},
     };
 
-    if (shortAnsQuestions.length > 0) {
+    if (reasoningQuestions.length > 0) {
       try {
-        shortAnsQuestionsScoreObject = await getShortAnsScoreObject(
-          shortAnsQuestions, // array of question objects
-          shortQuestionsAnswers, // object with key value pair of question id and answer
+        reasoningQuestionsScoreObject = await getReasoningScoreObject(
+          reasoningQuestions, // array of question objects
+          reasoningQuestionsAnswers, // object with key value pair of question id and answer
         );
       } catch (error: any) {
         console.error(
-          '[quizSubmit.route] Short answer grading failed:',
+          '[quizSubmit.route] Reasoning grading failed:',
           error.message,
         );
 
         return res.status(500).json({
           success: false,
-          message: 'Failed to grade short answer questions. Please try again.',
+          message: 'Failed to grade open-ended questions. Please try again.',
         });
       }
     }
 
-    // get total score for 'short-answer' questions
-    const shortAnsQuestionsRawScore = Object.values(
-      shortAnsQuestionsScoreObject.scores,
+    // get total score for 'reasoning' questions
+    const reasoningQuestionsRawScore = Object.values(
+      reasoningQuestionsScoreObject.scores,
     ).reduce((sum, val) => {
       const numericVal = typeof val === 'number' ? val : 0;
       return sum + numericVal;
@@ -86,10 +87,10 @@ router.patch(
 
     // calculate max possible score based on question point
     // (multiple-choice, true-false = 1 pt)
-    // (short-answer = 10 pts)
+    // (reasoning types = 10 pts)
     const maxPossibleScore =
-      normalQuestions.length * 1 + shortAnsQuestions.length * 10;
-    const rawScore = normalQuestionsScore + shortAnsQuestionsRawScore;
+      normalQuestions.length * 1 + reasoningQuestions.length * 10;
+    const rawScore = normalQuestionsScore + reasoningQuestionsRawScore;
     const percentileScore =
       maxPossibleScore > 0
         ? Math.floor((rawScore / maxPossibleScore) * 100)
@@ -108,17 +109,17 @@ router.patch(
       };
     });
 
-    const formattedShortAnsAttemptAnswers = shortAnsQuestions.map(
+    const formattedReasoningAttemptAnswers = reasoningQuestions.map(
       (q: Question) => {
-        const score = shortAnsQuestionsScoreObject.scores[q.id.toString()] ?? 0;
+        const score = reasoningQuestionsScoreObject.scores[q.id.toString()] ?? 0;
         const remarks =
-          shortAnsQuestionsScoreObject.remarks[q.id.toString()] ?? null;
+          reasoningQuestionsScoreObject.remarks[q.id.toString()] ?? null;
         return {
           quiz_id: quiz.id,
           attempt_id: attemptId,
           user_id: userId,
           question_id: q.id,
-          chosen_answer: shortQuestionsAnswers[q.id.toString()] ?? null,
+          chosen_answer: reasoningQuestionsAnswers[q.id.toString()] ?? null,
           correct_answer: q.correctAnswer,
           is_correct: score >= 7,
           remarks,
@@ -130,9 +131,9 @@ router.patch(
     try {
       attemptRemarks = await getSummaryRemarks({
         formattedAttemptAnswers,
-        formattedShortAnsAttemptAnswers,
+        formattedReasoningAttemptAnswers,
         normalQuestions,
-        shortAnsQuestions,
+        reasoningQuestions,
       });
     } catch (error: any) {
       console.error(
@@ -163,7 +164,7 @@ router.patch(
           tx,
         );
         await AttemptAnswersRepo.insertAttemptAnswer(
-          formattedShortAnsAttemptAnswers,
+          formattedReasoningAttemptAnswers,
           tx,
         );
       });

@@ -10,7 +10,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "db:migrate": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db:wipe": "tsx src/scripts/wipe-db.ts",
+    "db:seed:users": "tsx src/scripts/seed-users.ts"
   },
   "keywords": [],
   "author": "",

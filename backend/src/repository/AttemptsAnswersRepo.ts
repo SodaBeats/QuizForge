@@ -1,6 +1,6 @@
 
 import type {InferInsertModel} from 'drizzle-orm';
-import { eq, desc, sql, count } from 'drizzle-orm';
+import { and, asc, eq, desc, sql, count } from 'drizzle-orm';
 import { db, type QueryClient } from '../db/db.js';
 import { attempt_answers_db, questions_db } from '../db/schema.js';
 
@@ -17,6 +17,37 @@ export const AttemptAnswersRepo = {
       .onConflictDoNothing({
         target: [attempt_answers_db.attempt_id, attempt_answers_db.question_id]
       });
+  },
+
+  //one attempt's answers joined with their question definitions, in
+  //submission order (attempts page detail modal)
+  async getAttemptAnswersWithQuestions(attemptId: number) {
+    const rows = await db
+      .select({
+        questionId: attempt_answers_db.question_id,
+        questionText: questions_db.question_text,
+        questionType: questions_db.question_type,
+        optionA: questions_db.option_a,
+        optionB: questions_db.option_b,
+        optionC: questions_db.option_c,
+        optionD: questions_db.option_d,
+        chosenAnswer: attempt_answers_db.chosen_answer,
+        // snapshot taken at submit time — never read questions_db.correct_answer,
+        // which the teacher may have edited since
+        correctAnswer: attempt_answers_db.correct_answer,
+        isCorrect: attempt_answers_db.is_correct,
+        points: attempt_answers_db.points,
+        remarks: attempt_answers_db.remarks,
+      })
+      .from(attempt_answers_db)
+      .innerJoin(
+        questions_db,
+        eq(attempt_answers_db.question_id, questions_db.id),
+      )
+      .where(eq(attempt_answers_db.attempt_id, attemptId))
+      .orderBy(asc(attempt_answers_db.id));
+
+    return rows;
   },
 
   //get percentage of how many got a question right

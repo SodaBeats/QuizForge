@@ -53,6 +53,15 @@ export function GenerateSettingsPanel({
           <option value="multiple-choice">Multiple choice</option>
           <option value="true-false">True/False</option>
           <option value="short-answer">Short answer</option>
+          <option value="general-open-ended-objective">
+            Open ended (Objective)
+          </option>
+          <option value="code-explain-open-ended-objective">
+            Code Explanation - Open Ended (Objective)
+          </option>
+          <option value="code-output-predict-open-ended-objective">
+            Code Output Prediction - Open Ended (Objective)
+          </option>
         </select>
       </>
       <>
@@ -73,9 +82,7 @@ export function GenerateSettingsPanel({
         />
       </>
       <>
-        <label className={labelClass}>
-          Time limit per question (seconds)
-        </label>
+        <label className={labelClass}>Time limit per question (seconds)</label>
         <input
           type="number"
           value={generateOptions.timeLimit}

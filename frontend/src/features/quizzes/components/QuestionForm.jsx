@@ -9,6 +9,12 @@ export function QuestionForm({
   onCancel,
   submitLabel,
 }) {
+  const openEndedQuestions = [
+    "short-answer",
+    "general-open-ended-objective",
+    "code-output-predict-open-ended-objective",
+    "code-explain-open-ended-objective",
+  ];
   return (
     <>
       <div>
@@ -23,6 +29,15 @@ export function QuestionForm({
           <option value="multiple-choice">Multiple choice</option>
           <option value="true-false">True/False</option>
           <option value="short-answer">Short answer</option>
+          <option value="general-open-ended-objective">
+            Open ended (Objective)
+          </option>
+          <option value="code-explain-open-ended-objective">
+            Code Explanation - Open Ended (Objective)
+          </option>
+          <option value="code-output-predict-open-ended-objective">
+            Code Output Prediction - Open Ended (Objective)
+          </option>
         </select>
       </div>
       <div>
@@ -124,7 +139,7 @@ export function QuestionForm({
           </div>
         </div>
       )}
-      {question.questionType === "short-answer" && (
+      {openEndedQuestions.includes(question.questionType) && (
         <div className="flex-1">
           <label className={labelClass}>Time limit (seconds)</label>
           <input
