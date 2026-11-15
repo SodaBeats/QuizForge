@@ -101,78 +101,6 @@ body {
 }
 
 /* ==========================================================================
-   4. FLOATING DECORATIONS
-   ========================================================================== */
-
-.floating-decor {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  user-select: none;
-}
-
-.floating-decor img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.decor-lightbulb {
-  top: 6%;
-  left: 6%;
-  width: 110px;
-  animation: float-gentle 4.5s ease-in-out infinite alternate;
-}
-
-.decor-checklist {
-  top: 38%;
-  left: 4%;
-  width: 95px;
-  animation: float-subtle 5.2s ease-in-out infinite alternate 0.8s;
-}
-
-.decor-books {
-  top: 10%;
-  right: 5%;
-  width: 130px;
-  animation: float-gentle 4.8s ease-in-out infinite alternate 0.4s;
-}
-
-.decor-paper-plane {
-  bottom: 12%;
-  right: 5%;
-  width: 120px;
-  animation: float-glide 6s ease-in-out infinite alternate 1.2s;
-}
-
-@keyframes float-gentle {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  100% {
-    transform: translateY(-16px) rotate(4deg);
-  }
-}
-
-@keyframes float-subtle {
-  0% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
-  100% {
-    transform: translateY(-12px) rotate(-3deg) scale(1.03);
-  }
-}
-
-@keyframes float-glide {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  100% {
-    transform: translate(-10px, -18px) rotate(-6deg);
-  }
-}
-
-/* ==========================================================================
    5. BRAND TAGLINE
    ========================================================================== */
 
@@ -223,7 +151,7 @@ body {
    7. LEANING MODE
    --------------------------------------------------------------------------
    The mascot, clipboard, books, lightbulb, checklist, airplane and tagline
-   are all part of login-design.png. React only places the form over the
+   are all part of login-design.webp. React only places the form over the
    white area of the clipboard.
 
    The stage ALWAYS keeps the image ratio (1852:849) and covers the screen,
@@ -232,8 +160,6 @@ body {
    background art).
    ========================================================================== */
 
-.page-container.leaning-mode .floating-decor,
-.page-container.leaning-mode .avatar-backdrop,
 .page-container.leaning-mode .brand-tagline {
   display: none !important;
 }
@@ -252,15 +178,11 @@ body {
   height: max(100dvh, calc(100vw * 849 / 1852));
   max-width: none;
 
-  background: url("../../../assets/login-design.png") no-repeat center / 100%
+  background: url("../../../assets/login-design.webp") no-repeat center / 100%
     100%;
 
   container-type: inline-size;
   container-name: stage;
-}
-
-.page-container.leaning-mode .avatar-container {
-  display: none !important;
 }
 
 /* Safe area = the white inside of the clipboard frame.
@@ -513,6 +435,35 @@ body {
 
 .custom-input:focus {
   outline: none;
+}
+
+/* ==========================================================================
+   11b. PASSWORD TOGGLE (eye icon)
+   ========================================================================== */
+
+.password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--color-text-caption);
+  font-size: 1.15rem;
+  line-height: 1;
+  border-radius: 6px;
+  transition: color var(--transition-fast);
+}
+
+.password-toggle:hover {
+  color: var(--color-orange-primary);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--color-input-focus);
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -877,6 +828,10 @@ body {
   font-size: clamp(9px, 1.75cqw, 20px);
 }
 
+.page-container.leaning-mode .password-toggle {
+  font-size: clamp(9px, 1.75cqw, 20px);
+}
+
 .page-container.leaning-mode .input-label {
   font-size: clamp(6px, 1.05cqw, 13px);
 }
@@ -938,7 +893,6 @@ body {
   .page-container.leaning-mode.signup-mode .paper-sheet {
     justify-content: flex-start;
   }
-
   .page-container.leaning-mode.signup-mode .card-header {
     margin-bottom: clamp(3px, 0.8cqw, 10px);
   }
@@ -978,70 +932,12 @@ body {
 }
 
 /* ==========================================================================
-   21. STANDING MODE FALLBACK
-   ========================================================================== */
-
-.page-container.standing-mode .avatar-backdrop {
-  position: absolute;
-  top: 50%;
-  left: 20px;
-  transform: translateY(-50%);
-  width: 440px;
-  height: 440px;
-  background: var(--color-backdrop-circle);
-  border-radius: 50%;
-  z-index: 1;
-}
-
-.avatar-container {
-  position: absolute;
-  left: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  width: 420px;
-  height: auto;
-  pointer-events: none;
-  transition:
-    transform var(--transition-bounce),
-    opacity var(--transition-normal);
-}
-
-.avatar-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* ==========================================================================
-   22. RESPONSIVE (standing-mode legacy rules — kept for that mode; not
-   reached while the component renders `leaning-mode`, see section 24)
+   21. RESPONSIVE LEGACY RULES — partly overridden by leaning mode
    ========================================================================== */
 
 @media (max-width: 1024px) {
   .clipboard-card {
     margin-left: 180px;
-  }
-
-  .avatar-backdrop {
-    width: 380px;
-    height: 380px;
-    left: 10px;
-  }
-
-  .avatar-container {
-    width: 360px;
-    left: -30px;
-  }
-
-  .decor-lightbulb {
-    width: 85px;
-    left: 2%;
-  }
-
-  .decor-books {
-    width: 100px;
-    right: 2%;
   }
 }
 
@@ -1053,20 +949,6 @@ body {
   .stage-wrapper {
     flex-direction: column;
     gap: 20px;
-  }
-
-  .avatar-backdrop {
-    display: none;
-  }
-
-  .avatar-container {
-    position: relative;
-    left: 0;
-    top: 0;
-    transform: none;
-    width: 240px;
-    margin: 0 auto -40px auto;
-    z-index: 4;
   }
 
   .clipboard-card {
@@ -1092,9 +974,6 @@ body {
     margin: 8px auto 0 auto;
   }
 
-  .floating-decor {
-    opacity: 0.6;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1297,6 +1176,10 @@ body {
 
   .page-container.leaning-mode .input-icon {
     font-size: 1.05rem;
+  }
+
+  .page-container.leaning-mode .password-toggle {
+    font-size: 1.1rem;
   }
 
   .page-container.leaning-mode .input-label {
