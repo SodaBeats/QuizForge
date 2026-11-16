@@ -218,7 +218,7 @@ export function SideBar({
       <ConfirmDialog
         open={questionToDelete !== null}
         title="Delete question?"
-        message="Are you sure you wish to delete this question?"
+        disclaimer="This action cannot be undone. Proceed?"
         confirmLabel="Delete question"
         onConfirm={confirmQuestionDelete}
         onCancel={() => setQuestionToDelete(null)}

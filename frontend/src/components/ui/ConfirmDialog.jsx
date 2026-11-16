@@ -6,7 +6,8 @@ import { Button } from "./Button";
 export function ConfirmDialog({
   open,
   title = "Are you sure?",
-  message,
+  message = null,
+  disclaimer = null,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   onConfirm,
@@ -22,13 +23,16 @@ export function ConfirmDialog({
       <h2 className="text-xl font-display font-semibold mb-2 text-inkondark">
         {title}
       </h2>
-      <p className="text-sm text-muted mb-6 font-body">{message}</p>
+      {message && (
+        <p className="text-sm text-muted mb-6 font-body">{message}</p>
+      )}
+      {disclaimer && (
+        <div className="rounded-lg border border-warn bg-warn/10 px-4 py-3 mb-6">
+          <p className="text-sm text-warn font-body">{disclaimer}</p>
+        </div>
+      )}
       <div className="flex justify-end gap-2">
-        <Button
-          variant="secondary"
-          className="py-2 text-sm"
-          onClick={onCancel}
-        >
+        <Button variant="secondary" className="py-2 text-sm" onClick={onCancel}>
           {cancelLabel}
         </Button>
         <Button variant="danger" className="py-2 text-sm" onClick={onConfirm}>
