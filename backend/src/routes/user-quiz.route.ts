@@ -525,7 +525,7 @@ router.patch(
       }
       if (await rejectIfQuizLocked(res, Number(quizId))) return;
 
-      const dataForDrizzle = {
+      const normalized = {
         question_text: req.body.questionText,
         question_type: req.body.questionType,
         correct_answer: req.body.correctAnswer,
@@ -536,7 +536,7 @@ router.patch(
       };
 
       const updatedQuestion = await QuestionsRepository.updateQuestionReturning(
-        dataForDrizzle,
+        normalized,
         Number(questionId),
       );
       return res.status(200).json({
@@ -576,7 +576,7 @@ router.patch(
       }
       if (await rejectIfQuizLocked(res, Number(quizId))) return;
 
-      const dataForDrizzle = {
+      const normalized = {
         quiz_title: req.body.quizTitle,
         quiz_description: req.body.description,
         time_limit: req.body.timeLimit,
@@ -588,7 +588,7 @@ router.patch(
 
       await db.transaction(async (tx) => {
         const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
-          dataForDrizzle,
+          normalized,
           Number(quizId),
           tx,
         );

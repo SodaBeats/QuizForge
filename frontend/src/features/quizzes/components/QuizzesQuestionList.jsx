@@ -185,7 +185,8 @@ export const QuestionList = ({
             )}
             <button
               onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}
-              className="w-full font-display font-bold bg-accept text-inkondark hover:bg-green-600 py-3 rounded-md transition-all mt-4 hover:-translate-y-0.5 active:translate-y-0.5"
+              className="w-full font-display font-bold bg-accept text-inkondark hover:bg-green-600 py-3 rounded-md transition-all mt-4 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
+              disabled={selectedQuiz.attemptCount > 0}
             >
               Save changes
             </button>
@@ -238,4 +239,3 @@ export const QuestionList = ({
     </div>
   );
 };
-
