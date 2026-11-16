@@ -15,10 +15,11 @@ const originalFetch = global.fetch;
 const ENV_KEYS = [
   'EMBEDDING_PROVIDER',
   'EMBEDDING_MODEL',
-  'EMBEDDING_API_KEY',
-  'EMBEDDING_BASE_URL',
-  'OLLAMA_HOST',
   'EMBEDDING_TIMEOUT_MS',
+  'OLLAMA_HOST',
+  'JINA_API_KEY',
+  'JINA_EMBED_MODEL',
+  'JINA_BASE_URL',
 ] as const;
 
 let savedEnv: Record<string, string | undefined>;
@@ -120,7 +121,7 @@ describe('embedText (default provider: ollama)', () => {
     await expect(embedText(['a', 'b'])).rejects.toThrow(/dimension mismatch/i);
   });
 
-  it('splits 250 inputs into sub-batches of 100/100/50 and concatenates in order', async () => {
+  it('splits 250 inputs into sub-batches of 16 (15×16 + 10) and concatenates in order', async () => {
     const inputs = Array.from({ length: 250 }, (_, i) => `chunk-${i}`);
     fetchMock.mockImplementation((_url: string, init: RequestInit) => {
       const body = JSON.parse(String(init.body)) as { input: string[] };
@@ -133,11 +134,11 @@ describe('embedText (default provider: ollama)', () => {
 
     const result = await embedText(inputs);
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(batchSizes()).toEqual([100, 100, 50]);
+    expect(fetchMock).toHaveBeenCalledTimes(16);
+    expect(batchSizes()).toEqual([...Array(15).fill(16), 10]);
     expect(result).toHaveLength(250);
     expect(result[0]).toEqual([0]);
-    expect(result[100]).toEqual([100]);
+    expect(result[16]).toEqual([16]);
     expect(result[249]).toEqual([249]);
   });
 
@@ -152,7 +153,7 @@ describe('embedText (default provider: ollama)', () => {
   });
 });
 
-describe('embedQuery', () => {
+describe('embedQuery (ollama)', () => {
   it('applies the exact RAG prefix and returns the first vector', async () => {
     fetchMock.mockResolvedValue(okJson({ embeddings: [[1, 2, 3]] }));
 
@@ -166,28 +167,28 @@ describe('embedQuery', () => {
   });
 });
 
-describe('embedText (provider=openai)', () => {
+describe('embedText (provider=jina)', () => {
   beforeEach(() => {
-    process.env.EMBEDDING_PROVIDER = 'openai';
+    process.env.EMBEDDING_PROVIDER = 'jina';
   });
 
-  it('throws when EMBEDDING_API_KEY is missing', async () => {
-    process.env.EMBEDDING_MODEL = 'text-embedding-3-small';
+  it('throws when JINA_API_KEY is missing', async () => {
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
 
-    await expect(embedText(['a'])).rejects.toThrow('EMBEDDING_API_KEY is not set');
+    await expect(embedText(['a'])).rejects.toThrow('JINA_API_KEY is not set');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('throws when EMBEDDING_MODEL is missing', async () => {
-    process.env.EMBEDDING_API_KEY = 'test-key';
+  it('throws when JINA_EMBED_MODEL is missing', async () => {
+    process.env.JINA_API_KEY = 'test-key';
 
-    await expect(embedText(['a'])).rejects.toThrow('EMBEDDING_MODEL is not set');
+    await expect(embedText(['a'])).rejects.toThrow('JINA_EMBED_MODEL is not set');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('POSTs to the default base URL with a Bearer key and sorts data by index', async () => {
-    process.env.EMBEDDING_API_KEY = 'test-key';
-    process.env.EMBEDDING_MODEL = 'text-embedding-3-small';
+  it('POSTs to the default base URL with Bearer auth, task=passage, sorted by index', async () => {
+    process.env.JINA_API_KEY = 'test-key';
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
     fetchMock.mockResolvedValue(
       okJson({
         data: [
@@ -203,23 +204,37 @@ describe('embedText (provider=openai)', () => {
       [1, 2],
       [3, 4],
     ]);
-    expect(fetchCall(0)[0]).toBe('https://api.openai.com/v1/embeddings');
+    expect(fetchCall(0)[0]).toBe('https://api.jina.ai/v1/embeddings');
     const headers = fetchCall(0)[1].headers as Record<string, string>;
     expect(headers.Authorization).toBe('Bearer test-key');
-    expect(requestBody(0).model).toBe('text-embedding-3-small');
+    expect(requestBody(0).model).toBe('jina-embeddings-v5-omni-small');
     expect(requestBody(0).input).toEqual(['a', 'b']);
+    expect(requestBody(0).task).toBe('retrieval.passage');
+    expect(requestBody(0).truncate).toBe(true);
   });
 
-  it('honors EMBEDDING_BASE_URL override (trailing slash stripped)', async () => {
-    process.env.EMBEDDING_API_KEY = 'test-key';
-    process.env.EMBEDDING_MODEL = 'text-embedding-3-small';
-    process.env.EMBEDDING_BASE_URL = 'https://custom.example.com/v1/';
+  it('honors JINA_BASE_URL override (trailing slash stripped)', async () => {
+    process.env.JINA_API_KEY = 'test-key';
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
+    process.env.JINA_BASE_URL = 'https://eu.api.jina.ai/v1/';
     fetchMock.mockResolvedValue(okJson({ data: [{ index: 0, embedding: [9] }] }));
 
     const result = await embedText(['a']);
 
     expect(result).toEqual([[9]]);
-    expect(fetchCall(0)[0]).toBe('https://custom.example.com/v1/embeddings');
+    expect(fetchCall(0)[0]).toBe('https://eu.api.jina.ai/v1/embeddings');
+  });
+
+  it('embedQuery uses task=retrieval.query with the raw query (no text prefix)', async () => {
+    process.env.JINA_API_KEY = 'test-key';
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
+    fetchMock.mockResolvedValue(okJson({ data: [{ index: 0, embedding: [7] }] }));
+
+    const result = await embedQuery('photosynthesis');
+
+    expect(result).toEqual([7]);
+    expect(requestBody(0).input).toEqual(['photosynthesis']);
+    expect(requestBody(0).task).toBe('retrieval.query');
   });
 });
 
@@ -228,14 +243,14 @@ describe('assertEmbeddingConfigured', () => {
     expect(() => assertEmbeddingConfigured()).not.toThrow();
   });
 
-  it('fails when provider=openai lacks key or model, then passes once set', () => {
-    process.env.EMBEDDING_PROVIDER = 'openai';
-    expect(() => assertEmbeddingConfigured()).toThrow('EMBEDDING_API_KEY');
+  it('fails when provider=jina lacks key or model, then passes once set', () => {
+    process.env.EMBEDDING_PROVIDER = 'jina';
+    expect(() => assertEmbeddingConfigured()).toThrow('JINA_API_KEY');
 
-    process.env.EMBEDDING_API_KEY = 'test-key';
-    expect(() => assertEmbeddingConfigured()).toThrow('EMBEDDING_MODEL');
+    process.env.JINA_API_KEY = 'test-key';
+    expect(() => assertEmbeddingConfigured()).toThrow('JINA_EMBED_MODEL');
 
-    process.env.EMBEDDING_MODEL = 'text-embedding-3-small';
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
     expect(() => assertEmbeddingConfigured()).not.toThrow();
   });
 

@@ -2,40 +2,53 @@
  * Single entry point for text embeddings — the only module that knows which
  * provider serves them and how to call it.
  *
- * Provider/model/auth all come from env (see .env.example), so switching local
- * Ollama → an online API at deployment is a config change, not a code change:
+ * Two environments, selected by env (see .env.example):
  *
- *   EMBEDDING_PROVIDER   'ollama' (default) | 'openai' (OpenAI-compatible /embeddings)
- *   EMBEDDING_MODEL      default 'mxbai-embed-large:latest' for ollama; REQUIRED for openai
- *   EMBEDDING_API_KEY    REQUIRED for openai
- *   EMBEDDING_BASE_URL   openai only; default 'https://api.openai.com/v1'
+ *   local dev     — EMBEDDING_PROVIDER=ollama (default) → local Ollama, no key
+ *   production    — EMBEDDING_PROVIDER=jina → Jina AI cloud API
+ *
+ *   EMBEDDING_PROVIDER   'ollama' (default) | 'jina'
+ *   EMBEDDING_MODEL      ollama only; default 'mxbai-embed-large:latest'
  *   OLLAMA_HOST          ollama only; default 'http://localhost:11434'
+ *   JINA_API_KEY         REQUIRED for jina
+ *   JINA_EMBED_MODEL     REQUIRED for jina (e.g. jina-embeddings-v5-omni-small, 1024-dim)
+ *   JINA_BASE_URL        jina only; default 'https://api.jina.ai/v1'
  *   EMBEDDING_TIMEOUT_MS per-request timeout; default 120000 (local CPU embedding
- *                        of a large batch can be slow)
+ *                        of a batch can be slow)
+ *
+ * Per-provider formatting (the whole point of hiding the provider here):
+ *   - ollama: queries get QUERY_PREFIX (mxbai convention); chunks are raw text
+ *   - jina: no text prefixes — Jina's per-request task adapters do the job
+ *     (retrieval.query for queries, retrieval.passage for documents)
  *
  * Follows lib/groq.ts: env is read at call time (merely importing this module
  * never requires env) and assertEmbeddingConfigured() fails fast at server boot
  * (called from index.ts).
  */
 
-/** RAG query prefix — must stay identical for stored and query vectors to match. */
+/** RAG query prefix — ollama path only; Jina uses task adapters instead. */
 export const QUERY_PREFIX =
   'Represent this sentence for searching relevant passages: ';
 
-/** Online APIs cap inputs per request — embed in sequential sub-batches of this size. */
-const EMBED_BATCH_SIZE = 100;
+/**
+ * Inputs per request — owner-chosen safe limit, shared by all providers.
+ * Jina has no hard input-count cap; 16 keeps every request comfortably small
+ * for both the cloud API and local Ollama.
+ */
+const EMBED_BATCH_SIZE = 16;
 
 const DEFAULT_OLLAMA_MODEL = 'mxbai-embed-large:latest';
 const DEFAULT_OLLAMA_HOST = 'http://localhost:11434';
-const DEFAULT_OPENAI_BASE_URL = 'https://api.openai.com/v1';
+const DEFAULT_JINA_BASE_URL = 'https://api.jina.ai/v1';
 const DEFAULT_TIMEOUT_MS = 120_000;
 
-type EmbeddingProvider = 'ollama' | 'openai';
+type EmbeddingProvider = 'ollama' | 'jina';
+type EmbeddingKind = 'query' | 'document';
 
 type EmbeddingConfig =
   | { provider: 'ollama'; model: string; host: string; timeoutMs: number }
   | {
-      provider: 'openai';
+      provider: 'jina';
       model: string;
       apiKey: string;
       baseUrl: string;
@@ -49,9 +62,9 @@ type EmbeddingConfig =
  */
 const getEmbeddingConfig = (): EmbeddingConfig => {
   const provider = process.env.EMBEDDING_PROVIDER || 'ollama';
-  if (provider !== 'ollama' && provider !== 'openai') {
+  if (provider !== 'ollama' && provider !== 'jina') {
     throw new Error(
-      `Unknown EMBEDDING_PROVIDER '${provider}' (expected 'ollama' or 'openai')`,
+      `Unknown EMBEDDING_PROVIDER '${provider}' (expected 'ollama' or 'jina')`,
     );
   }
 
@@ -61,26 +74,27 @@ const getEmbeddingConfig = (): EmbeddingConfig => {
     throw new Error(`Invalid EMBEDDING_TIMEOUT_MS '${timeoutRaw}'`);
   }
 
-  if (provider === 'openai') {
-    const apiKey = process.env.EMBEDDING_API_KEY;
-    const model = process.env.EMBEDDING_MODEL;
+  if (provider === 'jina') {
+    const apiKey = process.env.JINA_API_KEY;
+    const model = process.env.JINA_EMBED_MODEL;
     if (!apiKey) {
       throw new Error(
-        'EMBEDDING_API_KEY is not set (required when EMBEDDING_PROVIDER=openai)',
+        'JINA_API_KEY is not set (required when EMBEDDING_PROVIDER=jina)',
       );
     }
     if (!model) {
       throw new Error(
-        'EMBEDDING_MODEL is not set (required when EMBEDDING_PROVIDER=openai)',
+        'JINA_EMBED_MODEL is not set (required when EMBEDDING_PROVIDER=jina)',
       );
     }
     return {
-      provider: 'openai',
+      provider: 'jina',
       model,
       apiKey,
-      baseUrl: (
-        process.env.EMBEDDING_BASE_URL || DEFAULT_OPENAI_BASE_URL
-      ).replace(/\/+$/, ''),
+      baseUrl: (process.env.JINA_BASE_URL || DEFAULT_JINA_BASE_URL).replace(
+        /\/+$/,
+        '',
+      ),
       timeoutMs,
     };
   }
@@ -135,19 +149,23 @@ const embedViaOllama = async (
   return json.embeddings ?? [];
 };
 
-const embedViaOpenAI = async (
+const embedViaJina = async (
   inputs: string[],
-  config: Extract<EmbeddingConfig, { provider: 'openai' }>,
+  config: Extract<EmbeddingConfig, { provider: 'jina' }>,
+  task: 'retrieval.query' | 'retrieval.passage',
 ): Promise<number[][]> => {
   const json = (await postJson(
     `${config.baseUrl}/embeddings`,
-    { model: config.model, input: inputs },
+    // task: Jina's LoRA adapter — retrieval.query for queries, retrieval.passage
+    // for documents (default text-matching is for symmetric similarity).
+    // truncate: clip instead of failing if an input ever exceeds 32K tokens.
+    { model: config.model, input: inputs, task, truncate: true },
     { Authorization: `Bearer ${config.apiKey}` },
     config.timeoutMs,
   )) as { data?: Array<{ index?: number; embedding?: number[] }> };
 
   const data = json.data ?? [];
-  // OpenAI guarantees data[i].index ordering; sort defensively (the count check
+  // Jina returns OpenAI-shaped data; sort defensively by index (the count check
   // below still catches missing entries).
   const ordered = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   return ordered.map((entry) => entry.embedding ?? []);
@@ -173,16 +191,13 @@ const validateBatch = (vectors: number[][], expected: number): void => {
   });
 };
 
-/**
- * Embed a batch of texts. Returns vectors in input order.
- * Throws on misconfiguration, HTTP failure, or any count/dimension mismatch.
- */
-export const embedText = async (inputs: string[]): Promise<number[][]> => {
-  if (!Array.isArray(inputs) || inputs.length < 1) {
-    throw new Error('embedText requires at least one input');
-  }
-
-  const config = getEmbeddingConfig();
+/** Sub-batched embed of one kind (query vs document) under one config. */
+const embedBatch = async (
+  inputs: string[],
+  kind: EmbeddingKind,
+  config: EmbeddingConfig,
+): Promise<number[][]> => {
+  const task = kind === 'query' ? 'retrieval.query' : 'retrieval.passage';
   const results: number[][] = [];
 
   for (let start = 0; start < inputs.length; start += EMBED_BATCH_SIZE) {
@@ -190,7 +205,7 @@ export const embedText = async (inputs: string[]): Promise<number[][]> => {
     const vectors =
       config.provider === 'ollama'
         ? await embedViaOllama(batch, config)
-        : await embedViaOpenAI(batch, config);
+        : await embedViaJina(batch, config, task);
     validateBatch(vectors, batch.length);
     results.push(...vectors);
   }
@@ -199,11 +214,25 @@ export const embedText = async (inputs: string[]): Promise<number[][]> => {
 };
 
 /**
- * Embed one RAG query with QUERY_PREFIX so it lands in the same vector space
- * as the stored document chunks.
+ * Embed a batch of texts (document/chunk side). Returns vectors in input order.
+ * Throws on misconfiguration, HTTP failure, or any count/dimension mismatch.
+ */
+export const embedText = async (inputs: string[]): Promise<number[][]> => {
+  if (!Array.isArray(inputs) || inputs.length < 1) {
+    throw new Error('embedText requires at least one input');
+  }
+  return embedBatch(inputs, 'document', getEmbeddingConfig());
+};
+
+/**
+ * Embed one RAG query so it lands in the same vector space as the stored
+ * document chunks: ollama gets QUERY_PREFIX, jina gets task=retrieval.query.
  */
 export const embedQuery = async (query: string): Promise<number[]> => {
-  const [first] = await embedText([`${QUERY_PREFIX}${query}`]);
+  const config = getEmbeddingConfig();
+  const input =
+    config.provider === 'ollama' ? `${QUERY_PREFIX}${query}` : query;
+  const [first] = await embedBatch([input], 'query', config);
   if (!first) {
     throw new Error('Failed to embed query');
   }
