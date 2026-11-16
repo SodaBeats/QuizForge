@@ -117,6 +117,7 @@ export const UserQuizzesRepository = {
         status: quizzes_db.status,
         accessibility: quizzes_db.accessibility,
         questionCount: countDistinct(questions_db.id),
+        attemptCount: countDistinct(quiz_attempts_db.user_id),
         // Aggregate class_id integers into a array of numbers
         classIds: sql<number[]>`
         COALESCE(
@@ -129,6 +130,7 @@ export const UserQuizzesRepository = {
       .from(quizzes_db)
       .leftJoin(questions_db, eq(quizzes_db.id, questions_db.quiz_id))
       .leftJoin(quiz_access_db, eq(quizzes_db.id, quiz_access_db.quiz_id))
+      .leftJoin(quiz_attempts_db, eq(quizzes_db.id, quiz_attempts_db.quiz_id))
       .where(eq(quizzes_db.user_id, userId))
       .groupBy(quizzes_db.id)
       .orderBy(desc(quizzes_db.created_at))

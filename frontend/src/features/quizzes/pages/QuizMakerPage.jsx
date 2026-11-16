@@ -79,10 +79,8 @@ export function QuizMakerPage() {
       (q) => q.id === selectedQuestionId,
     ) ?? null;
 
-
   return (
     <div className="h-dvh flex flex-col lg:flex-row bg-canvas text-inkondark alt-display-root font-displayAlt">
-
       {/* Left: Sidebar — upload lives here. On mobile it's a tab panel ordered
           below the topbar; at lg+ it cuts into the topbar's row, spanning the
           full height while the topbar starts to its right. */}
