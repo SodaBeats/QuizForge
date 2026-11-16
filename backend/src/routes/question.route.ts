@@ -11,7 +11,7 @@ import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { rulesetProvider } from '../utils/rulesetProvider.util.js';
 import { rejectIfQuizLocked } from '../utils/quizLock.util.js';
-import { groq } from '../lib/groq.js';
+import { getGroq } from '../lib/groq.js';
 
 //establish router
 const router = express.Router();
@@ -206,7 +206,7 @@ router.post(
         contextString = 'Freestyle';
       }
 
-      const response = await groq.chat.completions.create({
+      const response = await getGroq().chat.completions.create({
         model: 'openai/gpt-oss-120b',
         response_format: { type: 'json_object' },
         messages: [

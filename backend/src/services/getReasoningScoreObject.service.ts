@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Question } from '../types/questionType.js';
-import { groq } from '../lib/groq.js';
+import { getGroq } from '../lib/groq.js';
 
 // ---------------------------------------------------------------------------------------------
 // Types
@@ -102,7 +102,7 @@ const gradeBatch = async (
 
   console.log(`[FORMAT FOR LLM]: `, stringifiedFormat);
 
-  const response = await groq.chat.completions.create({
+  const response = await getGroq().chat.completions.create({
     model: 'openai/gpt-oss-120b',
     response_format: { type: 'json_object' },
     messages: [
