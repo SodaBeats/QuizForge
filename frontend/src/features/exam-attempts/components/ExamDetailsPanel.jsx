@@ -37,7 +37,9 @@ function StatusBadge({ status }) {
   return (
     <span
       className={`inline-block px-2 py-0.5 rounded-md text-xs font-semibold ${
-        published ? "bg-green-900/50 text-green-300" : "bg-amber-900/50 text-amber-300"
+        published
+          ? "bg-green-900/50 text-green-300"
+          : "bg-amber-900/50 text-amber-300"
       }`}
     >
       {published ? "Published" : "Draft"}
@@ -45,10 +47,30 @@ function StatusBadge({ status }) {
   );
 }
 
-export function ExamDetailsPanel({ exam, loading = false, error = null }) {
+function BackButton({ onBack }) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      aria-label="Back to quizzes"
+      className="mb-3 self-start flex items-center gap-2 text-sm text-muted hover:text-inkondark transition-colors"
+    >
+      <span aria-hidden="true">←</span>
+      Examinations
+    </button>
+  );
+}
+
+export function ExamDetailsPanel({
+  exam,
+  loading = false,
+  error = null,
+  onBack,
+}) {
   if (loading) {
     return (
       <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+        <BackButton onBack={onBack} />
         <div className="flex-1 rounded-lg bg-surface border border-muted/20 flex items-center justify-center p-6">
           <Spinner />
         </div>
@@ -59,6 +81,7 @@ export function ExamDetailsPanel({ exam, loading = false, error = null }) {
   if (error) {
     return (
       <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+        <BackButton onBack={onBack} />
         <div className="flex-1 rounded-lg bg-surface border border-muted/20 flex items-center justify-center p-6 text-center">
           <ErrorState message={error} />
         </div>
@@ -69,6 +92,7 @@ export function ExamDetailsPanel({ exam, loading = false, error = null }) {
   if (!exam) {
     return (
       <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+        <BackButton onBack={onBack} />
         <div className="flex-1 rounded-lg bg-surface border border-muted/20 flex items-center justify-center p-6 text-center">
           <p className="text-sm text-muted">No attempt data for this exam</p>
         </div>
@@ -80,6 +104,7 @@ export function ExamDetailsPanel({ exam, loading = false, error = null }) {
 
   return (
     <aside className="w-full lg:w-80 xl:w-96 shrink-0 flex flex-col font-body p-3">
+      <BackButton onBack={onBack} />
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-muted/20">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">
@@ -96,9 +121,7 @@ export function ExamDetailsPanel({ exam, loading = false, error = null }) {
 
         {/* Fields */}
         <dl className="flex-1 p-4 space-y-4 overflow-y-auto">
-          <Field label="Description">
-            {exam.description || "—"}
-          </Field>
+          <Field label="Description">{exam.description || "—"}</Field>
           <Field label="Status">
             <StatusBadge status={exam.status} />
           </Field>

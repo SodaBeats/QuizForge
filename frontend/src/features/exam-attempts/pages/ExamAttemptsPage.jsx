@@ -7,7 +7,7 @@
    panels via the AppShell panel tabs. */
 
 import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
 import { ExamDetailsPanel } from "../components/ExamDetailsPanel";
 import { AttemptsPanel } from "../components/AttemptsPanel";
@@ -25,6 +25,7 @@ const TABS = [
 
 export function ExamAttemptsPage() {
   const { quizId } = useParams();
+  const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState("details"); // mobile-only panel switcher — purely UI state
   const [query, setQuery] = useState("");
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -93,7 +94,12 @@ export function ExamAttemptsPage() {
           key: "details",
           visible: mobileTab === "details",
           children: (
-            <ExamDetailsPanel exam={exam} loading={loading} error={error} />
+            <ExamDetailsPanel
+              exam={exam}
+              loading={loading}
+              error={error}
+              onBack={() => navigate("/teacher/quizzes")}
+            />
           ),
         },
         {
