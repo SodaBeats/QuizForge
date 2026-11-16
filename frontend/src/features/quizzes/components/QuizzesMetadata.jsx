@@ -18,6 +18,7 @@ export function QuizzesMetadata({
 }) {
   const [editingQuiz, setEditingQuiz] = useState({ ...quiz });
   const navigate = useNavigate();
+  const updateDisabled = (editingQuiz?.attemptCount ?? 0) > 0;
 
   if (!quiz) {
     return (
@@ -182,7 +183,7 @@ export function QuizzesMetadata({
           <button
             className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
             onClick={() => onUpdateQuizMeta(editingQuiz)}
-            disabled={editingQuiz.attemptCount > 0}
+            disabled={updateDisabled}
           >
             Save changes
           </button>

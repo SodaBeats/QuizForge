@@ -632,7 +632,6 @@ router.delete(
           .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
-      if (await rejectIfQuizLocked(res, Number(quizId))) return;
       const deletedQuiz = await UserQuizzesRepository.deleteQuiz(
         req.user.id,
         quizId,
