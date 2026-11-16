@@ -5,6 +5,43 @@ import { AuthContext } from "../../../app/providers/AuthProvider";
 import { authApi } from "../api/auth.api.js";
 import "./LoginPage.css";
 
+// Eye icon for the show/hide password toggle (inline SVG, no library needed)
+function EyeIcon({ open }) {
+  return open ? (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
@@ -14,6 +51,9 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
@@ -82,6 +122,8 @@ export function LoginPage() {
         setEmail("");
         setPassword("");
         setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -99,27 +141,6 @@ export function LoginPage() {
       }`}
       id="pageContainer"
     >
-      {/* =====================================================
-          DECORATIVE ELEMENTS
-          Hidden automatically in leaning mode.
-         ===================================================== */}
-
-      <div className="floating-decor decor-lightbulb" aria-hidden="true">
-        <img src="/assets/lightbulb.png" alt="" />
-      </div>
-
-      <div className="floating-decor decor-checklist" aria-hidden="true">
-        <img src="/assets/checklist.png" alt="" />
-      </div>
-
-      <div className="floating-decor decor-books" aria-hidden="true">
-        <img src="/assets/books.png" alt="" />
-      </div>
-
-      <div className="floating-decor decor-paper-plane" aria-hidden="true">
-        <img src="/assets/paper_plane.png" alt="" />
-      </div>
-
       {/* =====================================================
           BRAND TAGLINE
           Hidden in leaning mode because it is already
@@ -143,21 +164,9 @@ export function LoginPage() {
          ===================================================== */}
 
       <div className="stage-wrapper">
-        {/* Used only for standing mode */}
-        <div className="avatar-backdrop" />
-
-        {/* Used only for standing mode */}
-        <div className="avatar-container">
-          <img
-            src="/assets/avatar_peeking.png"
-            alt="QuizForge Mascot"
-            className="avatar-img"
-          />
-        </div>
-
         {/* =================================================
             CLIPBOARD CARD
-            In leaning mode the full scene comes from login-design.png.
+            In leaning mode the full scene comes from login-design.webp.
            ================================================= */}
 
         <div className="clipboard-card" id="clipboardCard">
@@ -181,7 +190,7 @@ export function LoginPage() {
               <header className="card-header">
                 <div className="brand-logo">
                   <div className="logo-icon-box">
-                    <span className="q-letter">Q</span>
+                    <span className="q-letter">I</span>
                   </div>
 
                   <div className="brand-text">
@@ -359,7 +368,7 @@ export function LoginPage() {
 
                     <div className="input-content">
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         id="passwordInput"
                         name="password"
                         className="custom-input"
@@ -372,6 +381,18 @@ export function LoginPage() {
                         }
                       />
                     </div>
+
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      aria-pressed={showPassword}
+                    >
+                      <EyeIcon open={showPassword} />
+                    </button>
                   </div>
 
                   <span className="field-error" id="passwordError" />
@@ -390,7 +411,7 @@ export function LoginPage() {
 
                       <div className="input-content">
                         <input
-                          type="password"
+                          type={showConfirmPassword ? "text" : "password"}
                           id="confirmPasswordInput"
                           name="confirmPassword"
                           className="custom-input"
@@ -401,6 +422,20 @@ export function LoginPage() {
                           autoComplete="new-password"
                         />
                       </div>
+
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide confirm password"
+                            : "Show confirm password"
+                        }
+                        aria-pressed={showConfirmPassword}
+                      >
+                        <EyeIcon open={showConfirmPassword} />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -471,7 +506,11 @@ export function LoginPage() {
                   <button
                     type="button"
                     className="signup-link"
-                    onClick={() => setIsLogin(!isLogin)}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setShowPassword(false);
+                      setShowConfirmPassword(false);
+                    }}
                   >
                     {isLogin ? "Sign up" : "Log in"}
 

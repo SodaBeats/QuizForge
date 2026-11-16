@@ -36,7 +36,7 @@ export function TeacherTopbar({ actions, logoClass = "" }) {
               background: "var(--accent)",
             }}
           >
-            Q
+            I
           </div>
           <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
             Ilmari<span className="text-accent">Gen</span>

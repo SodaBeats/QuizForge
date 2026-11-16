@@ -1,8 +1,8 @@
-import avatarPeeking from "../../../assets/avatar_token.png";
-import lightbulbClean from "../../../assets/lightbulb_token.png";
-import checklistClean from "../../../assets/checklist_token.png";
-import booksClean from "../../../assets/books_token.png";
-import paperPlaneClean from "../../../assets/paper_plane_token.png";
+import avatarPeeking from "../../../assets/avatar_token.webp";
+import lightbulbClean from "../../../assets/lightbulb_token.webp";
+import checklistClean from "../../../assets/checklist_token.webp";
+import booksClean from "../../../assets/books_token.webp";
+import paperPlaneClean from "../../../assets/paper_plane_token.webp";
 import "../pages/StudentTokenPage.css";
 
 export function StudentTokenEntry({
@@ -25,7 +25,7 @@ export function StudentTokenEntry({
 
       <div className="topbar">
         <div className="brand">
-          <div className="brand-mark">Q</div>
+          <div className="brand-mark">I</div>
           <div className="brand-text">
             <div className="name">
               Ilmari<span className="accent">Gen</span>
