@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Question } from '../types/questionType.js';
-import { getGroq } from '../lib/groq.js';
+import { chatCompletion } from '../lib/aiClient.js';
 
 // ---------------------------------------------------------------------------------------------
 // Types
@@ -102,8 +102,7 @@ const gradeBatch = async (
 
   console.log(`[FORMAT FOR LLM]: `, stringifiedFormat);
 
-  const response = await getGroq().chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await chatCompletion({
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -168,7 +167,7 @@ const gradeBatch = async (
   });
 
   if (!response?.choices?.[0]?.message?.content) {
-    throw new Error('Failed to get response from Groq API');
+    throw new Error('Failed to get response from AI API');
   }
 
   let rawParsed: unknown;

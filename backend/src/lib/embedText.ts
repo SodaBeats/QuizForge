@@ -21,7 +21,7 @@
  *   - jina: no text prefixes — Jina's per-request task adapters do the job
  *     (retrieval.query for queries, retrieval.passage for documents)
  *
- * Follows lib/groq.ts: env is read at call time (merely importing this module
+ * Follows lib/aiClient.ts: env is read at call time (merely importing this module
  * never requires env) and assertEmbeddingConfigured() fails fast at server boot
  * (called from index.ts).
  */

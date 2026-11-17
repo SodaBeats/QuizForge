@@ -11,7 +11,7 @@ import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { rulesetProvider } from '../utils/rulesetProvider.util.js';
 import { rejectIfQuizLocked } from '../utils/quizLock.util.js';
-import { getGroq } from '../lib/groq.js';
+import { chatCompletion } from '../lib/aiClient.js';
 
 //establish router
 const router = express.Router();
@@ -204,8 +204,7 @@ router.post(
         contextString = 'Freestyle';
       }
 
-      const response = await getGroq().chat.completions.create({
-        model: 'openai/gpt-oss-120b',
+      const response = await chatCompletion({
         response_format: { type: 'json_object' },
         messages: [
           {
@@ -245,7 +244,7 @@ router.post(
       if (!response || !response.choices[0]?.message.content) {
         return res.status(500).json({
           success: false,
-          message: 'Failed to get a response from groq API',
+          message: 'Failed to get a response from AI API',
         });
       }
       try {
