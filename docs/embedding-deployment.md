@@ -10,11 +10,11 @@ Transport is the global `fetch` for both providers — the `ollama` npm package 
 
 ## Environments
 
-| Environment | Variables |
-|---|---|
-| local dev (default) | `EMBEDDING_PROVIDER=ollama` (or unset). Optional: `EMBEDDING_MODEL` (default `mxbai-embed-large:latest`, 1024-dim), `OLLAMA_HOST` (default `http://localhost:11434`) — no key needed |
-| production | `EMBEDDING_PROVIDER=jina` + `JINA_API_KEY` + `JINA_EMBED_MODEL` (e.g. `jina-embeddings-v5-omni-small`). Optional: `JINA_BASE_URL` (default `https://api.jina.ai/v1`; EU: `https://eu.api.jina.ai/v1`) |
-| both | `EMBEDDING_TIMEOUT_MS` — plain positive integer in ms (default `120000`; underscore forms like `120_000` are rejected) |
+| Environment         | Variables                                                                                                                                                                                             |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| local dev (default) | `EMBEDDING_PROVIDER=ollama` (or unset). Optional: `EMBEDDING_MODEL` (default `mxbai-embed-large:latest`, 1024-dim), `OLLAMA_HOST` (default `http://localhost:11434`) — no key needed                  |
+| production          | `EMBEDDING_PROVIDER=jina` + `JINA_API_KEY` + `JINA_EMBED_MODEL` (e.g. `jina-embeddings-v5-omni-small`). Optional: `JINA_BASE_URL` (default `https://api.jina.ai/v1`; EU: `https://eu.api.jina.ai/v1`) |
+| both                | `EMBEDDING_TIMEOUT_MS` — plain positive integer in ms (default `120000`; underscore forms like `120_000` are rejected)                                                                                |
 
 See `backend/.env.example` for the documented template.
 
@@ -54,3 +54,4 @@ See `backend/.env.example` for the documented template.
   `File extraction service error: …`; the `/generate` route returns
   `500 { "success": false, "message": "Failed to embed user query" }` for any query-embed
   failure.
+- Need to adjust chunking size for production (Jina)
