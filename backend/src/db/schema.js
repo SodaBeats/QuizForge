@@ -45,8 +45,8 @@ export const questions_db = pgTable('questions_db', {
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   user_id: uuid('user_id').unique().notNull().defaultRandom(),
-  first_name: text('first_name', { length: 64 }).notNull(),
-  last_name: text('last_name', { length: 64 }).notNull(),
+  first_name: varchar('first_name', { length: 64 }).notNull(),
+  last_name: varchar('last_name', { length: 64 }).notNull(),
   email: text('email').unique().notNull(),
   password_hash: varchar('password_hash', { length: 255 }).notNull(),
   role: text('role', { enum: ['student', 'teacher', 'admin'] })
