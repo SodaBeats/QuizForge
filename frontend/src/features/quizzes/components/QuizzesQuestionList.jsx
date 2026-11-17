@@ -172,16 +172,18 @@ export const QuestionList = ({
             ) : (
               <div>
                 <label className={labelClass}>Correct answer</label>
-                <input
-                  type="text"
-                  value={editingQuestion.correctAnswer}
+                {/* Same treatment as QuestionForm's reference-answer field:
+                    multi-sentence model answers don't fit a one-line input. */}
+                <textarea
+                  value={editingQuestion.correctAnswer || ""}
                   onChange={(e) =>
                     setEditingQuestion({
                       ...editingQuestion,
                       correctAnswer: e.target.value,
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} h-24 resize-none`}
+                  placeholder="Enter the reference answer..."
                 />
               </div>
             )}
