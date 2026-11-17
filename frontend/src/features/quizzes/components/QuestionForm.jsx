@@ -1,3 +1,5 @@
+import { isReasoningQuestionType } from "../../../lib/questionTypes.js";
+
 const inputClass =
   "w-full bg-darkslate rounded-md px-3 py-2 text-sm text-inkondark placeholder:text-muted border border-muted/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30 transition font-body";
 const labelClass = "block text-sm font-medium mb-1.5 text-inkondark font-body";
@@ -10,12 +12,6 @@ export function QuestionForm({
   submitLabel,
   updateDisabled,
 }) {
-  const openEndedQuestions = [
-    "short-answer",
-    "general-open-ended-objective",
-    "code-output-predict-open-ended-objective",
-    "code-explain-open-ended-objective",
-  ];
   return (
     <>
       <div>
@@ -140,23 +136,36 @@ export function QuestionForm({
           </div>
         </div>
       )}
-      {openEndedQuestions.includes(question.questionType) && (
-        <div className="flex-1">
-          <label className={labelClass}>Time limit (seconds)</label>
-          <input
-            type="number"
-            value={question.timeLimit}
-            onChange={(e) =>
-              setQuestion({
-                ...question,
-                timeLimit: Number(e.target.value) || 60,
-              })
-            }
-            className={inputClass}
-            min="0"
-            placeholder="Enter time in seconds"
-          />
-        </div>
+      {isReasoningQuestionType(question.questionType) && (
+        <>
+          <div>
+            <label className={labelClass}>Correct answer</label>
+            <textarea
+              value={question.correctAnswer}
+              onChange={(e) =>
+                setQuestion({ ...question, correctAnswer: e.target.value })
+              }
+              className={`${inputClass} h-24 resize-none`}
+              placeholder="Enter the reference answer..."
+            />
+          </div>
+          <div className="flex-1">
+            <label className={labelClass}>Time limit (seconds)</label>
+            <input
+              type="number"
+              value={question.timeLimit}
+              onChange={(e) =>
+                setQuestion({
+                  ...question,
+                  timeLimit: Number(e.target.value) || 60,
+                })
+              }
+              className={inputClass}
+              min="0"
+              placeholder="Enter time in seconds"
+            />
+          </div>
+        </>
       )}
       <div className="flex space-x-2 mt-4">
         <button
