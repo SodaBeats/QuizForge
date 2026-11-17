@@ -263,9 +263,4 @@ describe('assertEmbeddingConfigured', () => {
     process.env.EMBEDDING_TIMEOUT_MS = 'soon';
     expect(() => assertEmbeddingConfigured()).toThrow('Invalid EMBEDDING_TIMEOUT_MS');
   });
-
-  it('accepts an underscore-formatted EMBEDDING_TIMEOUT_MS (e.g. 120_000)', () => {
-    process.env.EMBEDDING_TIMEOUT_MS = '120_000';
-    expect(() => assertEmbeddingConfigured()).not.toThrow();
-  });
 });

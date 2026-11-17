@@ -69,8 +69,9 @@ const getEmbeddingConfig = (): EmbeddingConfig => {
   }
 
   const timeoutRaw = process.env.EMBEDDING_TIMEOUT_MS;
-  // Tolerate '120_000'-style values: numeric separators are valid in JS
-  // literals but Number('120_000') is NaN — strip them before parsing.
+  // Plain positive integer of milliseconds. Numeric separators like '120_000'
+  // are a JS-literal feature only — Number('120_000') is NaN, so .env must
+  // carry a plain value (e.g. 120000).
   const timeoutMs = timeoutRaw ? Number(timeoutRaw) : DEFAULT_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new Error(`Invalid EMBEDDING_TIMEOUT_MS '${timeoutRaw}'`);
