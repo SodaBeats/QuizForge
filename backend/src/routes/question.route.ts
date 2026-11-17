@@ -1,5 +1,5 @@
 import express from 'express';
-import ollama from 'ollama';
+import { embedQuery } from '../lib/embedText.js';
 import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
@@ -167,12 +167,10 @@ router.post(
       // embed the topic for RAG if sources are provided
 
       if (Array.isArray(sources) && sources.length > 0) {
-        const embeddedUserQueryResponse = await ollama.embed({
-          model: 'mxbai-embed-large:latest',
-          input: `Represent this sentence for searching relevant passages: ${topic}`,
-        });
-        const embeddedUserQuery = embeddedUserQueryResponse.embeddings[0];
-        if (!embeddedUserQuery || embeddedUserQuery.length < 1) {
+        let embeddedUserQuery: number[];
+        try {
+          embeddedUserQuery = await embedQuery(topic);
+        } catch {
           return res
             .status(500)
             .json({ success: false, message: 'Failed to embed user query' });
