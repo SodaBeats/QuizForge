@@ -1,4 +1,53 @@
-import tiktoken from 'tiktoken';
+const countWords = (text: string): number => text.split(/\s+/).length;
+
+/**
+ * Heading detection for paragraph-sized units extracted from PDF/DOCX.
+ * Structured titles: markdown ("## Results"), relaxed ALL-CAPS
+ * ("CONCLUSION."), numbered ("1. Introduction", "2.1 Background") and
+ * named sections ("Chapter 3: Methods", "Appendix A").
+ */
+const isStructuredHeader = (paragraph: string): boolean => {
+  const t = paragraph.trim();
+  if (!t) return false;
+
+  // Markdown headings: "# Title" ... "###### Title"
+  if (/^#{1,6}\s+\S/.test(t)) return true;
+
+  // Relaxed ALL-CAPS headings, trailing punctuation allowed: "CONCLUSION."
+  if (
+    t.length <= 80 &&
+    countWords(t) <= 12 &&
+    !/[a-z]/.test(t) &&
+    /[A-Z]/.test(t) &&
+    /^[A-Z0-9\s.,:;'"()&/!?-]+$/.test(t)
+  ) {
+    return true;
+  }
+
+  // Headings are titles, not sentences: short and no terminal punctuation.
+  if (countWords(t) > 12 || /[.!?,;:)"'\]]$/.test(t)) return false;
+
+  // Numbered headings: "1. Introduction", "2.1 Background", "3) Results"
+  if (/^\d+(\.\d+)*[.)]?\s+\S/.test(t)) return true;
+
+  // Named sections: "Chapter 3: Methods", "Section 2.1 Results", "Appendix A"
+  return /^(chapter|section|part|appendix|figure|table|lesson|unit|module)\s+([\d.]+|[IVXLC]+|[A-Z])\b/i.test(
+    t,
+  );
+};
+
+/**
+ * A paragraph that must never be the LAST paragraph of a chunk: structured
+ * headings plus unstructured title-style lines ("Conclusion", "Results and
+ * Discussion") — short and not ending a sentence. Letting one trail a chunk
+ * is exactly how the next section's title leaked into the previous chunk.
+ */
+const isHeadingLike = (paragraph: string): boolean => {
+  const t = paragraph.trim();
+  if (!t) return false;
+  if (isStructuredHeader(t)) return true;
+  return countWords(t) <= 12 && !/[.!?,;:)"'\]]$/.test(t);
+};
 
 export const textUtilities = {
   textChunker(text: string) {
@@ -57,34 +106,49 @@ export const textUtilities = {
     let buffer: string[] = [];
     let bufferWordCount = 0;
 
+    // Seal the buffered paragraphs as a chunk. A heading-like paragraph is
+    // held back so no chunk ever ENDS with the next section's title — it
+    // becomes the first paragraph of the following chunk instead.
+    const sealBuffer = (): void => {
+      let end = buffer.length;
+      if (end > 1 && isHeadingLike(buffer[end - 1] as string)) end -= 1;
+      const sealed = buffer.slice(0, end);
+      const held = buffer.slice(end);
+      if (sealed.length > 0) chunks.push(sealed.join('\n\n'));
+      buffer = held;
+      bufferWordCount = held.reduce((n, p) => n + countWords(p), 0);
+    };
+
+    // True when the buffer holds real body content (not just leftover title
+    // lines), so tiny fragments are never flushed into a chunk of their own.
+    const bufferHasBody = (): boolean => buffer.some((p) => !isHeadingLike(p));
+
     for (const p of paragraphs) {
       const pTrimmed = p.trim();
-      const pWordCount = pTrimmed.split(/\s+/).length;
+      const pWordCount = countWords(pTrimmed);
 
-      // 2. Structural Break Check: Is this a Header?
-      // Logic: If it's a header, flush the buffer immediately to keep topics separate.
-      const isHeader =
-        /^[A-Z0-9\s]{5,50}$/.test(pTrimmed) || pTrimmed.startsWith('#');
-      if (isHeader && buffer.length > 0) {
-        chunks.push(buffer.join('\n\n'));
-        buffer = [];
-        bufferWordCount = 0;
+      // 2. Structural Break Check: is this a heading? Flush first so the
+      // heading STARTS a new chunk instead of joining the previous section.
+      if (isHeadingLike(pTrimmed) && buffer.length > 0 && bufferHasBody()) {
+        sealBuffer();
       }
 
-      // 3. Large Paragraph Handling: If a single paragraph is too big, split it
+      // 3. Large Paragraph Handling: split paragraphs over maxWords by sentence
       if (pWordCount > maxWords) {
-        // Flush anything currently in the buffer first
-        if (buffer.length > 0) chunks.push(buffer.join('\n\n'));
+        if (bufferHasBody()) sealBuffer();
 
         const sentences = pTrimmed.split(
           /(?<!\b(?:Dr|Mr|Mrs|Ms|Sr|Jr|St|e\.g|i\.e)\.)(?<=[.!?])\s+/i,
         );
-        let sBuffer: string[] = [];
-        let sCount = 0;
+        // Any held-back title leads the split content that follows it
+        let sBuffer: string[] = [...buffer];
+        let sCount = bufferWordCount;
+        buffer = [];
+        bufferWordCount = 0;
 
         for (const s of sentences) {
           sBuffer.push(s);
-          sCount += s.split(/\s+/).length;
+          sCount += countWords(s);
           if (sCount >= minWords) {
             chunks.push(sBuffer.join(' '));
             sBuffer = [];
@@ -96,19 +160,30 @@ export const textUtilities = {
         continue;
       }
 
-      // 4. Standard Accumulation
+      // 4. Respect maxWords: seal BEFORE appending a paragraph that would
+      // push this chunk past the cap (a single paragraph up to maxWords is
+      // fine on its own; see the branch above). Skipped when the buffer is
+      // only held-back titles — those lead the incoming paragraph instead
+      // of being orphaned into a title-only chunk.
+      if (
+        bufferWordCount > 0 &&
+        bufferHasBody() &&
+        bufferWordCount + pWordCount > maxWords
+      ) {
+        sealBuffer();
+      }
+
+      // 5. Standard Accumulation
       buffer.push(pTrimmed);
       bufferWordCount += pWordCount;
 
       // If bucket is full enough, seal the chunk
       if (bufferWordCount >= minWords) {
-        chunks.push(buffer.join('\n\n'));
-        buffer = [];
-        bufferWordCount = 0;
+        sealBuffer();
       }
     }
 
-    // 5. Final Flush
+    // 6. Final Flush — nothing follows, so nothing needs holding back
     if (buffer.length > 0) chunks.push(buffer.join('\n\n'));
 
     return chunks;
@@ -125,9 +200,37 @@ export const textUtilities = {
         // Sometimes "Example" becomes "Ex- ample" due to line breaks
         .replace(/(\w+)-\s*\n\s*(\w+)/g, '$1$2')
 
-        // 4. Fix sentence endings
-        // Ensures there is exactly one space after a period/question mark
-        .replace(/([.!?])\s*/g, '$1 ')
+        // 3. Fix sentence endings
+        // Ensure exactly one space after sentence-ending punctuation —
+        // without eating line/paragraph breaks (the old \s* swallowed \n\n
+        // and collapsed the whole document into one paragraph) and without
+        // breaking decimals ("2.1") or abbreviations ("e.g.", "i.e.")
+        .replace(
+          /([.!?])[ \t]*/g,
+          (match: string, punct: string, offset: number, source: string) => {
+            const before = source.slice(0, offset);
+            const after = source.slice(offset + match.length);
+
+            // Leave line and paragraph breaks intact
+            if (
+              after === '' ||
+              after.startsWith('\n') ||
+              after.startsWith('\r')
+            ) {
+              return punct;
+            }
+            // Keep stacked punctuation together: "?!", "!?"
+            if (after.startsWith('?') || after.startsWith('!')) return match;
+            // Decimals: "2.1"
+            if (punct === '.' && /\d$/.test(before) && /^\d/.test(after)) {
+              return match;
+            }
+            // Abbreviations: "e.g.", "i.e.", "U.S." (single letter before dot)
+            if (punct === '.' && /(?:^|[^\w.])\w$/.test(before)) return match;
+
+            return `${punct} `;
+          },
+        )
 
         .trim()
     );
