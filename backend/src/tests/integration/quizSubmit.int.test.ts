@@ -10,7 +10,7 @@
 //     — maxPoints reported per row (10 for reasoning types, 1 otherwise)
 //
 // Hermetic by design: both LLM layers (getReasoningScoreObject and
-// getSummaryRemarks) are replaced with jest.unstable_mockModule, so no GROQ
+// getSummaryRemarks) are replaced with jest.unstable_mockModule, so no AI API
 // calls are made. ESM imports hoist, so the app / helpers / schema are
 // imported dynamically AFTER the mock registrations below.
 
@@ -35,11 +35,6 @@ jest.unstable_mockModule(
   '../../services/getReasoningScoreObject.service.js',
   () => ({
     getReasoningScoreObject: reasoningGradingMock,
-    // summaryRemarks imports getGroqClient from this module — must exist and
-    // must never build a real Groq client inside a test.
-    getGroqClient: jest.fn(() => {
-      throw new Error('getGroqClient must not be reached in tests');
-    }),
     parseReasoningScores: jest.fn(),
   }),
 );
