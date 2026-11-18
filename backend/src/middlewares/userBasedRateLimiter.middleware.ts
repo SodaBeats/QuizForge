@@ -10,6 +10,10 @@ export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
     return current
   `;
   return async (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV === 'development' || !redis) {
+      return next();
+    }
+
     try {
       const clientKey = `ratelimit:user:${req.user.id}`;
       const counter = (await redis.eval(

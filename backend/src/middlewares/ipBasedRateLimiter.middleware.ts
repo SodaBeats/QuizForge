@@ -12,6 +12,10 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
   `;
 
   return async (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV === 'development' || !redis) {
+      return next();
+    }
+
     try {
       const clientIp = req.ip?.replace(/^::ffff:/, '');
       if (!clientIp) {
