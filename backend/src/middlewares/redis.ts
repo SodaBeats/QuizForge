@@ -1,13 +1,12 @@
+import 'dotenv/config';
 import { Redis } from 'ioredis';
 
-// to re-ignite redis, be sure to adjust ipBasedRateLimiter and userBasedRateLimiter
-export const redis = 'temporarily disabled';
-/*
-export const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: Number(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD,
-  db: Number(process.env.REDIS_DB) || 0,
+const redisUrl = process.env.REDIS_URL;
+if (!redisUrl) {
+  throw new Error('REDIS_URL is not set');
+}
+
+export const redis = new Redis(redisUrl, {
   retryStrategy: (times) => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 5,
   connectTimeout: 10000,
@@ -39,4 +38,3 @@ process.on('SIGINT', async () => {
     process.exit(0);
   }
 });
-*/
