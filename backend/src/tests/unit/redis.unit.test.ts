@@ -10,7 +10,7 @@ const originalRedisUrl = process.env.REDIS_URL;
 process.env.NODE_ENV = 'development';
 delete process.env.REDIS_URL;
 
-const { redis } = await import('../../middlewares/redis.js');
+const { redis } = await import('../../lib/redis.js');
 
 process.env.NODE_ENV = originalNodeEnv;
 if (originalRedisUrl === undefined) {

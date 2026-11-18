@@ -1,4 +1,4 @@
-import { redis } from './redis.js';
+import { redis } from '../lib/redis.js';
 import type { Request, Response, NextFunction } from 'express';
 
 export function userBasedRateLimiter(windowSizeSec: number, limit: number) {
