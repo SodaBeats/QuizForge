@@ -498,7 +498,6 @@ router.get(
         quizId,
         req.user.id,
       );
-      console.log('PER CLASS AVERAGE: ', perClassAverage);
       return res.status(200).json({ success: true, data: perClassAverage });
     } catch (error) {
       next(error);

@@ -104,8 +104,6 @@ router.post(
       }
       if (await rejectIfQuizLocked(res, quizId)) return;
 
-      console.log('generating...');
-
       const multipleChoiceSchema = z
         .object({
           canCreateQuiz: z.boolean(),
@@ -183,10 +181,11 @@ router.post(
             sources,
             req.user.id,
           );
+
         if (!relevantChunks || relevantChunks.length < 1)
           return res
             .status(404)
-            .json({ message: 'could not find relevant documents for topic' });
+            .json({ message: 'could not find relevant context for topic' });
         contextString = relevantChunks
           .map((chunk, index) => `[Chunk ${index + 1}]: ${chunk.content}`)
           .join('\n\n');
@@ -308,7 +307,6 @@ router.get(
   verifyToken,
   userBasedRateLimiter(10, 50),
   async (req, res, next) => {
-    console.log('[QUESTION ROUTE.GET]: RAN');
     const quizIdNum = Number(req.query.quizId);
     if (Number.isNaN(quizIdNum)) {
       return res
