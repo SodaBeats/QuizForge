@@ -8,7 +8,6 @@ import healthRoutes from './routes/health.js';
 import uploadRoutes from './routes/upload.routes.js';
 import questionRoute from './routes/question.route.js';
 import loginRoute from './routes/login.route.js';
-import signupRoute from './routes/signup.route.js';
 import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
@@ -54,7 +53,9 @@ app.use('/api/student/quiz-submit', quizSubmitRoute); //student route: fetch qui
 
 //Auth
 app.use('/auth/login', loginRoute);
-app.use('/auth/signup', signupRoute);
+app.post('/auth/signup', (_req, res) => {
+  res.status(503).json({ success: false, message: 'Signup is currently unavailable' });
+});
 app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
