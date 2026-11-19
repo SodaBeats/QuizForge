@@ -36,7 +36,6 @@ router.get(
       const totalDocuments = await UploadedFilesRepository.countDocumentsOwned(
         req.user.id,
       );
-      console.log('[DOCUMENT ROUTE.GET]: RAN');
       return res.status(200).json({ documents: documents, totalDocuments });
     } catch (err) {
       return next(err);
@@ -49,7 +48,6 @@ router.get(
   verifyToken,
   userBasedRateLimiter(60, 60),
   async (req, res, next) => {
-    console.log('[DOCUMENT ROUTE.GET/:ID]: RAN');
     // express puts params under the name in the route; here it's "id" not "docId"
     const docIdNum = Number(req.params.id);
     if (!docIdNum) {

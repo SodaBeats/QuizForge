@@ -100,8 +100,6 @@ const gradeBatch = async (
   const formatForLlm = buildGradingPayload(questions, answers);
   const stringifiedFormat = JSON.stringify(formatForLlm, null, 2);
 
-  console.log(`[FORMAT FOR LLM]: `, stringifiedFormat);
-
   const response = await chatCompletion({
     response_format: { type: 'json_object' },
     messages: [

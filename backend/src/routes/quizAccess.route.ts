@@ -117,8 +117,6 @@ router.get(
     const { quizToken } = req.params;
     const userId = req.user.id;
 
-    console.log('FETCHING QUIZ AND ATTEMPTS');
-
     if (!quizToken || typeof quizToken !== 'string') {
       return res.status(400).json({ success: false, message: 'Invalid token' });
     }
