@@ -7,6 +7,10 @@ import { textUtilities } from '../utils/textUtilities.util.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { db } from '../db/db.js';
 
+const isProd = process.env.NODE_ENV === 'production';
+const minWords = 150;
+const maxWords = isProd ? 800 : 450;
+
 export const extractText = async (
   file: UploadedFileInterface | null | undefined,
   userId: number,
@@ -53,7 +57,7 @@ export const extractText = async (
     };
 
     // chunk text for RAG
-    const chunks = textUtilities.seniorChunker(cleanedText);
+    const chunks = textUtilities.seniorChunker(cleanedText, minWords, maxWords);
     if (!chunks || chunks.length < 1) {
       throw new Error('Failed to chunk document');
     }
