@@ -52,15 +52,20 @@ export const users = pgTable('users', {
   role: text('role', { enum: ['student', 'teacher', 'admin'] })
     .default('student')
     .notNull(),
+  is_verified: boolean('is_verified').default(false).notNull(),
+  suspended_at: timestamp('suspended_at', { withTimezone: true }),
   created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at')
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });
 
 export const refresh_tokens = pgTable('refresh_tokens', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   token: text('token').notNull(),
   expires_at: timestamp('expires_at').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
