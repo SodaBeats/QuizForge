@@ -113,6 +113,10 @@ export function LoginPage() {
         setToken(data.accessToken);
         setUserInfo(data.user);
         navigate(returnTo ?? "/student", { replace: true });
+      } else if (isLogin && data.user.role === "admin") {
+        setToken(data.accessToken);
+        setUserInfo(data.user);
+        navigate(returnTo ?? "/admin", { replace: true });
       } else {
         toast.success(data.message || "Account created!");
 

@@ -5,7 +5,7 @@ const redisEvalMock = jest.fn<
   (...args: (string | number)[]) => Promise<number>
 >();
 
-jest.unstable_mockModule('../../middlewares/redis.js', () => ({
+jest.unstable_mockModule('../../lib/redis.js', () => ({
   redis: { eval: redisEvalMock },
 }));
 

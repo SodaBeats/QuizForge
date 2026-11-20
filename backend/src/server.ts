@@ -5,17 +5,18 @@ import cors from 'cors';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
 import healthRoutes from './routes/health.js';
-import uploadRoutes from './routes/upload.routes.js';
-import questionRoute from './routes/question.route.js';
+import uploadRoutes from './routes/teacher-upload.route.js';
+import questionRoute from './routes/teacher-question.route.js';
 import loginRoute from './routes/login.route.js';
 import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
-import quizzesRoute from './routes/user-quiz.route.js';
+import quizzesRoute from './routes/teacher-quiz.route.js';
 import quizAccessRoute from './routes/quizAccess.route.js';
 import quizSubmitRoute from './routes/quizSubmit.route.js';
-import classesRoute from './routes/classes.route.js';
-import dashboardRoute from './routes/dashboards.route.js';
+import classesRoute from './routes/teacher-classes.route.js';
+import dashboardRoute from './routes/teacher-dashboards.route.js';
+import adminRoute from './routes/admin.route.js';
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
 
+// health
 app.use('/api', healthRoutes);
 
 //API
@@ -51,10 +53,15 @@ app.use('/api/dashboard', dashboardRoute); // teacher route: for fetching home d
 app.use('/api/student/quiz-access', quizAccessRoute); //student route: inputting token and adding attempt
 app.use('/api/student/quiz-submit', quizSubmitRoute); //student route: fetch quiz data and submitting quiz attempt
 
+//Admin
+app.use('/admin', adminRoute);
+
 //Auth
 app.use('/auth/login', loginRoute);
 app.post('/auth/signup', (_req, res) => {
-  res.status(503).json({ success: false, message: 'Signup is currently unavailable' });
+  res
+    .status(503)
+    .json({ success: false, message: 'Signup is currently unavailable' });
 });
 app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
