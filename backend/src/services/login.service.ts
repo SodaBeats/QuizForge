@@ -41,6 +41,7 @@ export const handleLogin = async (data: Data) => {
         id: existingUser.id,
         email: existingUser.email,
         role: existingUser.role,
+        status: existingUser.suspendedAt ? 'suspended' : 'active',
       },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }, //jsonwebtoken would convert this to timestamp

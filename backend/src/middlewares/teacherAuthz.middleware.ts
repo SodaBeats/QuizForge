@@ -10,5 +10,10 @@ export const verifyTeacher = (
       .status(403)
       .json({ success: false, message: 'Forbidden action' });
 
+  if (req.user.status === 'suspended')
+    return res
+      .status(403)
+      .json({ success: false, message: 'Account Suspended' });
+
   next();
 };
