@@ -21,6 +21,7 @@ export const UserRepository = {
         passwordHash: users.password_hash,
         role: users.role,
         suspendedAt: users.suspended_at,
+        isVerified: users.is_verified,
       })
       .from(users)
       .where(sql`lower(${users.email}) = lower(${email.trim()})`);

@@ -3,6 +3,7 @@ export interface UserInfo {
   email: string;
   role: string;
   status: string;
+  isVerified: boolean;
 }
 
 declare global {

@@ -41,6 +41,7 @@ export const handleLogin = async (data: Data) => {
         id: existingUser.id,
         email: existingUser.email,
         role: existingUser.role,
+        isVerified: existingUser.isVerified,
         status: existingUser.suspendedAt ? 'suspended' : 'active',
       },
       process.env.JWT_SECRET,
@@ -71,6 +72,8 @@ export const handleLogin = async (data: Data) => {
         email: existingUser.email,
         first_name: existingUser.firstName,
         role: existingUser.role,
+        isVerified: existingUser.isVerified,
+        status: existingUser.suspendedAt ? 'suspended' : 'active',
       },
     };
   } catch (error) {
