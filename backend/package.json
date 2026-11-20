@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:wipe": "tsx src/scripts/wipe-db.ts",
-    "db:seed:users": "tsx src/scripts/seed-users.ts"
+    "db:seed:users": "tsx src/scripts/seed-users.ts",
+    "db:prod:seed:admin": "tsx src/scripts/seed-admin.ts"
   },
   "keywords": [],
   "author": "",
