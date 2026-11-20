@@ -18,7 +18,7 @@ import { apiRequest } from "../../../lib/api.js";
 import { handleMockAdminRequest } from "./adminMockData.js";
 
 // Flip to false when the backend /admin/* routes are live.
-export const USE_MOCKS = true;
+export const USE_MOCKS = false;
 
 function send(method, path, { body, fallbackMessage } = {}) {
   if (USE_MOCKS) {
