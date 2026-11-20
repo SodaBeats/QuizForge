@@ -32,7 +32,10 @@ export const AdminService = {
   }) {
     let role: AdminRole | undefined;
     if (query.role !== undefined) {
-      if (typeof query.role !== 'string' || !roles.includes(query.role as AdminRole)) {
+      if (
+        typeof query.role !== 'string' ||
+        !roles.includes(query.role as AdminRole)
+      ) {
         throw new AdminError(400, 'Invalid role');
       }
       role = query.role as AdminRole;
@@ -64,7 +67,13 @@ export const AdminService = {
     const password = typeof body.password === 'string' ? body.password : '';
     const role = body.role;
 
-    if (!first_name || !last_name || !email || !password || role === undefined) {
+    if (
+      !first_name ||
+      !last_name ||
+      !email ||
+      !password ||
+      role === undefined
+    ) {
       throw new AdminError(400, 'Missing required fields');
     }
     if (typeof role !== 'string' || !roles.includes(role as AdminRole)) {
@@ -100,17 +109,17 @@ export const AdminService = {
     }
   },
 
-  async updateUser(
-    id: number,
-    body: Record<string, unknown>,
-  ) {
+  async updateUser(id: number, body: Record<string, unknown>) {
     if (!Number.isSafeInteger(id) || id < 1) {
       throw new AdminError(400, 'Invalid user ID');
     }
 
     const update: { role?: AdminRole; is_verified?: boolean } = {};
     if (body.role !== undefined) {
-      if (typeof body.role !== 'string' || !roles.includes(body.role as AdminRole)) {
+      if (
+        typeof body.role !== 'string' ||
+        !roles.includes(body.role as AdminRole)
+      ) {
         throw new AdminError(400, 'Invalid role');
       }
       update.role = body.role as AdminRole;
@@ -120,6 +129,9 @@ export const AdminService = {
         throw new AdminError(400, 'Invalid is_verified');
       }
       update.is_verified = body.is_verified;
+    }
+    if (!update.is_verified && update.role === 'admin') {
+      update.is_verified = true;
     }
 
     const updated = await AdminRepository.updateUser(id, update);
