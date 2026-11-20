@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '../db/db.js';
 import { users } from '../db/schema.js';
@@ -20,9 +20,10 @@ export const UserRepository = {
         email: users.email,
         passwordHash: users.password_hash,
         role: users.role,
+        suspendedAt: users.suspended_at,
       })
       .from(users)
-      .where(eq(users.email, email));
+      .where(sql`lower(${users.email}) = lower(${email.trim()})`);
     return result ?? null;
   },
 

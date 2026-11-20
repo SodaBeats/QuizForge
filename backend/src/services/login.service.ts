@@ -21,6 +21,12 @@ export const handleLogin = async (data: Data) => {
       throw error;
     }
 
+    if (existingUser.suspendedAt) {
+      const error = new Error('Account suspended');
+      (error as any).status = 403;
+      throw error;
+    }
+
     //check if password is valid
     const isValid = await bcrypt.compare(password, existingUser.passwordHash);
     if (!isValid) {
