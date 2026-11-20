@@ -8,6 +8,9 @@ import { StudentTokenPage } from "../features/student-quiz/pages/StudentTokenPag
 import { StudentQuizPage } from "../features/student-quiz/pages/StudentQuizPage";
 import { ClassesPage } from "../features/classes/pages/ClassesPage";
 import { ExamAttemptsPage } from "../features/exam-attempts/pages/ExamAttemptsPage";
+import { AdminDashboardPage } from "../features/admin/pages/AdminDashboardPage";
+import { AdminUsersPage } from "../features/admin/pages/AdminUsersPage";
+import { AdminExamsPage } from "../features/admin/pages/AdminExamsPage";
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorPage } from "./ErrorPage";
 import { RouteError } from "./RouteError";
@@ -111,6 +114,32 @@ export function AppRoutes() {
           element={
             <RequireRole role="student">
               <StudentQuizPage />
+            </RequireRole>
+          }
+        />
+        {/* Admin panel — three sections under /admin, all behind the same
+            RequireRole keyed by role="admin" (admin home = /admin). */}
+        <Route
+          path="/admin"
+          element={
+            <RequireRole role="admin">
+              <AdminDashboardPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <RequireRole role="admin">
+              <AdminUsersPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin/exams"
+          element={
+            <RequireRole role="admin">
+              <AdminExamsPage />
             </RequireRole>
           }
         />

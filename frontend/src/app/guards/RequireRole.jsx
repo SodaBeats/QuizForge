@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 
 // Where each role belongs (used for the wrong-role redirect).
-const ROLE_HOME = { teacher: "/teacher", student: "/student" };
+const ROLE_HOME = { teacher: "/teacher", student: "/student", admin: "/admin" };
 
 // Single route guard (Phase 3 step 3 / plan bullet 2):
 // - logged out → /login, carrying state.from so Login can return the user
