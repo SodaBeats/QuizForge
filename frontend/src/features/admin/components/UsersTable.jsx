@@ -149,7 +149,7 @@ export function UsersTable({
   const handlers = { onChangeRole, onSuspend, onUnsuspend, onVerify, onUnverify, onDelete };
 
   return (
-    <section className="rounded-lg bg-surface border border-muted/20 overflow-hidden">
+    <section className="rounded-lg bg-surface border border-muted/20">
       {isPending && (
         <div className="flex items-center justify-center py-10">
           <Spinner />
@@ -170,13 +170,15 @@ export function UsersTable({
         <table className="w-full font-body">
           <thead className="bg-specialsurface">
             <tr className="text-left text-xs uppercase tracking-widest text-muted">
-              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold first:rounded-tl-lg">
+                Name
+              </th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Role</th>
               <th className="px-4 py-3 font-semibold">Verified</th>
               <th className="px-4 py-3 font-semibold">Status</th>
               <th className="px-4 py-3 font-semibold">Created</th>
-              <th className="px-4 py-3">
+              <th className="px-4 py-3 last:rounded-tr-lg">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
