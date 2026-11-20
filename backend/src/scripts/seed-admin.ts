@@ -16,7 +16,7 @@ if (!email || !password) {
 }
 
 const main = async () => {
-  const databaseUrl = process.env.PROD_DATABASE_URL;
+  const databaseUrl = process.env.DEV_DATABASE_URL;
   if (!databaseUrl) {
     console.error('PROD_DATABASE_URL must be set.');
     process.exit(1);
