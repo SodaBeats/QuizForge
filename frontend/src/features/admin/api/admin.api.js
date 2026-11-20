@@ -1,9 +1,4 @@
-/* Admin-panel API — the ONE module that knows whether /admin/* is mocked.
-
-   USE_MOCKS flips the whole module at the network boundary: components call
-   adminApi.* (or, more commonly, the hooks in queries.js / mutations.js)
-   and cannot observe which side answered. Delete this flag and
-   adminMockData.js once the backend ships the routes below.
+/* Admin-panel API for the /admin/* backend endpoints.
 
    Contract (all lists: ?page=1&limit=10 in, { data: [...], total } out):
      GET   /admin/stats
@@ -15,15 +10,8 @@
      GET   /admin/exams?page&limit&sort=created_at_desc */
 
 import { apiRequest } from "../../../lib/api.js";
-import { handleMockAdminRequest } from "./adminMockData.js";
-
-// Flip to false when the backend /admin/* routes are live.
-export const USE_MOCKS = false;
 
 function send(method, path, { body, fallbackMessage } = {}) {
-  if (USE_MOCKS) {
-    return handleMockAdminRequest({ method, path, body });
-  }
   const options = { method };
   if (body !== undefined) {
     options.headers = { "Content-Type": "application/json" };
