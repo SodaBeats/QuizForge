@@ -45,6 +45,9 @@ export default async function globalSetup() {
         email: 'teacher@test.com',
         password_hash: teacherHash,
         role: 'teacher',
+        // Verified: TEACHER_CREDS drives the teacher-route suites, and
+        // verifyTeacher 403s unverified teachers since the isVerified guard.
+        is_verified: true,
       })
       .returning();
 

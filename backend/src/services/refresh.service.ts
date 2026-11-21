@@ -3,24 +3,30 @@ import { UserRepository } from '../repository/UserRepository.js';
 import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
 
 export const handleAccessTokenGeneration = async (refreshToken: string) => {
-
-  try{
-
+  try {
     //verify refresh token
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     //get the refresh token from the database
-    const activeRefresh = await RefreshTokenRepository.getRefreshToken(refreshToken);
+    const activeRefresh =
+      await RefreshTokenRepository.getRefreshToken(refreshToken);
 
-    //check if it exists, returns a failure if none
-    if(!activeRefresh){
-      const error = new Error('Token not found');
+    //validate
+
+    if (
+      !activeRefresh ||
+      activeRefresh.revoked ||
+      activeRefresh.expires_at < new Date()
+    ) {
+      const error = new Error('Invalid Token');
       (error as any).status = 401;
       throw error;
     }
 
     //get the owner of the refresh token
-    const user = await UserRepository.findRefreshTokenOwner(activeRefresh.user_id);
+    const user = await UserRepository.findRefreshTokenOwner(
+      activeRefresh.user_id,
+    );
 
     //check if user exists
     if (!user) {
@@ -31,13 +37,17 @@ export const handleAccessTokenGeneration = async (refreshToken: string) => {
 
     //generate new access token
     return jwt.sign(
-      {id: user.id, email: user.email, role: user.role},
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        isVerified: user.is_verified,
+        status: user.suspended_at ? 'suspended' : 'active',
+      },
       process.env.JWT_SECRET,
-      {expiresIn: '15m'}
+      { expiresIn: '15m' },
     );
-
-  }catch (error: any) {
-    throw error; 
+  } catch (error: any) {
+    throw error;
   }
-
 };

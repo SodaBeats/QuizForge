@@ -24,6 +24,7 @@ let adminToken: string;
 let studentToken: string;
 let teacherToken: string;
 let suspendedTeacherId: number;
+let pendingTeacherId: number;
 let lifecycleUserId: number;
 let cascadeUserId: number;
 let cascadeQuizId: number;
@@ -74,12 +75,34 @@ beforeAll(async () => {
 
   if (!suspendedTeacher) throw new Error('Failed to seed suspended teacher');
   suspendedTeacherId = suspendedTeacher.id;
+
+  // An unverified, non-suspended teacher — the shared teacher@test.com seed
+  // is verified now (verifyTeacher 403s unverified teachers), so the
+  // verified=false list test needs its own pending fixture.
+  const pendingHash = await bcrypt.hash('PendingPass1!', 1);
+  const [pendingTeacher] = await db
+    .insert(users)
+    .values({
+      first_name: 'Pending',
+      last_name: 'Teacher',
+      email: `pending-${testSuffix}@test.com`,
+      password_hash: pendingHash,
+      role: 'teacher',
+      is_verified: false,
+    })
+    .returning({ id: users.id });
+
+  if (!pendingTeacher) throw new Error('Failed to seed pending teacher');
+  pendingTeacherId = pendingTeacher.id;
 });
 
 afterAll(async () => {
-  const ids = [suspendedTeacherId, lifecycleUserId, cascadeUserId].filter(
-    (id): id is number => Number.isInteger(id),
-  );
+  const ids = [
+    suspendedTeacherId,
+    pendingTeacherId,
+    lifecycleUserId,
+    cascadeUserId,
+  ].filter((id): id is number => Number.isInteger(id));
   for (const id of ids) {
     await db.delete(users).where(eq(users.id, id));
   }

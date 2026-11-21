@@ -23,12 +23,7 @@ router.post(
       return res.json({
         success: true,
         accessToken: credentials.accessToken,
-        user: {
-          id: credentials.user.id,
-          email: credentials.user.email,
-          first_name: credentials.user.first_name,
-          role: credentials.user.role,
-        },
+        user: credentials.user,
       });
     } catch (error) {
       return next(error);

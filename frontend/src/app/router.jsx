@@ -13,9 +13,11 @@ import { AdminUsersPage } from "../features/admin/pages/AdminUsersPage";
 import { AdminExamsPage } from "../features/admin/pages/AdminExamsPage";
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorPage } from "./ErrorPage";
+import { AwaitingVerificationPage } from "./AwaitingVerificationPage";
 import { RouteError } from "./RouteError";
 import { RootRedirector } from "./guards/RootRedirector";
 import { RequireRole } from "./guards/RequireRole";
+import { RequireVerified } from "./guards/RequireVerified";
 
 // Phase 5.2: the results dashboard is the only chart.js consumer — lazy-load
 // it so chart.js stays out of the initial bundle. The page has a named export,
@@ -28,8 +30,9 @@ const QuizResultDashboard = lazy(() =>
 
 // Route table (Phase 3 step 2, behavior pass in step 3): the guards are one
 // RequireRole keyed by role — logged out → /login with state.from, wrong
-// role → that role's home. The parent layout route attaches a single
-// errorElement for the whole tree.
+// role → that role's home. Teacher branches add RequireVerified inside it:
+// unverified teachers → /awaiting-verification. The parent layout route
+// attaches a single errorElement for the whole tree.
 export function AppRoutes() {
   return (
     <Routes>
@@ -44,7 +47,9 @@ export function AppRoutes() {
           path="/teacher"
           element={
             <RequireRole role="teacher">
-              <DashboardPage />
+              <RequireVerified>
+                <DashboardPage />
+              </RequireVerified>
             </RequireRole>
           }
         />
@@ -52,7 +57,9 @@ export function AppRoutes() {
           path="/teacher/exam-workstation"
           element={
             <RequireRole role="teacher">
-              <QuizMakerPage />
+              <RequireVerified>
+                <QuizMakerPage />
+              </RequireVerified>
             </RequireRole>
           }
         />
@@ -60,7 +67,9 @@ export function AppRoutes() {
           path="/teacher/quizzes"
           element={
             <RequireRole role="teacher">
-              <QuizzesPage />
+              <RequireVerified>
+                <QuizzesPage />
+              </RequireVerified>
             </RequireRole>
           }
         />
@@ -68,16 +77,18 @@ export function AppRoutes() {
           path="/teacher/quizzes/:quizId"
           element={
             <RequireRole role="teacher">
-              {/* Matches the dashboard's own h-screen bg-canvas root */}
-              <Suspense
-                fallback={
-                  <div className="flex h-screen items-center justify-center bg-canvas">
-                    <Spinner />
-                  </div>
-                }
-              >
-                <QuizResultDashboard />
-              </Suspense>
+              <RequireVerified>
+                {/* Matches the dashboard's own h-screen bg-canvas root */}
+                <Suspense
+                  fallback={
+                    <div className="flex h-screen items-center justify-center bg-canvas">
+                      <Spinner />
+                    </div>
+                  }
+                >
+                  <QuizResultDashboard />
+                </Suspense>
+              </RequireVerified>
             </RequireRole>
           }
         />
@@ -89,7 +100,9 @@ export function AppRoutes() {
           path="/teacher/quizzes/:quizId/attempts"
           element={
             <RequireRole role="teacher">
-              <ExamAttemptsPage />
+              <RequireVerified>
+                <ExamAttemptsPage />
+              </RequireVerified>
             </RequireRole>
           }
         />
@@ -97,7 +110,21 @@ export function AppRoutes() {
           path="/teacher/classes"
           element={
             <RequireRole role="teacher">
-              <ClassesPage />
+              <RequireVerified>
+                <ClassesPage />
+              </RequireVerified>
+            </RequireRole>
+          }
+        />
+        {/* Unverified teachers park here (RequireVerified sends them).
+            RequireRole keeps logged-out visitors (→ /login with state.from)
+            and other roles (→ their own home) out; a teacher who is already
+            verified is bounced back to /teacher by the page itself. */}
+        <Route
+          path="/awaiting-verification"
+          element={
+            <RequireRole role="teacher">
+              <AwaitingVerificationPage />
             </RequireRole>
           }
         />

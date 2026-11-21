@@ -2,6 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { verifyTeacher } from '../middlewares/teacherAuthz.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
 import { classesInputValidator } from '../middlewares/classesValidator.middleware.js';
 import { ClassesRepository } from '../repository/ClassesRepository.js';
@@ -10,10 +11,11 @@ import { UserRepository } from '../repository/UserRepository.js';
 
 const router = express.Router();
 
+router.use(verifyToken, verifyTeacher);
+
 // Create a class
 router.post(
   '/',
-  verifyToken,
   userBasedRateLimiter(5, 5),
   classesInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -42,37 +44,31 @@ router.post(
 );
 
 // get user classes and students in each class
-router.get(
-  '/',
-  verifyToken,
-  userBasedRateLimiter(5, 5),
-  async (req, res, next) => {
-    if (req.user.role !== 'teacher') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Unauthorized action' });
-    }
-    try {
-      const classes = await ClassesRepository.getUserClasses(req.user.id);
-      const students = await ClassStudentsRepository.getAllStudentsOfEachClass(
-        classes.map((c) => c.id),
-      );
-      const classArray = classes.map((c) => ({
-        ...c,
-        students: students.filter((s) => s.classId === c.id),
-      }));
+router.get('/', userBasedRateLimiter(5, 5), async (req, res, next) => {
+  if (req.user.role !== 'teacher') {
+    return res
+      .status(403)
+      .json({ success: false, message: 'Unauthorized action' });
+  }
+  try {
+    const classes = await ClassesRepository.getUserClasses(req.user.id);
+    const students = await ClassStudentsRepository.getAllStudentsOfEachClass(
+      classes.map((c) => c.id),
+    );
+    const classArray = classes.map((c) => ({
+      ...c,
+      students: students.filter((s) => s.classId === c.id),
+    }));
 
-      return res.status(200).json({ success: true, classArray });
-    } catch (error) {
-      return next(error);
-    }
-  },
-);
+    return res.status(200).json({ success: true, classArray });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 // router for adding student to class
 router.post(
   '/:classId/students',
-  verifyToken,
   userBasedRateLimiter(30, 10),
   /*body('email')
     .trim()
@@ -138,7 +134,6 @@ router.post(
 // find student by email
 router.get(
   '/:classId/students/find',
-  verifyToken,
   userBasedRateLimiter(60, 10),
   /*body('email')
     .trim()
@@ -198,7 +193,6 @@ router.get(
 // remove student from class
 router.delete(
   '/:classId/students/:studentId',
-  verifyToken,
   userBasedRateLimiter(10, 7),
   async (req, res, next) => {
     if (req.user.role !== 'teacher') {
@@ -242,7 +236,6 @@ router.delete(
 // delete class
 router.delete(
   '/:classId',
-  verifyToken,
   userBasedRateLimiter(10, 7),
   async (req, res, next) => {
     if (req.user.role !== 'teacher') {

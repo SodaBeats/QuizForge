@@ -44,6 +44,9 @@ beforeAll(async () => {
       email: dashboardEmail,
       password_hash: passwordHash,
       role: 'teacher',
+      // Verified: these teachers log in and hit verifyTeacher-protected
+      // dashboard routes.
+      is_verified: true,
     })
     .returning({ id: users.id });
 
@@ -59,6 +62,7 @@ beforeAll(async () => {
       email: emptyEmail,
       password_hash: passwordHash,
       role: 'teacher',
+      is_verified: true,
     })
     .returning({ id: users.id });
   if (!emptyTeacher) throw new Error('Failed to seed empty dashboard teacher');

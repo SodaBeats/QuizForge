@@ -12,7 +12,7 @@ import 'dotenv/config';
  * Returns DATABASE_URL on success.
  */
 export function assertSafeDatabase(): string {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = process.env.DEV_DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('[guard] DATABASE_URL is not set — aborting.');
   }
