@@ -158,8 +158,18 @@ export const rulesetProvider = (type: string) => {
       questionsRuleset = `
         ## multiple-choice
           - Required: [question_text, correct_answer_text, correct_answer, option_a, option_b, option_c, option_d]
-          - Be sure to include the correct answer in the choices.
-          - correct_answer: must include the letter of the correct answer.
+          - question_text: a clear question with exactly one correct answer.
+          - correct_answer_text: the full text of the correct answer, written first, before the options.
+          - Write the correct answer first, then write 3 distractors that match it.
+          - Distractor rules:
+            - Each distractor must be a plausible misconception, a common mistake, or a closely related concept that a student who only half-understands the topic would pick.
+            - All four options must have similar length (within about 20% of each other in characters), the same level of detail, and the same grammatical structure.
+            - Do not make the correct answer the longest, most specific, or most carefully qualified option. Give distractors the same specificity and qualifiers.
+            - Do not make distractors obviously absurd, off-topic, or joke answers.
+            - Do not use absolute words ("always", "never", "only") in distractors unless they also appear in the correct answer.
+          - Place the correct answer at a random position among the four options. Do not favor any letter.
+          - option_a to option_d: contain the correct_answer_text exactly once, with no letter prefixes like "A)".
+          - correct_answer: the letter ("a", "b", "c", or "d") of the option that contains correct_answer_text. Write it last, after the options.
         
         # OUTPUT FORMAT
           Respond with ONLY the specified JSON. No markdown, no code fences, no text before or after. The JSON must match this exact shape:
@@ -170,11 +180,11 @@ export const rulesetProvider = (type: string) => {
               {
                 "question_text": string,
                 "correct_answer_text": string,
-                "correct_answer: char,
                 "option_a": string,
                 "option_b": string,
                 "option_c": string,
-                "option_d": string
+                "option_d": string,
+                "correct_answer: char
               }
             ]
           }
