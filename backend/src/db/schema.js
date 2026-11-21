@@ -45,22 +45,27 @@ export const questions_db = pgTable('questions_db', {
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   user_id: uuid('user_id').unique().notNull().defaultRandom(),
-  first_name: text('first_name', { length: 64 }).notNull(),
-  last_name: text('last_name', { length: 64 }).notNull(),
+  first_name: varchar('first_name', { length: 64 }).notNull(),
+  last_name: varchar('last_name', { length: 64 }).notNull(),
   email: text('email').unique().notNull(),
   password_hash: varchar('password_hash', { length: 255 }).notNull(),
   role: text('role', { enum: ['student', 'teacher', 'admin'] })
     .default('student')
     .notNull(),
+  is_verified: boolean('is_verified').default(false).notNull(),
+  suspended_at: timestamp('suspended_at', { withTimezone: true }),
   created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at')
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });
 
 export const refresh_tokens = pgTable('refresh_tokens', {
   id: serial('id').primaryKey(),
   user_id: integer('user_id')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }),
   token: text('token').notNull(),
   expires_at: timestamp('expires_at').notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),

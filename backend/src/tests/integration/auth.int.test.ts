@@ -9,7 +9,6 @@
 import request from 'supertest';
 import app from '../../server.js';
 import { db, pool } from '../../db/db.js';
-import { generateShareToken } from './setup/testHelpers.js';
 
 afterAll(async () => {
   if(pool) await pool.end();
@@ -21,49 +20,12 @@ afterAll(async () => {
 
 describe('POST /auth/signup', () => {
 
-  // We use a timestamp in the email so this test can run multiple times
-  // without hitting the unique-email constraint.
-  const uniqueEmail = () => `newuser_${generateShareToken()}@test.com`;
+  it('503 — reports that signup is unavailable', async () => {
+    const res = await request(app).post('/auth/signup');
 
-  it('201 — creates a new account with valid data', async () => {
-    const res = await request(app)
-      .post('/auth/signup')
-      .send({
-        first_name: 'Jane',
-        last_name: 'Doe',
-        email: uniqueEmail(),
-        password: 'ValidPass1!',
-        role: 'teacher',
-      });
-
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.message).toMatch(/Account created/i);
-  });
-
-  it('409 — rejects a duplicate email', async () => {
-    // teacher@test.com was seeded in globalSetup, so it already exists
-    const res = await request(app)
-      .post('/auth/signup')
-      .send({
-        first_name: 'Dupe',
-        last_name: 'User',
-        email: 'teacher@test.com',
-        password: 'ValidPass1!',
-        role: 'teacher',
-      });
-
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(503);
     expect(res.body.success).toBe(false);
-    expect(res.body.message).toMatch(/already in use/i);
-  });
-
-  it('400 — rejects missing required fields', async () => {
-    const res = await request(app)
-      .post('/auth/signup')
-      .send({ email: uniqueEmail() }); // no password, no name
-
-    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/signup is currently unavailable/i);
   });
 });
 

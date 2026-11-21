@@ -1,4 +1,4 @@
-import { groq } from '../lib/groq.js';
+import { chatCompletion } from '../lib/aiClient.js';
 import type { Question } from '../types/questionType.js';
 
 type formattedAttemptAnswer = {
@@ -126,8 +126,7 @@ export const getSummaryRemarks = async ({
   `;
   const userMessage = `<attempt>${JSON.stringify(attemptSummary)}</attempt>`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await chatCompletion({
     messages: [
       {
         role: 'system',
@@ -141,7 +140,7 @@ export const getSummaryRemarks = async ({
   });
 
   if (!response?.choices?.[0]?.message?.content) {
-    throw new Error('Failed to get response from Groq API');
+    throw new Error('Failed to get response from AI API');
   }
   return response.choices[0].message.content;
 };

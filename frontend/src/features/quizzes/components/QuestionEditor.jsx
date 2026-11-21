@@ -39,6 +39,7 @@ export function QuestionEditor({
     sources: [],
     topic: "",
   });
+  const updateDisabled = (quizMetadata?.attemptCount ?? 0) > 0;
 
   useEffect(() => {
     if (selectedQuestion) {
@@ -191,11 +192,17 @@ export function QuestionEditor({
           <h2 className="text-sm font-display font-semibold text-inkondark">
             Question editor
           </h2>
-          <p className="text-xs text-muted mt-0.5">
-            {quizMetadata
-              ? `Editing questions for: "${quizMetadata.quizTitle}"`
-              : "No quiz selected"}
-          </p>
+          {updateDisabled ? (
+            <p className="text-xs text-warn mt-0.5">
+              Chosen exam has existing attempts. Cannot be updated.
+            </p>
+          ) : (
+            <p className="text-xs text-muted mt-0.5">
+              {quizMetadata
+                ? `Editing questions for: "${quizMetadata.quizTitle}"`
+                : "No exam selected"}
+            </p>
+          )}
         </div>
       </div>
       <GenerationStatus
@@ -218,6 +225,7 @@ export function QuestionEditor({
               setQuestion={setManualQuestion}
               onSubmit={handleQuestionUpdateSubmit}
               onCancel={handleManualQuestionCancel}
+              updateDisabled={updateDisabled}
             />
           ) : view === "generate" ? (
             <GenerateSettingsPanel
@@ -236,24 +244,26 @@ export function QuestionEditor({
             <div className="space-y-3 text-sm">
               <button
                 onClick={() => setAddMode("generate")}
-                className="w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
+                disabled={updateDisabled}
+                className="group w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20 disabled:cursor-not-allowed disabled:bg-muted disabled:hover:bg-muted"
               >
-                <div className="text-base font-display font-semibold text-inkondark flex items-center gap-2">
+                <div className="text-base font-display font-semibold text-inkondark flex items-center gap-2 group-disabled:text-ink/90">
                   Generate
                 </div>
-                <div className="mt-1 text-muted">
+                <div className="mt-1 text-muted group-disabled:text-ink/70">
                   Use AI to generate questions for you
                 </div>
               </button>
 
               <button
                 onClick={() => setAddMode("manual")}
-                className="w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20"
+                disabled={updateDisabled}
+                className="group w-full rounded-lg p-4 text-left transition-all bg-darkslate hover:bg-darkslate/30 border border-muted/20 disabled:cursor-not-allowed disabled:bg-muted disabled:hover:bg-muted"
               >
-                <div className="text-base font-display font-semibold text-inkondark">
+                <div className="text-base font-display font-semibold text-inkondark group-disabled:text-ink/90">
                   Make your own
                 </div>
-                <div className="mt-1 text-muted">
+                <div className="mt-1 text-muted group-disabled:text-ink/70">
                   Manually create a custom question
                 </div>
               </button>

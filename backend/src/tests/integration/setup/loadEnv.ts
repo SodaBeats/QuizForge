@@ -7,6 +7,7 @@
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.test' });
+process.env.NODE_ENV = 'development';
 
 if (!process.env.DATABASE_URL) {
   throw new Error("FATAL: DATABASE_URL not found during test setup!");

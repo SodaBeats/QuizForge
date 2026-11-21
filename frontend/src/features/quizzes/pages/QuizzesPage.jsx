@@ -11,10 +11,7 @@ import {
   useUpdateQuestion,
   useUpdateQuiz,
 } from "../api/mutations.js";
-import {
-  useQuizQuestions,
-  useQuizzes,
-} from "../api/queries.js";
+import { useQuizQuestions, useQuizzes } from "../api/queries.js";
 
 export function QuizzesPage() {
   const [selectedQuizId, setSelectedQuizId] = useState(null);
@@ -190,7 +187,8 @@ export function QuizzesPage() {
       <ConfirmDialog
         open={Boolean(quizToDelete)}
         title="Delete quiz?"
-        message="Are you sure you wish to delete this quiz?"
+        message="Deleting this exam will also delete all of its attempts."
+        disclaimer="This action cannt be undone. Proceed?"
         confirmLabel="Delete quiz"
         onConfirm={confirmDeleteQuiz}
         onCancel={() => setQuizToDelete(null)}

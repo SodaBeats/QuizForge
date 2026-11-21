@@ -1,4 +1,4 @@
-import { redis } from './redis.js';
+import { redis } from '../lib/redis.js';
 import type { Request, Response, NextFunction } from 'express';
 
 export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
@@ -12,8 +12,11 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
   `;
 
   return async (req: Request, res: Response, next: NextFunction) => {
-    next();
-    /*try {
+    if (process.env.NODE_ENV === 'development' || !redis) {
+      return next();
+    }
+
+    try {
       const clientIp = req.ip?.replace(/^::ffff:/, '');
       if (!clientIp) {
         console.error('IP address unavailable, blocking request');
@@ -44,6 +47,6 @@ export function ipRateLimiter(windowSizeSeconds: number, limit: number) {
       return res
         .status(500)
         .json({ success: false, message: 'Redis error, try again later' });
-    }*/
+    }
   };
 }

@@ -63,3 +63,14 @@ export const dashboardKeys = {
   activeExams: (params = null) => [...dashboardKeys.all, "active-exams", params],
   expiring: (params = null) => [...dashboardKeys.all, "expiring", params],
 };
+
+// Admin panel: stats, every users-list page/tab, and the exams list share
+// `all`, so one user mutation refreshes the stat cards and the visible list.
+export const adminKeys = {
+  all: ["admin"],
+  stats: ["admin", "stats"],
+  // users({ role, page, limit, verified }) = GET /admin/users?…
+  users: (params = null) => [...adminKeys.all, "users", params],
+  // exams({ page, limit }) = GET /admin/exams?…
+  exams: (params = null) => [...adminKeys.all, "exams", params],
+};

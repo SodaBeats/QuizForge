@@ -1,11 +1,15 @@
 import mammoth from 'mammoth';
 import pdf from 'pdf-extraction';
-import ollama from 'ollama';
+import { embedText } from '../lib/embedText.js';
 import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
 import { db } from '../db/db.js';
+
+const isProd = process.env.NODE_ENV === 'production';
+const minWords = 150;
+const maxWords = isProd ? 800 : 450;
 
 export const extractText = async (
   file: UploadedFileInterface | null | undefined,
@@ -52,23 +56,14 @@ export const extractText = async (
       extracted_text: cleanedText,
     };
 
-    console.log();
     // chunk text for RAG
-    const chunks = textUtilities.seniorChunker(cleanedText);
+    const chunks = textUtilities.seniorChunker(cleanedText, minWords, maxWords);
     if (!chunks || chunks.length < 1) {
       throw new Error('Failed to chunk document');
     }
 
-    // make embeddings for the chunks
-    const batch = await ollama.embed({
-      model: 'mxbai-embed-large:latest',
-      input: chunks,
-    });
-    if (!batch.embeddings || batch.embeddings.length !== chunks.length) {
-      throw new Error(
-        `Embedding count mismatch: expected ${chunks.length}, got ${batch.embeddings?.length || 0}`,
-      );
-    }
+    // make embeddings for the chunks (embedText validates count/dimensions)
+    const embeddings = await embedText(chunks);
 
     const transactionResult = await db.transaction(async (tx) => {
       const insertedFile = await UploadedFilesRepository.insertFileToDb(
@@ -82,7 +77,7 @@ export const extractText = async (
 
       // insert chunked texts with their corresponding embedding
       const dataToInsert = chunks.map((chunk, index) => {
-        const vector = batch.embeddings[index];
+        const vector = embeddings[index];
         return {
           document_id: insertedFile.id,
           user_id: userId,

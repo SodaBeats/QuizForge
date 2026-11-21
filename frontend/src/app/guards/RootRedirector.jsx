@@ -14,10 +14,13 @@ export function RootRedirector() {
     return <Navigate to="/login" replace />;
   }
 
-  // Send them where they belong based on their role
-  return userInfo.role === "teacher" ? (
-    <Navigate to="/teacher" replace />
-  ) : (
-    <Navigate to="/student" replace />
-  );
+  // Send them where they belong based on their role (unknown roles keep the
+  // old fallback to the student home — only teacher/student/admin exist).
+  if (userInfo.role === "teacher") {
+    return <Navigate to="/teacher" replace />;
+  }
+  if (userInfo.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+  return <Navigate to="/student" replace />;
 }

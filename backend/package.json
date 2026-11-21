@@ -9,10 +9,12 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "db:migrate": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
     "db:wipe": "tsx src/scripts/wipe-db.ts",
-    "db:seed:users": "tsx src/scripts/seed-users.ts"
+    "db:seed:users": "tsx src/scripts/seed-users.ts",
+    "db:prod:seed:admin": "tsx src/scripts/seed-admin.ts"
   },
   "keywords": [],
   "author": "",
@@ -27,15 +29,12 @@
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
     "express-validator": "^7.3.1",
-    "groq-sdk": "^1.1.2",
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",
-    "ollama": "^0.6.3",
     "pdf-extraction": "^1.0.2",
     "pg": "^8.20.0",
-    "tiktoken": "^1.0.22",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -56,5 +55,8 @@
     "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

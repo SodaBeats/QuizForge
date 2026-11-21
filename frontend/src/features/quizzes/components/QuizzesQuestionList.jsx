@@ -15,6 +15,8 @@ export const QuestionList = ({
   editingQuestion,
   setEditingQuestion,
 }) => {
+  const updateDisabled = (selectedQuiz?.attemptCount ?? 0) > 0;
+
   useEffect(() => {
     setEditingQuestion(null);
   }, [selectedQuiz, setEditingQuestion]);
@@ -170,22 +172,25 @@ export const QuestionList = ({
             ) : (
               <div>
                 <label className={labelClass}>Correct answer</label>
-                <input
-                  type="text"
-                  value={editingQuestion.correctAnswer}
+                {/* Same treatment as QuestionForm's reference-answer field:
+                    multi-sentence model answers don't fit a one-line input. */}
+                <textarea
+                  value={editingQuestion.correctAnswer || ""}
                   onChange={(e) =>
                     setEditingQuestion({
                       ...editingQuestion,
                       correctAnswer: e.target.value,
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} h-24 resize-none`}
+                  placeholder="Enter the reference answer..."
                 />
               </div>
             )}
             <button
               onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}
-              className="w-full font-display font-bold bg-accept text-inkondark hover:bg-green-600 py-3 rounded-md transition-all mt-4 hover:-translate-y-0.5 active:translate-y-0.5"
+              className="w-full font-display font-bold bg-accept text-inkondark hover:bg-green-600 py-3 rounded-md transition-all mt-4 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
+              disabled={updateDisabled}
             >
               Save changes
             </button>
@@ -238,4 +243,3 @@ export const QuestionList = ({
     </div>
   );
 };
-
