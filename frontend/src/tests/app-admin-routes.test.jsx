@@ -29,7 +29,16 @@ vi.mock("../features/auth/pages/LoginPage", () => ({
 const renderAt = (path, { token = "token", role = "admin" } = {}) =>
   render(
     <AuthContext.Provider
-      value={{ token, userInfo: role ? { role } : {}, logout: vi.fn() }}
+      value={{
+        token,
+        // Teacher mocks carry isVerified: true — /teacher now runs through
+        // RequireVerified, which parks unverified accounts on
+        // /awaiting-verification instead of the dashboard.
+        userInfo: role
+          ? { role, ...(role === "teacher" ? { isVerified: true } : {}) }
+          : {},
+        logout: vi.fn(),
+      }}
     >
       <MemoryRouter initialEntries={[path]}>
         <AppRoutes />
