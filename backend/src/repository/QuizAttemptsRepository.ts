@@ -44,7 +44,7 @@ export const QuizAttemptsRepo = {
     userId: number,
     tx: QueryClient = db,
   ) {
-    await tx
+    const [updated] = await tx
       .update(quiz_attempts_db)
       .set(data)
       .where(
@@ -54,7 +54,9 @@ export const QuizAttemptsRepo = {
           eq(quiz_attempts_db.user_id, userId),
           eq(quiz_attempts_db.status, 'in-progress'),
         ),
-      );
+      )
+      .returning({ id: quiz_attempts_db.id });
+    return updated ?? null;
   },
 
   //get existing attempt

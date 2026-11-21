@@ -189,8 +189,7 @@ router.patch(
         question_id: q.id,
         chosen_answer: safeAnswers[q.id.toString()] ?? null,
         correct_answer: q.correctAnswer ?? '',
-        is_correct:
-          (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer,
+        is_correct: (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer,
         points:
           (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer ? 1 : 0,
       };
@@ -198,7 +197,8 @@ router.patch(
 
     const formattedReasoningAttemptAnswers = reasoningQuestions.map(
       (q: Question) => {
-        const score = reasoningQuestionsScoreObject.scores[q.id.toString()] ?? 0;
+        const score =
+          reasoningQuestionsScoreObject.scores[q.id.toString()] ?? 0;
         const remarks =
           reasoningQuestionsScoreObject.remarks[q.id.toString()] ?? null;
         return {
@@ -238,14 +238,17 @@ router.patch(
     };
 
     try {
-      await db.transaction(async (tx) => {
-        await QuizAttemptsRepo.updateAttempt(
+      const completedAttemptId = await db.transaction(async (tx) => {
+        const updatedAttempt = await QuizAttemptsRepo.updateAttempt(
           formattedData,
           quizId,
           numericAttemptId,
           userId,
           tx,
         );
+
+        if (!updatedAttempt) return;
+
         await AttemptAnswersRepo.insertAttemptAnswer(
           formattedAttemptAnswers,
           tx,
@@ -254,7 +257,17 @@ router.patch(
           formattedReasoningAttemptAnswers,
           tx,
         );
+
+        return updatedAttempt.id;
       });
+
+      if (!completedAttemptId) {
+        return res.status(409).json({
+          success: false,
+          message: 'Attempt is already completed or does not belong to you',
+        });
+      }
+
       return res
         .status(200)
         .json({ success: true, message: 'Attempt received!' });

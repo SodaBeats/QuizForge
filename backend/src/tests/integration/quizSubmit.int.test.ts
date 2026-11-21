@@ -68,6 +68,8 @@ let shortId: number; // short-answer
 
 let successAttemptId: number; // completed by the 200 test
 let failureAttemptId: number; // left untouched by the 500 test
+let deadlineAttemptId: number;
+let mismatchAttemptId: number;
 
 const SUMMARY =
   'Strengths:\n• Covered the basics.\n\nGaps:\n• Missed edge cases.\n\nSuggested next steps:\n• Review the missed topics.';
@@ -269,11 +271,22 @@ beforeAll(async () => {
     .values([
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
+      { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
+      { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
     ])
     .returning();
-  if (!attempts[0] || !attempts[1]) throw new Error('Failed to seed attempts');
+  if (
+    !attempts[0] ||
+    !attempts[1] ||
+    !attempts[2] ||
+    !attempts[3]
+  ) {
+    throw new Error('Failed to seed attempts');
+  }
   successAttemptId = attempts[0].id;
   failureAttemptId = attempts[1].id;
+  deadlineAttemptId = attempts[2].id;
+  mismatchAttemptId = attempts[3].id;
 });
 
 afterAll(async () => {
@@ -379,6 +392,27 @@ describe('PATCH /api/student/quiz-submit', () => {
     expect(summaryRemarksMock).not.toHaveBeenCalled();
   });
 
+  it('409 — rejects a second submission of an already completed attempt', async () => {
+    const firstRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send(submitBody(failureAttemptId));
+
+    expect(firstRes.status).toBe(200);
+
+    const duplicateRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send(submitBody(failureAttemptId));
+
+    expect(duplicateRes.status).toBe(409);
+    expect(duplicateRes.body).toEqual({
+      success: false,
+      message: 'Attempt is already completed or does not belong to you',
+    });
+    expect(await rowsForAttempt(failureAttemptId)).toHaveLength(6);
+  });
+
   it('400 — rejects a body with missing required fields', async () => {
     const res = await request(app)
       .patch('/api/student/quiz-submit')
@@ -406,11 +440,11 @@ describe('PATCH /api/student/quiz-submit', () => {
       const res = await request(app)
         .patch('/api/student/quiz-submit')
         .set(authHeader(studentToken))
-        .send(submitBody(failureAttemptId));
+        .send(submitBody(deadlineAttemptId));
 
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('Quiz is past the deadline');
-      expect(await rowsForAttempt(failureAttemptId)).toHaveLength(0);
+      expect(await rowsForAttempt(deadlineAttemptId)).toHaveLength(0);
     } finally {
       await db
         .update(quizzes_db)
@@ -450,7 +484,7 @@ describe('PATCH /api/student/quiz-submit', () => {
     if (!foreignQuestion) throw new Error('Failed to seed foreign question');
 
     try {
-      const withForeignQuestion = submitBody(failureAttemptId);
+      const withForeignQuestion = submitBody(mismatchAttemptId);
       withForeignQuestion.questions.push({
         id: foreignQuestion.id,
         questionText: foreignQuestion.question_text,
@@ -473,7 +507,7 @@ describe('PATCH /api/student/quiz-submit', () => {
         'Submitted questions do not belong to this quiz',
       );
 
-      const withMissingQuestion = submitBody(failureAttemptId);
+      const withMissingQuestion = submitBody(mismatchAttemptId);
       withMissingQuestion.questions.pop();
 
       const missingRes = await request(app)
@@ -485,7 +519,7 @@ describe('PATCH /api/student/quiz-submit', () => {
       expect(missingRes.body.message).toBe(
         'Submitted questions do not belong to this quiz',
       );
-      expect(await rowsForAttempt(failureAttemptId)).toHaveLength(0);
+      expect(await rowsForAttempt(mismatchAttemptId)).toHaveLength(0);
     } finally {
       await db.delete(quizzes_db).where(eq(quizzes_db.id, foreignQuiz.id));
     }
