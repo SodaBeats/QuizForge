@@ -20,7 +20,7 @@ export function AwaitingVerificationPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-canvas p-4">
       <div className="max-w-md w-full bg-ink rounded-md border border-muted/30 p-8 text-center">
-        <h1 className="text-3xl font-semibold mb-6">
+        <h1 className="text-3xl text-inkondark font-semibold mb-6">
           Awaiting verification, please wait for Admin confirmation
         </h1>
         {/* Direct logout, no confirm dialog: this screen is a dead end, so
