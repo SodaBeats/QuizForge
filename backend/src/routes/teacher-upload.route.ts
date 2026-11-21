@@ -5,9 +5,12 @@ import { upload } from '../middlewares/upload.middleware.js';
 import { fileHashMiddleware } from '../middlewares/fileHash.middleware.js';
 import { extractText } from '../services/fileExtract.service.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
+import { verifyTeacher } from '../middlewares/teacherAuthz.middleware.js';
 
 //establish router
 const router = express.Router();
+
+router.use(verifyToken, verifyTeacher);
 
 //Express.Multer.File is a TYPE, like a drawing that specifies what a file must have
 //This line of code extends that drawing to include fileHash
@@ -17,7 +20,6 @@ interface FileWithHash extends Express.Multer.File {
 
 router.post(
   '/',
-  verifyToken,
   userBasedRateLimiter(3, 1),
   upload.single('file'), // multer middleware to process file
   fileHashMiddleware, // middleware to generate file hash
