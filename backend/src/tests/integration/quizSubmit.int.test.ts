@@ -68,6 +68,8 @@ let shortId: number; // short-answer
 
 let successAttemptId: number; // completed by the 200 test
 let failureAttemptId: number; // left untouched by the 500 test
+let deadlineAttemptId: number;
+let mismatchAttemptId: number;
 
 const SUMMARY =
   'Strengths:\n• Covered the basics.\n\nGaps:\n• Missed edge cases.\n\nSuggested next steps:\n• Review the missed topics.';
@@ -269,11 +271,22 @@ beforeAll(async () => {
     .values([
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
+      { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
+      { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
     ])
     .returning();
-  if (!attempts[0] || !attempts[1]) throw new Error('Failed to seed attempts');
+  if (
+    !attempts[0] ||
+    !attempts[1] ||
+    !attempts[2] ||
+    !attempts[3]
+  ) {
+    throw new Error('Failed to seed attempts');
+  }
   successAttemptId = attempts[0].id;
   failureAttemptId = attempts[1].id;
+  deadlineAttemptId = attempts[2].id;
+  mismatchAttemptId = attempts[3].id;
 });
 
 afterAll(async () => {
@@ -379,6 +392,27 @@ describe('PATCH /api/student/quiz-submit', () => {
     expect(summaryRemarksMock).not.toHaveBeenCalled();
   });
 
+  it('409 — rejects a second submission of an already completed attempt', async () => {
+    const firstRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send(submitBody(failureAttemptId));
+
+    expect(firstRes.status).toBe(200);
+
+    const duplicateRes = await request(app)
+      .patch('/api/student/quiz-submit')
+      .set(authHeader(studentToken))
+      .send(submitBody(failureAttemptId));
+
+    expect(duplicateRes.status).toBe(409);
+    expect(duplicateRes.body).toEqual({
+      success: false,
+      message: 'Attempt is already completed or does not belong to you',
+    });
+    expect(await rowsForAttempt(failureAttemptId)).toHaveLength(6);
+  });
+
   it('400 — rejects a body with missing required fields', async () => {
     const res = await request(app)
       .patch('/api/student/quiz-submit')
@@ -387,6 +421,108 @@ describe('PATCH /api/student/quiz-submit', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
+  });
+
+  it('400 — rejects submission after the quiz deadline', async () => {
+    const [liveQuiz] = await db
+      .select()
+      .from(quizzes_db)
+      .where(eq(quizzes_db.id, seededQuizId));
+    if (!liveQuiz) throw new Error('Seeded quiz not found');
+
+    const originalDueDate = liveQuiz.due_date;
+    await db
+      .update(quizzes_db)
+      .set({ due_date: new Date(Date.now() - 60_000) })
+      .where(eq(quizzes_db.id, seededQuizId));
+
+    try {
+      const res = await request(app)
+        .patch('/api/student/quiz-submit')
+        .set(authHeader(studentToken))
+        .send(submitBody(deadlineAttemptId));
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Quiz is past the deadline');
+      expect(await rowsForAttempt(deadlineAttemptId)).toHaveLength(0);
+    } finally {
+      await db
+        .update(quizzes_db)
+        .set({ due_date: originalDueDate })
+        .where(eq(quizzes_db.id, seededQuizId));
+    }
+  });
+
+  it('400 — rejects questions that do not belong exactly to the quiz', async () => {
+    const [foreignQuiz] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'foreign submission quiz',
+        share_token: generateShareToken(),
+        max_attempts: 1,
+        status: 'published',
+        due_date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      })
+      .returning();
+    if (!foreignQuiz) throw new Error('Failed to seed foreign quiz');
+
+    const [foreignQuestion] = await db
+      .insert(questions_db)
+      .values({
+        quiz_id: foreignQuiz.id,
+        question_text: 'Foreign question',
+        question_type: 'multiple-choice',
+        correct_answer: 'a',
+        option_a: 'a',
+        option_b: 'b',
+        option_c: 'c',
+        option_d: 'd',
+        time_limit: 10,
+      })
+      .returning();
+    if (!foreignQuestion) throw new Error('Failed to seed foreign question');
+
+    try {
+      const withForeignQuestion = submitBody(mismatchAttemptId);
+      withForeignQuestion.questions.push({
+        id: foreignQuestion.id,
+        questionText: foreignQuestion.question_text,
+        questionType: 'multiple-choice',
+        correctAnswer: 'a',
+        optionA: 'a',
+        optionB: 'b',
+        optionC: 'c',
+        optionD: 'd',
+        timeLimit: 10,
+      });
+
+      const extraRes = await request(app)
+        .patch('/api/student/quiz-submit')
+        .set(authHeader(studentToken))
+        .send(withForeignQuestion);
+
+      expect(extraRes.status).toBe(400);
+      expect(extraRes.body.message).toBe(
+        'Submitted questions do not belong to this quiz',
+      );
+
+      const withMissingQuestion = submitBody(mismatchAttemptId);
+      withMissingQuestion.questions.pop();
+
+      const missingRes = await request(app)
+        .patch('/api/student/quiz-submit')
+        .set(authHeader(studentToken))
+        .send(withMissingQuestion);
+
+      expect(missingRes.status).toBe(400);
+      expect(missingRes.body.message).toBe(
+        'Submitted questions do not belong to this quiz',
+      );
+      expect(await rowsForAttempt(mismatchAttemptId)).toHaveLength(0);
+    } finally {
+      await db.delete(quizzes_db).where(eq(quizzes_db.id, foreignQuiz.id));
+    }
   });
 
   it('401 — rejects requests with no token', async () => {

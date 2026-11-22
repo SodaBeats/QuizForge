@@ -11,7 +11,7 @@ import { ClassStudentsRepository } from '../repository/ClassStudentsRepo.js';
 
 const router = express.Router();
 
-//get quiz info, get user total attempt,
+// quiz access and attempt creation
 router.post(
   '/',
   verifyToken,
@@ -21,7 +21,7 @@ router.post(
     try {
       const userId = Number(req.user.id);
       // FETCH QUIZ + ATTEMPT COUNT
-      const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(
+      const quiz = await UserQuizzesRepository.getQuizInfo(
         req.body.token,
         userId,
       );
@@ -79,15 +79,16 @@ router.post(
         });
       }
 
-      const formattedInsertData = {
+      const normalized = {
         quiz_id: quiz.id,
         user_id: userId,
         score: 0,
         status: 'in-progress',
+        expires_at: new Date(Date.now() + (quiz.totalTimeLimit + 10) * 1000),
       };
 
       // CREATE ATTEMPT
-      const attempt = await QuizAttemptsRepo.createAttempt(formattedInsertData);
+      const attempt = await QuizAttemptsRepo.createAttempt(normalized);
       if (!attempt) {
         return res
           .status(500)
@@ -108,7 +109,7 @@ router.post(
   },
 );
 
-//get and questions by quiz token, just in case
+// fetch quiz info
 router.get(
   '/:quizToken',
   verifyToken,
@@ -123,15 +124,47 @@ router.get(
 
     try {
       // FETCH QUIZ + ATTEMPT COUNT
-      const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(
-        quizToken,
-        userId,
-      );
+      const quiz = await UserQuizzesRepository.getQuizInfo(quizToken, userId);
 
       if (!quiz) {
         return res
           .status(404)
           .json({ success: false, message: 'Quiz does not exist' });
+      }
+
+      //check quiz status
+      if (quiz.status !== 'published') {
+        return res.status(404).json({ message: 'Quiz not found' });
+      }
+
+      // Fetch quiz access
+      if (quiz.accessibility === 'restricted') {
+        const allowedClasses = await QuizAccessRepo.quizAccess(quiz.id);
+        const userClasses =
+          await ClassStudentsRepository.getAllClassOfStudent(userId);
+
+        if (!allowedClasses) {
+          return res
+            .status(500)
+            .json({ message: 'Quiz access configuration error' });
+        }
+
+        if (!userClasses) {
+          return res.status(403).json({
+            success: false,
+            message: 'You do not have access to this quiz',
+          });
+        }
+
+        const hasAccess = userClasses.some((classId) =>
+          allowedClasses.includes(classId),
+        );
+        if (!hasAccess) {
+          return res.status(403).json({
+            success: false,
+            message: 'You do not have access to this quiz.',
+          });
+        }
       }
 
       //check quiz deadline
@@ -142,8 +175,15 @@ router.get(
           .json({ success: false, message: 'Quiz is past the deadline' });
       }
 
+      // Fetch the student's existing in-progress attempt before applying the
+      // limit: that attempt is allowed to be resumed when it reaches the limit.
+      const attemptStart = await QuizAttemptsRepo.getExistingAttempt(
+        quiz.id,
+        userId,
+      );
+
       // CHECK ATTEMPTS
-      if (quiz.totalAttempts > quiz.maxAttempts) {
+      if (quiz.totalAttempts >= quiz.maxAttempts && !attemptStart) {
         return res.status(400).json({
           success: false,
           message: 'You have used all attempts for this quiz',
@@ -160,12 +200,6 @@ router.get(
           .status(404)
           .json({ success: false, message: 'This quiz has no questions' });
       }
-
-      //fetch attempt start
-      const attemptStart = await QuizAttemptsRepo.getExistingAttempt(
-        quiz.id,
-        userId,
-      );
 
       return res.status(200).json({
         success: true,

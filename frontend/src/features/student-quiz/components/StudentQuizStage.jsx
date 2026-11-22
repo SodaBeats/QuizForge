@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { StudentSidebar } from "./StudentSidebar";
 import { StudentQuizWindow } from "./StudentQuizWindow";
 import { StudentTimeLimit } from "./StudentTimeLimit";
+import { getQuestionTimeRemainingMs } from "../lib/attemptStorage";
 
 export function StudentQuizStage({
   questions,
@@ -21,8 +22,31 @@ export function StudentQuizStage({
   attemptId,
 }) {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [timerNow, setTimerNow] = useState(() => Date.now());
   const unansweredCount =
     (questions?.length ?? 0) - (answeredQuestions?.size ?? 0);
+  const previousQuestion =
+    selectedQuestionIndex > 0 ? questions?.[selectedQuestionIndex - 1] : null;
+
+  useEffect(() => {
+    if (!previousQuestion || previousQuestion.timeLimit <= 0) return;
+
+    const intervalId = setInterval(() => setTimerNow(Date.now()), 1000);
+    return () => clearInterval(intervalId);
+  }, [previousQuestion]);
+
+  const canPrev =
+    selectedQuestionIndex > 0 &&
+    Boolean(previousQuestion) &&
+    getQuestionTimeRemainingMs({
+      attemptId,
+      questionId: previousQuestion.id,
+      timeLimit: previousQuestion.timeLimit,
+      now: timerNow,
+    }) > 0;
+  const canNext =
+    selectedQuestionIndex >= 0 &&
+    selectedQuestionIndex < (questions?.length ?? 0) - 1;
 
   const handleRequestSubmit = () => {
     setShowSubmitConfirm(true);
@@ -52,9 +76,9 @@ export function StudentQuizStage({
 
       <StudentQuizWindow
         question={selectedQuestion}
-        canPrev={false}
+        canPrev={canPrev}
         onPrev={onPrev}
-        canNext={true}
+        canNext={canNext}
         onNext={onNext}
         answers={answers}
         onAnswerChange={onAnswerChange}

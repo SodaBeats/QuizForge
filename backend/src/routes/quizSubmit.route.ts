@@ -9,6 +9,8 @@ import {
 } from '../services/getReasoningScoreObject.service.js';
 import { QuizAttemptsRepo } from '../repository/QuizAttemptsRepository.js';
 import { AttemptAnswersRepo } from '../repository/AttemptsAnswersRepo.js';
+import { QuestionsRepository } from '../repository/QuestionsRepository.js';
+import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import type { Question } from '../types/questionType.js';
 import { isReasoningQuestionType } from '../types/questionType.js';
 import { getSummaryRemarks } from '../services/summaryRemarks.service.js';
@@ -23,7 +25,7 @@ router.patch(
   userBasedRateLimiter(3, 1),
   async (req, res, next) => {
     const { questions, answers, quiz, attemptId } = req.body;
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     let reasoningQuestionsAnswers: Record<string, string> = {};
     let attemptRemarks = 'Summary Unavailable';
 
@@ -33,24 +35,107 @@ router.patch(
         .json({ success: false, message: 'Missing required fields' });
     }
 
+    if (!Array.isArray(questions) || typeof answers !== 'object') {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid submission payload' });
+    }
+
+    const quizId = Number(quiz.id);
+    const numericAttemptId = Number(attemptId);
+    if (
+      !Number.isInteger(quizId) ||
+      !Number.isInteger(numericAttemptId) ||
+      quizId <= 0 ||
+      numericAttemptId <= 0
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid submission payload' });
+    }
+
+    const liveQuiz = await UserQuizzesRepository.getQuizById(quizId);
+    if (!liveQuiz) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Quiz not found' });
+    }
+    if (liveQuiz.status !== 'published') {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Quiz is not accepting submissions' });
+    }
+    if (Date.now() > new Date(liveQuiz.due_date).getTime()) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Quiz is past the deadline' });
+    }
+
+    const liveQuestions =
+      await QuestionsRepository.getQuestionsRelatedToQuiz(quizId);
+    if (!liveQuestions || liveQuestions.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Quiz has no questions' });
+    }
+
+    const submittedQuestionIds = questions
+      .map((question: Question) => Number(question?.id))
+      .filter((id: number) => Number.isInteger(id));
+    const liveQuestionIds = liveQuestions.map((question) => question.id);
+    const liveQuestionIdSet = new Set(liveQuestionIds);
+    const submittedQuestionIdSet = new Set(submittedQuestionIds);
+    const submittedExactQuestionSet =
+      submittedQuestionIds.length === liveQuestionIds.length &&
+      submittedQuestionIdSet.size === liveQuestionIdSet.size &&
+      [...submittedQuestionIdSet].every((id) => liveQuestionIdSet.has(id));
+
+    if (!submittedExactQuestionSet) {
+      return res.status(400).json({
+        success: false,
+        message: 'Submitted questions do not belong to this quiz',
+      });
+    }
+
+    const safeQuestions: Question[] = liveQuestions.map((question) => ({
+      id: question.id,
+      quizId: question.quizId,
+      questionText: question.questionText,
+      questionType: question.questionType as Question['questionType'],
+      timeLimit: question.timeLimit ?? 0,
+      correctAnswer: question.correctAnswer ?? null,
+      optionA: question.optionA ?? null,
+      optionB: question.optionB ?? null,
+      optionC: question.optionC ?? null,
+      optionD: question.optionD ?? null,
+    }));
+    const safeAnswers = { ...answers };
+
     // separate reasoning questions (LLM-graded 0-10) to a new array
-    const reasoningQuestions = questions.filter((q: Question) => {
+    const reasoningQuestions = safeQuestions.filter((q: Question) => {
       return isReasoningQuestionType(q.questionType);
     });
 
     // separate 'reasoning' answers and delete from 'answers'
     for (const q of reasoningQuestions) {
-      reasoningQuestionsAnswers[q.id.toString()] = answers[q.id] ?? '';
-      delete answers[q.id];
+      reasoningQuestionsAnswers[q.id.toString()] =
+        safeAnswers[q.id.toString()] ?? '';
+      delete safeAnswers[q.id.toString()];
     }
 
     // separate normal (exact-match, 1 pt) questions to a new array
-    const normalQuestions = questions.filter((q: Question) => {
+    const normalQuestions = safeQuestions.filter((q: Question) => {
       return !isReasoningQuestionType(q.questionType);
     });
 
     // get total score for 'multiple-choice' and 'true-false' questions
-    const normalQuestionsScore = getScore(normalQuestions, answers);
+    const normalQuestionsScore = getScore(
+      normalQuestions.map((question) => ({
+        ...question,
+        correctAnswer: question.correctAnswer ?? null,
+      })),
+      safeAnswers,
+    );
 
     // get score array for 'reasoning' questions
     let reasoningQuestionsScoreObject: ReasoningGradingResult = {
@@ -98,29 +183,31 @@ router.patch(
 
     const formattedAttemptAnswers = normalQuestions.map((q: Question) => {
       return {
-        quiz_id: quiz.id,
-        attempt_id: attemptId,
+        quiz_id: quizId,
+        attempt_id: numericAttemptId,
         user_id: userId,
         question_id: q.id,
-        chosen_answer: answers[q.id] ?? null,
-        correct_answer: q.correctAnswer,
-        is_correct: (answers[q.id] ?? null) === q.correctAnswer,
-        points: (answers[q.id] ?? null) === q.correctAnswer ? 1 : 0,
+        chosen_answer: safeAnswers[q.id.toString()] ?? null,
+        correct_answer: q.correctAnswer ?? '',
+        is_correct: (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer,
+        points:
+          (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer ? 1 : 0,
       };
     });
 
     const formattedReasoningAttemptAnswers = reasoningQuestions.map(
       (q: Question) => {
-        const score = reasoningQuestionsScoreObject.scores[q.id.toString()] ?? 0;
+        const score =
+          reasoningQuestionsScoreObject.scores[q.id.toString()] ?? 0;
         const remarks =
           reasoningQuestionsScoreObject.remarks[q.id.toString()] ?? null;
         return {
-          quiz_id: quiz.id,
-          attempt_id: attemptId,
+          quiz_id: quizId,
+          attempt_id: numericAttemptId,
           user_id: userId,
           question_id: q.id,
           chosen_answer: reasoningQuestionsAnswers[q.id.toString()] ?? null,
-          correct_answer: q.correctAnswer,
+          correct_answer: q.correctAnswer ?? '',
           is_correct: score >= 7,
           remarks,
           points: score,
@@ -151,14 +238,17 @@ router.patch(
     };
 
     try {
-      await db.transaction(async (tx) => {
-        await QuizAttemptsRepo.updateAttempt(
+      const completedAttemptId = await db.transaction(async (tx) => {
+        const updatedAttempt = await QuizAttemptsRepo.updateAttempt(
           formattedData,
-          quiz.id,
-          attemptId,
+          quizId,
+          numericAttemptId,
           userId,
           tx,
         );
+
+        if (!updatedAttempt) return;
+
         await AttemptAnswersRepo.insertAttemptAnswer(
           formattedAttemptAnswers,
           tx,
@@ -167,7 +257,17 @@ router.patch(
           formattedReasoningAttemptAnswers,
           tx,
         );
+
+        return updatedAttempt.id;
       });
+
+      if (!completedAttemptId) {
+        return res.status(409).json({
+          success: false,
+          message: 'Attempt is already completed or does not belong to you',
+        });
+      }
+
       return res
         .status(200)
         .json({ success: true, message: 'Attempt received!' });

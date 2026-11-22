@@ -12,7 +12,13 @@ import request from 'supertest';
 import { eq, and } from 'drizzle-orm';
 import { db, pool } from '../../db/db.js';
 import app from '../../server.js';
-import { questions_db, quizzes_db, quiz_attempts_db } from '../../db/schema.js';
+import {
+  classes_db,
+  questions_db,
+  quiz_access_db,
+  quizzes_db,
+  quiz_attempts_db,
+} from '../../db/schema.js';
 import {
   loginAs,
   authHeader,
@@ -508,6 +514,106 @@ describe('POST /api/student/quiz-access', () => {
       .send({ token: seededQuizShareToken });
 
     expect(res.status).toBe(401);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/student/quiz-access/:quizToken
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GET /api/student/quiz-access/:quizToken', () => {
+  it('404 — does not expose a draft quiz', async () => {
+    const [draft] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'Draft Access Quiz',
+        share_token: generateShareToken(),
+        status: 'draft',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+    if (!draft) throw new Error('Failed to seed draft quiz');
+
+    try {
+      const res = await request(app)
+        .get(`/api/student/quiz-access/${draft.share_token}`)
+        .set(authHeader(studentToken));
+
+      expect(res.status).toBe(404);
+    } finally {
+      await db.delete(quizzes_db).where(eq(quizzes_db.id, draft.id));
+    }
+  });
+
+  it('403 — does not expose a restricted quiz to an unassigned student', async () => {
+    const [restrictedQuiz] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'Restricted Access Quiz',
+        share_token: generateShareToken(),
+        status: 'published',
+        accessibility: 'restricted',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+    if (!restrictedQuiz) throw new Error('Failed to seed restricted quiz');
+    const [restrictedClass] = await db
+      .insert(classes_db)
+      .values({
+        teacher_id: teacherId,
+        class_name: 'Restricted Integration Class',
+        class_subject: 'Testing',
+      })
+      .returning();
+    if (!restrictedClass) throw new Error('Failed to seed restricted class');
+    await db.insert(quiz_access_db).values({
+      quiz_id: restrictedQuiz.id,
+      class_id: restrictedClass.id,
+    });
+
+    try {
+      const res = await request(app)
+        .get(`/api/student/quiz-access/${restrictedQuiz.share_token}`)
+        .set(authHeader(studentToken));
+
+      expect(res.status).toBe(403);
+    } finally {
+      await db.delete(quizzes_db).where(eq(quizzes_db.id, restrictedQuiz.id));
+      await db.delete(classes_db).where(eq(classes_db.id, restrictedClass.id));
+    }
+  });
+
+  it('400 — rejects a student who has reached the attempt limit', async () => {
+    const [limitedQuiz] = await db
+      .insert(quizzes_db)
+      .values({
+        user_id: teacherId,
+        quiz_title: 'Limited Access Quiz',
+        share_token: generateShareToken(),
+        max_attempts: 1,
+        status: 'published',
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+    if (!limitedQuiz) throw new Error('Failed to seed limited quiz');
+    await db.insert(quiz_attempts_db).values({
+      quiz_id: limitedQuiz.id,
+      user_id: studentId,
+      status: 'completed',
+    });
+
+    try {
+      const res = await request(app)
+        .get(`/api/student/quiz-access/${limitedQuiz.share_token}`)
+        .set(authHeader(studentToken));
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('You have used all attempts for this quiz');
+    } finally {
+      await db.delete(quizzes_db).where(eq(quizzes_db.id, limitedQuiz.id));
+    }
   });
 });
 
