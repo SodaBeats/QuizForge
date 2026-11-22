@@ -256,11 +256,8 @@ body {
 .logo-icon-box {
   width: 46px;
   height: 46px;
-  background: var(--accent);
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
 }
 
 .logo-icon-box .q-letter {

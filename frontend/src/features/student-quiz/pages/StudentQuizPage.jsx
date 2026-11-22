@@ -25,6 +25,11 @@ export function StudentQuizPage() {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.body.classList.add("orange-dark-theme");
+    return () => document.body.classList.remove("orange-dark-theme");
+  }, []);
+
   // one read/parse of this attempt's saved progress seeds all three states
   const [initialProgress] = useState(() => loadProgress(quizToken));
   const [answers, setAnswers] = useState(initialProgress.answers);

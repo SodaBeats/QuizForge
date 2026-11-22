@@ -1,11 +1,13 @@
 /**
  * QuizForge color tokens — single source of truth.
- * School theme: blue and red, with warm orange for the student token page.
+ * Dark surfaces and semantic status colors are the default; portal pages use
+ * warm orange as their accent.
  * Flat hex colors only: no gradients, no rgb().
  *
  * Design rule:
- *   BLUE  = structure (surfaces, borders, depth)
- *   RED   = accent only (top edge on stat cards, title markers, chart bars, low scores)
+ *   DARK = structure (surfaces, borders, depth)
+ *   RED = default accent and low-score status
+ *   ORANGE = teacher/student portal accent
  *   GREEN / AMBER = score status only
  *
  * Layers (darkest → lightest):
@@ -31,9 +33,9 @@
  *   white
  *
  * Brand / status:
- *   accent   — school red
- *   warmorange — warm orange for the student token page
- *   studentpage / studentcard / studentinput — token-page surfaces
+ *   accent   — default school red; overridden to warmorange in the teacher theme
+ *   warmorange — warm orange for portal pages
+ *   studentpage / studentcard / studentinput — dark surfaces reused by the teacher theme
  *   studentinputborder — token input borders
  *   spinnergreen — green for shared loading indicators
  *   accept   — green: high scores
@@ -41,21 +43,21 @@
  *   bad      — light red for text on dark backgrounds
  *   ccdiblue — school blue (bright), used for the class ranking bar
  *
- * Scrollbar (red):
+ * Scrollbar (red by default; orange in the teacher theme):
  *   scrolltrack / scrollthumb / scrollthumbhover
  *
  * Other:
  *   modalback
  */
 export const colors = {
-  canvas: "#1B3478",
-  ink: "#091337",
-  specialsurface: "#0B1740",
-  surface: "#0C1946",
-  darkteal: "#12265F",
-  darkslate: "#1B3478",
-  mutedteal: "#2A4AA0",
-  line: "#2D4688",
+  canvas: "#111014",
+  ink: "#111014",
+  specialsurface: "#17161B",
+  surface: "#17161B",
+  darkteal: "#17161B",
+  darkslate: "#242328",
+  mutedteal: "#39363E",
+  line: "#39363E",
   shadow: "#02061A",
   inkondark: "#F8FAFC",
   muted: "#8FA6CC",
@@ -66,7 +68,7 @@ export const colors = {
   logininputborder: "#C8B293",
   logininputoutline: "#1B3478",
   white: "#FFFFFF",
-  accent: "#C8102E",
+  accent: "#FF6A00",
   warmorange: "#FF6A00",
   studentpage: "#111014",
   studentcard: "#17161B",

@@ -1,12 +1,20 @@
 import { Dropdown } from "../../../components/ui/Dropdown";
+import ccdiLogo from "../../../assets/ccdi-logo.webp";
 
 export function StudentTopbar({ onLogout }) {
   return (
     <div className="border-b-2 border-accent/20 p-4 flex items-center justify-between bg-specialsurface">
       {/* LEFT SIDE: Logo */}
-      <span className="text-xl font-bold text-inkondark cursor-pointer hover:text-inkondark/80 transition-colors">
-        QuizForge
-      </span>
+      <div className="flex items-center gap-2.5">
+        <img
+          src={ccdiLogo}
+          alt="CCDI"
+          className="h-9 w-9 rounded-md object-contain"
+        />
+        <span className="text-xl font-bold text-inkondark cursor-pointer hover:text-inkondark/80 transition-colors">
+          QuizForge
+        </span>
+      </div>
 
       {/* RIGHT SIDE: Actions */}
       <div className="flex items-center gap-4">

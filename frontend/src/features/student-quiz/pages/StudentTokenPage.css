@@ -122,19 +122,8 @@
 .student-token-page .brand-mark {
   width: 46px;
   height: 46px;
-
   border-radius: 12px;
-
-  background: var(--orange);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 800;
-  font-size: 22px;
-
-  color: var(--inkondark);
+  object-fit: contain;
 
   flex-shrink: 0;
 }

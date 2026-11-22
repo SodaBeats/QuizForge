@@ -89,6 +89,7 @@ export function QuizForgeModal({
           <label className={labelClass}>Who can access</label>
           <ClassAccessibilityDropdown
             selectedClassIds={forgeQuizData.selectedClassIds}
+            forgeQuizData={forgeQuizData}
             setForgeQuizData={setForgeQuizData}
             userClasses={userClasses}
             isFetchingClasses={isFetchingClasses}
