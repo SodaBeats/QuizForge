@@ -70,42 +70,30 @@ export function saveProgress(
   );
 }
 
-// Removes everything this attempt owns — progress plus every per-question
-// timer key, deleted directly via questionIds. No iteration over storage.
-export function clearAttempt({ quizToken, attemptId, questionIds = [] }) {
-  sessionStorage.removeItem(progressKey(quizToken));
-  if (!attemptId) return;
+const closedAttempts = new Set();
 
-  for (const questionId of questionIds) {
-    sessionStorage.removeItem(timerKey(attemptId, questionId));
-  }
+export function markAttemptClosed(attemptId) {
+  closedAttempts.add(String(attemptId));
 }
 
-// Validated get-or-create for a question's timer start (logic moved verbatim
-// from StudentTimeLimit): reject NaN/non-positive/future/stale values and
-// write a fresh start time when invalid.
-export function getTimerStart({ attemptId, questionId, timeLimit }) {
+export function getTimerStart({ attemptId, questionId }) {
   if (!attemptId || !questionId) return Date.now();
 
   const key = timerKey(attemptId, questionId);
   try {
-    const savedValue = sessionStorage.getItem(key);
-    const parsedValue = Number(savedValue);
     const now = Date.now();
-    const maxReasonableAge = timeLimit * 2 * 1000;
+    const parsedValue = Number(sessionStorage.getItem(key));
 
-    if (
-      !savedValue ||
-      Number.isNaN(parsedValue) ||
-      parsedValue <= 0 ||
-      parsedValue > now ||
-      now - parsedValue > maxReasonableAge
-    ) {
-      sessionStorage.setItem(key, String(now));
-      return now;
+    // A valid saved start time: reuse it, never overwrite it
+    if (Number.isFinite(parsedValue) && parsedValue > 0 && parsedValue <= now) {
+      return parsedValue;
     }
 
-    return parsedValue;
+    // Missing or invalid: create one, unless this attempt is already submitted
+    if (!closedAttempts.has(String(attemptId))) {
+      sessionStorage.setItem(key, String(now));
+    }
+    return now;
   } catch (err) {
     console.error(
       "Session Storage access failed, using current time instead: ",
@@ -137,4 +125,20 @@ export function getQuestionTimeRemainingMs({
   }
 
   return Math.max(0, startTime + timeLimit * 1000 - now);
+}
+
+// Removes everything this attempt owns — progress plus every per-question
+// timer key, deleted directly via questionIds. No iteration over storage.
+export function clearAttempt({ quizToken, attemptId, questionIds = [] }) {
+  markAttemptClosed(attemptId);
+  if (!attemptId) return;
+  try {
+    sessionStorage.removeItem(progressKey(quizToken));
+
+    for (const questionId of questionIds) {
+      sessionStorage.removeItem(timerKey(attemptId, questionId));
+    }
+  } catch (error) {
+    console.error("Failed to clear attempt storage: ", error);
+  }
 }
