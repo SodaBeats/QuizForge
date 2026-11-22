@@ -16,7 +16,7 @@ assertEmbeddingConfigured();
 // Auto submit expired exam attempts
 const run = () => finalizeExpiredAttempts(db).catch(console.error);
 run();
-setInterval(run, 60_000);
+setInterval(run, 180_000);
 
 app.listen(3000, () => {
   console.log('API running on http://localhost:3000');
