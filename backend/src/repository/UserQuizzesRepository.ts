@@ -155,7 +155,7 @@ export const UserQuizzesRepository = {
   },
 
   // get quiz data and attempt count
-  async getQuizAndAttemptCount(token: string, userId: number) {
+  async getQuizInfo(token: string, userId: number) {
     const [result] = await db
       .select({
         id: quizzes_db.id,
@@ -168,6 +168,11 @@ export const UserQuizzesRepository = {
         status: quizzes_db.status,
         dueDate: quizzes_db.due_date,
         totalAttempts: count(quiz_attempts_db.id),
+        totalTimeLimit: sql<number>`(
+          SELECT COALESCE(SUM(${questions_db.time_limit}), 0)
+          FROM ${questions_db}
+          WHERE ${questions_db.quiz_id} = ${quizzes_db.id}
+        )`.mapWith(Number),
       })
       .from(quizzes_db)
       .leftJoin(

@@ -11,7 +11,7 @@ import { ClassStudentsRepository } from '../repository/ClassStudentsRepo.js';
 
 const router = express.Router();
 
-//get quiz info, get user total attempt,
+// quiz access and attempt creation
 router.post(
   '/',
   verifyToken,
@@ -21,7 +21,7 @@ router.post(
     try {
       const userId = Number(req.user.id);
       // FETCH QUIZ + ATTEMPT COUNT
-      const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(
+      const quiz = await UserQuizzesRepository.getQuizInfo(
         req.body.token,
         userId,
       );
@@ -84,6 +84,7 @@ router.post(
         user_id: userId,
         score: 0,
         status: 'in-progress',
+        expires_at: new Date(Date.now() + (quiz.totalTimeLimit + 10) * 1000),
       };
 
       // CREATE ATTEMPT
@@ -108,7 +109,7 @@ router.post(
   },
 );
 
-//get and questions by quiz token, just in case
+// fetch quiz info
 router.get(
   '/:quizToken',
   verifyToken,
@@ -123,10 +124,7 @@ router.get(
 
     try {
       // FETCH QUIZ + ATTEMPT COUNT
-      const quiz = await UserQuizzesRepository.getQuizAndAttemptCount(
-        quizToken,
-        userId,
-      );
+      const quiz = await UserQuizzesRepository.getQuizInfo(quizToken, userId);
 
       if (!quiz) {
         return res
