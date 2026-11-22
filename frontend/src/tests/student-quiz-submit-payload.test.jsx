@@ -141,3 +141,74 @@ describe("StudentQuizPage submit", () => {
     expect(studentQuizApi.submit).not.toHaveBeenCalled();
   });
 });
+
+describe("StudentQuizPage navigation", () => {
+  it("sets Previous and Next boundaries from the selected question", async () => {
+    studentQuizApi.fetch.mockResolvedValue({
+      quiz,
+      questions: [
+        { ...questions[0], id: "question-1", timeLimit: 0 },
+        {
+          ...questions[0],
+          id: "question-2",
+          questionText: "Second question",
+          timeLimit: 0,
+        },
+      ],
+      attemptId,
+      totalAttempts: 0,
+    });
+
+    renderStudentQuizPage();
+
+    await screen.findByText("Which option is Beta?");
+    expect(screen.getByRole("button", { name: "← Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next →" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next →" }));
+
+    expect(await screen.findByText("Second question")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "← Previous" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Next →" })).toBeDisabled();
+  });
+
+  it("disables Previous when the previous question has no time left", async () => {
+    const twoQuestions = [
+      { ...questions[0], id: "question-1", timeLimit: 30 },
+      {
+        ...questions[0],
+        id: "question-2",
+        questionText: "Second question",
+        timeLimit: 30,
+      },
+    ];
+    studentQuizApi.fetch.mockResolvedValue({
+      quiz,
+      questions: twoQuestions,
+      attemptId,
+      totalAttempts: 0,
+    });
+    saveProgressInTest(twoQuestions);
+
+    expect(await screen.findByText("Second question")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "← Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next →" })).toBeDisabled();
+  });
+});
+
+function saveProgressInTest(twoQuestions) {
+  sessionStorage.setItem(
+    progressKey(QUIZ_TOKEN),
+    JSON.stringify({
+      answers: {},
+      selectedQuestionIndex: 1,
+      answeredQuestions: [],
+    }),
+  );
+  sessionStorage.setItem(
+    timerKey(attemptId, twoQuestions[0].id),
+    String(Date.now() - 31_000),
+  );
+
+  return renderStudentQuizPage();
+}

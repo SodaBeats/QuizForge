@@ -114,3 +114,27 @@ export function getTimerStart({ attemptId, questionId, timeLimit }) {
     return Date.now();
   }
 }
+
+export function getQuestionTimeRemainingMs({
+  attemptId,
+  questionId,
+  timeLimit,
+  now = Date.now(),
+}) {
+  if (timeLimit <= 0) return Number.POSITIVE_INFINITY;
+  if (!attemptId || !questionId) return timeLimit * 1000;
+
+  const savedValue = sessionStorage.getItem(timerKey(attemptId, questionId));
+  const startTime = Number(savedValue);
+
+  if (
+    !savedValue ||
+    Number.isNaN(startTime) ||
+    startTime <= 0 ||
+    startTime > now
+  ) {
+    return timeLimit * 1000;
+  }
+
+  return Math.max(0, startTime + timeLimit * 1000 - now);
+}

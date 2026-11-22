@@ -79,7 +79,7 @@ router.post(
         });
       }
 
-      const formattedInsertData = {
+      const normalized = {
         quiz_id: quiz.id,
         user_id: userId,
         score: 0,
@@ -87,7 +87,7 @@ router.post(
       };
 
       // CREATE ATTEMPT
-      const attempt = await QuizAttemptsRepo.createAttempt(formattedInsertData);
+      const attempt = await QuizAttemptsRepo.createAttempt(normalized);
       if (!attempt) {
         return res
           .status(500)

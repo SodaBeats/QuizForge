@@ -6,6 +6,7 @@ import {
   saveProgress,
   clearAttempt,
   getTimerStart,
+  getQuestionTimeRemainingMs,
 } from "../features/student-quiz/lib/attemptStorage";
 
 beforeEach(() => sessionStorage.clear());
@@ -185,5 +186,54 @@ describe("getTimerStart", () => {
 
     expect(start).toBeGreaterThanOrEqual(before);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
+  });
+});
+
+describe("getQuestionTimeRemainingMs", () => {
+  it("returns the persisted remaining time", () => {
+    const now = 1_000_000;
+    sessionStorage.setItem(timerKey("att-1", "q-1"), String(now - 10_000));
+
+    expect(
+      getQuestionTimeRemainingMs({
+        attemptId: "att-1",
+        questionId: "q-1",
+        timeLimit: 30,
+        now,
+      }),
+    ).toBe(20_000);
+  });
+
+  it("returns zero once the previous question timer expires", () => {
+    const now = 1_000_000;
+    sessionStorage.setItem(timerKey("att-1", "q-1"), String(now - 30_000));
+
+    expect(
+      getQuestionTimeRemainingMs({
+        attemptId: "att-1",
+        questionId: "q-1",
+        timeLimit: 30,
+        now,
+      }),
+    ).toBe(0);
+  });
+
+  it("treats untimed and never-started questions as having time", () => {
+    expect(
+      getQuestionTimeRemainingMs({
+        attemptId: "att-1",
+        questionId: "q-1",
+        timeLimit: 0,
+      }),
+    ).toBe(Number.POSITIVE_INFINITY);
+
+    expect(
+      getQuestionTimeRemainingMs({
+        attemptId: "att-1",
+        questionId: "q-new",
+        timeLimit: 30,
+        now: 1_000_000,
+      }),
+    ).toBe(30_000);
   });
 });

@@ -15,6 +15,7 @@ import {
   loadProgress,
   saveProgress,
   clearAttempt,
+  getQuestionTimeRemainingMs,
 } from "../lib/attemptStorage.js";
 
 export function StudentQuizPage() {
@@ -75,6 +76,18 @@ export function StudentQuizPage() {
   const deleteAttemptMutation = useDeleteStudentQuizAttempt();
 
   const handleQuestionSelect = (index) => {
+    if (
+      index < selectedQuestionIndex &&
+      questions?.[index] &&
+      getQuestionTimeRemainingMs({
+        attemptId,
+        questionId: questions[index].id,
+        timeLimit: questions[index].timeLimit,
+      }) <= 0
+    ) {
+      return;
+    }
+
     setSelectedQuestionIndex(index);
     saveProgress(quizToken, {
       answers,
@@ -84,14 +97,37 @@ export function StudentQuizPage() {
   };
 
   const handlePrev = () => {
-    if (selectedQuestionIndex > 0) {
-      setSelectedQuestionIndex((prev) => prev - 1);
+    if (selectedQuestionIndex <= 0) return;
+
+    const previousQuestion = questions[selectedQuestionIndex - 1];
+    if (
+      getQuestionTimeRemainingMs({
+        attemptId,
+        questionId: previousQuestion.id,
+        timeLimit: previousQuestion.timeLimit,
+      }) <= 0
+    ) {
+      return;
     }
+
+    const nextIndex = selectedQuestionIndex - 1;
+    setSelectedQuestionIndex(nextIndex);
+    saveProgress(quizToken, {
+      answers,
+      selectedQuestionIndex: nextIndex,
+      answeredQuestions,
+    });
   };
   const handleNext = () => {
-    if (selectedQuestionIndex < questions.length - 1) {
-      setSelectedQuestionIndex((prev) => prev + 1);
-    }
+    if (!questions || selectedQuestionIndex >= questions.length - 1) return;
+
+    const nextIndex = selectedQuestionIndex + 1;
+    setSelectedQuestionIndex(nextIndex);
+    saveProgress(quizToken, {
+      answers,
+      selectedQuestionIndex: nextIndex,
+      answeredQuestions,
+    });
   };
 
   const handleAnswerChange = (ans) => {
