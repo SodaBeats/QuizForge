@@ -11,6 +11,7 @@ import {
   index,
   vector,
   primaryKey,
+  date,
 } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 
@@ -245,6 +246,24 @@ export const quiz_access_db = pgTable(
       name: 'quiz_access_pk',
       columns: [table.quiz_id, table.class_id],
     }),
+  ],
+);
+
+// daily token usage per user (one row per user per day)
+export const token_usage_db = pgTable(
+  'token_usage_db',
+  {
+    id: serial('id').primaryKey(),
+    user_id: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    usage_date: date('usage_date').notNull(),
+    embedding_tokens: integer('embedding_tokens').notNull().default(0),
+    generation_tokens: integer('generation_tokens').notNull().default(0),
+  },
+  (table) => [
+    // required for the upsert, and prevents duplicate rows per day
+    unique('unique_user_usage_date').on(table.user_id, table.usage_date),
   ],
 );
 
