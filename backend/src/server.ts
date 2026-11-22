@@ -8,6 +8,7 @@ import healthRoutes from './routes/health.js';
 import uploadRoutes from './routes/teacher-upload.route.js';
 import questionRoute from './routes/teacher-question.route.js';
 import loginRoute from './routes/login.route.js';
+import signupRoute from './routes/signup.route.js';
 import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
@@ -35,7 +36,7 @@ app.use(
   }),
 );
 
-//app.use(ipRateLimiter(60, 1000)); // Ip-based Rate Limiter
+app.use(ipRateLimiter(60, 1000)); // Ip-based Rate Limiter
 
 app.use(express.json()); // middleware for parsing json
 app.use(cookieParser()); //middleware for parsing cookies (refresh/access)
@@ -58,11 +59,7 @@ app.use('/admin', adminRoute);
 
 //Auth
 app.use('/auth/login', loginRoute);
-app.post('/auth/signup', (_req, res) => {
-  res
-    .status(503)
-    .json({ success: false, message: 'Signup is currently unavailable' });
-});
+app.use('/auth/signup', signupRoute);
 app.use('/auth/logout', logoutRoute);
 app.use('/auth/refresh', refreshRoute);
 
