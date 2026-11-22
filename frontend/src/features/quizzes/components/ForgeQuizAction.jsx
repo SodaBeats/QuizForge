@@ -19,6 +19,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
     status: "draft",
     accessibility: "anyone",
     selectedClassIds: [],
+    studentAccess: [],
   });
 
   const location = useLocation();
@@ -38,6 +39,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
       status: "draft",
       accessibility: "anyone",
       selectedClassIds: [],
+      studentAccess: [],
     });
     setIsForgeQuizModalOpen(true);
   };
@@ -67,6 +69,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
       status: "draft",
       accessibility: "anyone",
       selectedClassIds: [],
+      studentAccess: [],
     });
   };
 
@@ -107,6 +110,7 @@ export function ForgeQuizAction({ selectedFile, setQuizMetadata }) {
         status: forgeQuizData.status,
         accessibility,
         classIds: selectedClassIds,
+        studentAccess: forgeQuizData.studentAccess || [],
       });
 
       setQuizMetadata(data.quiz);

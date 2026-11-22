@@ -4,6 +4,7 @@
    inside the panel. */
 
 import { formatSubmittedAt } from "../lib/format.js";
+import { StudentAvatar } from "./StudentAvatar";
 
 export function StudentAttemptRow({ student, attempt, onSelect }) {
   return (
@@ -12,6 +13,7 @@ export function StudentAttemptRow({ student, attempt, onSelect }) {
       onClick={() => onSelect({ student, attempt })}
       className="w-full text-left flex items-center gap-3 px-3 py-1.5 rounded-md bg-darkslate border border-muted/20 cursor-pointer hover:border-accent/40 hover:bg-muted/10 transition-colors font-body"
     >
+      <StudentAvatar name={student.name} />
       <span className="flex-1 min-w-0 truncate text-sm text-inkondark">
         {student.name}
       </span>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../../app/providers/AuthProvider";
 import { authApi } from "../api/auth.api.js";
+import ccdiLogo from "../../../assets/ccdi-logo.webp";
 import "./LoginPage.css";
 
 // Eye icon for the show/hide password toggle (inline SVG, no library needed)
@@ -193,9 +194,11 @@ export function LoginPage() {
 
               <header className="card-header">
                 <div className="brand-logo">
-                  <div className="logo-icon-box">
-                    <span className="q-letter">I</span>
-                  </div>
+                  <img
+                    className="logo-icon-box"
+                    src={ccdiLogo}
+                    alt="CCDI"
+                  />
 
                   <div className="brand-text">
                     <h2 className="brand-name">

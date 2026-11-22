@@ -18,6 +18,7 @@ import { formatSubmittedAt } from "../lib/format.js";
 import { mapAnswerRows } from "../lib/attemptQuestions.js";
 import { useAttemptDetail } from "../api/queries.js";
 import { AttemptDetailTabs } from "./AttemptDetailTabs";
+import { StudentAvatar } from "./StudentAvatar";
 
 function BackIcon() {
   return (
@@ -81,7 +82,7 @@ function QuestionCard({ question }) {
   const answeredTone = isSkipped
     ? "text-amber-300"
     : question.isCorrect
-      ? "text-green-300"
+      ? "text-accept"
       : "text-red-300";
 
   return (
@@ -110,7 +111,7 @@ function QuestionCard({ question }) {
             const isCorrect = i === question.correctIndex;
             const isChosen = i === question.chosenIndex;
             const tone = isCorrect
-              ? "text-green-300"
+              ? "text-accept"
               : isChosen
                 ? "text-red-300"
                 : "text-muted";
@@ -136,7 +137,10 @@ function QuestionCard({ question }) {
       )}
 
       <p className="mt-2 text-xs text-muted">
-        Correct: <span className="text-green-300">{correct}</span>
+        Correct:{" "}
+        <span className="text-accept">
+          {correct || "No reference answer provided"}
+        </span>
       </p>
 
       <p className="mt-1 text-xs text-muted">
@@ -226,6 +230,7 @@ export function AttemptDetailView({
         >
           <BackIcon />
         </button>
+        <StudentAvatar name={student.name} />
         <div className="min-w-0">
           <h2 className="font-display font-bold text-inkondark truncate">
             {student.name}

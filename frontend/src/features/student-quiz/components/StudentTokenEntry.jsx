@@ -3,6 +3,7 @@ import lightbulbClean from "../../../assets/lightbulb_token.webp";
 import checklistClean from "../../../assets/checklist_token.webp";
 import booksClean from "../../../assets/books_token.webp";
 import paperPlaneClean from "../../../assets/paper_plane_token.webp";
+import ccdiLogo from "../../../assets/ccdi-logo.webp";
 import "../pages/StudentTokenPage.css";
 
 export function StudentTokenEntry({
@@ -25,7 +26,7 @@ export function StudentTokenEntry({
 
       <div className="topbar">
         <div className="brand">
-          <div className="brand-mark">I</div>
+          <img className="brand-mark" src={ccdiLogo} alt="CCDI" />
           <div className="brand-text">
             <div className="name">
               Ilmari<span className="accent">Gen</span>

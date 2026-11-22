@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../../app/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,11 @@ export function StudentTokenPage() {
   const navigate = useNavigate();
   const requestQuizAccess = useRequestQuizAccess();
   const inputRefs = useRef([]);
+
+  useEffect(() => {
+    document.body.classList.add("orange-dark-theme");
+    return () => document.body.classList.remove("orange-dark-theme");
+  }, []);
 
   const handleSubmitToken = async (token) => {
     try {

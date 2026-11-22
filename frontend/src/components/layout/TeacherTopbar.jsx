@@ -1,14 +1,20 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../app/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Dropdown } from "../ui/Dropdown";
+import ccdiLogo from "../../assets/ccdi-logo.webp";
 
 export function TeacherTopbar({ actions, logoClass = "" }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.body.classList.add("orange-dark-theme");
+    return () => document.body.classList.remove("orange-dark-theme");
+  }, []);
 
   const handleLogout = () => {
     setShowLogoutConfirm(true);
@@ -30,14 +36,11 @@ export function TeacherTopbar({ actions, logoClass = "" }) {
           to="/teacher"
           className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
         >
-          <div
-            className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm"
-            style={{
-              background: "var(--accent)",
-            }}
-          >
-            I
-          </div>
+          <img
+            src={ccdiLogo}
+            alt="CCDI"
+            className="h-11 w-11 rounded-md object-contain"
+          />
           <span className="font-display text-base font-bold text-inkondark group-hover:text-accent transition-colors">
             Ilmari<span className="text-accent">Gen</span>
           </span>
