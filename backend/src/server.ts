@@ -12,6 +12,7 @@ import signupRoute from './routes/signup.route.js';
 import refreshRoute from './routes/refresh.route.js';
 import logoutRoute from './routes/logout.route.js';
 import documentRoute from './routes/document.route.js';
+import tokenUsageRoute from './routes/tokenUsage.route.js';
 import quizzesRoute from './routes/teacher-quiz.route.js';
 import quizAccessRoute from './routes/quizAccess.route.js';
 import quizSubmitRoute from './routes/quizSubmit.route.js';
@@ -48,6 +49,7 @@ app.use('/api', healthRoutes);
 app.use('/api/upload', uploadRoutes); // teacher route: file uploads
 app.use('/api/questions', questionRoute); // teacher route: manually made questions
 app.use('/api/documents', documentRoute); // teacher route: getting/deleting documents
+app.use('/api/token-usage', tokenUsageRoute); // teacher route: daily token budget usage
 app.use('/api/quizzes', quizzesRoute); // teacher route: for making/updating/getting/deleting quizzes
 app.use('/api/classes', classesRoute); // teacher route: for making/updating/getting/deleting classes
 app.use('/api/dashboard', dashboardRoute); // teacher route: for fetching home dashboard data

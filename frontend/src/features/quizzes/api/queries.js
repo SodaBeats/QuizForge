@@ -1,8 +1,9 @@
 /* Quiz reads (Phase 2.3). Hooks own the cache keys so no component does. */
 
 import { useQuery } from "@tanstack/react-query";
-import { quizKeys } from "../../../lib/queryKeys.js";
+import { quizKeys, tokenUsageKeys } from "../../../lib/queryKeys.js";
 import { quizzesApi } from "./quizzes.api.js";
+import { tokenUsageApi } from "./tokenUsage.api.js";
 
 /** Unpaginated quiz list (quizzes page). */
 export function useQuizzes() {
@@ -34,5 +35,13 @@ export function useQuizDashboard(quizId) {
     queryFn: () => quizzesApi.dashboard(quizId),
     enabled: Boolean(quizId),
     retry: false,
+  });
+}
+
+/** Today's embedding/generation token budget for the current teacher. */
+export function useTokenUsage() {
+  return useQuery({
+    queryKey: tokenUsageKeys.usage,
+    queryFn: tokenUsageApi.get,
   });
 }

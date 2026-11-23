@@ -1,7 +1,7 @@
 /* Document writes (Phase 2.3–2.4). */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { docKeys } from "../../../lib/queryKeys.js";
+import { docKeys, tokenUsageKeys } from "../../../lib/queryKeys.js";
 import { documentsApi } from "./documents.api.js";
 
 export function useUploadDocument() {
@@ -11,6 +11,8 @@ export function useUploadDocument() {
     onSuccess: () => {
       // Both the paginated picker and the all-documents sources list.
       queryClient.invalidateQueries({ queryKey: docKeys.all });
+      // A successful upload records embedding usage.
+      queryClient.invalidateQueries({ queryKey: tokenUsageKeys.all });
     },
   });
 }

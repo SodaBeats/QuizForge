@@ -38,6 +38,13 @@ export const docKeys = {
   content: (id) => [...docKeys.all, "content", id],
 };
 
+// Daily token budget: one cache for GET /api/token-usage, shared by the
+// FileViewer (embedding) and QuestionEditor (generation) headers.
+export const tokenUsageKeys = {
+  all: ["token-usage"],
+  usage: ["token-usage", "usage"],
+};
+
 export const attemptKeys = {
   all: ["attempts"],
   quiz: (token) => [...attemptKeys.all, "quiz", token],

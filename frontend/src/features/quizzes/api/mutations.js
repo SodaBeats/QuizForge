@@ -2,7 +2,7 @@
    live inside pages now live here, once, against the shared key factory. */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { quizKeys } from "../../../lib/queryKeys.js";
+import { quizKeys, tokenUsageKeys } from "../../../lib/queryKeys.js";
 import { quizzesApi } from "./quizzes.api.js";
 
 function snapshotLists(queryClient) {
@@ -199,6 +199,8 @@ export function useGenerateQuestions() {
         return { ...previous, questionList: [...existing, ...generated] };
       });
       queryClient.invalidateQueries({ queryKey: quizKeys.lists });
+      // A successful generation records generation usage.
+      queryClient.invalidateQueries({ queryKey: tokenUsageKeys.all });
     },
   });
 }

@@ -10,6 +10,7 @@ import {
 import { AddQuestionForm } from "./AddQuestionForm";
 import { UpdateQuestionForm } from "./UpdateQuestionForm";
 import { GenerateSettingsPanel } from "./GenerateSettingsPanel";
+import { TokenUsageLine } from "./TokenUsageLine";
 
 export function QuestionEditor({
   selectedQuestion,
@@ -204,6 +205,7 @@ export function QuestionEditor({
             </p>
           )}
         </div>
+        <TokenUsageLine kind="generation" />
       </div>
       <GenerationStatus
         isGenerating={loading}
