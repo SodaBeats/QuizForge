@@ -146,6 +146,7 @@ export function ResultsMainPanel({
   METRICS = [],
   DIFFICULTY = [],
   SCORES = [],
+  onBack,
 }) {
   const MOCK_NEEDS_REVIEW = [...DIFFICULTY]
     .sort((a, b) => a.pct - b.pct)
@@ -153,6 +154,16 @@ export function ResultsMainPanel({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 p-3 sm:p-4 gap-4 bg-surface font-body">
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Back to quizzes"
+        className="mb-3 self-start flex items-center gap-2 text-sm text-muted hover:text-inkondark transition-colors"
+      >
+        <span aria-hidden="true">←</span>
+        Quizzes
+      </button>
+
       {/* ── Row 1: Metric cards — wraps to 2x2 on mobile instead of squishing 4-across ── */}
       <div className="flex flex-wrap sm:flex-nowrap gap-3 h-auto sm:h-[30%]">
         {!METRICS || !Array.isArray(METRICS) || METRICS.length === 0 ? (
