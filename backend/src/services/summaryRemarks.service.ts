@@ -47,7 +47,6 @@ export const getSummaryRemarks = async ({
     const userAnswerText = q[userOptionKey];
 
     return {
-      questionType: q.questionType,
       question: q.questionText,
       userAnswer: userAnswerText || 'Skipped',
       correctAnswer: correctAnswerText,
@@ -60,7 +59,6 @@ export const getSummaryRemarks = async ({
       (ans) => ans.question_id === q.id,
     );
     return {
-      questionType: q.questionType,
       question: q.questionText,
       userAnswer: matchingAnswer?.chosen_answer || 'Skipped',
       correctAnswer: q.correctAnswer,
