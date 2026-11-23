@@ -68,8 +68,6 @@ export const getSummaryRemarks = async ({
   });
   const attemptSummary = [...normSummary, ...reasoningSummary];
 
-  console.log(attemptSummary);
-
   const systemMessage = `
     # PERSONA
     - You are an instructional coach writing a brief performance summary for the teacher reviewing this quiz attempt.
