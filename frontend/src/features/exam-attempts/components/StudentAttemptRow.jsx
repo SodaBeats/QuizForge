@@ -17,9 +17,15 @@ export function StudentAttemptRow({ student, attempt, onSelect }) {
       <span className="flex-1 min-w-0 truncate text-sm text-inkondark">
         {student.name}
       </span>
-      <span className="w-16 shrink-0 text-right text-sm font-medium text-inkondark tabular-nums">
-        {attempt.rawScore}/{attempt.maxPossibleScore}
-      </span>
+      {attempt.status === "needs-review" ? (
+        <span className="w-28 shrink-0 text-right text-xs font-medium text-amber-300">
+          Needs grading
+        </span>
+      ) : (
+        <span className="w-16 shrink-0 text-right text-sm font-medium text-inkondark tabular-nums">
+          {attempt.rawScore}/{attempt.maxPossibleScore}
+        </span>
+      )}
       <span className="w-36 sm:w-44 shrink-0 text-right text-xs text-muted whitespace-nowrap">
         {formatSubmittedAt(attempt.submittedAt)}
       </span>

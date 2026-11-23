@@ -87,6 +87,9 @@ describe("ExamAttemptsPage", () => {
       "aria-pressed",
       "false",
     );
+    expect(
+      screen.getByRole("button", { name: "Needs manual grading" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Alice Nguyen")).toBeInTheDocument();
     expect(screen.getByText("Farah Haddad")).toBeInTheDocument();
     // Both Section A multi-attempt students (Alice + Farah) render boxes.
@@ -164,7 +167,42 @@ describe("ExamAttemptsPage", () => {
 
     expect(await screen.findByText("10 students • 14 attempts")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Section A" })).toBeNull();
+    expect(screen.getByRole("button", { name: "All attempts" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: "Needs manual grading" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Grace Kim")).toBeInTheDocument();
+  });
+
+  it("populates the needs manual grading tab from the server response", async () => {
+    examAttemptsApi.attemptList.mockResolvedValue({
+      attempts: [],
+      students: [],
+      needsReview: [
+        {
+          id: 9001,
+          studentId: 101,
+          name: "Manual Student",
+          classIds: [1],
+          status: "needs-review",
+          attemptRemarks: "Automated grading failed.",
+          submittedAt: "2026-11-24T00:00:00.000Z",
+        },
+      ],
+    });
+
+    renderAt("1");
+
+    const manualTab = await screen.findByRole("button", {
+      name: "Needs manual grading (1)",
+    });
+    fireEvent.click(manualTab);
+
+    expect(screen.getByText("Manual Student")).toBeInTheDocument();
+    expect(screen.getByText("Needs grading")).toBeInTheDocument();
   });
 
   it("shows the no-match state when a search finds no students", async () => {

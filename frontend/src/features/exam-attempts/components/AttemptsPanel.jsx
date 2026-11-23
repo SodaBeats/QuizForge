@@ -28,6 +28,7 @@ export function AttemptsPanel({
   classes,
   activeClassId,
   onClassChange,
+  needsReviewCount = 0,
   onSelectAttempt,
   quizId,
   selectedAttempt,
@@ -137,8 +138,9 @@ export function AttemptsPanel({
 
         <ClassTabs
           classes={classes}
-          activeClassId={activeClassId}
+          activeTab={activeClassId}
           onChange={onClassChange}
+          needsReviewCount={needsReviewCount}
         />
 
         <div

@@ -245,7 +245,11 @@ router.get(
       const { attempts, students } =
         await QuizAttemptsRepo.getCompletedAttemptsWithStudents(quizId);
 
-      return res.status(200).json({ success: true, attempts, students });
+      const needsReview = await QuizAttemptsRepo.getNeedingReview(quizId);
+
+      return res
+        .status(200)
+        .json({ success: true, attempts, students, needsReview });
     } catch (error) {
       return next(error);
     }

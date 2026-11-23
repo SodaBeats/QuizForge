@@ -14,6 +14,7 @@ import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import type { Question } from '../types/questionType.js';
 import { isReasoningQuestionType } from '../types/questionType.js';
 import { getSummaryRemarks } from '../services/summaryRemarks.service.js';
+import { withRetry } from '../utils/withRetry.util.js';
 
 const router = express.Router();
 
@@ -145,19 +146,104 @@ router.patch(
 
     if (reasoningQuestions.length > 0) {
       try {
-        reasoningQuestionsScoreObject = await getReasoningScoreObject(
-          reasoningQuestions, // array of question objects
-          reasoningQuestionsAnswers, // object with key value pair of question id and answer
+        reasoningQuestionsScoreObject = await withRetry(
+          () =>
+            getReasoningScoreObject(
+              reasoningQuestions, // array of question objects
+              reasoningQuestionsAnswers, // { [questionId]: answer }
+            ),
+          { retries: 1, delayMs: 5000, label: 'quizSubmit.reasoningGrading' },
         );
       } catch (error: any) {
         console.error(
-          '[quizSubmit.route] Reasoning grading failed:',
-          error.message,
+          '[quizSubmit.route] Reasoning grading failed after retries: ',
+          error,
         );
+        try {
+          const formattedAttemptAnswers = normalQuestions.map((q: Question) => {
+            return {
+              quiz_id: quizId,
+              attempt_id: numericAttemptId,
+              user_id: userId,
+              question_id: q.id,
+              chosen_answer: safeAnswers[q.id.toString()] ?? null,
+              correct_answer: q.correctAnswer ?? '',
+              is_correct:
+                (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer,
+              points:
+                (safeAnswers[q.id.toString()] ?? null) === q.correctAnswer
+                  ? 1
+                  : 0,
+            };
+          });
 
+          const formattedReasoningAttemptAnswers = reasoningQuestions.map(
+            (q: Question) => {
+              return {
+                quiz_id: quizId,
+                attempt_id: numericAttemptId,
+                user_id: userId,
+                question_id: q.id,
+                chosen_answer:
+                  reasoningQuestionsAnswers[q.id.toString()] ?? null,
+                correct_answer: q.correctAnswer ?? '',
+                is_correct: false,
+                remarks: '',
+                points: 0,
+              };
+            },
+          );
+          const flaggedAttemptId = await db.transaction(async (tx) => {
+            const updatedAttempt = await QuizAttemptsRepo.updateAttempt(
+              {
+                score: 0,
+                status: 'needs-review',
+                raw_score: 0,
+                max_possible_score: 0,
+                attempt_remarks:
+                  'Automated grading failed. Attempt needs manual review by the teacher.',
+              },
+              quizId,
+              numericAttemptId,
+              userId,
+              tx,
+            );
+
+            if (!updatedAttempt) return null;
+
+            await AttemptAnswersRepo.insertAttemptAnswer(
+              formattedAttemptAnswers,
+              tx,
+            );
+            await AttemptAnswersRepo.insertAttemptAnswer(
+              formattedReasoningAttemptAnswers,
+              tx,
+            );
+
+            return updatedAttempt.id;
+          });
+
+          if (!flaggedAttemptId) {
+            return res.status(409).json({
+              success: false,
+              message: 'Attempt is already completed or does not belong to you',
+            });
+          }
+        } catch (dbError: any) {
+          console.error(
+            '[quizSubmit.route] Failed to flag attempt as needs-review:',
+            dbError,
+          );
+          return res.status(500).json({
+            success: false,
+            message:
+              'Submission could not be completed. Please try again later.',
+          });
+        }
         return res.status(500).json({
           success: false,
-          message: 'Failed to grade open-ended questions. Please try again.',
+          message:
+            'Failed to grade open-ended questions. Attempt has been rendered invalid.',
         });
       }
     }

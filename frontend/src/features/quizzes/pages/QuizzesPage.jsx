@@ -1,5 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
 import { QuizzesSidebar } from "../components/QuizzesSideBar";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
@@ -14,7 +15,11 @@ import {
 import { useQuizQuestions, useQuizzes } from "../api/queries.js";
 
 export function QuizzesPage() {
-  const [selectedQuizId, setSelectedQuizId] = useState(null);
+  const location = useLocation();
+  const [selectedQuizId, setSelectedQuizId] = useState(() => {
+    const routeQuizId = Number(location.state?.selectedQuizId);
+    return Number.isInteger(routeQuizId) && routeQuizId > 0 ? routeQuizId : null;
+  });
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [quizToDelete, setQuizToDelete] = useState(null);
   const [mobileTab, setMobileTab] = useState("list"); // mobile-only panel switcher — purely UI state, no data logic
@@ -121,7 +126,7 @@ export function QuizzesPage() {
   return (
     <AppShell
       tabs={
-        selectedQuizId
+        selectedQuiz
           ? [
               { key: "list", label: "Quizzes" },
               { key: "details", label: "Details" },
@@ -134,7 +139,7 @@ export function QuizzesPage() {
       panels={[
         {
           key: "list",
-          visible: !selectedQuizId || mobileTab === "list",
+          visible: !selectedQuiz || mobileTab === "list",
           children: (
             <QuizzesSidebar
               isFetching={queryQuizzesFetching}
@@ -146,7 +151,7 @@ export function QuizzesPage() {
             />
           ),
         },
-        ...(selectedQuizId
+        ...(selectedQuiz
           ? [
               {
                 key: "details",
@@ -178,7 +183,7 @@ export function QuizzesPage() {
           : []),
       ]}
     >
-      {!selectedQuizId && (
+      {!selectedQuiz && (
         <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
           Select a quiz to view details
         </div>

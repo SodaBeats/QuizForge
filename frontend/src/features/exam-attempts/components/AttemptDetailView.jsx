@@ -236,8 +236,10 @@ export function AttemptDetailView({
             {student.name}
           </h2>
           <p className="text-xs text-muted mt-0.5">
-            {attempt.rawScore}/{attempt.maxPossibleScore} •{" "}
-            {formatSubmittedAt(attempt.submittedAt)}
+            {attempt.status === "needs-review"
+              ? "Needs manual grading"
+              : `${attempt.rawScore}/${attempt.maxPossibleScore}`}{" "}
+            • {formatSubmittedAt(attempt.submittedAt)}
           </p>
         </div>
       </header>
