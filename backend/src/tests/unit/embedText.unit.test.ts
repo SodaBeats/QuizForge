@@ -76,10 +76,12 @@ describe('embedText (default provider: ollama)', () => {
 
     const result = await embedText(['alpha', 'beta']);
 
-    expect(result).toEqual([
+    expect(result.vectors).toEqual([
       [0.1, 0.2],
       [0.3, 0.4],
     ]);
+    // Ollama reports no usage — the recording site falls back to its estimate.
+    expect(result.usage).toBe(0);
     expect(fetchCall(0)[0]).toBe('http://localhost:11434/api/embed');
     expect(requestBody(0).model).toBe('mxbai-embed-large:latest');
     expect(requestBody(0).input).toEqual(['alpha', 'beta']);
@@ -132,14 +134,14 @@ describe('embedText (default provider: ollama)', () => {
       );
     });
 
-    const result = await embedText(inputs);
+    const { vectors } = await embedText(inputs);
 
     expect(fetchMock).toHaveBeenCalledTimes(16);
     expect(batchSizes()).toEqual([...Array(15).fill(16), 10]);
-    expect(result).toHaveLength(250);
-    expect(result[0]).toEqual([0]);
-    expect(result[16]).toEqual([16]);
-    expect(result[249]).toEqual([249]);
+    expect(vectors).toHaveLength(250);
+    expect(vectors[0]).toEqual([0]);
+    expect(vectors[16]).toEqual([16]);
+    expect(vectors[249]).toEqual([249]);
   });
 
   it('throws with the HTTP status on non-2xx responses', async () => {
@@ -200,7 +202,7 @@ describe('embedText (provider=jina)', () => {
 
     const result = await embedText(['a', 'b']);
 
-    expect(result).toEqual([
+    expect(result.vectors).toEqual([
       [1, 2],
       [3, 4],
     ]);
@@ -221,8 +223,29 @@ describe('embedText (provider=jina)', () => {
 
     const result = await embedText(['a']);
 
-    expect(result).toEqual([[9]]);
+    expect(result.vectors).toEqual([[9]]);
     expect(fetchCall(0)[0]).toBe('https://eu.api.jina.ai/v1/embeddings');
+  });
+
+  it('reports usage.total_tokens, summed across sub-batches', async () => {
+    process.env.JINA_API_KEY = 'test-key';
+    process.env.JINA_EMBED_MODEL = 'jina-embeddings-v5-omni-small';
+    fetchMock.mockImplementation((_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { input: string[] };
+      return Promise.resolve(
+        okJson({
+          data: body.input.map((_, i) => ({ index: i, embedding: [i] })),
+          usage: { total_tokens: body.input.length * 10 },
+        }),
+      );
+    });
+
+    const inputs = Array.from({ length: 17 }, (_, i) => `chunk-${i}`); // 16 + 1
+    const result = await embedText(inputs);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.vectors).toHaveLength(17);
+    expect(result.usage).toBe(170); // (16 * 10) + (1 * 10)
   });
 
   it('embedQuery uses task=retrieval.query with the raw query (no text prefix)', async () => {

@@ -5,7 +5,9 @@ import type { UploadedFileInterface } from '../types/file.js';
 import { UploadedFilesRepository } from '../repository/UploadedFilesRepository.js';
 import { textUtilities } from '../utils/textUtilities.util.js';
 import { DocumentChunksRepo } from '../repository/DocumentChunksRepo.js';
+import { assertBudget, estimateTokens, today } from './tokenBudget.service.js';
 import { db } from '../db/db.js';
+import { TokenUsageRepo } from '../repository/TokenUsageRepo.js';
 
 const isProd = process.env.NODE_ENV === 'production';
 const minWords = 150;
@@ -61,9 +63,11 @@ export const extractText = async (
     if (!chunks || chunks.length < 1) {
       throw new Error('Failed to chunk document');
     }
+    const estimated = chunks.reduce((sum, c) => sum + estimateTokens(c), 0);
+    await assertBudget(userId, 'embedding', estimated);
 
     // make embeddings for the chunks (embedText validates count/dimensions)
-    const embeddings = await embedText(chunks);
+    const { vectors: embeddings, usage } = await embedText(chunks);
 
     const transactionResult = await db.transaction(async (tx) => {
       const insertedFile = await UploadedFilesRepository.insertFileToDb(
@@ -87,6 +91,16 @@ export const extractText = async (
       });
 
       await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert, tx);
+
+      // Record the API-reported usage; fall back to the pre-embed estimate
+      // when the provider doesn't report usage (ollama / missing total_tokens).
+      await TokenUsageRepo.recordUsage(
+        userId,
+        today(),
+        'embedding',
+        usage || estimated,
+        tx,
+      );
 
       return {
         id: insertedFile.id,

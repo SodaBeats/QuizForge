@@ -55,6 +55,11 @@ type EmbeddingConfig =
       timeoutMs: number;
     };
 
+interface EmbeddingResponse {
+  data?: Array<{ index?: number; embedding?: number[] }>;
+  usage?: { total_tokens: number };
+}
+
 /**
  * Read + validate embedding config from env. Throws a descriptive error for an
  * unknown provider or a missing required var, so both embedText() and the boot
@@ -142,21 +147,22 @@ const postJson = async (
 const embedViaOllama = async (
   inputs: string[],
   config: Extract<EmbeddingConfig, { provider: 'ollama' }>,
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const json = (await postJson(
     `${config.host}/api/embed`,
     { model: config.model, input: inputs },
     {},
     config.timeoutMs,
   )) as { embeddings?: number[][] };
-  return json.embeddings ?? [];
+  // Ollama reports no token usage — callers fall back to their own estimate.
+  return { vectors: json.embeddings ?? [], usage: 0 };
 };
 
 const embedViaJina = async (
   inputs: string[],
   config: Extract<EmbeddingConfig, { provider: 'jina' }>,
   task: 'retrieval.query' | 'retrieval.passage',
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const json = (await postJson(
     `${config.baseUrl}/embeddings`,
     // task: Jina's LoRA adapter — retrieval.query for queries, retrieval.passage
@@ -165,13 +171,14 @@ const embedViaJina = async (
     { model: config.model, input: inputs, task, truncate: true },
     { Authorization: `Bearer ${config.apiKey}` },
     config.timeoutMs,
-  )) as { data?: Array<{ index?: number; embedding?: number[] }> };
+  )) as EmbeddingResponse;
 
   const data = json.data ?? [];
+  const usage = json?.usage?.total_tokens ?? 0;
   // Jina returns OpenAI-shaped data; sort defensively by index (the count check
   // below still catches missing entries).
   const ordered = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-  return ordered.map((entry) => entry.embedding ?? []);
+  return { vectors: ordered.map((entry) => entry.embedding ?? []), usage };
 };
 
 /** One response must contain exactly one non-empty, uniformly-sized vector per input. */
@@ -199,28 +206,34 @@ const embedBatch = async (
   inputs: string[],
   kind: EmbeddingKind,
   config: EmbeddingConfig,
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const task = kind === 'query' ? 'retrieval.query' : 'retrieval.passage';
   const results: number[][] = [];
+  let usage = 0;
 
   for (let start = 0; start < inputs.length; start += EMBED_BATCH_SIZE) {
     const batch = inputs.slice(start, start + EMBED_BATCH_SIZE);
-    const vectors =
+    const { vectors, usage: batchUsage } =
       config.provider === 'ollama'
         ? await embedViaOllama(batch, config)
         : await embedViaJina(batch, config, task);
     validateBatch(vectors, batch.length);
     results.push(...vectors);
+    usage += batchUsage;
   }
 
-  return results;
+  return { vectors: results, usage };
 };
 
 /**
- * Embed a batch of texts (document/chunk side). Returns vectors in input order.
+ * Embed a batch of texts (document/chunk side). Returns vectors in input
+ * order plus the API-reported token usage (summed across sub-batches; 0 when
+ * the provider doesn't report it — callers fall back to their estimate).
  * Throws on misconfiguration, HTTP failure, or any count/dimension mismatch.
  */
-export const embedText = async (inputs: string[]): Promise<number[][]> => {
+export const embedText = async (
+  inputs: string[],
+): Promise<{ vectors: number[][]; usage: number }> => {
   if (!Array.isArray(inputs) || inputs.length < 1) {
     throw new Error('embedText requires at least one input');
   }
@@ -235,7 +248,8 @@ export const embedQuery = async (query: string): Promise<number[]> => {
   const config = getEmbeddingConfig();
   const input =
     config.provider === 'ollama' ? `${QUERY_PREFIX}${query}` : query;
-  const [first] = await embedBatch([input], 'query', config);
+  const { vectors } = await embedBatch([input], 'query', config);
+  const [first] = vectors;
   if (!first) {
     throw new Error('Failed to embed query');
   }

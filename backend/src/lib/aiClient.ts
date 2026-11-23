@@ -42,6 +42,7 @@ export type ChatCompletionOptions = {
 /** Minimal OpenAI-shaped response — call sites read choices[0].message.content. */
 export type ChatCompletionResponse = {
   choices: Array<{ message: { content: string | null } }>;
+  usage: { total_tokens: number };
 };
 
 type AiConfig = {
@@ -105,7 +106,10 @@ const isRetryable = (response: Response): boolean => {
  * exponential backoff with jitter — min(0.5 * 2^retryIndex, 8) seconds,
  * multiplied by a random factor in [0.75, 1].
  */
-const retryDelayMs = (response: Response | undefined, retryIndex: number): number => {
+const retryDelayMs = (
+  response: Response | undefined,
+  retryIndex: number,
+): number => {
   if (response) {
     const msRaw = response.headers.get('retry-after-ms');
     const ms = msRaw === null ? NaN : parseFloat(msRaw);
@@ -139,8 +143,12 @@ export const chatCompletion = async (
   const body = JSON.stringify({
     model: config.model,
     messages: options.messages,
-    ...(options.response_format && { response_format: options.response_format }),
-    ...(options.reasoning_effort && { reasoning_effort: options.reasoning_effort }),
+    ...(options.response_format && {
+      response_format: options.response_format,
+    }),
+    ...(options.reasoning_effort && {
+      reasoning_effort: options.reasoning_effort,
+    }),
   });
 
   for (let attempt = 0; ; attempt++) {
@@ -170,7 +178,9 @@ export const chatCompletion = async (
         return (await response.json()) as ChatCompletionResponse;
       } catch (err) {
         const detail = err instanceof Error ? err.message : String(err);
-        throw new Error(`AI request to ${url} returned invalid JSON: ${detail}`);
+        throw new Error(
+          `AI request to ${url} returned invalid JSON: ${detail}`,
+        );
       }
     }
 
