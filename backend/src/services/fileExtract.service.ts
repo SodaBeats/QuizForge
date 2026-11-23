@@ -99,6 +99,7 @@ export const extractText = async (
         today(),
         'embedding',
         usage || estimated,
+        tx,
       );
 
       return {

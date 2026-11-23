@@ -1,5 +1,5 @@
 import { and, eq, sql } from 'drizzle-orm';
-import { db } from '../db/db.js';
+import { db, type QueryClient } from '../db/db.js';
 import { token_usage_db } from '../db/schema.js';
 
 export type UsageKind = 'embedding' | 'generation';
@@ -27,6 +27,7 @@ export const TokenUsageRepo = {
     today: string,
     kind: UsageKind,
     tokens: number,
+    tx: QueryClient = db,
   ) {
     // Explicit branches keep Drizzle's column typing intact
     // (computed keys like [COLUMNS[kind]] widen the type to a string index).
