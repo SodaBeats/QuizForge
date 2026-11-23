@@ -168,18 +168,13 @@ export function StudentQuizPage() {
 
   // src/pages/student/QuizAttempt.jsx (or wherever handleQuizSubmit lives)
   const handleQuizSubmit = async () => {
+    navigate("/student", { replace: true });
     try {
       await submitQuizMutation.mutateAsync({
         questions,
         answers,
         quiz,
         attemptId,
-      });
-
-      clearAttempt({
-        quizToken,
-        attemptId,
-        questionIds: questions.map((question) => question.id),
       });
       toast.success("Attempt received!");
     } catch (error) {
@@ -188,7 +183,11 @@ export function StudentQuizPage() {
         "We couldn't submit your attempt. It was flagged for your teacher to review.",
       );
     } finally {
-      navigate("/student", { replace: true });
+      clearAttempt({
+        quizToken,
+        attemptId,
+        questionIds: questions.map((question) => question.id),
+      });
     }
   };
 
