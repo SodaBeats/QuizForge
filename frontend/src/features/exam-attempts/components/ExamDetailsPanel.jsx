@@ -136,7 +136,7 @@ export function ExamDetailsPanel({
             )}
           </Field>
           <Field label="Share token">
-            <span className="text-muted">{exam.shareToken}</span>
+            <span className="text-inkondark">{exam.shareToken}</span>
           </Field>
         </dl>
       </div>

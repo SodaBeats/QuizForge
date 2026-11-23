@@ -35,19 +35,35 @@ export function QuizzesMetadata({
       <div className="flex-1 flex flex-col rounded-lg bg-surface border border-accent lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">
-          <input
-            type="text"
-            name="quizTitle"
-            value={editingQuiz.quizTitle || ""}
-            onChange={(e) =>
-              setEditingQuiz((prev) => ({
-                ...prev,
-                quizTitle: e.target.value,
-              }))
-            }
-            placeholder="Enter quiz title..."
-            className="w-full bg-transparent text-lg sm:text-xl font-display font-bold text-inkondark mb-2 border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
-          />
+          <div className="relative mb-2">
+            <input
+              type="text"
+              name="quizTitle"
+              value={editingQuiz.quizTitle || ""}
+              onChange={(e) =>
+                setEditingQuiz((prev) => ({
+                  ...prev,
+                  quizTitle: e.target.value,
+                }))
+              }
+              placeholder="Enter quiz title..."
+              aria-label="Edit quiz title"
+              className="w-full bg-transparent pr-9 text-lg sm:text-xl font-display font-bold text-inkondark border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
+            />
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-accent"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </div>
 
           <div className="flex items-center gap-3 text-xs sm:text-sm text-muted">
             <span>{quiz.questionCount} questions</span>

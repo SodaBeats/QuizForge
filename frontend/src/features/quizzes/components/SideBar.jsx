@@ -6,6 +6,7 @@ import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { GenerationDone } from "./GenerationDone";
 import { FileSection } from "./FileSection";
 import { SelectQuizModal } from "./SelectQuizModal";
+import ccdiLogo from "../../../assets/ccdi-logo.webp";
 
 export function SideBar({
   uploadedFiles,
@@ -92,9 +93,11 @@ export function SideBar({
           to="/teacher"
           className="hidden lg:flex items-center gap-2.5 shrink-0 px-1 cursor-pointer group"
         >
-          <div className="w-9 h-9 rounded-md flex items-center justify-center font-display font-extrabold text-inkondark text-sm bg-accent">
-            Q
-          </div>
+          <img
+            src={ccdiLogo}
+            alt="CCDI"
+            className="h-11 w-11 rounded-md object-contain"
+          />
           <span className="font-display font-bold text-inkondark group-hover:text-accent transition-colors">
             Ilmari<span className="text-accent">Gen</span>
           </span>

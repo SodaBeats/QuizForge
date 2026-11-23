@@ -200,7 +200,65 @@ const redScrollbars = {
  * untouched. Blue outline + shadow for depth. No colored edges on containers.
  */
 const appDesign = {
-  /* Dashboard cards and panels: blue outline + depth instead of a red box */
+  /* Portals use the centralized black/orange tokens from colors.js. */
+  ".orange-dark-theme": {
+    "--canvas": "var(--studentpage)",
+    "--canvas-rgb": "var(--studentpage-rgb)",
+    "--ink": "var(--studentpage)",
+    "--ink-rgb": "var(--studentpage-rgb)",
+    "--specialsurface": "var(--studentcard)",
+    "--specialsurface-rgb": "var(--studentcard-rgb)",
+    "--surface": "var(--studentcard)",
+    "--surface-rgb": "var(--studentcard-rgb)",
+    "--darkteal": "var(--studentcard)",
+    "--darkteal-rgb": "var(--studentcard-rgb)",
+    "--darkslate": "var(--studentinput)",
+    "--darkslate-rgb": "var(--studentinput-rgb)",
+    "--mutedteal": "var(--studentinputborder)",
+    "--mutedteal-rgb": "var(--studentinputborder-rgb)",
+    "--line": "var(--studentinputborder)",
+    "--line-rgb": "var(--studentinputborder-rgb)",
+    "--shadow": "var(--studentpage)",
+    "--shadow-rgb": "var(--studentpage-rgb)",
+    "--accent": "var(--warmorange)",
+    "--accent-rgb": "var(--warmorange-rgb)",
+    "--modalback": "var(--studentpage)",
+    "--modalback-rgb": "var(--studentpage-rgb)",
+    "--scrolltrack": "var(--studentpage)",
+    "--scrolltrack-rgb": "var(--studentpage-rgb)",
+    "--scrollthumb": "var(--warmorange)",
+    "--scrollthumb-rgb": "var(--warmorange-rgb)",
+    "--scrollthumbhover": "var(--warmorange)",
+    "--scrollthumbhover-rgb": "var(--warmorange-rgb)",
+  },
+
+  /* Primary actions use orange; success and score-state tokens remain semantic. */
+  ".orange-dark-theme .btn-primary, .orange-dark-theme button.bg-accept, .orange-dark-theme .btn-primary:hover, .orange-dark-theme button.bg-accept:hover":
+    {
+      "background-color": "var(--warmorange) !important",
+      color: "var(--white) !important",
+    },
+  ".orange-dark-theme .btn-primary:disabled, .orange-dark-theme button.bg-accept:disabled":
+    {
+      "background-color": "var(--muted) !important",
+      color: "var(--ink) !important",
+    },
+
+  /* Keep destructive actions distinct from the orange brand accent. */
+  ".orange-dark-theme .btn-danger": {
+    "border-color": "var(--bad) !important",
+    color: "var(--bad) !important",
+  },
+  ".orange-dark-theme .btn-danger:hover": {
+    "background-color": "var(--bad) !important",
+    "border-color": "var(--bad) !important",
+    color: "var(--white) !important",
+  },
+  ".orange-dark-theme .hover\\:text-accent:hover": {
+    color: "var(--warmorange) !important",
+  },
+
+  /* Dashboard cards and panels: neutral outline + depth instead of a red box */
   ".border-accent": {
     "border-color": "var(--line) !important",
     "box-shadow": "0 6px 18px var(--shadow)",
@@ -224,7 +282,7 @@ const appDesign = {
     "background-color": "var(--ink) !important",
   },
 
-  /* Chart area: dark inset so the red bars pop */
+  /* Chart area: dark inset so the accent-colored bars pop */
   ".relative.w-full.h-full.bg-darkslate": {
     "background-color": "var(--ink) !important",
     border: "1px solid var(--line)",
@@ -234,8 +292,12 @@ const appDesign = {
   '.h-full.rounded-full.transition-all[style*="var(--accent)"]': {
     background: "var(--ccdiblue) !important",
   },
+  ".orange-dark-theme .h-full.rounded-full.transition-all[style*='var(--accent)']":
+    {
+      background: "var(--warmorange) !important",
+    },
 
-  /* Underlined red links ("Select a quiz"): lighter red so they are readable */
+  /* Underlined accent links ("Select a quiz"): readable against dark panels */
   ".underline.text-accent": {
     color: "var(--bad) !important",
   },
