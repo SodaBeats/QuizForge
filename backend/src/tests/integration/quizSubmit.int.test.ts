@@ -30,6 +30,12 @@ const reasoningGradingMock = jest.fn<
     Promise<ReasoningGradingResult>
 >();
 const summaryRemarksMock = jest.fn<() => Promise<string>>();
+const withRetryMock = jest.fn<
+  (
+    fn: () => Promise<ReasoningGradingResult>,
+    options?: unknown,
+  ) => Promise<ReasoningGradingResult>
+>();
 
 jest.unstable_mockModule(
   '../../services/getReasoningScoreObject.service.js',
@@ -41,6 +47,10 @@ jest.unstable_mockModule(
 
 jest.unstable_mockModule('../../services/summaryRemarks.service.js', () => ({
   getSummaryRemarks: summaryRemarksMock,
+}));
+
+jest.unstable_mockModule('../../utils/withRetry.util.js', () => ({
+  withRetry: withRetryMock,
 }));
 
 const { default: app } = await import('../../server.js');
@@ -67,9 +77,10 @@ let outputId: number; // code-output-predict-open-ended-objective
 let shortId: number; // short-answer
 
 let successAttemptId: number; // completed by the 200 test
-let failureAttemptId: number; // left untouched by the 500 test
+let failureAttemptId: number; // flagged for manual review by the 500 test
 let deadlineAttemptId: number;
 let mismatchAttemptId: number;
+let duplicateAttemptId: number;
 
 const SUMMARY =
   'Strengths:\n• Covered the basics.\n\nGaps:\n• Missed edge cases.\n\nSuggested next steps:\n• Review the missed topics.';
@@ -273,13 +284,15 @@ beforeAll(async () => {
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
       { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
+      { quiz_id: seededQuizId, user_id: studentId, status: 'in-progress' },
     ])
     .returning();
   if (
     !attempts[0] ||
     !attempts[1] ||
     !attempts[2] ||
-    !attempts[3]
+    !attempts[3] ||
+    !attempts[4]
   ) {
     throw new Error('Failed to seed attempts');
   }
@@ -287,6 +300,7 @@ beforeAll(async () => {
   failureAttemptId = attempts[1].id;
   deadlineAttemptId = attempts[2].id;
   mismatchAttemptId = attempts[3].id;
+  duplicateAttemptId = attempts[4].id;
 });
 
 afterAll(async () => {
@@ -303,6 +317,8 @@ beforeEach(() => {
   });
   summaryRemarksMock.mockReset();
   summaryRemarksMock.mockResolvedValue(SUMMARY);
+  withRetryMock.mockReset();
+  withRetryMock.mockImplementation(async (fn) => fn());
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -370,8 +386,8 @@ describe('PATCH /api/student/quiz-submit', () => {
     expect(short.is_correct).toBe(true);
   });
 
-  it('500 — reasoning grading failure writes nothing', async () => {
-    reasoningGradingMock.mockRejectedValueOnce(new Error('LLM unavailable'));
+  it('500 — withRetry exhaustion safely flags the attempt and persists every answer', async () => {
+    withRetryMock.mockRejectedValueOnce(new Error('LLM unavailable'));
 
     const res = await request(app)
       .patch('/api/student/quiz-submit')
@@ -381,14 +397,38 @@ describe('PATCH /api/student/quiz-submit', () => {
     expect(res.status).toBe(500);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe(
-      'Failed to grade open-ended questions. Please try again.',
+      'Failed to grade open-ended questions. Attempt has been rendered invalid.',
+    );
+    expect(withRetryMock).toHaveBeenCalledTimes(1);
+    expect(reasoningGradingMock).not.toHaveBeenCalled();
+
+    // the attempt is marked for manual review and all submitted answers are saved atomically
+    const attempt = await attemptRow(failureAttemptId);
+    expect(attempt.status).toBe('needs-review');
+    expect(attempt.score).toBe(0);
+    expect(attempt.raw_score).toBe(0);
+    expect(attempt.max_possible_score).toBe(0);
+    expect(attempt.attempt_remarks).toBe(
+      'Automated grading failed. Attempt needs manual review by the teacher.',
     );
 
-    // no partial writes: attempt untouched, zero answer rows
-    const attempt = await attemptRow(failureAttemptId);
-    expect(attempt.status).toBe('in-progress');
-    expect(attempt.attempt_remarks).toBe('none'); // column default
-    expect(await rowsForAttempt(failureAttemptId)).toHaveLength(0);
+    const rows = await rowsForAttempt(failureAttemptId);
+    expect(rows).toHaveLength(6);
+
+    const mc = rowFor(rows, mcId);
+    expect(mc.points).toBe(1);
+    expect(mc.is_correct).toBe(true);
+
+    const tf = rowFor(rows, tfId);
+    expect(tf.points).toBe(0);
+    expect(tf.is_correct).toBe(false);
+
+    for (const reasoningId of [genId, explainId, outputId, shortId]) {
+      const reasoningRow = rowFor(rows, reasoningId);
+      expect(reasoningRow.points).toBe(0);
+      expect(reasoningRow.is_correct).toBe(false);
+    }
+
     expect(summaryRemarksMock).not.toHaveBeenCalled();
   });
 
@@ -396,21 +436,21 @@ describe('PATCH /api/student/quiz-submit', () => {
     const firstRes = await request(app)
       .patch('/api/student/quiz-submit')
       .set(authHeader(studentToken))
-      .send(submitBody(failureAttemptId));
+      .send(submitBody(duplicateAttemptId));
 
     expect(firstRes.status).toBe(200);
 
     const duplicateRes = await request(app)
       .patch('/api/student/quiz-submit')
       .set(authHeader(studentToken))
-      .send(submitBody(failureAttemptId));
+      .send(submitBody(duplicateAttemptId));
 
     expect(duplicateRes.status).toBe(409);
     expect(duplicateRes.body).toEqual({
       success: false,
       message: 'Attempt is already completed or does not belong to you',
     });
-    expect(await rowsForAttempt(failureAttemptId)).toHaveLength(6);
+    expect(await rowsForAttempt(duplicateAttemptId)).toHaveLength(6);
   });
 
   it('400 — rejects a body with missing required fields', async () => {

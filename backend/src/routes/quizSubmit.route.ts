@@ -193,8 +193,8 @@ router.patch(
               };
             },
           );
-          await db.transaction(async (tx) => {
-            await QuizAttemptsRepo.updateAttempt(
+          const flaggedAttemptId = await db.transaction(async (tx) => {
+            const updatedAttempt = await QuizAttemptsRepo.updateAttempt(
               {
                 score: 0,
                 status: 'needs-review',
@@ -209,6 +209,8 @@ router.patch(
               tx,
             );
 
+            if (!updatedAttempt) return null;
+
             await AttemptAnswersRepo.insertAttemptAnswer(
               formattedAttemptAnswers,
               tx,
@@ -217,7 +219,16 @@ router.patch(
               formattedReasoningAttemptAnswers,
               tx,
             );
+
+            return updatedAttempt.id;
           });
+
+          if (!flaggedAttemptId) {
+            return res.status(409).json({
+              success: false,
+              message: 'Attempt is already completed or does not belong to you',
+            });
+          }
         } catch (dbError: any) {
           console.error(
             '[quizSubmit.route] Failed to flag attempt as needs-review:',
