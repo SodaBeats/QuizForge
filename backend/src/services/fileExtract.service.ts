@@ -67,7 +67,7 @@ export const extractText = async (
     await assertBudget(userId, 'embedding', estimated);
 
     // make embeddings for the chunks (embedText validates count/dimensions)
-    const embeddings = await embedText(chunks);
+    const { vectors: embeddings, usage } = await embedText(chunks);
 
     const transactionResult = await db.transaction(async (tx) => {
       const insertedFile = await UploadedFilesRepository.insertFileToDb(
@@ -92,7 +92,14 @@ export const extractText = async (
 
       await DocumentChunksRepo.insertToDocumentChunksDb(dataToInsert, tx);
 
-      await TokenUsageRepo.recordUsage(userId, today(), 'embedding', estimated);
+      // Record the API-reported usage; fall back to the pre-embed estimate
+      // when the provider doesn't report usage (ollama / missing total_tokens).
+      await TokenUsageRepo.recordUsage(
+        userId,
+        today(),
+        'embedding',
+        usage || estimated,
+      );
 
       return {
         id: insertedFile.id,

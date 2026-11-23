@@ -147,14 +147,15 @@ const postJson = async (
 const embedViaOllama = async (
   inputs: string[],
   config: Extract<EmbeddingConfig, { provider: 'ollama' }>,
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const json = (await postJson(
     `${config.host}/api/embed`,
     { model: config.model, input: inputs },
     {},
     config.timeoutMs,
   )) as { embeddings?: number[][] };
-  return json.embeddings ?? [];
+  // Ollama reports no token usage — callers fall back to their own estimate.
+  return { vectors: json.embeddings ?? [], usage: 0 };
 };
 
 const embedViaJina = async (
@@ -205,28 +206,34 @@ const embedBatch = async (
   inputs: string[],
   kind: EmbeddingKind,
   config: EmbeddingConfig,
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const task = kind === 'query' ? 'retrieval.query' : 'retrieval.passage';
   const results: number[][] = [];
+  let usage = 0;
 
   for (let start = 0; start < inputs.length; start += EMBED_BATCH_SIZE) {
     const batch = inputs.slice(start, start + EMBED_BATCH_SIZE);
-    const vectors =
+    const { vectors, usage: batchUsage } =
       config.provider === 'ollama'
         ? await embedViaOllama(batch, config)
         : await embedViaJina(batch, config, task);
     validateBatch(vectors, batch.length);
     results.push(...vectors);
+    usage += batchUsage;
   }
 
-  return results;
+  return { vectors: results, usage };
 };
 
 /**
- * Embed a batch of texts (document/chunk side). Returns vectors in input order.
+ * Embed a batch of texts (document/chunk side). Returns vectors in input
+ * order plus the API-reported token usage (summed across sub-batches; 0 when
+ * the provider doesn't report it — callers fall back to their estimate).
  * Throws on misconfiguration, HTTP failure, or any count/dimension mismatch.
  */
-export const embedText = async (inputs: string[]): Promise<number[][]> => {
+export const embedText = async (
+  inputs: string[],
+): Promise<{ vectors: number[][]; usage: number }> => {
   if (!Array.isArray(inputs) || inputs.length < 1) {
     throw new Error('embedText requires at least one input');
   }
@@ -241,7 +248,8 @@ export const embedQuery = async (query: string): Promise<number[]> => {
   const config = getEmbeddingConfig();
   const input =
     config.provider === 'ollama' ? `${QUERY_PREFIX}${query}` : query;
-  const [first] = await embedBatch([input], 'query', config);
+  const { vectors } = await embedBatch([input], 'query', config);
+  const [first] = vectors;
   if (!first) {
     throw new Error('Failed to embed query');
   }
