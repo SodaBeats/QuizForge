@@ -55,6 +55,11 @@ type EmbeddingConfig =
       timeoutMs: number;
     };
 
+interface EmbeddingResponse {
+  data?: Array<{ index?: number; embedding?: number[] }>;
+  usage?: { total_tokens: number };
+}
+
 /**
  * Read + validate embedding config from env. Throws a descriptive error for an
  * unknown provider or a missing required var, so both embedText() and the boot
@@ -156,7 +161,7 @@ const embedViaJina = async (
   inputs: string[],
   config: Extract<EmbeddingConfig, { provider: 'jina' }>,
   task: 'retrieval.query' | 'retrieval.passage',
-): Promise<number[][]> => {
+): Promise<{ vectors: number[][]; usage: number }> => {
   const json = (await postJson(
     `${config.baseUrl}/embeddings`,
     // task: Jina's LoRA adapter — retrieval.query for queries, retrieval.passage
@@ -165,13 +170,14 @@ const embedViaJina = async (
     { model: config.model, input: inputs, task, truncate: true },
     { Authorization: `Bearer ${config.apiKey}` },
     config.timeoutMs,
-  )) as { data?: Array<{ index?: number; embedding?: number[] }> };
+  )) as EmbeddingResponse;
 
   const data = json.data ?? [];
+  const usage = json?.usage?.total_tokens ?? 0;
   // Jina returns OpenAI-shaped data; sort defensively by index (the count check
   // below still catches missing entries).
   const ordered = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-  return ordered.map((entry) => entry.embedding ?? []);
+  return { vectors: ordered.map((entry) => entry.embedding ?? []), usage };
 };
 
 /** One response must contain exactly one non-empty, uniformly-sized vector per input. */
