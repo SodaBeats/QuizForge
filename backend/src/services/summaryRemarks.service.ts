@@ -70,11 +70,12 @@ export const getSummaryRemarks = async ({
   });
   const attemptSummary = [...normSummary, ...reasoningSummary];
 
+  console.log(attemptSummary);
+
   const systemMessage = `
     # PERSONA
     - You are an instructional coach writing a brief performance summary for the
-      teacher reviewing this quiz attempt. Report what the student's strength,
-      where they fell short, and what the teacher should reinforce next.
+      teacher reviewing this quiz attempt.
 
     # INSTRUCTIONS
     1. Analyze the raw JSON data inside the <attempt> tags; each item lists a
