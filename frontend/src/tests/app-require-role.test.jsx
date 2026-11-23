@@ -15,6 +15,7 @@ import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthContext, AuthProvider } from "../app/providers/AuthProvider";
 import { RequireRole } from "../app/guards/RequireRole";
 import { authApi } from "../features/auth/api/auth.api";
+import { LoginPage } from "../features/auth/pages/LoginPage";
 
 vi.mock("../features/auth/api/auth.api", () => ({
   authApi: {
@@ -80,7 +81,6 @@ describe("RequireRole", () => {
       token: "t",
       role: "teacher",
     });
-
     expect(screen.getByText("teacher quizzes")).toBeInTheDocument();
   });
 
@@ -111,6 +111,59 @@ describe("RequireRole", () => {
 
     expect(screen.getByText("teacher home")).toBeInTheDocument();
     expect(screen.queryByText("login page")).not.toBeInTheDocument();
+  });
+});
+
+describe("LoginPage authenticated redirect", () => {
+  it.each([
+    ["teacher", "/teacher"],
+    ["student", "/student"],
+    ["admin", "/admin"],
+  ])("redirects an authenticated %s to %s", (role) => {
+    render(
+      <AuthContext.Provider
+        value={{
+          token: "token",
+          userInfo: { role },
+          setToken: vi.fn(),
+          setUserInfo: vi.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={["/login"]}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/teacher" element={<div>teacher home</div>} />
+            <Route path="/student" element={<div>student home</div>} />
+            <Route path="/admin" element={<div>admin home</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    );
+
+    expect(screen.getByText(`${role} home`)).toBeInTheDocument();
+  });
+
+  it("renders login for a logged-out visitor", () => {
+    render(
+      <AuthContext.Provider
+        value={{
+          token: null,
+          userInfo: {},
+          setToken: vi.fn(),
+          setUserInfo: vi.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={["/login"]}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Welcome Back!" }),
+    ).toBeInTheDocument();
   });
 });
 
