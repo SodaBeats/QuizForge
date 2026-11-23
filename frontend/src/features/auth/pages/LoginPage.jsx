@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../../app/providers/AuthProvider";
 import { authApi } from "../api/auth.api.js";
@@ -44,6 +44,8 @@ function EyeIcon({ open }) {
 }
 
 export function LoginPage() {
+  const { token, userInfo, setToken, setUserInfo } =
+    useContext(AuthContext);
   const [isLogin, setIsLogin] = useState(true);
 
   const [firstName, setFirstName] = useState("");
@@ -59,13 +61,24 @@ export function LoginPage() {
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
 
-  const { setToken, setUserInfo } = useContext(AuthContext);
   const navigate = useNavigate();
   // RequireRole redirects logged-out visitors to /login with
   // state.from = the page they wanted; return them there after login
   // instead of always dumping them on the role home.
   const location = useLocation();
   const returnTo = location.state?.from;
+
+  if (token && userInfo?.role) {
+    const roleHome = {
+      teacher: "/teacher",
+      student: "/student",
+      admin: "/admin",
+    };
+
+    if (roleHome[userInfo.role]) {
+      return <Navigate to={roleHome[userInfo.role]} replace />;
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
