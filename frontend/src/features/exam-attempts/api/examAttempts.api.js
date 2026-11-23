@@ -19,7 +19,7 @@ export const examAttemptsApi = {
     return assertSuccess(result, "Failed to fetch exam details").exam;
   },
 
-  /** GET /api/quizzes/:quizId/attempts/list → { attempts, students }.
+  /** GET /api/quizzes/:quizId/attempts/list → { attempts, students, needsReview }.
       Empty arrays are a normal state, not an error. */
   async attemptList(quizId) {
     const result = await apiRequest(
@@ -28,7 +28,11 @@ export const examAttemptsApi = {
       { fallbackMessage: "Failed to fetch attempts" },
     );
     const payload = assertSuccess(result, "Failed to fetch attempts");
-    return { attempts: payload.attempts ?? [], students: payload.students ?? [] };
+    return {
+      attempts: payload.attempts ?? [],
+      students: payload.students ?? [],
+      needsReview: payload.needsReview ?? [],
+    };
   },
 
   /** GET /api/quizzes/:quizId/attempts/:attemptId → { questions, attemptRemarks }.

@@ -16,6 +16,7 @@ import {
   filterByClass,
   filterBySearch,
   groupAttemptsByStudent,
+  groupNeedsReviewByStudent,
 } from "../lib/attempts.js";
 
 const TABS = [
@@ -28,7 +29,7 @@ export function ExamAttemptsPage() {
   const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState("details"); // mobile-only panel switcher — purely UI state
   const [query, setQuery] = useState("");
-  const [selectedClassId, setSelectedClassId] = useState(null);
+  const [selectedTab, setSelectedTab] = useState(null);
   const [selectedAttempt, setSelectedAttempt] = useState(null); // { student, attempt } → detail view in the attempts panel
 
   const examQuery = useExamDetails(quizId);
@@ -58,10 +59,12 @@ export function ExamAttemptsPage() {
   // derived fallback resets the tab on quizId change without an effect.
   const classes =
     exam?.accessibility === "restricted" ? exam.allowedClasses : [];
-  const activeClassId =
-    classes.find((cls) => cls.id === selectedClassId)?.id ??
-    classes[0]?.id ??
-    null;
+  const activeTab =
+    selectedTab === "needs-review" ||
+    (classes.length === 0 && selectedTab === "all") ||
+    classes.find((cls) => cls.id === selectedTab)?.id
+      ? selectedTab
+      : classes[0]?.id ?? "all";
 
   // Group once per list payload, then layer the class tab and the name
   // search on top so counts and list always agree.
@@ -75,9 +78,24 @@ export function ExamAttemptsPage() {
         : [],
     [listQuery.data],
   );
+  const needsReviewGroups = useMemo(
+    () =>
+      listQuery.data
+        ? groupNeedsReviewByStudent(listQuery.data.needsReview)
+        : [],
+    [listQuery.data],
+  );
+  const needsReviewCount = needsReviewGroups.reduce(
+    (total, group) => total + group.attempts.length,
+    0,
+  );
   const classGroups = useMemo(
-    () => (activeClassId == null ? groups : filterByClass(groups, activeClassId)),
-    [groups, activeClassId],
+    () => {
+      if (activeTab === "needs-review") return needsReviewGroups;
+      if (activeTab === "all") return groups;
+      return filterByClass(groups, activeTab);
+    },
+    [groups, activeTab, needsReviewGroups],
   );
   const filteredGroups = useMemo(
     () => filterBySearch(classGroups, query),
@@ -114,8 +132,9 @@ export function ExamAttemptsPage() {
               query={query}
               onQueryChange={setQuery}
               classes={classes}
-              activeClassId={activeClassId}
-              onClassChange={setSelectedClassId}
+              activeClassId={activeTab}
+              onClassChange={setSelectedTab}
+              needsReviewCount={needsReviewCount}
               onSelectAttempt={setSelectedAttempt}
               quizId={quizId}
               selectedAttempt={selectedAttempt}

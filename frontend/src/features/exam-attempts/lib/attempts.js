@@ -53,3 +53,33 @@ export function filterBySearch(groups, query) {
 export function filterByClass(groups, classId) {
   return groups.filter((group) => group.student.classIds.includes(classId));
 }
+
+/** Normalizes needs-review rows into the same student/attempt group shape
+    used by the completed-attempt list. */
+export function groupNeedsReviewByStudent(needsReview) {
+  const groups = new Map();
+
+  for (const row of needsReview ?? []) {
+    const student = {
+      id: row.studentId,
+      name: row.name,
+      classIds: row.classIds ?? [],
+    };
+    const group = groups.get(student.id) ?? { student, attempts: [] };
+    group.attempts.push({
+      id: row.id,
+      studentId: row.studentId,
+      status: row.status ?? "needs-review",
+      submittedAt: row.submittedAt,
+      attemptRemarks: row.attemptRemarks,
+    });
+    groups.set(student.id, group);
+  }
+
+  return sortStudents(
+    [...groups.values()].map((group) => ({
+      ...group,
+      attempts: sortAttemptsNewestFirst(group.attempts),
+    })),
+  );
+}

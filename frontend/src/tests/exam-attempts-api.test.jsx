@@ -39,13 +39,15 @@ describe("examAttempts.api", () => {
   it("requests the attempts list from /api/quizzes/:quizId/attempts/list", async () => {
     const attempts = [{ id: 1003, studentId: 5 }];
     const students = [{ id: 5, name: "Brian Okafor", classIds: [1] }];
+    const needsReview = [{ id: 1004, studentId: 5, name: "Brian Okafor", classIds: [1], status: "needs-review" }];
     fetchMock.mockResolvedValue(
-      jsonResponse(200, { success: true, attempts, students }),
+      jsonResponse(200, { success: true, attempts, students, needsReview }),
     );
 
     await expect(examAttemptsApi.attemptList(7)).resolves.toEqual({
       attempts,
       students,
+      needsReview,
     });
     expect(fetchMock.mock.calls[0][0]).toBe(
       "http://localhost:3000/api/quizzes/7/attempts/list",
@@ -58,6 +60,7 @@ describe("examAttempts.api", () => {
     await expect(examAttemptsApi.attemptList(7)).resolves.toEqual({
       attempts: [],
       students: [],
+      needsReview: [],
     });
   });
 

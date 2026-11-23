@@ -350,4 +350,63 @@ export const QuizAttemptsRepo = {
 
     return result ? true : false;
   },
+
+  async getNeedingReview(quizId: number) {
+    const result = await db
+      .select({
+        id: quiz_attempts_db.id,
+        studentId: quiz_attempts_db.user_id,
+        name: sql<string>`${users.first_name} || ' ' || ${users.last_name}`.as(
+          'name',
+        ),
+        classId: students_classes_db.class_id,
+        status: quiz_attempts_db.status,
+        attemptRemarks: quiz_attempts_db.attempt_remarks,
+        submittedAt: quiz_attempts_db.created_at,
+      })
+      .from(quiz_attempts_db)
+      .innerJoin(users, eq(quiz_attempts_db.user_id, users.id))
+      .leftJoin(
+        students_classes_db,
+        eq(students_classes_db.student_id, users.id),
+      )
+      .where(
+        and(
+          eq(quiz_attempts_db.quiz_id, quizId),
+          eq(quiz_attempts_db.status, 'needs-review'),
+        ),
+      )
+      .orderBy(desc(quiz_attempts_db.created_at));
+
+    const byId = new Map<
+      number,
+      {
+        id: number;
+        studentId: number;
+        name: string;
+        classIds: number[];
+        status: string;
+        attemptRemarks: string | null;
+        submittedAt: Date;
+      }
+    >();
+
+    for (const row of result) {
+      const item = byId.get(row.id) ?? {
+        id: row.id,
+        studentId: row.studentId,
+        name: row.name,
+        classIds: [],
+        status: row.status ?? 'needs-review',
+        attemptRemarks: row.attemptRemarks,
+        submittedAt: row.submittedAt,
+      };
+      if (row.classId != null && !item.classIds.includes(row.classId)) {
+        item.classIds.push(row.classId);
+      }
+      byId.set(row.id, item);
+    }
+
+    return [...byId.values()];
+  },
 };

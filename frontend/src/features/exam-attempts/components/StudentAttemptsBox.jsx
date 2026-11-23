@@ -28,9 +28,15 @@ export function StudentAttemptsBox({ student, attempts, onSelect }) {
           className="w-full text-left flex items-center gap-3 px-3 py-1.5 border-b border-muted/10 last:border-b-0 cursor-pointer hover:bg-muted/10 transition-colors"
         >
           <span className="flex-1 min-w-0" />
-          <span className="w-16 shrink-0 text-right text-sm text-inkondark tabular-nums">
-            {attempt.rawScore}/{attempt.maxPossibleScore}
-          </span>
+          {attempt.status === "needs-review" ? (
+            <span className="w-28 shrink-0 text-right text-xs font-medium text-amber-300">
+              Needs grading
+            </span>
+          ) : (
+            <span className="w-16 shrink-0 text-right text-sm text-inkondark tabular-nums">
+              {attempt.rawScore}/{attempt.maxPossibleScore}
+            </span>
+          )}
           <span className="w-36 sm:w-44 shrink-0 text-right text-xs text-muted whitespace-nowrap">
             {formatSubmittedAt(attempt.submittedAt)}
           </span>
