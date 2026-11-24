@@ -10,6 +10,10 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 // hidden — collapse is desktop-only. The collapsed state persists in
 // localStorage under `sidebarNav.collapsed`. Active state comes from NavLink's
 // isActive (bg-accent + font-medium), unchanged from the original sidebar.
+//
+// `collapsed` forces the state for consumers that always want the narrow rail
+// (Classes/Quizzes pass it): the toggle is not rendered and localStorage is
+// neither read nor written. Omit it for the uncontrolled, persisted default.
 const STORAGE_KEY = "sidebarNav.collapsed";
 
 function readCollapsed() {
@@ -20,12 +24,17 @@ function readCollapsed() {
   }
 }
 
-export function SidebarNav({ items }) {
-  const [collapsed, setCollapsed] = useState(readCollapsed);
+export function SidebarNav({ items, collapsed: forcedCollapsed }) {
+  const isForced = forcedCollapsed !== undefined;
+  // Lazy init skips the localStorage read entirely when the state is forced.
+  const [storedCollapsed, setStoredCollapsed] = useState(() =>
+    isForced ? false : readCollapsed(),
+  );
+  const collapsed = isForced ? forcedCollapsed : storedCollapsed;
 
   const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
+    const next = !storedCollapsed;
+    setStoredCollapsed(next);
     try {
       localStorage.setItem(STORAGE_KEY, String(next));
     } catch {
@@ -40,26 +49,29 @@ export function SidebarNav({ items }) {
         collapsed ? "lg:w-14" : "lg:w-56"
       }`}
     >
-      {/* Collapse toggle — desktop only; mobile keeps the plain strip. */}
-      <div
-        className={`hidden lg:flex items-center border-b border-muted/20 p-2 ${
-          collapsed ? "justify-center" : "justify-end"
-        }`}
-      >
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
-          aria-expanded={!collapsed}
-          className="rounded-md p-1.5 text-inkondark transition-colors hover:bg-mutedteal"
+      {/* Collapse toggle — desktop only, uncontrolled mode only; mobile keeps
+          the plain strip, and a forced `collapsed` renders no toggle at all. */}
+      {!isForced && (
+        <div
+          className={`hidden lg:flex items-center border-b border-muted/20 p-2 ${
+            collapsed ? "justify-center" : "justify-end"
+          }`}
         >
-          {collapsed ? (
-            <PanelLeftOpen size={16} aria-hidden="true" />
-          ) : (
-            <PanelLeftClose size={16} aria-hidden="true" />
-          )}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            aria-expanded={!collapsed}
+            className="rounded-md p-1.5 text-inkondark transition-colors hover:bg-mutedteal"
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={16} aria-hidden="true" />
+            ) : (
+              <PanelLeftClose size={16} aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Horizontal strip on mobile, vertical rail from lg up. */}
       <ul className="flex lg:flex-col gap-1 p-2 overflow-x-auto">

@@ -1,4 +1,5 @@
-// QuizzesSidebar.jsx
+// QuizzesList.jsx — renamed from QuizzesSideBar: it sits inside the main
+// content area beside the section nav now, so "list" is what it is.
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../../components/ui/Spinner";
 import { EmptyState } from "../../../components/ui/EmptyState";
@@ -7,7 +8,7 @@ import { EmptyState } from "../../../components/ui/EmptyState";
 // (components may not import that file — see queries.js header).
 const PAGE_SIZE = 5;
 
-export function QuizzesSidebar({
+export function QuizzesList({
   isFetching,
   quizzes,
   setSelectedQuizId,

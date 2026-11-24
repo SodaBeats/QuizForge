@@ -1,7 +1,7 @@
 // Shared loading spinner (Phase 1.5 primitive, adopted in Phase 4).
 // `size`/`tone` cover the hand-rolled variants this replaced: the w-12
 // submitting overlays in CreateClassModal/AddStudentModal (lg), the w-4 red
-// delete spinner in ClassesSidebar (sm/red), FileSection's upload row
+// delete spinner in ClassesList (sm/red), FileSection's upload row
 // (xs/accept), and the exact-match md/accent circles elsewhere.
 // `className` is for non-conflicting extras only (shrink-0,
 // motion-reduce:animate-none) — never size/border overrides: Tailwind

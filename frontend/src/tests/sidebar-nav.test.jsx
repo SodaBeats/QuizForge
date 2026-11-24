@@ -151,3 +151,60 @@ describe("SidebarNav", () => {
     ).toContain("lg:w-56");
   });
 });
+
+// `collapsed` forces the rail narrow with no toggle (Classes/Quizzes) — the
+// state must come from the prop, not from or to localStorage.
+describe("SidebarNav — forced collapsed", () => {
+  const renderForced = (path, collapsed) =>
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <SidebarNav items={ITEMS} collapsed={collapsed} />
+      </MemoryRouter>,
+    );
+
+  it("renders the icon rail with no toggle, ignoring a stored expanded state", () => {
+    localStorage.setItem("sidebarNav.collapsed", "false");
+    renderForced("/teacher", true);
+
+    const nav = screen.getByRole("navigation", { name: "Sections" });
+    expect(nav.className).toContain("lg:w-14");
+    for (const { label } of NAV) {
+      const link = screen.getByRole("link", { name: label });
+      expect(link.className).toContain("lg:justify-center");
+      expect(link.querySelector("span").className).toContain("lg:sr-only");
+    }
+    expect(
+      screen.queryByRole("button", { name: "Collapse navigation" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Expand navigation" }),
+    ).toBeNull();
+  });
+
+  it("keeps the active highlight", () => {
+    renderForced("/teacher/quizzes", true);
+    expect(
+      screen.getByRole("link", { name: "Examinations" }).className,
+    ).toContain("bg-accent");
+    expect(
+      screen.getByRole("link", { name: "Classes" }).className,
+    ).not.toContain("bg-accent");
+  });
+
+  it("never writes to localStorage", () => {
+    renderForced("/teacher", true);
+    expect(localStorage.getItem("sidebarNav.collapsed")).toBeNull();
+  });
+
+  it("honors collapsed={false} as forced expanded, still with no toggle", () => {
+    localStorage.setItem("sidebarNav.collapsed", "true");
+    renderForced("/teacher", false);
+
+    const nav = screen.getByRole("navigation", { name: "Sections" });
+    expect(nav.className).toContain("lg:w-56");
+    expect(
+      screen.queryByRole("button", { name: "Collapse navigation" }),
+    ).toBeNull();
+    expect(localStorage.getItem("sidebarNav.collapsed")).toBe("true");
+  });
+});

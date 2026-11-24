@@ -1,8 +1,8 @@
-// src/features/classes/components/ClassesSidebar.jsx
+// src/features/classes/components/ClassesList.jsx
 
 import { Spinner } from "../../../components/ui/Spinner";
 
-export function ClassesSidebar({
+export function ClassesList({
   classes = [],
   isFetching,
   selectedClassId,

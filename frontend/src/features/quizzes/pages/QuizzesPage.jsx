@@ -2,7 +2,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
-import { QuizzesSidebar } from "../components/QuizzesSideBar";
+import { SidebarNav } from "../../../components/layout/SidebarNav";
+import { TEACHER_NAV_ITEMS } from "../../../components/layout/teacherNavItems";
+import { QuizzesList } from "../components/QuizzesList";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
 import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
@@ -138,6 +140,7 @@ export function QuizzesPage() {
 
   return (
     <AppShell
+      nav={<SidebarNav items={TEACHER_NAV_ITEMS} collapsed />}
       tabs={
         selectedQuiz
           ? [
@@ -154,7 +157,7 @@ export function QuizzesPage() {
           key: "list",
           visible: !selectedQuiz || mobileTab === "list",
           children: (
-            <QuizzesSidebar
+            <QuizzesList
               isFetching={pagedQuizzesFetching}
               isError={pagedQuizzesError}
               quizzes={pagedQuizzes?.userQuizzes}

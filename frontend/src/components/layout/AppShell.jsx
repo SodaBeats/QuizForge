@@ -7,12 +7,19 @@ import { PanelTabs } from "../ui/PanelTabs";
 // QuizResultDashboard. QuizMakerPage keeps its own frame (nested topbar,
 // sidebar as a root sibling, `order` tricks) and mounts PanelTabs directly.
 //
+// `nav` (optional) renders before the panels, wrapped in `hidden lg:contents`
+// so it only exists from lg up — below lg the PanelTabs strip owns the
+// chrome and a nav strip would just compete with it. That makes any AppShell
+// consumer's nav desktop-only by construction (SidebarNav itself needs no
+// hiding prop).
+//
 // Controlled: the page keeps the `mobileTab` state — ClassesPage still hands
 // it to ClassStudentsPanel, QuizMakerPage uses it for column sizing. The
 // strip hides itself when `tabs` is empty, which is how Quizzes/Classes gate
 // it on having a selection (`tabs={selectedQuizId ? TABS : []}`).
 //
 //   <AppShell
+//     nav={<SidebarNav items={TEACHER_NAV_ITEMS} collapsed />}
 //     tabs={selectedQuizId ? TABS : []}
 //     activeTab={mobileTab}
 //     onChange={setMobileTab}
@@ -39,6 +46,7 @@ export function AppShell({
   activeTab,
   onChange,
   panels = [],
+  nav = null,
   rootClassName = DEFAULT_ROOT_CLASS,
   containerClassName = DEFAULT_CONTAINER_CLASS,
   children,
@@ -58,6 +66,9 @@ export function AppShell({
       )}
 
       <div className={containerClassName}>
+        {/* Section nav — desktop-only: hidden below lg (PanelTabs owns that
+            chrome), `contents` at lg so the nav is a direct flex child. */}
+        {nav && <div className="hidden lg:contents">{nav}</div>}
         {panels.map(
           ({
             key,
