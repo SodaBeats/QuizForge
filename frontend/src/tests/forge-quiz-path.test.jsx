@@ -85,3 +85,55 @@ describe("QuizzesSidebar — create-quiz navigation", () => {
     );
   });
 });
+
+describe("QuizzesSidebar — pagination controls", () => {
+  const renderSidebar = (props) =>
+    render(
+      <QueryClientProvider client={queryClient()}>
+        <MemoryRouter initialEntries={["/teacher/quizzes"]}>
+          <QuizzesSidebar {...SIDEBAR_PROPS} {...props} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+  it("stays hidden while everything fits on one page", () => {
+    renderSidebar({ page: 0, totalQuizzes: 5 });
+
+    expect(screen.queryByTitle("Next page")).toBeNull();
+    expect(screen.queryByTitle("Previous page")).toBeNull();
+  });
+
+  it("enables Next, disables Prev on page 1, and fires onNextPage", () => {
+    const onNextPage = vi.fn();
+    renderSidebar({
+      page: 0,
+      totalQuizzes: 12,
+      quizzes: SIDEBAR_PROPS.quizzes,
+      onNextPage,
+    });
+
+    expect(screen.getByText("Page 1")).toBeInTheDocument();
+    expect(screen.getByTitle("Previous page")).toBeDisabled();
+    expect(screen.getByTitle("Next page")).toBeEnabled();
+
+    fireEvent.click(screen.getByTitle("Next page"));
+    expect(onNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps Prev reachable and disables Next when stranded on a later page", () => {
+    const onPrevPage = vi.fn();
+    renderSidebar({
+      page: 2,
+      totalQuizzes: 10, // both remaining items on page 3 were deleted
+      quizzes: [],
+      onPrevPage,
+    });
+
+    expect(screen.getByText("Page 3")).toBeInTheDocument();
+    expect(screen.getByTitle("Previous page")).toBeEnabled();
+    expect(screen.getByTitle("Next page")).toBeDisabled();
+
+    fireEvent.click(screen.getByTitle("Previous page"));
+    expect(onPrevPage).toHaveBeenCalledTimes(1);
+  });
+});

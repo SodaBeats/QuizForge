@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../../components/ui/Spinner";
 import { EmptyState } from "../../../components/ui/EmptyState";
 
+// Must match listPaged's hardcoded limit/offset math in quizzes.api.js
+// (components may not import that file — see queries.js header).
+const PAGE_SIZE = 5;
+
 export function QuizzesSidebar({
   isFetching,
   quizzes,
@@ -10,6 +14,10 @@ export function QuizzesSidebar({
   selectedQuizId,
   onDeleteQuiz,
   isError,
+  page = 0,
+  totalQuizzes = 0,
+  onPrevPage,
+  onNextPage,
 }) {
   const navigate = useNavigate();
 
@@ -106,6 +114,31 @@ export function QuizzesSidebar({
             )}
           </div>
         </div>
+
+        {/* Pagination — hidden while everything fits on one page, but always
+            reachable from page > 0 so deleting the last item can't strand
+            you on an empty later page. */}
+        {page > 0 || totalQuizzes > PAGE_SIZE ? (
+          <div className="flex items-center justify-center gap-3 px-4 pb-3">
+            <button
+              onClick={onPrevPage}
+              disabled={page === 0}
+              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Previous page"
+            >
+              ← Prev
+            </button>
+            <span className="text-muted text-sm">Page {page + 1}</span>
+            <button
+              onClick={onNextPage}
+              disabled={page * PAGE_SIZE + (quizzes?.length || 0) >= totalQuizzes}
+              className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Next page"
+            >
+              Next →
+            </button>
+          </div>
+        ) : null}
 
         {/* Create New Quiz Button */}
         <div className="p-4">
