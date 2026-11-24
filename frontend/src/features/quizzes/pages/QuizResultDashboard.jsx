@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AppShell } from "../../../components/layout/AppShell";
 import { ResultsLeaderboard } from "../components/ResultsLeaderboard";
@@ -77,6 +77,7 @@ function getScoreDistribution(data) {
 
 export function QuizResultDashboard() {
   const { quizId } = useParams();
+  const navigate = useNavigate();
   const [mobileTab, setMobileTab] = useState("results"); // mobile-only panel switcher — purely UI state, no data logic
 
   const { data: dashboardData, error } = useQuizDashboard(quizId);
@@ -125,6 +126,11 @@ export function QuizResultDashboard() {
               METRICS={metrics}
               DIFFICULTY={questions}
               SCORES={scoreDistribution}
+              onBack={() =>
+                navigate("/teacher/quizzes", {
+                  state: { selectedQuizId: Number(quizId) },
+                })
+              }
             />
           ),
         },
