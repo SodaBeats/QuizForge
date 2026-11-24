@@ -36,7 +36,7 @@ export function SidebarNav({ items }) {
   return (
     <nav
       aria-label="Sections"
-      className={`shrink-0 bg-specialsurface border-b-2 border-accent/50 lg:border-b-0 lg:border-r-2 font-body ${
+      className={`shrink-0 bg-specialsurface font-body ${
         collapsed ? "lg:w-14" : "lg:w-56"
       }`}
     >
