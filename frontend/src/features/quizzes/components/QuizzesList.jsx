@@ -56,8 +56,8 @@ export function QuizzesList({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
-      <div className="flex-1 flex flex-col rounded-lg border border-muted/20 lg:overflow-hidden">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col font-body p-3 gap-3">
+      <div className="flex-1 flex flex-col rounded-lg bg-specialsurface border border-muted/20 lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -132,7 +132,9 @@ export function QuizzesList({
             <span className="text-muted text-sm">Page {page + 1}</span>
             <button
               onClick={onNextPage}
-              disabled={page * PAGE_SIZE + (quizzes?.length || 0) >= totalQuizzes}
+              disabled={
+                page * PAGE_SIZE + (quizzes?.length || 0) >= totalQuizzes
+              }
               className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Next page"
             >

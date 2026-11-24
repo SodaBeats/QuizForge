@@ -75,8 +75,8 @@ export function SidebarNav({ items, collapsed: forcedCollapsed }) {
 
       {/* Horizontal strip on mobile, vertical rail from lg up. */}
       <ul className="flex lg:flex-col gap-1 p-2 overflow-x-auto">
-        {items.map(({ to, label, icon: Icon, end }) => (
-          <li key={to}>
+        {items.map(({ to, label, icon: Icon, end, title }) => (
+          <li key={to} title={title}>
             <NavLink
               to={to}
               end={end}

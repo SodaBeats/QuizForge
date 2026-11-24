@@ -11,7 +11,13 @@ export const TEACHER_NAV_ITEMS = [
     to: "/teacher/exam-workstation",
     label: "Exam Workstation",
     icon: MonitorPlay,
+    title: "Exam Workstation",
   },
-  { to: "/teacher/quizzes", label: "Examinations", icon: FileText },
-  { to: "/teacher/classes", label: "Classes", icon: Users },
+  {
+    to: "/teacher/quizzes",
+    label: "Examinations",
+    icon: FileText,
+    title: "Examinations",
+  },
+  { to: "/teacher/classes", label: "Classes", icon: Users, title: "Classes" },
 ];
