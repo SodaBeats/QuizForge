@@ -1,6 +1,6 @@
 import express from 'express';
 import { RefreshTokenRepository } from '../repository/RefreshTokenRepository.js';
-import { refreshCookieOptions } from '../utils/cookieOptions.util.js';
+import { clearRefreshCookie } from '../utils/cookieOptions.util.js';
 
 const router = express.Router();
 
@@ -12,10 +12,8 @@ router.post('/', async (req, res, next) => {
       await RefreshTokenRepository.deleteRefreshToken(refreshToken);
     }
 
-    return res
-      .clearCookie('refreshToken', refreshCookieOptions)
-      .status(200)
-      .send();
+    clearRefreshCookie(res);
+    return res.status(200).send();
   } catch (err) {
     return next(err);
   }
