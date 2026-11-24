@@ -12,7 +12,11 @@ import {
   useUpdateQuestion,
   useUpdateQuiz,
 } from "../api/mutations.js";
-import { useQuizQuestions, useQuizzes } from "../api/queries.js";
+import {
+  usePagedQuizzes,
+  useQuizQuestions,
+  useQuizzes,
+} from "../api/queries.js";
 
 export function QuizzesPage() {
   const location = useLocation();
@@ -28,14 +32,23 @@ export function QuizzesPage() {
   // QUERIES
   // ---------------------------------------------------------------------
 
-  const {
-    data: queryQuizzes,
-    isFetching: queryQuizzesFetching,
-    error: queryQuizzesError,
-  } = useQuizzes();
+  const { data: queryQuizzes } = useQuizzes();
 
+  // Sidebar page state — the sidebar renders the paged list; queryQuizzes
+  // stays for selection/delete/meta lookups (it can hold off-page quizzes).
+  const [page, setPage] = useState(0);
+  const {
+    data: pagedQuizzes,
+    isFetching: pagedQuizzesFetching,
+    error: pagedQuizzesError,
+  } = usePagedQuizzes(page);
+
+  // Fall back to the paged cache: the sidebar can select quizzes beyond
+  // queryQuizzes' 20-item cap (server-side pages reach every quiz).
   const selectedQuiz =
-    queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
+    queryQuizzes?.find((q) => q.id === selectedQuizId) ??
+    pagedQuizzes?.userQuizzes?.find((q) => q.id === selectedQuizId) ??
+    null;
 
   // get all questions related to quiz (same key the quiz maker writes to)
   const { data: queryQuestions, isFetching: queryQuestionsFetching } =
@@ -92,9 +105,9 @@ export function QuizzesPage() {
   };
 
   const handleQuizMetaUpdate = (quizToChange) => {
-    const originalQuiz = queryQuizzes?.find(
-      (quiz) => quiz.id === quizToChange.id,
-    );
+    const originalQuiz =
+      queryQuizzes?.find((quiz) => quiz.id === quizToChange.id) ??
+      pagedQuizzes?.userQuizzes?.find((quiz) => quiz.id === quizToChange.id);
 
     if (!originalQuiz) return;
 
@@ -142,9 +155,13 @@ export function QuizzesPage() {
           visible: !selectedQuiz || mobileTab === "list",
           children: (
             <QuizzesSidebar
-              isFetching={queryQuizzesFetching}
-              isError={queryQuizzesError}
-              quizzes={queryQuizzes}
+              isFetching={pagedQuizzesFetching}
+              isError={pagedQuizzesError}
+              quizzes={pagedQuizzes?.userQuizzes}
+              totalQuizzes={pagedQuizzes?.totalQuizzes}
+              page={page}
+              onPrevPage={() => setPage((p) => Math.max(0, p - 1))}
+              onNextPage={() => setPage((p) => p + 1)}
               selectedQuizId={selectedQuizId}
               setSelectedQuizId={setSelectedQuizId}
               onDeleteQuiz={handleDeleteQuiz}
