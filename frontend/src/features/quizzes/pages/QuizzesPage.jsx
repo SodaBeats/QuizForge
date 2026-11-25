@@ -124,7 +124,12 @@ export function QuizzesPage() {
 
     setSelectedQuizId(quizToChange.id);
 
-    updateQuiz.mutate(quizToChange, {
+    const payload =
+      (originalQuiz.attemptCount ?? 0) > 0
+        ? { id: quizToChange.id, status: quizToChange.status }
+        : quizToChange;
+
+    updateQuiz.mutate(payload, {
       onSuccess: () => toast.success("Quiz Updated!"),
       onError: () => setSelectedQuizId(null),
     });

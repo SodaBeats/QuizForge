@@ -18,7 +18,7 @@ export function QuizzesMetadata({
 }) {
   const [editingQuiz, setEditingQuiz] = useState({ ...quiz });
   const navigate = useNavigate();
-  const updateDisabled = (editingQuiz?.attemptCount ?? 0) > 0;
+  const attemptsExist = (editingQuiz?.attemptCount ?? 0) > 0;
 
   if (!quiz) {
     return (
@@ -48,6 +48,7 @@ export function QuizzesMetadata({
               }
               placeholder="Enter quiz title..."
               aria-label="Edit quiz title"
+              disabled={attemptsExist}
               className="w-full bg-transparent pr-9 text-lg sm:text-xl font-display font-bold text-inkondark border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
             />
             <svg
@@ -86,6 +87,7 @@ export function QuizzesMetadata({
                 }));
               }}
               className={`${inputClass} resize-none`}
+              disabled={attemptsExist}
               rows="3"
               placeholder="Enter quiz description"
             />
@@ -129,6 +131,7 @@ export function QuizzesMetadata({
                 type="datetime-local"
                 name="dueDate"
                 value={toDateTimeLocal(editingQuiz.dueDate).slice(0, 16)}
+                disabled={attemptsExist}
                 onChange={(e) =>
                   setEditingQuiz((prev) => ({
                     ...prev,
@@ -148,6 +151,7 @@ export function QuizzesMetadata({
                 userClasses={userClasses}
                 isFetchingClasses={isFetchingClasses}
                 classFetchError={classFetchError}
+                disabled={attemptsExist}
               />
             </div>
           </div>
@@ -171,6 +175,7 @@ export function QuizzesMetadata({
                   }))
                 }
                 className={inputClass}
+                disabled={attemptsExist}
               />
             </div>
 
@@ -189,6 +194,7 @@ export function QuizzesMetadata({
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
+                <option value="concluded">Concluded</option>
               </select>
             </div>
           </div>
@@ -199,7 +205,6 @@ export function QuizzesMetadata({
           <button
             className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
             onClick={() => onUpdateQuizMeta(editingQuiz)}
-            disabled={updateDisabled}
           >
             Save changes
           </button>

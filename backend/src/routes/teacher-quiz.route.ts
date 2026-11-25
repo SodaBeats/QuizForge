@@ -5,7 +5,11 @@ import { isReasoningQuestionType } from '../types/questionType.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
 import { verifyTeacher } from '../middlewares/teacherAuthz.middleware.js';
 import { userBasedRateLimiter } from '../middlewares/userBasedRateLimiter.middleware.js';
-import { quizInputValidator } from '../middlewares/quizInputValidator.middleware.js';
+import {
+  isStatusOnlyUpdate,
+  quizInputValidator,
+  quizPatchInputValidator,
+} from '../middlewares/quizInputValidator.middleware.js';
 import { questionInputValidator } from '../middlewares/questionValidator.middleware.js';
 import { UserQuizzesRepository } from '../repository/UserQuizzesRepository.js';
 import { QuestionsRepository } from '../repository/QuestionsRepository.js';
@@ -559,7 +563,7 @@ router.patch(
   verifyToken,
   verifyTeacher,
   userBasedRateLimiter(5, 5),
-  quizInputValidator,
+  quizPatchInputValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     const { role } = req.user;
     const { quizId } = req.params;
@@ -577,17 +581,25 @@ router.patch(
           .status(404)
           .json({ success: false, message: 'Quiz not found' });
       }
-      if (await rejectIfQuizLocked(res, Number(quizId))) return;
+      if (
+        !isStatusOnlyUpdate(req.body) &&
+        (await rejectIfQuizLocked(res, Number(quizId)))
+      ) {
+        return;
+      }
 
-      const normalized = {
-        quiz_title: req.body.quizTitle,
-        quiz_description: req.body.description,
-        time_limit: req.body.timeLimit,
-        due_date: new Date(req.body.dueDate),
-        max_attempts: req.body.maxAttempts,
-        status: req.body.status,
-        accessibility: req.body.accessibility,
-      };
+      const statusOnly = isStatusOnlyUpdate(req.body);
+      const normalized = statusOnly
+        ? { status: req.body.status }
+        : {
+            quiz_title: req.body.quizTitle,
+            quiz_description: req.body.description,
+            time_limit: req.body.timeLimit,
+            due_date: new Date(req.body.dueDate),
+            max_attempts: req.body.maxAttempts,
+            status: req.body.status,
+            accessibility: req.body.accessibility,
+          };
 
       await db.transaction(async (tx) => {
         const updatedQuiz = await UserQuizzesRepository.updateQuizDataReturnAll(
