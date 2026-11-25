@@ -47,7 +47,7 @@ export function ClassAccessDropdown({
           <button
             onClick={toggle}
             disabled={disabled}
-            className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
+            className={`w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <span className="truncate">{displayText}</span>
             <svg
