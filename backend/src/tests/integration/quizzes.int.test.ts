@@ -482,7 +482,7 @@ describe('PATCH /api/quizzes/:id', () => {
       const statusRes = await request(app)
         .patch(`/api/quizzes/${seededQuizId}`)
         .set(authHeader(teacherToken))
-        .send({ status: 'concluded' });
+        .send({ status: 'draft' });
 
       expect(statusRes.status).toBe(200);
       expect(statusRes.body.success).toBe(true);
@@ -491,7 +491,7 @@ describe('PATCH /api/quizzes/:id', () => {
         .select({ status: quizzes_db.status })
         .from(quizzes_db)
         .where(eq(quizzes_db.id, seededQuizId));
-      expect(updated?.status).toBe('concluded');
+      expect(updated?.status).toBe('draft');
 
       const fullRes = await request(app)
         .patch(`/api/quizzes/${seededQuizId}`)

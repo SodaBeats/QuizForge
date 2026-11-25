@@ -44,8 +44,8 @@ export const quizInputValidator = [
     .notEmpty()
     .withMessage('Status is required')
     .toLowerCase()
-    .isIn(['draft', 'published', 'concluded'])
-    .withMessage('Status must be Draft, Published, or Concluded'),
+    .isIn(['draft', 'published'])
+    .withMessage('Status must be Draft or Published'),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
 
@@ -62,8 +62,8 @@ export const quizPatchInputValidator = [
     .notEmpty()
     .withMessage('Status is required')
     .toLowerCase()
-    .isIn(['draft', 'published', 'concluded'])
-    .withMessage('Status must be Draft, Published, or Concluded'),
+    .isIn(['draft', 'published'])
+    .withMessage('Status must be Draft or Published'),
   body('quizTitle')
     .if((_, { req }) => !isStatusOnlyUpdate(req.body))
     .trim()
