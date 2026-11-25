@@ -28,7 +28,7 @@ export const QuestionList = ({
 
   if (isFetching) {
     return (
-      <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body ml-0 mr-3 p-3">
+      <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body ml-0 p-3">
         <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           <div className="flex flex-col items-center gap-3 text-inkondark">
             <Spinner />
@@ -42,7 +42,7 @@ export const QuestionList = ({
   // If we are editing, show the Editor View
   if (editingQuestion) {
     return (
-      <div className="flex-1 min-w-0 h-full w-full flex flex-col ml-0 mr-3 p-3 font-body">
+      <div className="flex-1 min-w-0 h-full w-full flex flex-col ml-0 p-3 font-body">
         <div className="flex-1 rounded-lg bg-surface border border-accent p-4 sm:p-6 overflow-y-auto">
           <div className="flex items-center mb-6">
             <button
@@ -202,7 +202,7 @@ export const QuestionList = ({
 
   // --- List View
   return (
-    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body ml-0 mr-3 p-3">
+    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body ml-0 p-3">
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <h3 className="text-base font-display font-semibold text-inkondark">
