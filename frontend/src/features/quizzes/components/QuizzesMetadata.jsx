@@ -15,14 +15,15 @@ export function QuizzesMetadata({
   userClasses,
   isFetchingClasses,
   classFetchError,
+  attemptsExist,
 }) {
   const [editingQuiz, setEditingQuiz] = useState({ ...quiz });
   const navigate = useNavigate();
-  const updateDisabled = (editingQuiz?.attemptCount ?? 0) > 0;
+  const lockedInputClass = attemptsExist ? "opacity-50 cursor-not-allowed" : "";
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full p-3">
+      <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full ml-0 p-3">
         <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
@@ -31,7 +32,7 @@ export function QuizzesMetadata({
   }
 
   return (
-    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
+    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body ml-0 p-3">
       <div className="flex-1 flex flex-col rounded-lg bg-surface border border-accent lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">
@@ -48,7 +49,8 @@ export function QuizzesMetadata({
               }
               placeholder="Enter quiz title..."
               aria-label="Edit quiz title"
-              className="w-full bg-transparent pr-9 text-lg sm:text-xl font-display font-bold text-inkondark border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1"
+              disabled={attemptsExist}
+              className={`w-full bg-transparent pr-9 text-lg sm:text-xl font-display font-bold text-inkondark border-b border-transparent focus:border-accent focus:outline-none transition-all hover:bg-muted/10 rounded px-1 -ml-1 ${lockedInputClass}`}
             />
             <svg
               aria-hidden="true"
@@ -85,7 +87,8 @@ export function QuizzesMetadata({
                   description: e.target.value,
                 }));
               }}
-              className={`${inputClass} resize-none`}
+              className={`${inputClass} resize-none ${lockedInputClass}`}
+              disabled={attemptsExist}
               rows="3"
               placeholder="Enter quiz description"
             />
@@ -99,7 +102,7 @@ export function QuizzesMetadata({
                 type="text"
                 value={quiz.shareToken?.toUpperCase() || "N/A"}
                 readOnly
-                className="flex-1 px-3 py-2 rounded-md text-muted text-sm min-w-0 bg-darkslate"
+                className={`flex-1 px-3 py-2 rounded-md text-inkondark text-sm min-w-0 bg-darkslate ${attemptsExist ? "opacity-50" : ""}`}
               />
               {quiz.shareToken && (
                 <button
@@ -129,13 +132,14 @@ export function QuizzesMetadata({
                 type="datetime-local"
                 name="dueDate"
                 value={toDateTimeLocal(editingQuiz.dueDate).slice(0, 16)}
+                disabled={attemptsExist}
                 onChange={(e) =>
                   setEditingQuiz((prev) => ({
                     ...prev,
                     dueDate: e.target.value || null,
                   }))
                 }
-                className={inputClass}
+                className={`${inputClass} ${lockedInputClass}`}
               />
             </div>
 
@@ -148,6 +152,7 @@ export function QuizzesMetadata({
                 userClasses={userClasses}
                 isFetchingClasses={isFetchingClasses}
                 classFetchError={classFetchError}
+                disabled={attemptsExist}
               />
             </div>
           </div>
@@ -170,7 +175,8 @@ export function QuizzesMetadata({
                       e.target.value === "" ? null : Number(e.target.value),
                   }))
                 }
-                className={inputClass}
+                className={`${inputClass} ${lockedInputClass}`}
+                disabled={attemptsExist}
               />
             </div>
 
@@ -197,9 +203,8 @@ export function QuizzesMetadata({
         {/* Actions */}
         <div className="p-4 space-y-2">
           <button
-            className="btn-primary w-full py-2.5 transition-all text-sm hover:bg-green-600 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
+            className="btn-primary w-full py-2.5 transition-all text-sm text-inkondark hover:text-accept active:translate-y-0.5"
             onClick={() => onUpdateQuizMeta(editingQuiz)}
-            disabled={updateDisabled}
           >
             Save changes
           </button>
@@ -207,7 +212,7 @@ export function QuizzesMetadata({
             className="btn-secondary w-full py-2.5 font-display font-bold text-sm"
             onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)}
           >
-            View results
+            View results dashboard
           </button>
           <button
             className="btn-secondary w-full py-2.5 font-display font-bold text-sm"

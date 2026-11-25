@@ -41,7 +41,7 @@ export function AppRoutes() {
 
         {/* Teacher home is the dashboard. The exam workstation (the former
             /teacher) moved to /teacher/exam-workstation — ForgeQuizAction's
-            pathname checks and QuizzesSideBar's forge-modal navigations key
+            pathname checks and QuizzesList's forge-modal navigations key
             off that path. */}
         <Route
           path="/teacher"

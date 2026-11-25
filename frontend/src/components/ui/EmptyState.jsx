@@ -1,5 +1,5 @@
 // Shared "nothing here" state (Phase 1.5). Matches the hand-rolled
-// `text-muted text-center py-4` empty messages (SideBar "No documents
+// `text-muted text-center py-4` empty messages (WorkstationPanel "No documents
 // found", dropdowns' "No classes found", …). Primitive + tests only —
 // call-site adoption is Phase 4.
 export function EmptyState({ message, className = "" }) {

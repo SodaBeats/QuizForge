@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useDeleteQuestion } from "../api/mutations.js";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
 import { GenerationDone } from "./GenerationDone";
 import { FileSection } from "./FileSection";
 import { SelectQuizModal } from "./SelectQuizModal";
-import ccdiLogo from "../../../assets/ccdi-logo.webp";
 
-export function SideBar({
+// Renamed from SideBar: it sits inside the main content area (right of the
+// section nav) now, so it's the exam workstation's panel, not a page sidebar.
+// The lg+ logo it used to hold moved back to TeacherTopbar when QuizMakerPage
+// adopted AppShell.
+export function WorkstationPanel({
   uploadedFiles,
   setUploadedFiles,
   selectedFileId,
@@ -86,23 +88,10 @@ export function SideBar({
 
   return (
     <>
-      <div className="w-full lg:w-52 bg-specialsurface flex flex-col font-body p-2 gap-2">
-        {/* Logo — the topbar's logo moved here; shown at lg+ only, where the
-            sidebar cuts into the topbar's row (below lg the topbar keeps it) */}
-        <Link
-          to="/teacher"
-          className="hidden lg:flex items-center gap-2.5 shrink-0 px-1 cursor-pointer group"
-        >
-          <img
-            src={ccdiLogo}
-            alt="CCDI"
-            className="h-11 w-11 rounded-md object-contain"
-          />
-          <span className="font-display font-bold text-inkondark group-hover:text-accent transition-colors">
-            Ilmari<span className="text-accent">Gen</span>
-          </span>
-        </Link>
-
+      {/* lg sizing mirrors the old page-frame wrapper (flex-none w-52
+          min-h-0) — AppShell's panel wrapper is `lg:contents`, so the panel
+          itself is the flex child now. */}
+      <div className="w-full lg:w-52 lg:flex-none lg:min-h-0 flex flex-col font-body p-2 gap-2">
         <FileSection
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
@@ -113,7 +102,7 @@ export function SideBar({
         />
 
         {/* Current Quiz - Small Section */}
-        <div className="rounded-lg p-2 border border-muted/20">
+        <div className="rounded-lg p-2 bg-specialsurface border border-muted/20">
           <div className="text-xs font-semibold text-inkondark mb-3 uppercase tracking-wide border-b border-muted/20">
             Current quiz
           </div>
@@ -150,7 +139,7 @@ export function SideBar({
         />
 
         {/* Question List - 70% */}
-        <div className="flex-1 rounded-lg p-2 overflow-y-auto border border-muted/20">
+        <div className="flex-1 rounded-lg p-2 overflow-y-auto bg-specialsurface border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-2 border-b border-muted/20">
             <div className="mb-3 text-xs font-semibold text-inkondark uppercase tracking-wide">
               Questions

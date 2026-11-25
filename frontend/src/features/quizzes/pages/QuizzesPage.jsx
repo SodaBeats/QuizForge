@@ -2,7 +2,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
-import { QuizzesSidebar } from "../components/QuizzesSideBar";
+import { SidebarNav } from "../../../components/layout/SidebarNav";
+import { TEACHER_NAV_ITEMS } from "../../../components/layout/teacherNavItems";
+import { QuizzesList } from "../components/QuizzesList";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
 import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
@@ -12,13 +14,19 @@ import {
   useUpdateQuestion,
   useUpdateQuiz,
 } from "../api/mutations.js";
-import { useQuizQuestions, useQuizzes } from "../api/queries.js";
+import {
+  usePagedQuizzes,
+  useQuizQuestions,
+  useQuizzes,
+} from "../api/queries.js";
 
 export function QuizzesPage() {
   const location = useLocation();
   const [selectedQuizId, setSelectedQuizId] = useState(() => {
     const routeQuizId = Number(location.state?.selectedQuizId);
-    return Number.isInteger(routeQuizId) && routeQuizId > 0 ? routeQuizId : null;
+    return Number.isInteger(routeQuizId) && routeQuizId > 0
+      ? routeQuizId
+      : null;
   });
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [quizToDelete, setQuizToDelete] = useState(null);
@@ -28,14 +36,25 @@ export function QuizzesPage() {
   // QUERIES
   // ---------------------------------------------------------------------
 
-  const {
-    data: queryQuizzes,
-    isFetching: queryQuizzesFetching,
-    error: queryQuizzesError,
-  } = useQuizzes();
+  const { data: queryQuizzes } = useQuizzes();
 
+  // Sidebar page state — the sidebar renders the paged list; queryQuizzes
+  // stays for selection/delete/meta lookups (it can hold off-page quizzes).
+  const [page, setPage] = useState(0);
+  const {
+    data: pagedQuizzes,
+    isFetching: pagedQuizzesFetching,
+    error: pagedQuizzesError,
+  } = usePagedQuizzes(page);
+
+  // Fall back to the paged cache: the sidebar can select quizzes beyond
+  // queryQuizzes' 20-item cap (server-side pages reach every quiz).
   const selectedQuiz =
-    queryQuizzes?.find((q) => q.id === selectedQuizId) ?? null;
+    queryQuizzes?.find((q) => q.id === selectedQuizId) ??
+    pagedQuizzes?.userQuizzes?.find((q) => q.id === selectedQuizId) ??
+    null;
+
+  const attemptsExist = (selectedQuiz?.attemptCount ?? 0) > 0;
 
   // get all questions related to quiz (same key the quiz maker writes to)
   const { data: queryQuestions, isFetching: queryQuestionsFetching } =
@@ -92,9 +111,9 @@ export function QuizzesPage() {
   };
 
   const handleQuizMetaUpdate = (quizToChange) => {
-    const originalQuiz = queryQuizzes?.find(
-      (quiz) => quiz.id === quizToChange.id,
-    );
+    const originalQuiz =
+      queryQuizzes?.find((quiz) => quiz.id === quizToChange.id) ??
+      pagedQuizzes?.userQuizzes?.find((quiz) => quiz.id === quizToChange.id);
 
     if (!originalQuiz) return;
 
@@ -107,7 +126,12 @@ export function QuizzesPage() {
 
     setSelectedQuizId(quizToChange.id);
 
-    updateQuiz.mutate(quizToChange, {
+    const payload =
+      (originalQuiz.attemptCount ?? 0) > 0
+        ? { id: quizToChange.id, status: quizToChange.status }
+        : quizToChange;
+
+    updateQuiz.mutate(payload, {
       onSuccess: () => toast.success("Quiz Updated!"),
       onError: () => setSelectedQuizId(null),
     });
@@ -125,6 +149,7 @@ export function QuizzesPage() {
 
   return (
     <AppShell
+      nav={<SidebarNav items={TEACHER_NAV_ITEMS} collapsed />}
       tabs={
         selectedQuiz
           ? [
@@ -141,10 +166,14 @@ export function QuizzesPage() {
           key: "list",
           visible: !selectedQuiz || mobileTab === "list",
           children: (
-            <QuizzesSidebar
-              isFetching={queryQuizzesFetching}
-              isError={queryQuizzesError}
-              quizzes={queryQuizzes}
+            <QuizzesList
+              isFetching={pagedQuizzesFetching}
+              isError={pagedQuizzesError}
+              quizzes={pagedQuizzes?.userQuizzes}
+              totalQuizzes={pagedQuizzes?.totalQuizzes}
+              page={page}
+              onPrevPage={() => setPage((p) => Math.max(0, p - 1))}
+              onNextPage={() => setPage((p) => p + 1)}
               selectedQuizId={selectedQuizId}
               setSelectedQuizId={setSelectedQuizId}
               onDeleteQuiz={handleDeleteQuiz}
@@ -163,6 +192,7 @@ export function QuizzesPage() {
                     userClasses={userClasses}
                     isFetchingClasses={isFetchingClasses}
                     classFetchError={classFetchError}
+                    attemptsExist={attemptsExist}
                   />
                 ),
               },
@@ -170,12 +200,14 @@ export function QuizzesPage() {
                 key: "questions",
                 children: (
                   <QuizzesQuestionList
+                    key={selectedQuiz.id}
                     isFetching={queryQuestionsFetching}
                     questions={queryQuestions?.questionList}
                     selectedQuiz={selectedQuiz}
                     onUpdateQuestion={handleQuestionUpdate}
                     editingQuestion={editingQuestion}
                     setEditingQuestion={setEditingQuestion}
+                    attemptsExist={attemptsExist}
                   />
                 ),
               },
@@ -184,7 +216,7 @@ export function QuizzesPage() {
       ]}
     >
       {!selectedQuiz && (
-        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
+        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body ml-0 mr-3 p-3">
           Select a quiz to view details
         </div>
       )}

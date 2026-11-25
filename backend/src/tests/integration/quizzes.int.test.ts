@@ -471,6 +471,58 @@ describe('PATCH /api/quizzes/:id', () => {
     expect(res.body.success).toBe(true);
   });
 
+  it('200 — status-only update succeeds when the quiz has attempts', async () => {
+    await db.insert(quiz_attempts_db).values({
+      quiz_id: seededQuizId,
+      user_id: studentId,
+      status: 'completed',
+    });
+
+    try {
+      const statusRes = await request(app)
+        .patch(`/api/quizzes/${seededQuizId}`)
+        .set(authHeader(teacherToken))
+        .send({ status: 'draft' });
+
+      expect(statusRes.status).toBe(200);
+      expect(statusRes.body.success).toBe(true);
+
+      const [updated] = await db
+        .select({ status: quizzes_db.status })
+        .from(quizzes_db)
+        .where(eq(quizzes_db.id, seededQuizId));
+      expect(updated?.status).toBe('draft');
+
+      const fullRes = await request(app)
+        .patch(`/api/quizzes/${seededQuizId}`)
+        .set(authHeader(teacherToken))
+        .send({
+          quizTitle: 'Must Remain Locked',
+          description: 'Attempted quizzes reject full updates',
+          maxAttempts: 2,
+          dueDate: futureDueDate(),
+          status: 'published',
+          accessibility: 'anyone',
+          shareToken: seededQuizShareToken,
+        });
+
+      expect(fullRes.status).toBe(409);
+    } finally {
+      await db
+        .delete(quiz_attempts_db)
+        .where(
+          and(
+            eq(quiz_attempts_db.quiz_id, seededQuizId),
+            eq(quiz_attempts_db.user_id, studentId),
+          ),
+        );
+      await db
+        .update(quizzes_db)
+        .set({ status: 'published' })
+        .where(eq(quizzes_db.id, seededQuizId));
+    }
+  });
+
   it('401 — rejects unauthenticated request', async () => {
     const res = await request(app)
       .patch(`/api/quizzes/${seededQuizId}`)

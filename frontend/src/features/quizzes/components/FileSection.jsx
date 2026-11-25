@@ -67,7 +67,7 @@ export function FileSection({
 
   return (
     <>
-      <div className="h-[30%] rounded-lg p-2 overflow-y-auto border border-muted/20">
+      <div className="h-[30%] rounded-lg p-2 overflow-y-auto bg-specialsurface border border-muted/20">
         <div className="flex flex-row items-center justify-between mb-3 pb-2 border-b border-muted/20">
           <div className="text-xs font-semibold text-inkondark uppercase tracking-wide">
             Files

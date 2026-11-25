@@ -14,8 +14,11 @@ export const QuestionList = ({
   selectedQuiz,
   editingQuestion,
   setEditingQuestion,
+  attemptsExist,
 }) => {
-  const updateDisabled = (selectedQuiz?.attemptCount ?? 0) > 0;
+  const lockedInputClass = attemptsExist
+    ? "opacity-50 cursor-not-allowed"
+    : "";
 
   useEffect(() => {
     setEditingQuestion(null);
@@ -28,7 +31,7 @@ export const QuestionList = ({
 
   if (isFetching) {
     return (
-      <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body p-3">
+      <div className="flex-1 min-w-0 h-full w-full flex items-center justify-center font-body ml-0 p-3">
         <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           <div className="flex flex-col items-center gap-3 text-inkondark">
             <Spinner />
@@ -42,7 +45,7 @@ export const QuestionList = ({
   // If we are editing, show the Editor View
   if (editingQuestion) {
     return (
-      <div className="flex-1 min-w-0 h-full w-full flex flex-col p-3 font-body">
+      <div className="flex-1 min-w-0 h-full w-full flex flex-col ml-0 p-3 font-body">
         <div className="flex-1 rounded-lg bg-surface border border-accent p-4 sm:p-6 overflow-y-auto">
           <div className="flex items-center mb-6">
             <button
@@ -64,7 +67,7 @@ export const QuestionList = ({
               </label>
               <textarea
                 id="question-text"
-                className={`${inputClass} resize-none`}
+                className={`${inputClass} resize-none ${lockedInputClass}`}
                 rows="3"
                 value={editingQuestion.questionText}
                 onChange={(e) =>
@@ -73,6 +76,7 @@ export const QuestionList = ({
                     questionText: e.target.value,
                   })
                 }
+                disabled={attemptsExist}
               />
             </div>
 
@@ -80,7 +84,7 @@ export const QuestionList = ({
             <div>
               <label className={labelClass}>Type</label>
               <select
-                className={inputClass}
+                className={`${inputClass} ${lockedInputClass}`}
                 value={editingQuestion.questionType}
                 onChange={(e) =>
                   setEditingQuestion({
@@ -88,6 +92,7 @@ export const QuestionList = ({
                     questionType: e.target.value,
                   })
                 }
+                disabled={attemptsExist}
               >
                 <option value="multiple-choice">Multiple choice</option>
                 <option value="true-false">True / False</option>
@@ -116,7 +121,7 @@ export const QuestionList = ({
                     </label>
                     <input
                       type="text"
-                      className={inputClass}
+                      className={`${inputClass} ${lockedInputClass}`}
                       value={editingQuestion[`option${letter}`] || ""}
                       onChange={(e) =>
                         setEditingQuestion({
@@ -124,6 +129,7 @@ export const QuestionList = ({
                           [`option${letter}`]: e.target.value,
                         })
                       }
+                      disabled={attemptsExist}
                     />
                   </div>
                 ))}
@@ -142,7 +148,8 @@ export const QuestionList = ({
                       correctAnswer: e.target.value,
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} ${lockedInputClass}`}
+                  disabled={attemptsExist}
                 >
                   <option value="">Select correct answer...</option>
                   <option value="a">A</option>
@@ -162,7 +169,8 @@ export const QuestionList = ({
                       correctAnswer: e.target.value,
                     })
                   }
-                  className={inputClass}
+                  className={`${inputClass} ${lockedInputClass}`}
+                  disabled={attemptsExist}
                 >
                   <option value="">Select correct answer...</option>
                   <option value="true">True</option>
@@ -182,7 +190,8 @@ export const QuestionList = ({
                       correctAnswer: e.target.value,
                     })
                   }
-                  className={`${inputClass} h-24 resize-none`}
+                  className={`${inputClass} h-24 resize-none ${lockedInputClass}`}
+                  disabled={attemptsExist}
                   placeholder="Enter the reference answer..."
                 />
               </div>
@@ -190,7 +199,7 @@ export const QuestionList = ({
             <button
               onClick={() => onUpdateQuestion(selectedQuiz.id, editingQuestion)}
               className="w-full font-display font-bold bg-accept text-inkondark hover:bg-green-600 py-3 rounded-md transition-all mt-4 hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:bg-muted disabled:text-ink disabled:hover:bg-muted disabled:hover:translate-y-0 disabled:active:translate-y-0"
-              disabled={updateDisabled}
+              disabled={attemptsExist}
             >
               Save changes
             </button>
@@ -202,7 +211,7 @@ export const QuestionList = ({
 
   // --- List View
   return (
-    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
+    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body ml-0 p-3">
       <div className="flex-1 flex flex-col rounded-lg bg-surface overflow-hidden border border-accent">
         <div className="p-4 bg-specialsurface border-b border-muted/20">
           <h3 className="text-base font-display font-semibold text-inkondark">
@@ -217,7 +226,7 @@ export const QuestionList = ({
                 <div
                   key={question.id}
                   onClick={() => handleEditClick(question)} // TRIGGER THE EDIT MODE
-                  className="p-3 rounded-md cursor-pointer transition-all group bg-darkslate hover:bg-darkslate/70 border border-muted/20"
+                  className={`p-3 rounded-md cursor-pointer transition-all group bg-darkslate hover:bg-darkslate/70 border border-muted/20 ${attemptsExist ? "opacity-60" : ""}`}
                 >
                   <div className="flex justify-between items-center gap-3">
                     <div className="flex-1 min-w-0 text-sm text-inkondark truncate">
@@ -227,7 +236,7 @@ export const QuestionList = ({
                       {question.questionText}
                     </div>
                     <span className="text-xs text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 hidden sm:inline">
-                      Edit →
+                      {attemptsExist ? "View" : "Edit →"}
                     </span>
                   </div>
                 </div>

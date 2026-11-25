@@ -6,7 +6,7 @@ import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Dropdown } from "../ui/Dropdown";
 import ccdiLogo from "../../assets/ccdi-logo.webp";
 
-export function TeacherTopbar({ actions, logoClass = "" }) {
+export function TeacherTopbar({ actions }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -31,10 +31,10 @@ export function TeacherTopbar({ actions, logoClass = "" }) {
 
   return (
     <>
-      <div className="px-5 py-3 flex items-center justify-between bg-specialsurface z-40 border-b-2 border-accent/20">
+      <div className="px-5 py-3 flex items-center justify-between bg-specialsurface z-40">
         <Link
           to="/teacher"
-          className={`flex items-center gap-2.5 cursor-pointer group ${logoClass}`}
+          className="flex items-center gap-2.5 cursor-pointer group"
         >
           <img
             src={ccdiLogo}

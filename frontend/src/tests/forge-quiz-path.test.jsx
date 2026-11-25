@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ForgeQuizAction } from "../features/quizzes/components/ForgeQuizAction";
-import { QuizzesSidebar } from "../features/quizzes/components/QuizzesSideBar";
+import { QuizzesList } from "../features/quizzes/components/QuizzesList";
 
 // Both components keyed off the old /teacher path (the dashboard owns it now)
 // — this guards the move to /teacher/exam-workstation.
@@ -55,7 +55,7 @@ describe("ForgeQuizAction — pathname gate", () => {
   });
 });
 
-describe("QuizzesSidebar — create-quiz navigation", () => {
+describe("QuizzesList — create-quiz navigation", () => {
   it("sends Create new quiz to the exam workstation with the open-modal state", () => {
     render(
       <QueryClientProvider client={queryClient()}>
@@ -65,7 +65,7 @@ describe("QuizzesSidebar — create-quiz navigation", () => {
               path="*"
               element={
                 <>
-                  <QuizzesSidebar {...SIDEBAR_PROPS} />
+                  <QuizzesList {...SIDEBAR_PROPS} />
                   <LocationProbe />
                 </>
               }
@@ -83,5 +83,57 @@ describe("QuizzesSidebar — create-quiz navigation", () => {
     expect(screen.getByTestId("state").textContent).toBe(
       JSON.stringify({ openForgeQuizModal: true }),
     );
+  });
+});
+
+describe("QuizzesList — pagination controls", () => {
+  const renderSidebar = (props) =>
+    render(
+      <QueryClientProvider client={queryClient()}>
+        <MemoryRouter initialEntries={["/teacher/quizzes"]}>
+          <QuizzesList {...SIDEBAR_PROPS} {...props} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+  it("stays hidden while everything fits on one page", () => {
+    renderSidebar({ page: 0, totalQuizzes: 5 });
+
+    expect(screen.queryByTitle("Next page")).toBeNull();
+    expect(screen.queryByTitle("Previous page")).toBeNull();
+  });
+
+  it("enables Next, disables Prev on page 1, and fires onNextPage", () => {
+    const onNextPage = vi.fn();
+    renderSidebar({
+      page: 0,
+      totalQuizzes: 12,
+      quizzes: SIDEBAR_PROPS.quizzes,
+      onNextPage,
+    });
+
+    expect(screen.getByText("Page 1")).toBeInTheDocument();
+    expect(screen.getByTitle("Previous page")).toBeDisabled();
+    expect(screen.getByTitle("Next page")).toBeEnabled();
+
+    fireEvent.click(screen.getByTitle("Next page"));
+    expect(onNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps Prev reachable and disables Next when stranded on a later page", () => {
+    const onPrevPage = vi.fn();
+    renderSidebar({
+      page: 2,
+      totalQuizzes: 10, // both remaining items on page 3 were deleted
+      quizzes: [],
+      onPrevPage,
+    });
+
+    expect(screen.getByText("Page 3")).toBeInTheDocument();
+    expect(screen.getByTitle("Previous page")).toBeEnabled();
+    expect(screen.getByTitle("Next page")).toBeDisabled();
+
+    fireEvent.click(screen.getByTitle("Previous page"));
+    expect(onPrevPage).toHaveBeenCalledTimes(1);
   });
 });
