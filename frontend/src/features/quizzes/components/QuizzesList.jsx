@@ -1,4 +1,5 @@
-// QuizzesSidebar.jsx
+// QuizzesList.jsx — renamed from QuizzesSideBar: it sits inside the main
+// content area beside the section nav now, so "list" is what it is.
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../../components/ui/Spinner";
 import { EmptyState } from "../../../components/ui/EmptyState";
@@ -7,7 +8,7 @@ import { EmptyState } from "../../../components/ui/EmptyState";
 // (components may not import that file — see queries.js header).
 const PAGE_SIZE = 5;
 
-export function QuizzesSidebar({
+export function QuizzesList({
   isFetching,
   quizzes,
   setSelectedQuizId,
@@ -23,7 +24,7 @@ export function QuizzesSidebar({
 
   if (isFetching) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 p-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface p-3">
         <div className="flex-1 rounded-lg flex items-center justify-center border border-muted/20">
           <Spinner />
         </div>
@@ -33,7 +34,7 @@ export function QuizzesSidebar({
 
   if (isError) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface font-body ml-0 mr-3 p-3 gap-3">
         <div className="flex-1 rounded-lg flex items-center justify-center text-red-400 text-sm border border-muted/20">
           Failed to fetch examinations
         </div>
@@ -55,8 +56,8 @@ export function QuizzesSidebar({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
-      <div className="flex-1 flex flex-col rounded-lg border border-muted/20 lg:overflow-hidden">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col font-body ml-0 mr-3 p-3 gap-3">
+      <div className="flex-1 flex flex-col rounded-lg bg-specialsurface border border-muted/20 lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-muted/20">
           <h2 className="text-sm font-display font-semibold text-inkondark">
@@ -131,7 +132,9 @@ export function QuizzesSidebar({
             <span className="text-muted text-sm">Page {page + 1}</span>
             <button
               onClick={onNextPage}
-              disabled={page * PAGE_SIZE + (quizzes?.length || 0) >= totalQuizzes}
+              disabled={
+                page * PAGE_SIZE + (quizzes?.length || 0) >= totalQuizzes
+              }
               className="px-3 py-2 rounded-md text-inkondark transition-all text-sm bg-surface hover:bg-muted/20 border border-muted/20 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Next page"
             >

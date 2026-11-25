@@ -110,4 +110,42 @@ describe("AppShell", () => {
     renderShell(shellProps(), <div>Extra content</div>);
     expect(screen.getByText("Extra content")).toBeInTheDocument();
   });
+
+  it("renders the nav slot first in the container, desktop-only", () => {
+    renderShell(
+      shellProps({
+        nav: (
+          <nav aria-label="Sections">
+            <a href="/x">Nav item</a>
+          </nav>
+        ),
+      }),
+      <div>Extra content</div>,
+    );
+    // Wrapped `hidden lg:contents`: mobile hides it, lg dissolves the wrapper
+    // so the nav is a direct flex child of the container.
+    const nav = screen.getByRole("navigation", { name: "Sections" });
+    expect(nav.parentElement.className).toContain("hidden");
+    expect(nav.parentElement.className).toContain("lg:contents");
+    // …and it sits before the panels/children.
+    expect(nav.parentElement.previousElementSibling).toBeNull();
+    expect(nav.parentElement.nextElementSibling).not.toBeNull();
+  });
+
+  it("renders no nav wrapper when nav is omitted", () => {
+    renderShell(shellProps(), <div>Extra content</div>);
+    expect(screen.queryByRole("navigation", { name: "Sections" })).toBeNull();
+  });
+
+  it("spreads topbarProps onto the topbar (QuizMakerPage's Forge action)", () => {
+    renderShell(
+      shellProps({
+        topbarProps: { actions: <button type="button">Forge quiz</button> },
+      }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Forge quiz" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link")).toBeInTheDocument(); // logo still there
+  });
 });

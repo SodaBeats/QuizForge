@@ -22,7 +22,7 @@ export function QuizzesMetadata({
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full p-3">
+      <div className="flex items-center justify-center h-full text-muted text-sm font-body w-full ml-0 mr-3 p-3">
         <div className="w-full h-full rounded-lg bg-surface flex items-center justify-center border border-accent">
           Select a quiz to view details
         </div>
@@ -31,7 +31,7 @@ export function QuizzesMetadata({
   }
 
   return (
-    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body p-3">
+    <div className="flex-1 min-w-0 h-full w-full flex flex-col font-body ml-0 mr-3 p-3">
       <div className="flex-1 flex flex-col rounded-lg bg-surface border border-accent lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 bg-specialsurface border-b border-muted/20">

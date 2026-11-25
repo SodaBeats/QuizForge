@@ -3,7 +3,9 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { AppShell } from "../../../components/layout/AppShell";
-import { ClassesSidebar } from "../components/ClassesSidebar";
+import { SidebarNav } from "../../../components/layout/SidebarNav";
+import { TEACHER_NAV_ITEMS } from "../../../components/layout/teacherNavItems";
+import { ClassesList } from "../components/ClassesList";
 import { ClassStudentsPanel } from "../components/ClassStudentsPanel";
 import { CreateClassModal } from "../components/CreateClassModal";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
@@ -116,6 +118,7 @@ export function ClassesPage() {
 
   return (
     <AppShell
+      nav={<SidebarNav items={TEACHER_NAV_ITEMS} collapsed />}
       tabs={
         selectedClass
           ? [
@@ -131,7 +134,7 @@ export function ClassesPage() {
           key: "classes",
           visible: !selectedClass || mobileTab === "classes",
           children: (
-            <ClassesSidebar
+            <ClassesList
               classes={queryClasses}
               isFetching={queryClassesIsFetching}
               selectedClassId={selectedClassId}

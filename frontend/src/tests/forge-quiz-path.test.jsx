@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ForgeQuizAction } from "../features/quizzes/components/ForgeQuizAction";
-import { QuizzesSidebar } from "../features/quizzes/components/QuizzesSideBar";
+import { QuizzesList } from "../features/quizzes/components/QuizzesList";
 
 // Both components keyed off the old /teacher path (the dashboard owns it now)
 // — this guards the move to /teacher/exam-workstation.
@@ -55,7 +55,7 @@ describe("ForgeQuizAction — pathname gate", () => {
   });
 });
 
-describe("QuizzesSidebar — create-quiz navigation", () => {
+describe("QuizzesList — create-quiz navigation", () => {
   it("sends Create new quiz to the exam workstation with the open-modal state", () => {
     render(
       <QueryClientProvider client={queryClient()}>
@@ -65,7 +65,7 @@ describe("QuizzesSidebar — create-quiz navigation", () => {
               path="*"
               element={
                 <>
-                  <QuizzesSidebar {...SIDEBAR_PROPS} />
+                  <QuizzesList {...SIDEBAR_PROPS} />
                   <LocationProbe />
                 </>
               }
@@ -86,12 +86,12 @@ describe("QuizzesSidebar — create-quiz navigation", () => {
   });
 });
 
-describe("QuizzesSidebar — pagination controls", () => {
+describe("QuizzesList — pagination controls", () => {
   const renderSidebar = (props) =>
     render(
       <QueryClientProvider client={queryClient()}>
         <MemoryRouter initialEntries={["/teacher/quizzes"]}>
-          <QuizzesSidebar {...SIDEBAR_PROPS} {...props} />
+          <QuizzesList {...SIDEBAR_PROPS} {...props} />
         </MemoryRouter>
       </QueryClientProvider>,
     );

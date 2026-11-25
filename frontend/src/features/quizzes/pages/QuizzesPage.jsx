@@ -2,7 +2,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { AppShell } from "../../../components/layout/AppShell";
-import { QuizzesSidebar } from "../components/QuizzesSideBar";
+import { SidebarNav } from "../../../components/layout/SidebarNav";
+import { TEACHER_NAV_ITEMS } from "../../../components/layout/teacherNavItems";
+import { QuizzesList } from "../components/QuizzesList";
 import { QuizzesMetadata as QuizzesMetaData } from "../components/QuizzesMetadata";
 import { QuestionList as QuizzesQuestionList } from "../components/QuizzesQuestionList";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
@@ -22,7 +24,9 @@ export function QuizzesPage() {
   const location = useLocation();
   const [selectedQuizId, setSelectedQuizId] = useState(() => {
     const routeQuizId = Number(location.state?.selectedQuizId);
-    return Number.isInteger(routeQuizId) && routeQuizId > 0 ? routeQuizId : null;
+    return Number.isInteger(routeQuizId) && routeQuizId > 0
+      ? routeQuizId
+      : null;
   });
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [quizToDelete, setQuizToDelete] = useState(null);
@@ -138,6 +142,7 @@ export function QuizzesPage() {
 
   return (
     <AppShell
+      nav={<SidebarNav items={TEACHER_NAV_ITEMS} collapsed />}
       tabs={
         selectedQuiz
           ? [
@@ -154,7 +159,7 @@ export function QuizzesPage() {
           key: "list",
           visible: !selectedQuiz || mobileTab === "list",
           children: (
-            <QuizzesSidebar
+            <QuizzesList
               isFetching={pagedQuizzesFetching}
               isError={pagedQuizzesError}
               quizzes={pagedQuizzes?.userQuizzes}
@@ -201,7 +206,7 @@ export function QuizzesPage() {
       ]}
     >
       {!selectedQuiz && (
-        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
+        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body ml-0 mr-3 p-3">
           Select a quiz to view details
         </div>
       )}

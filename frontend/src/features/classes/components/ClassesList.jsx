@@ -1,8 +1,8 @@
-// src/features/classes/components/ClassesSidebar.jsx
+// src/features/classes/components/ClassesList.jsx
 
 import { Spinner } from "../../../components/ui/Spinner";
 
-export function ClassesSidebar({
+export function ClassesList({
   classes = [],
   isFetching,
   selectedClassId,
@@ -12,8 +12,8 @@ export function ClassesSidebar({
   deletingIds = [],
 }) {
   return (
-    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col bg-specialsurface font-body p-3">
-      <div className="flex-1 flex flex-col rounded-lg border border-muted/20 lg:overflow-hidden">
+    <div className="w-full lg:w-56 flex-shrink-0 flex flex-col font-body p-3">
+      <div className="flex-1 flex flex-col rounded-lg bg-specialsurface border border-muted/20 lg:overflow-hidden">
         <div className="p-4 flex items-center justify-between gap-2 border-b border-muted/20">
           <p className="text-xs font-display font-semibold text-muted uppercase tracking-widest">
             Classes

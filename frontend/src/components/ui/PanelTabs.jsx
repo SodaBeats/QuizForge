@@ -2,9 +2,8 @@
 // The tab strip was copy-pasted 4x (QuizMakerPage, QuizResultDashboard,
 // ClassesPage, QuizzesPage) with an identical button style and per-page
 // container classes — the container deltas stay with the call site via
-// className. Phase 4 now routes every strip through here: AppShell mounts it
-// for Quizzes/Classes/Results; QuizMakerPage (custom frame) mounts it
-// directly.
+// className. Every strip now routes through here: AppShell mounts it for
+// Quizzes/Classes/Results/Exam-workstation.
 //
 //   <PanelTabs
 //     tabs={[{ key: "files", label: "Files" }, …]}
