@@ -24,7 +24,9 @@ export function QuizzesPage() {
   const location = useLocation();
   const [selectedQuizId, setSelectedQuizId] = useState(() => {
     const routeQuizId = Number(location.state?.selectedQuizId);
-    return Number.isInteger(routeQuizId) && routeQuizId > 0 ? routeQuizId : null;
+    return Number.isInteger(routeQuizId) && routeQuizId > 0
+      ? routeQuizId
+      : null;
   });
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [quizToDelete, setQuizToDelete] = useState(null);
@@ -204,7 +206,7 @@ export function QuizzesPage() {
       ]}
     >
       {!selectedQuiz && (
-        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body p-3">
+        <div className="flex-1 min-w-0 flex items-center justify-center text-ink text-sm font-body ml-0 mr-3 p-3">
           Select a quiz to view details
         </div>
       )}

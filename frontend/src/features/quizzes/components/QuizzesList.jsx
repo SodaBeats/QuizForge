@@ -24,7 +24,7 @@ export function QuizzesList({
 
   if (isFetching) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 p-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface p-3">
         <div className="flex-1 rounded-lg flex items-center justify-center border border-muted/20">
           <Spinner />
         </div>
@@ -34,7 +34,7 @@ export function QuizzesList({
 
   if (isError) {
     return (
-      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface border-r-2 border-accent/50 font-body p-3 gap-3">
+      <div className="w-full lg:w-64 min-w-0 flex flex-col bg-specialsurface font-body ml-0 mr-3 p-3 gap-3">
         <div className="flex-1 rounded-lg flex items-center justify-center text-red-400 text-sm border border-muted/20">
           Failed to fetch examinations
         </div>
@@ -56,7 +56,7 @@ export function QuizzesList({
   }
 
   return (
-    <div className="w-full lg:w-64 min-w-0 flex flex-col font-body p-3 gap-3">
+    <div className="w-full lg:w-64 min-w-0 flex flex-col font-body ml-0 mr-3 p-3 gap-3">
       <div className="flex-1 flex flex-col rounded-lg bg-specialsurface border border-muted/20 lg:overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-muted/20">

@@ -1,4 +1,4 @@
-import { MonitorPlay, FileText, Users } from "lucide-react";
+import { MonitorPlay, FileText, Users, LayoutDashboard } from "lucide-react";
 
 // The teacher section nav — one source of truth for the three items
 // SidebarNav shows on the dashboard, /teacher/quizzes and /teacher/classes,
@@ -7,6 +7,13 @@ import { MonitorPlay, FileText, Users } from "lucide-react";
 // The exam workstation is the former teacher home (/teacher) — the dashboard
 // owns /teacher now, so the path moved here and in ForgeQuizAction.
 export const TEACHER_NAV_ITEMS = [
+  {
+    to: "/teacher",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    title: "Dashboard",
+    end: true,
+  },
   {
     to: "/teacher/exam-workstation",
     label: "Exam Workstation",

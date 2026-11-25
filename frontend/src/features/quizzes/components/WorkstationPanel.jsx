@@ -91,7 +91,7 @@ export function WorkstationPanel({
       {/* lg sizing mirrors the old page-frame wrapper (flex-none w-52
           min-h-0) — AppShell's panel wrapper is `lg:contents`, so the panel
           itself is the flex child now. */}
-      <div className="w-full lg:w-52 lg:flex-none lg:min-h-0 bg-specialsurface flex flex-col font-body p-2 gap-2">
+      <div className="w-full lg:w-52 lg:flex-none lg:min-h-0 flex flex-col font-body p-2 gap-2">
         <FileSection
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
@@ -102,7 +102,7 @@ export function WorkstationPanel({
         />
 
         {/* Current Quiz - Small Section */}
-        <div className="rounded-lg p-2 border border-muted/20">
+        <div className="rounded-lg p-2 bg-specialsurface border border-muted/20">
           <div className="text-xs font-semibold text-inkondark mb-3 uppercase tracking-wide border-b border-muted/20">
             Current quiz
           </div>
@@ -139,7 +139,7 @@ export function WorkstationPanel({
         />
 
         {/* Question List - 70% */}
-        <div className="flex-1 rounded-lg p-2 overflow-y-auto border border-muted/20">
+        <div className="flex-1 rounded-lg p-2 overflow-y-auto bg-specialsurface border border-muted/20">
           <div className="flex flex-row items-center justify-between mb-2 border-b border-muted/20">
             <div className="mb-3 text-xs font-semibold text-inkondark uppercase tracking-wide">
               Questions

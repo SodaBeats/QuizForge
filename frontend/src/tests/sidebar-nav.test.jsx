@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { MonitorPlay, FileText, Users } from "lucide-react";
+import { MonitorPlay, FileText, Users, LayoutDashboard } from "lucide-react";
 import { SidebarNav } from "../components/layout/SidebarNav";
 
 // NavLink reads the location from the router context, so no Routes match is
 // needed — just render the nav "at" a path.
 const ITEMS = [
+  { to: "/teacher", label: "Dashboard", icon: LayoutDashboard, end: true },
   {
     to: "/teacher/exam-workstation",
     label: "Exam Workstation",
@@ -24,6 +25,7 @@ const renderAt = (path) =>
   );
 
 const NAV = [
+  { label: "Dashboard", href: "/teacher" },
   { label: "Exam Workstation", href: "/teacher/exam-workstation" },
   { label: "Examinations", href: "/teacher/quizzes" },
   { label: "Classes", href: "/teacher/classes" },
@@ -66,10 +68,24 @@ describe("SidebarNav", () => {
     ).toContain("bg-accent");
   });
 
+  it("marks only the exact dashboard route active", () => {
+    renderAt("/teacher/quizzes");
+    expect(
+      screen.getByRole("link", { name: "Dashboard" }).className,
+    ).not.toContain("bg-accent");
+  });
+
+  it("marks the dashboard active only on /teacher", () => {
+    renderAt("/teacher");
+    expect(
+      screen.getByRole("link", { name: "Dashboard" }).className,
+    ).toContain("bg-accent");
+  });
+
   it("renders one lucide icon per nav item", () => {
     const { container } = renderAt("/teacher");
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(3);
+    expect(links).toHaveLength(4);
     for (const link of links) {
       expect(link.querySelector("svg")).toBeInTheDocument();
     }
