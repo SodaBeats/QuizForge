@@ -54,6 +54,8 @@ export function QuizzesPage() {
     pagedQuizzes?.userQuizzes?.find((q) => q.id === selectedQuizId) ??
     null;
 
+  const attemptsExist = (selectedQuiz?.attemptCount ?? 0) > 0;
+
   // get all questions related to quiz (same key the quiz maker writes to)
   const { data: queryQuestions, isFetching: queryQuestionsFetching } =
     useQuizQuestions(selectedQuizId, {
@@ -124,7 +126,12 @@ export function QuizzesPage() {
 
     setSelectedQuizId(quizToChange.id);
 
-    updateQuiz.mutate(quizToChange, {
+    const payload =
+      (originalQuiz.attemptCount ?? 0) > 0
+        ? { id: quizToChange.id, status: quizToChange.status }
+        : quizToChange;
+
+    updateQuiz.mutate(payload, {
       onSuccess: () => toast.success("Quiz Updated!"),
       onError: () => setSelectedQuizId(null),
     });
@@ -185,6 +192,7 @@ export function QuizzesPage() {
                     userClasses={userClasses}
                     isFetchingClasses={isFetchingClasses}
                     classFetchError={classFetchError}
+                    attemptsExist={attemptsExist}
                   />
                 ),
               },
@@ -192,12 +200,14 @@ export function QuizzesPage() {
                 key: "questions",
                 children: (
                   <QuizzesQuestionList
+                    key={selectedQuiz.id}
                     isFetching={queryQuestionsFetching}
                     questions={queryQuestions?.questionList}
                     selectedQuiz={selectedQuiz}
                     onUpdateQuestion={handleQuestionUpdate}
                     editingQuestion={editingQuestion}
                     setEditingQuestion={setEditingQuestion}
+                    attemptsExist={attemptsExist}
                   />
                 ),
               },

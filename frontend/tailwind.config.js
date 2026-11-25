@@ -243,6 +243,9 @@ const appDesign = {
       "background-color": "var(--muted) !important",
       color: "var(--ink) !important",
     },
+  ".orange-dark-theme .btn-primary.hover\\:text-accept:hover": {
+    color: "var(--accept) !important",
+  },
 
   /* Keep destructive actions distinct from the orange brand accent. */
   ".orange-dark-theme .btn-danger": {

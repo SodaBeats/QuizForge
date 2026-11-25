@@ -33,14 +33,14 @@ function removeQuizFromListCache(old, quizId) {
 function replaceQuizInListCache(old, quizToChange) {
   if (Array.isArray(old)) {
     return old.map((quiz) =>
-      quiz.id === quizToChange.id ? quizToChange : quiz,
+      quiz.id === quizToChange.id ? { ...quiz, ...quizToChange } : quiz,
     );
   }
   if (old && Array.isArray(old.userQuizzes)) {
     return {
       ...old,
       userQuizzes: old.userQuizzes.map((quiz) =>
-        quiz.id === quizToChange.id ? quizToChange : quiz,
+        quiz.id === quizToChange.id ? { ...quiz, ...quizToChange } : quiz,
       ),
     };
   }

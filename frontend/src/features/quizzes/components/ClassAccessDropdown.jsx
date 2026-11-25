@@ -7,8 +7,10 @@ export function ClassAccessDropdown({
   userClasses,
   isFetchingClasses,
   classFetchError,
+  disabled = false,
 }) {
   const handleToggleClass = (classId) => {
+    if (disabled) return;
     setEditingQuiz((prev) => {
       const classesWithAccessIds = prev.classIds;
       const isSelected = classesWithAccessIds.includes(classId);
@@ -22,6 +24,7 @@ export function ClassAccessDropdown({
   };
 
   const handleClearAll = () => {
+    if (disabled) return;
     setEditingQuiz((prev) => ({
       ...prev,
       accessibility: "anyone",
@@ -43,7 +46,8 @@ export function ClassAccessDropdown({
         <>
           <button
             onClick={toggle}
-            className="w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body"
+            disabled={disabled}
+            className={`w-full bg-darkslate rounded-md p-2.5 text-sm text-inkondark text-left flex items-center justify-between border border-muted/30 hover:bg-darkslate/70 transition-all font-body ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <span className="truncate">{displayText}</span>
             <svg

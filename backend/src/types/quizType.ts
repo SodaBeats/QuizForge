@@ -6,6 +6,7 @@ export enum Accessibility {
 export enum Status {
   draft = 'draft',
   published = 'published',
+  concluded = 'concluded',
 }
 
 export type Quiz = {
