@@ -136,4 +136,16 @@ describe("AppShell", () => {
     renderShell(shellProps(), <div>Extra content</div>);
     expect(screen.queryByRole("navigation", { name: "Sections" })).toBeNull();
   });
+
+  it("spreads topbarProps onto the topbar (QuizMakerPage's Forge action)", () => {
+    renderShell(
+      shellProps({
+        topbarProps: { actions: <button type="button">Forge quiz</button> },
+      }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Forge quiz" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link")).toBeInTheDocument(); // logo still there
+  });
 });
