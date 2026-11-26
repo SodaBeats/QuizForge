@@ -3,6 +3,7 @@
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../../components/ui/Spinner";
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { ScrollingText } from "../../../components/ui/ScrollingText";
 
 // Must match listPaged's hardcoded limit/offset math in quizzes.api.js
 // (components may not import that file — see queries.js header).
@@ -82,8 +83,11 @@ export function QuizzesList({
                     setSelectedQuizId(newId);
                   }}
                 >
-                  <div className="flex-1 truncate">
-                    <div className="font-medium truncate">{quiz.quizTitle}</div>
+                  <div className="flex-1 min-w-0">
+                    <ScrollingText
+                      text={quiz.quizTitle}
+                      className="font-medium"
+                    />
                     <div
                       className={`text-xs mt-1 ${
                         selectedQuizId === quiz.id
