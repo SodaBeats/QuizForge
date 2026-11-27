@@ -2,6 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useDeleteQuestion } from "../api/mutations.js";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
+import { ScrollingText } from "../../../components/ui/ScrollingText";
 import { GenerationDone } from "./GenerationDone";
 import { FileSection } from "./FileSection";
 import { SelectQuizModal } from "./SelectQuizModal";
@@ -107,10 +108,11 @@ export function WorkstationPanel({
             Current quiz
           </div>
           {currentQuiz ? (
-            <div className="flex items-center justify-between w-full rounded-md px-2 py-1 group bg-accent ">
-              <span className="text-xs text-inkondark font-medium truncate flex-1">
-                {currentQuiz.quizTitle}
-              </span>
+            <div className="flex items-center justify-between w-full min-w-0 rounded-md px-2 py-1 group bg-accent ">
+              <ScrollingText
+                text={currentQuiz.quizTitle}
+                className="text-xs text-inkondark font-medium flex-1 min-w-0"
+              />
               <button
                 onClick={() => {
                   setCurrentQuiz(null);
@@ -156,12 +158,11 @@ export function WorkstationPanel({
                       : "hover:bg-muted/20 text-inkondark border border-muted/20"
                   }`}
                 >
-                  <div
-                    className="cursor-pointer truncate flex-1"
+                  <ScrollingText
+                    text={question.questionText || question.question_text}
+                    className="cursor-pointer flex-1 min-w-0"
                     onClick={() => setSelectedQuestionId(question.id)}
-                  >
-                    {question.questionText || question.question_text}
-                  </div>
+                  />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

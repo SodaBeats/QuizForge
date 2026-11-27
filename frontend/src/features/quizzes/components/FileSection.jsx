@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FileModal } from "./FileModal";
 import { Spinner } from "../../../components/ui/Spinner";
+import { ScrollingText } from "../../../components/ui/ScrollingText";
 
 export function FileSection({
   uploadedFiles,
@@ -105,12 +106,11 @@ export function FileSection({
                     : "hover:bg-muted/20 text-inkondark border border-muted/20"
                 }`}
               >
-                <div
-                  className="cursor-pointer truncate flex-1"
+                <ScrollingText
+                  text={file.name}
+                  className="flex-1 cursor-pointer"
                   onClick={() => setSelectedFileId(file.id)}
-                >
-                  {file.name}
-                </div>
+                />
                 <button
                   onClick={(event) => {
                     event.stopPropagation();

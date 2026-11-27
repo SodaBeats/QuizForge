@@ -3,6 +3,7 @@ import { usePagedQuizzes } from "../api/queries.js";
 import { Modal } from "../../../components/ui/Modal";
 import { Spinner } from "../../../components/ui/Spinner";
 import { EmptyState } from "../../../components/ui/EmptyState";
+import { ScrollingText } from "../../../components/ui/ScrollingText";
 
 // ------------------------------------------------------------------------------------
 // SUB COMPONENT: Select Quiz Modal
@@ -84,8 +85,8 @@ export function SelectQuizModal({
               onClick={() => handleSelectQuiz(quiz)}
               className="w-full text-left p-3 rounded-lg transition-all text-sm hover:bg-mutedteal text-inkondark border border-muted/20"
             >
-              <div className="font-medium truncate">{quiz.quizTitle}</div>
-              <div className="text-xs text-muted mt-1">
+              <ScrollingText text={quiz.quizTitle} className="font-medium" />
+              <div className="text-xs text-muted mt-1 truncate">
                 Token: {quiz.shareToken}
               </div>
             </button>
